@@ -14,3 +14,4 @@ Engineering for the build plan is complete. Items below are **operator / human /
 | Deferred ATS/source adapters, retention compression, mobile swipe | 5–6 | Later backlog, not R1 blockers |
 
 Canonical deploy checklist: [`../architecture/deployment.md`](../architecture/deployment.md) §5–operator notes in [`phase-14-r1-hardening-and-launch.md`](./phase-14-r1-hardening-and-launch.md).
+
