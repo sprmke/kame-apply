@@ -15,7 +15,7 @@ The execution plan from an empty repo to Release 1 (MVP) and Release 2. Scope is
 | # | Phase | Release | Status | Depends on |
 | --- | --- | --- | --- | --- |
 | 0 | [AI tooling & agentic workflow](./phase-00-ai-tooling-and-agent-setup.md) | Foundation | Done | — |
-| 1 | [Monorepo scaffold, local infra, CI, technical spikes](./phase-01-scaffold-infra-spikes.md) | Foundation | Eng done (PR CI pending first push) | 0 |
+| 1 | [Monorepo scaffold, local infra, CI, technical spikes](./phase-01-scaffold-infra-spikes.md) | Foundation | Done | 0 |
 | 2 | [Auth, workspaces (multi-tenancy), RBAC, audit, AI providers, app shell & design system](./phase-02-auth-tenancy-shell.md) | R1 | Done (not merged) | 1 |
 | 3 | [Career Profile: resume intake, parsing, profile interview, answer bank, voice](./phase-03-career-profile.md) | R1 | Done (not merged) | 2 |
 | 4 | [Tracks & criteria builder + occupation/skills taxonomy](./phase-04-tracks-and-criteria.md) | R1 | Done (not merged) | 3 |

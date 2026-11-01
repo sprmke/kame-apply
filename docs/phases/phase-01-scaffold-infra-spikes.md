@@ -1,6 +1,6 @@
 # Phase 1: Monorepo scaffold, local infra, CI, technical spikes
 
-**Status:** Eng done (awaiting first GitHub PR CI) · **Release:** Foundation · **Depends on:** 0 · **Unlocks:** 2
+**Status:** Done · **Release:** Foundation · **Depends on:** 0 · **Unlocks:** 2
 
 ## Goal
 
@@ -46,9 +46,9 @@ A running skeleton: `pnpm run dev` starts web + api + Postgres + MinIO; CI is gr
 ## Exit criteria
 
 - [x] Fresh clone → `pnpm install && pnpm run dev:docker && pnpm run dev` works per README.
-- [ ] CI green on a PR (GitHub Actions) — verify after first push.
+- [x] CI green on a PR (GitHub Actions) — [PR #1](https://github.com/sprmke/kame-apply/pull/1) all jobs green.
 - [x] All seven spikes have a decision recorded; any "drop" updated in `tech-stack.md`.
 
 ## Implementation notes
 
-Open operator follow-ups (not eng blockers): first Oracle A1 (or Hetzner) bring-up with `applywave`; re-time fastembed/CDP on that host (checklist in spike 02).
+Operator follow-ups (not eng blockers): first Oracle A1 (or Hetzner) bring-up with `applywave`; re-time fastembed/CDP on that host (checklist in spike 02). See [`REMAINING.md`](./REMAINING.md).
