@@ -1,0 +1,31 @@
+---
+description: Alembic-only migrations, never edit shipped versions, RLS on tenant tables
+globs:
+  - apps/api/migrations/**
+---
+
+# Alembic migrations
+
+## Rules
+
+1. **Alembic only**, under `apps/api/migrations/versions/`.
+2. **Never edit a shipped migration**; files already in git history are immutable. Add a new revision.
+3. Hook enforcement: `guard-shipped-migrations.sh` blocks edits to existing files under `versions/`.
+
+## Workflow
+
+```bash
+pnpm run db:migrate:new   # autogenerate, always review the diff
+pnpm run db:migrate       # local upgrade head
+```
+
+## Autogenerate review checklist
+
+- [ ] `workspace_id NOT NULL` + RLS policy (`FORCE ROW LEVEL SECURITY`) on every tenant table (`workspace-scoping`)
+- [ ] Indexes on FK columns used in list queries; `workspace_id` leading in composite indexes
+- [ ] Extensions (`vector`, `pg_trgm`, `pgcrypto`) enabled in an explicit migration
+- [ ] No accidental drops without an explicit plan
+- [ ] Downgrade path sane (or document one-way)
+- [ ] Runs under the migration role; app role keeps no `BYPASSRLS`
+
+Skills: `alembic-migrations`, `fix-migration-issues`, `workspace-scoping`.

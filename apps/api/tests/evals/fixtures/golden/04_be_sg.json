@@ -1,0 +1,105 @@
+{
+  "id": "04_be_sg",
+  "country": "SG",
+  "role": "backend_engineer",
+  "layout": "single",
+  "resume_text": "Wei Tan\nBackend Engineer\nGrab | SG\n2021-02 – Present\nLed work as backend engineer with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Wei Tan",
+    "experiences": [
+      {
+        "company": "Grab",
+        "title": "Backend Engineer",
+        "start_date": "2021-02-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Wei Tan",
+      "confidence": 1.0,
+      "span": "Wei Tan"
+    },
+    "headline": {
+      "value": "Backend Engineer",
+      "confidence": 1.0,
+      "span": "Backend Engineer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Grab",
+        "title": "Backend Engineer",
+        "employment_type": null,
+        "location": "SG",
+        "start_date": "2021-02-01",
+        "end_date": null,
+        "is_current": true,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as backend engineer with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as backend engineer with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "Grab | SG\n2021-02 – Present"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

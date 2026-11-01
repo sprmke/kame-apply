@@ -1,0 +1,17 @@
+{
+  "jobs": [
+    {
+      "id": "ash-1",
+      "title": "AI Engineer",
+      "isListed": true,
+      "isRemote": true,
+      "workplaceType": "Remote",
+      "jobUrl": "https://jobs.ashbyhq.com/acme/ash-1",
+      "applyUrl": "https://jobs.ashbyhq.com/acme/ash-1",
+      "descriptionPlain": "LLMs and Python",
+      "publishedAt": "2026-10-01T00:00:00Z",
+      "location": "Remote",
+      "employmentType": "FullTime"
+    }
+  ]
+}

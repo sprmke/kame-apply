@@ -1,0 +1,17 @@
+{
+  "id": "13_chef_fr",
+  "lang": "en",
+  "text": "Chef Paris, French language",
+  "expected": {
+    "titles": ["Chef"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Chef",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

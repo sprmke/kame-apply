@@ -1,0 +1,32 @@
+{
+  "name": "@kame/extension",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "postinstall": "wxt prepare",
+    "type-check": "wxt prepare && vue-tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kame/ui": "workspace:*",
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@wxt-dev/module-vue": "^1.0.3",
+    "eslint": "^10.4.0",
+    "eslint-plugin-vue": "^10.0.0",
+    "happy-dom": "^20.0.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.40.0",
+    "vitest": "^5.0.5",
+    "vue-tsc": "^3.3.13",
+    "wxt": "^0.21.5"
+  }
+}

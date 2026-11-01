@@ -1,0 +1,15 @@
+---
+description: Every tenant row carries workspace_id with RLS; every request/step sets the workspace context
+alwaysApply: true
+---
+
+# Workspace scoping
+
+- Every tenant-owned table has `workspace_id NOT NULL` and an RLS policy on `current_setting('app.workspace_id')`. There is no query path without scope.
+- Never trust a `workspace_id` from a body, query string, MCP argument, or extension payload. Resolve it from the authenticated user + `X-Workspace-Id` + active membership (`WorkspaceContext`).
+- DBOS steps, MCP tools, the runner, and extension endpoints set the same context before touching tenant tables; missing context fails closed.
+- Cross-tenant reads return 404. Every new tenant table ships with a wrong-`app.workspace_id` test (0 rows) and a cross-tenant API test.
+- Blobs: R2 keys under `ws/<workspace_id>/`, short-lived signed URLs after a scope check.
+- The app DB role has no `BYPASSRLS`; migrations use a separate role.
+
+Skill: `workspace-scoping`. Invariant 2 in `docs/architecture/overview.md`.

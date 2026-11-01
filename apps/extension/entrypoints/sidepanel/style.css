@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "@kame/ui/tokens.css";
+@source "../../../../packages/ui/src";
+
+html {
+  background: var(--color-paper-0);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}

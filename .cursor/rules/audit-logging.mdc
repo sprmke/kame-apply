@@ -1,0 +1,14 @@
+---
+description: Mutating changes must emit activity_log or document N/A
+alwaysApply: true
+---
+
+# Activity / audit logging
+
+Any change that mutates workspace data (profile, tracks, jobs, resumes, answers, applications, runs, settings) must **emit an `activity_log` row** or write **`activity-log: N/A — <why>`** in the same change.
+
+- Emit from the **service layer** after a successful write — never in `except`, never blocking the mutation on log failure.
+- Actor: `user` | `agent` | `system` from real JWT/OAuth/context, never model-asserted.
+- Bulk ops: one summary row with `metadata.count`.
+
+Skill: `.agent/skills/audit-logging/SKILL.md`. Table is created in Phase 1; it is append-only (no update/delete path).

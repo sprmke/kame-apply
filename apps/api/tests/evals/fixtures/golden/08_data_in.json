@@ -1,0 +1,67 @@
+{
+  "id": "08_data_in",
+  "country": "IN",
+  "role": "data_scientist",
+  "layout": "single",
+  "resume_text": "Rohan Mehta\nData Scientist\nFlipkart | IN\n2018-07 – Present\nLed work as data scientist with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Rohan Mehta",
+    "experiences": [
+      {
+        "company": "Flipkart",
+        "title": "Data Scientist",
+        "start_date": "2018-07-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Rohan Mehta",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Data Scientist",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "IN",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Flipkart",
+        "title": "Data Scientist",
+        "start_date": "2018-07-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

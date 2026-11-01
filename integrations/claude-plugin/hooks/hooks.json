@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json,sys; d=json.load(sys.stdin); t=(d.get('tool_input') or {}); s=str(t);\nraise SystemExit(2 if 'untrusted_data' in s.lower() or 'ignore previous' in s.lower() else 0)\""
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-in-chrome__.*|browser_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import json,sys,re; d=json.load(sys.stdin); s=str(d.get('tool_input') or {}).lower();\nraise SystemExit(2 if re.search(r'\\b(submit|apply now|send application)\\b', s) else 0)\""
+          }
+        ]
+      }
+    ]
+  }
+}

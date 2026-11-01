@@ -1,0 +1,21 @@
+---
+description: Generated resumes, cover letters, and answers use only Career Profile facts (PRD P1)
+globs:
+  - apps/api/app/resumes/**
+  - apps/api/app/answers/**
+  - apps/api/app/profiles/**
+  - apps/api/app/ai/**
+  - packages/py-core/**/prompts/**
+---
+
+# Truthful content (PRD P1)
+
+Resumes, cover letters, and answers only use facts in the user's Career Profile. AI may rephrase, reorder, and emphasize. It **never** invents employers, titles, dates, metrics, degrees, certifications, or skills. Source: `docs/research/05-resume-intelligence.md` §1.
+
+- Every generated claim carries an **evidence ref** to a profile fact (experience bullet, project, skill, education). No ref ⇒ no claim.
+- A **verifier** step runs after every generation: it checks each claim against its evidence and fails the draft on any unsupported number, date, title, employer, or skill. Failures are surfaced, never silently repaired.
+- Skill **gaps stay gaps**: show them in the fit ledger and gap plan; never insert a keyword the user cannot back up. Keyword suggestions are offered only when a real fact supports them.
+- Metrics are copied from facts verbatim or marked as user-confirmed estimates; never fabricated, rounded up, or "typical for the role".
+- AI output is a **draft** (pencil) until the user accepts it; acceptance and rejection are audit-logged.
+- Voice and style rules apply to wording only, never to facts. We do not try to defeat AI detectors or add fake typos.
+- Any prompt change in these areas needs an eval case (`ai-evals` skill) including a fabrication check.

@@ -1,0 +1,17 @@
+{
+  "id": "07_data_in",
+  "lang": "en",
+  "text": "Data scientist in Bangalore, SQL",
+  "expected": {
+    "titles": ["Data Scientist"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Data Scientist",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

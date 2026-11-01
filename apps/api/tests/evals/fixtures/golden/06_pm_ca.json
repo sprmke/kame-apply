@@ -1,0 +1,105 @@
+{
+  "id": "06_pm_ca",
+  "country": "CA",
+  "role": "product_manager",
+  "layout": "single",
+  "resume_text": "Alex Chen\nProduct Manager\nShopify | CA\n2019-08 – Present\nLed work as product manager with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Alex Chen",
+    "experiences": [
+      {
+        "company": "Shopify",
+        "title": "Product Manager",
+        "start_date": "2019-08-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Alex Chen",
+      "confidence": 1.0,
+      "span": "Alex Chen"
+    },
+    "headline": {
+      "value": "Product Manager",
+      "confidence": 1.0,
+      "span": "Product Manager"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": "CA",
+      "confidence": 0.9,
+      "span": "CA"
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Shopify",
+        "title": "Product Manager",
+        "employment_type": null,
+        "location": "CA",
+        "start_date": "2019-08-01",
+        "end_date": null,
+        "is_current": true,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as product manager with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as product manager with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "Product Manager\nShopify | CA\n2019-08 – Present\nLed work as product manager with measurable outcomes."
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "60_marketing_manager_dublin",
+  "lang": "en",
+  "text": "lead marketing manager in Dublin, full-time",
+  "expected": {
+    "titles": ["Marketing Manager"],
+    "seniority": ["lead"],
+    "locations": ["Dublin"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Marketing Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Dublin"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

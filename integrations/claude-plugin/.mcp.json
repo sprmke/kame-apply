@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kame": {
+      "type": "http",
+      "url": "${KAME_MCP_URL:-http://localhost:8100/mcp}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "01_ai_remote_ph",
+  "lang": "en",
+  "text": "AI engineer remote from Philippines, Python must, exclude Angular, no agencies",
+  "expected": {
+    "titles": ["AI Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "AI Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

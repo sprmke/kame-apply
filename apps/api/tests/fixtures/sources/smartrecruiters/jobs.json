@@ -1,0 +1,14 @@
+{
+  "content": [
+    {
+      "id": "sr1",
+      "name": "QA Engineer",
+      "location": {
+        "city": "Paris"
+      },
+      "ref": "https://jobs.smartrecruiters.com/acme/sr1",
+      "applyUrl": "https://jobs.smartrecruiters.com/acme/sr1",
+      "releasedDate": "2026-10-01"
+    }
+  ]
+}

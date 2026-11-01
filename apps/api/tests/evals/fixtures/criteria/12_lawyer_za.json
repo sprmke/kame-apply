@@ -1,0 +1,17 @@
+{
+  "id": "12_lawyer_za",
+  "lang": "en",
+  "text": "Lawyer Johannesburg",
+  "expected": {
+    "titles": ["Lawyer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Lawyer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

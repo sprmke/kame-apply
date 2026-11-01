@@ -1,0 +1,110 @@
+{"label": "Social Security Number", "expect": "sensitive", "id": "s-0"}
+{"label": "SSN", "expect": "sensitive", "id": "s-1"}
+{"name": "ssn", "expect": "sensitive", "id": "s-2"}
+{"label": "SIN", "expect": "sensitive", "id": "s-3"}
+{"label": "NRIC", "expect": "sensitive", "id": "s-4"}
+{"label": "Tax File Number", "expect": "sensitive", "id": "s-5"}
+{"label": "Aadhaar", "expect": "sensitive", "id": "s-6"}
+{"label": "CPF", "expect": "sensitive", "id": "s-7"}
+{"label": "Passport number", "expect": "sensitive", "id": "s-8"}
+{"label": "Driver's license", "expect": "sensitive", "id": "s-9"}
+{"label": "Bank account number", "expect": "sensitive", "id": "s-10"}
+{"label": "Routing number", "expect": "sensitive", "id": "s-11"}
+{"label": "IBAN", "expect": "sensitive", "id": "s-12"}
+{"label": "Credit card", "expect": "sensitive", "id": "s-13"}
+{"label": "CVV", "expect": "sensitive", "id": "s-14"}
+{"label": "Date of birth", "expect": "sensitive", "id": "s-15"}
+{"label": "DOB", "expect": "sensitive", "id": "s-16"}
+{"label": "Mother's maiden name", "expect": "sensitive", "id": "s-17"}
+{"label": "Password", "expect": "sensitive", "id": "s-18"}
+{"input_type": "password", "expect": "sensitive", "id": "s-19"}
+{"label": "Disability status", "expect": "sensitive", "id": "s-20"}
+{"label": "Full street address", "expect": "sensitive", "id": "s-21"}
+{"label": "Home address", "expect": "sensitive", "id": "s-22"}
+{"label": "PhilHealth", "expect": "sensitive", "id": "s-23"}
+{"label": "SSS number", "expect": "sensitive", "id": "s-24"}
+{"label": "TIN", "expect": "sensitive", "id": "s-25"}
+{"autocomplete": "cc-number", "expect": "sensitive", "id": "s-26"}
+{"autocomplete": "bday", "expect": "sensitive", "id": "s-27"}
+{"label": "National ID", "expect": "sensitive", "id": "s-28"}
+{"label": "Government ID", "expect": "sensitive", "id": "s-29"}
+{"label": "Security answer", "expect": "sensitive", "id": "s-30"}
+{"label": "SWIFT code", "expect": "sensitive", "id": "s-31"}
+{"name": "bank_account", "expect": "sensitive", "id": "s-32"}
+{"name": "date_of_birth", "expect": "sensitive", "id": "s-33"}
+{"label": "Residential address", "expect": "sensitive", "id": "s-34"}
+{"label": "Medical history", "expect": "sensitive", "id": "s-35"}
+{"label": "Social Security Number", "expect": "sensitive", "id": "s-36"}
+{"label": "SSN", "expect": "sensitive", "id": "s-37"}
+{"name": "ssn", "expect": "sensitive", "id": "s-38"}
+{"label": "SIN", "expect": "sensitive", "id": "s-39"}
+{"label": "NRIC", "expect": "sensitive", "id": "s-40"}
+{"label": "Tax File Number", "expect": "sensitive", "id": "s-41"}
+{"label": "Aadhaar", "expect": "sensitive", "id": "s-42"}
+{"label": "CPF", "expect": "sensitive", "id": "s-43"}
+{"label": "Passport number", "expect": "sensitive", "id": "s-44"}
+{"label": "Driver's license", "expect": "sensitive", "id": "s-45"}
+{"label": "Bank account number", "expect": "sensitive", "id": "s-46"}
+{"label": "Routing number", "expect": "sensitive", "id": "s-47"}
+{"label": "IBAN", "expect": "sensitive", "id": "s-48"}
+{"label": "Credit card", "expect": "sensitive", "id": "s-49"}
+{"label": "Email", "autocomplete": "email", "expect": "personal", "id": "p-0"}
+{"label": "Phone number", "expect": "personal", "id": "p-1"}
+{"label": "Mobile", "expect": "personal", "id": "p-2"}
+{"label": "City", "expect": "personal", "id": "p-3"}
+{"label": "Postal code", "expect": "personal", "id": "p-4"}
+{"label": "Gender", "expect": "personal", "id": "p-5"}
+{"label": "EEO ethnicity", "expect": "personal", "id": "p-6"}
+{"label": "LinkedIn URL", "expect": "personal", "id": "p-7"}
+{"label": "Years of experience", "expect": "personal", "id": "p-8"}
+{"label": "Current title", "expect": "personal", "id": "p-9"}
+{"label": "Telephone", "expect": "personal", "id": "p-10"}
+{"label": "State", "expect": "personal", "id": "p-11"}
+{"label": "Province", "expect": "personal", "id": "p-12"}
+{"label": "GitHub", "expect": "personal", "id": "p-13"}
+{"label": "Email", "autocomplete": "email", "expect": "personal", "id": "p-14"}
+{"label": "Phone number", "expect": "personal", "id": "p-15"}
+{"label": "Mobile", "expect": "personal", "id": "p-16"}
+{"label": "City", "expect": "personal", "id": "p-17"}
+{"label": "Postal code", "expect": "personal", "id": "p-18"}
+{"label": "Gender", "expect": "personal", "id": "p-19"}
+{"label": "EEO ethnicity", "expect": "personal", "id": "p-20"}
+{"label": "LinkedIn URL", "expect": "personal", "id": "p-21"}
+{"label": "Years of experience", "expect": "personal", "id": "p-22"}
+{"label": "Current title", "expect": "personal", "id": "p-23"}
+{"label": "Telephone", "expect": "personal", "id": "p-24"}
+{"label": "State", "expect": "personal", "id": "p-25"}
+{"label": "Province", "expect": "personal", "id": "p-26"}
+{"label": "GitHub", "expect": "personal", "id": "p-27"}
+{"label": "Email", "autocomplete": "email", "expect": "personal", "id": "p-28"}
+{"label": "Phone number", "expect": "personal", "id": "p-29"}
+{"label": "First name", "expect": "public", "id": "u-0"}
+{"label": "Last name", "expect": "public", "id": "u-1"}
+{"label": "Full name", "expect": "public", "id": "u-2"}
+{"label": "Preferred name", "expect": "public", "id": "u-3"}
+{"label": "Headline", "expect": "public", "id": "u-4"}
+{"label": "Skills", "expect": "public", "id": "u-5"}
+{"label": "Summary", "expect": "public", "id": "u-6"}
+{"label": "Cover letter", "expect": "public", "id": "u-7"}
+{"label": "Portfolio URL", "expect": "public", "id": "u-8"}
+{"label": "First name", "expect": "public", "id": "u-9"}
+{"label": "Last name", "expect": "public", "id": "u-10"}
+{"label": "Full name", "expect": "public", "id": "u-11"}
+{"label": "Preferred name", "expect": "public", "id": "u-12"}
+{"label": "Headline", "expect": "public", "id": "u-13"}
+{"label": "Skills", "expect": "public", "id": "u-14"}
+{"label": "Summary", "expect": "public", "id": "u-15"}
+{"label": "Cover letter", "expect": "public", "id": "u-16"}
+{"label": "Portfolio URL", "expect": "public", "id": "u-17"}
+{"label": "First name", "expect": "public", "id": "u-18"}
+{"label": "Last name", "expect": "public", "id": "u-19"}
+{"label": "Full name", "expect": "public", "id": "u-20"}
+{"label": "Preferred name", "expect": "public", "id": "u-21"}
+{"label": "Headline", "expect": "public", "id": "u-22"}
+{"label": "Skills", "expect": "public", "id": "u-23"}
+{"label": "Summary", "expect": "public", "id": "u-24"}
+{"label": "Cover letter", "expect": "public", "id": "u-25"}
+{"label": "Portfolio URL", "expect": "public", "id": "u-26"}
+{"label": "First name", "expect": "public", "id": "u-27"}
+{"label": "Last name", "expect": "public", "id": "u-28"}
+{"label": "Full name", "expect": "public", "id": "u-29"}

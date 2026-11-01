@@ -1,0 +1,67 @@
+{
+  "id": "09_accountant_ae",
+  "country": "AE",
+  "role": "accountant",
+  "layout": "single",
+  "resume_text": "Layla Hassan\nSenior Accountant\nEmirates Group | AE\n2016-04 – 2024-03\nLed work as senior accountant with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Layla Hassan",
+    "experiences": [
+      {
+        "company": "Emirates Group",
+        "title": "Senior Accountant",
+        "start_date": "2016-04-01",
+        "end_date": "2024-03-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Layla Hassan",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Senior Accountant",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "AE",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Emirates Group",
+        "title": "Senior Accountant",
+        "start_date": "2016-04-01",
+        "end_date": "2024-03-01",
+        "is_current": false,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

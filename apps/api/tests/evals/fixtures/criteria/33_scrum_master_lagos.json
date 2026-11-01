@@ -1,0 +1,26 @@
+{
+  "id": "33_scrum_master_lagos",
+  "lang": "en",
+  "text": "senior scrum master in Lagos, full-time",
+  "expected": {
+    "titles": ["Scrum Master"],
+    "seniority": ["senior"],
+    "locations": ["Lagos"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Scrum Master",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Lagos"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

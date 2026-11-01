@@ -1,0 +1,17 @@
+{
+  "id": "11_teacher_au",
+  "lang": "en",
+  "text": "Primary teacher Sydney, full-time",
+  "expected": {
+    "titles": ["Primary Teacher"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Primary Teacher",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "38_electrician_london",
+  "lang": "en",
+  "text": "senior electrician in London, full-time",
+  "expected": {
+    "titles": ["Electrician"],
+    "seniority": ["senior"],
+    "locations": ["London"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Electrician",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "London"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

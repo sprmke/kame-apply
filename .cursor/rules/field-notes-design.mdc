@@ -1,0 +1,16 @@
+---
+description: Field Notes design system pointer: concept, tokens, signature components, do/don't
+globs:
+  - apps/web/**
+  - apps/extension/**
+  - packages/ui/**
+alwaysApply: false
+---
+
+# Field Notes design
+
+Source of truth: `docs/design/design-system.md` (tokens §3, type §4, icons §5, shape §6, components §7, layouts §8, motion §9) and `docs/design/ux-blueprint.md`. Seeded into `DESIGN.md` at the repo root.
+
+Three ideas on every screen: **documents are the hero**, **pencil vs ink** (AI drafts vs accepted), **every claim has a proof mark**.
+
+Never reuse another Kame app's tokens, fonts, icons, or components. Enforcement: `anti-slop-design.mdc`, `/ka-design-review`.

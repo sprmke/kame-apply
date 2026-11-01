@@ -1,0 +1,13 @@
+[
+  {
+    "id": "rok1",
+    "position": "Rust Engineer",
+    "company": "OkCo",
+    "url": "https://remoteok.com/rok1",
+    "description": "<p>Rust</p>",
+    "location": "Remote",
+    "date": "2026-10-01",
+    "salary_min": 120000,
+    "salary_max": 160000
+  }
+]

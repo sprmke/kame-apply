@@ -1,0 +1,38 @@
+---
+description: Default to no extra UI prose — labels, buttons, errors only unless really needed
+alwaysApply: true
+---
+
+# UI minimal copy
+
+**Default:** do not add UI text. Extra labels, subtitles, helper paragraphs, and explanatory banners make a job-search workbench noisy and slower to scan.
+
+Unless the user asks for copy or it is **really needed**, add **no** new text.
+
+## Really needed (allowed)
+
+- **Form field labels** — short; required for usability and WCAG.
+- **Primary actions** — short button text (`Save`, `Send`, `Cancel`, `Confirm`).
+- **Errors / validation** — only when something failed or input is invalid.
+- **Destructive confirms** — one short line stating what will happen (e.g. withdrawing an application, deleting a resume version).
+- **Legal/consent text**: only when required (consent capture, terms of source sites, data-use notices).
+- **Icon-only controls** — `aria-label` / `title` (short, not a paragraph).
+- **AI assistant confirm cards** — the action being proposed, stated plainly; no extra framing.
+
+## Do not add unless asked
+
+- Page or section subtitles under an already-clear title.
+- `CardDescription`, helper text under fields, "tip" callouts.
+- Empty-state essays — prefer icon + one short line, or nothing.
+- Inline "this lets you…" explanations.
+- Duplicating data already visible (dates, names, status badges).
+- Marketing-style microcopy anywhere in the dashboard — this is operational software, not a landing page.
+
+## When building or editing UI
+
+1. Ship layout, hierarchy, icons, and data first.
+2. Add text only where the screen would be unusable without it.
+3. If unsure, **omit** — the user will ask for copy when they want it.
+4. When text _is_ required, follow **`human-copy.mdc`**.
+
+This rule wins the old `design-system.md` §12 requirement that every page carry a description. `PageHeader` `description` is optional. A description that restates the title or nav label is an anti-slop **B7** fail.

@@ -1,0 +1,105 @@
+{
+  "id": "03_rn_uk",
+  "country": "GB",
+  "role": "registered_nurse",
+  "layout": "single",
+  "resume_text": "Priya Shah\nStaff Nurse\nNHS Trust London | GB\n2018-05 – 2022-12\nLed work as staff nurse with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Priya Shah",
+    "experiences": [
+      {
+        "company": "NHS Trust London",
+        "title": "Staff Nurse",
+        "start_date": "2018-05-01",
+        "end_date": "2022-12-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Priya Shah",
+      "confidence": 1.0,
+      "span": "Priya Shah"
+    },
+    "headline": {
+      "value": "Staff Nurse",
+      "confidence": 1.0,
+      "span": "Staff Nurse"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "NHS Trust London",
+        "title": "Staff Nurse",
+        "employment_type": null,
+        "location": "GB",
+        "start_date": "2018-05-01",
+        "end_date": "2022-12-01",
+        "is_current": false,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as staff nurse with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as staff nurse with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "Staff Nurse\nNHS Trust London | GB\n2018-05 – 2022-12"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

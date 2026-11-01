@@ -1,0 +1,60 @@
+{"id": "q0", "title": "Role 0", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q1", "title": "Role 1", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q2", "title": "Role 2", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q3", "title": "Role 3", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q4", "title": "Role 4", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q5", "title": "Role 5", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q6", "title": "Role 6", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q7", "title": "Role 7", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q8", "title": "Role 8", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q9", "title": "Role 9", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}
+{"id": "q10", "title": "Role 10", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q11", "title": "Role 11", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q12", "title": "Role 12", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q13", "title": "Role 13", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q14", "title": "Role 14", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q15", "title": "Role 15", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q16", "title": "Role 16", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q17", "title": "Role 17", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q18", "title": "Role 18", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q19", "title": "Role 19", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}
+{"id": "q20", "title": "Role 20", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q21", "title": "Role 21", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q22", "title": "Role 22", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q23", "title": "Role 23", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q24", "title": "Role 24", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q25", "title": "Role 25", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q26", "title": "Role 26", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q27", "title": "Role 27", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q28", "title": "Role 28", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q29", "title": "Role 29", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}
+{"id": "q30", "title": "Role 30", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q31", "title": "Role 31", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q32", "title": "Role 32", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q33", "title": "Role 33", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q34", "title": "Role 34", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q35", "title": "Role 35", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q36", "title": "Role 36", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q37", "title": "Role 37", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q38", "title": "Role 38", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q39", "title": "Role 39", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}
+{"id": "q40", "title": "Role 40", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q41", "title": "Role 41", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q42", "title": "Role 42", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q43", "title": "Role 43", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q44", "title": "Role 44", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q45", "title": "Role 45", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q46", "title": "Role 46", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q47", "title": "Role 47", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q48", "title": "Role 48", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q49", "title": "Role 49", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}
+{"id": "q50", "title": "Role 50", "description": "Requirements:\n- 3+ years of Python experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- TypeScript", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Python"]}
+{"id": "q51", "title": "Role 51", "description": "You must have:\n* Experience with FastAPI\n* 4 years professional experience\nPreferred:\n* React", "expect": {"must": true, "preferred": true}, "skills": ["FastAPI"]}
+{"id": "q52", "title": "Role 52", "description": "Short posting about PostgreSQL", "expect": {"few": true}, "skills": ["PostgreSQL"]}
+{"id": "q53", "title": "Role 53", "description": "Qualifications:\n- Fluent in German\n- TypeScript proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["TypeScript"]}
+{"id": "q54", "title": "Role 54", "description": "Minimum requirements: React, Go, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["React"]}
+{"id": "q55", "title": "Role 55", "description": "Requirements:\n- 3+ years of Kubernetes experience\n- Must be based in the US\n- Bachelor's degree\n\nNice to have:\n- Java", "expect": {"must": true, "knockout": true, "preferred": true}, "skills": ["Kubernetes"]}
+{"id": "q56", "title": "Role 56", "description": "You must have:\n* Experience with AWS\n* 4 years professional experience\nPreferred:\n* SQL", "expect": {"must": true, "preferred": true}, "skills": ["AWS"]}
+{"id": "q57", "title": "Role 57", "description": "Short posting about Go", "expect": {"few": true}, "skills": ["Go"]}
+{"id": "q58", "title": "Role 58", "description": "Qualifications:\n- Fluent in German\n- Java proficiency\n- Right to work in the EU", "expect": {"knockout": true, "must": true}, "skills": ["Java"]}
+{"id": "q59", "title": "Role 59", "description": "Minimum requirements: SQL, PostgreSQL, communication skills. Remote from APAC.", "expect": {"must": true}, "skills": ["SQL"]}

@@ -1,0 +1,12 @@
+From: Indeed <alert@indeed.com>
+To: alerts+test@in.kameapply.local
+Subject: Backend Engineer jobs for you
+MIME-Version: 1.0
+Content-Type: text/html; charset=utf-8
+
+<html><body>
+<p>Backend Engineer - Acme - Remote</p>
+<a href="https://www.indeed.com/viewjob?jk=abc123">Apply</a>
+<p>Platform Engineer - Beta - NYC</p>
+<a href="https://www.indeed.com/rc/clk?jk=def456&amp;from=alert">Apply</a>
+</body></html>

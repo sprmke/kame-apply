@@ -1,0 +1,26 @@
+{
+  "id": "31_cloud_architect_riyadh",
+  "lang": "en",
+  "text": "junior cloud architect in Riyadh, full-time",
+  "expected": {
+    "titles": ["Cloud Architect"],
+    "seniority": ["junior"],
+    "locations": ["Riyadh"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Cloud Architect",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Riyadh"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

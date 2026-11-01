@@ -1,0 +1,26 @@
+{
+  "id": "57_hotel_manager_lagos",
+  "lang": "en",
+  "text": "mid hotel manager in Lagos, full-time",
+  "expected": {
+    "titles": ["Hotel Manager"],
+    "seniority": ["mid"],
+    "locations": ["Lagos"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Hotel Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Lagos"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

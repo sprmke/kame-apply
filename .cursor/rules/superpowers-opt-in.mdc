@@ -1,0 +1,15 @@
+---
+description: Superpowers plugin opt-in only — no auto brainstrom/plan/execute
+alwaysApply: true
+---
+
+# Superpowers — opt-in only
+
+Superpowers auto-workflows are **OFF** unless the user runs `/superpowers-*` or explicitly asks.
+
+- Do **not** auto-invoke brainstorming, writing-plans, or executing-plans.
+- Plans → `docs/workflow/planned/<slug>.md`
+- Specs → `docs/workflow/intake/<slug>-design.md`
+- Hooks enforce lean mode (no subagents during `/superpowers-*`).
+
+Retired: `docs/superpowers/` — do not create.

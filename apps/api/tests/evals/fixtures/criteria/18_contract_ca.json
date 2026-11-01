@@ -1,0 +1,17 @@
+{
+  "id": "18_contract_ca",
+  "lang": "en",
+  "text": "Contract data engineer Canada",
+  "expected": {
+    "titles": ["Data Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Data Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "44_supply_chain_analyst_cairo",
+  "lang": "en",
+  "text": "staff supply chain analyst in Cairo, full-time",
+  "expected": {
+    "titles": ["Supply Chain Analyst"],
+    "seniority": ["staff"],
+    "locations": ["Cairo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Supply Chain Analyst",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Cairo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

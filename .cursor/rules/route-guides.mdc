@@ -1,0 +1,29 @@
+---
+description: Per-route behavior guides must stay in sync with implemented pages
+alwaysApply: true
+---
+
+# Route guides maintenance
+
+Whenever you **implement or materially change** a page, section, or feature in `apps/web` or `apps/extension`, update the matching guide under **`docs/guides/routes/`** in the **same change**. The first UI phase (2) creates `docs/guides/routes/README.md` (index) and `docs/guides/_template.md`.
+
+## Which file to update
+
+Mirror the app URL (omit dynamic params), rooted at `docs/guides/routes/`. The index in `docs/guides/routes/README.md` is authoritative; do not keep a second route→file table here.
+
+| Route pattern | Guide location |
+| --- | --- |
+| `/jobs`, `/jobs/:id` | `docs/guides/routes/jobs/index.md`, `detail.md` (dynamic params inline) |
+| `/tracks/...` | `docs/guides/routes/tracks/...` |
+| `/resume/...` | `docs/guides/routes/resume/...` |
+| `/settings/...` | `docs/guides/routes/settings/...` |
+
+## What to document
+
+Per page/section: **behavior**, **save paths** (UI action → API endpoint → DB effect), **validation**, **RBAC** (which roles can view/edit), **agent parity** (equivalent MCP tool or CLI command? if not, why not), **edge cases**, **implementation map** (web + API paths), and **user-facing knowledge** (plain-language summary and common questions, no code or column names).
+
+Update the **Progress overview** table when section status changes. Mark guide **Status** `Pending` → `Documented` when substantive.
+
+## When guides need no change
+
+Typos, internal renames with no behavior change, pure refactors that don't alter UX/API/validation.

@@ -1,0 +1,17 @@
+{
+  "id": "14_mechanic_us",
+  "lang": "en",
+  "text": "Vehicle mechanic Austin, on-site",
+  "expected": {
+    "titles": ["Vehicle Mechanic"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Vehicle Mechanic",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

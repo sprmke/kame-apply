@@ -1,0 +1,16 @@
+---
+description: Motion tokens and rules ("steady pace") for Vue UI
+globs:
+  - apps/web/**
+  - apps/extension/**
+  - packages/ui/**
+alwaysApply: false
+---
+
+# Motion
+
+- Duration 160–220ms, ease-out `cubic-bezier(.2,.7,.2,1)`, no bounce or overshoot. Tokens live in `packages/ui/src/motion.ts` and CSS variables.
+- CSS transitions by default; `motion-v` only for list reordering and route-line animation.
+- Meaningful motion only: pencil→ink fill (200ms), route line advancing, Needs-you stack settling, live-window control handoff.
+- `prefers-reduced-motion`: all motion becomes an instant state change.
+- No loading spinners on content that can show a skeleton; no decorative parallax, confetti, or looping animation.

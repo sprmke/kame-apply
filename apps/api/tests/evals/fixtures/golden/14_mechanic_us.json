@@ -1,0 +1,67 @@
+{
+  "id": "14_mechanic_us",
+  "country": "US",
+  "role": "mechanic",
+  "layout": "two_column",
+  "resume_text": "Chris Baker\nAircraft Mechanic\nDelta TechOps | US\n2014-01 – Present\nLed work as aircraft mechanic with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Chris Baker",
+    "experiences": [
+      {
+        "company": "Delta TechOps",
+        "title": "Aircraft Mechanic",
+        "start_date": "2014-01-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Chris Baker",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Aircraft Mechanic",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "US",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Delta TechOps",
+        "title": "Aircraft Mechanic",
+        "start_date": "2014-01-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

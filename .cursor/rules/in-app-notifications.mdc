@@ -1,0 +1,20 @@
+---
+description: In-app notification center: emit rules, dedupe, per-user read state (backend; delivery channels in Phase 10/17)
+globs:
+  - apps/api/app/notifications/**
+  - apps/web/**/notifications/**
+---
+
+# In-app notifications
+
+Built in Phase 10; channels (web push, Telegram) added in Phase 17. Preferences are separate from the notification center.
+
+## Rules
+
+- Always create through the `notifications` service helpers. Never raw SQL at call sites.
+- Non-fatal: notification failure must not fail the underlying write or workflow step.
+- Dedupe with a unique `(workspace_id, user_id, type, dedupe_key)`; digests coalesce, instant alerts do not.
+- Per-user read state; no shared `read_at` on the notification row.
+- Realtime via SSE/WebSocket from the API; the client degrades to polling.
+- Content: titles and bodies use job title + company only. No resume text, answers, emails, or sensitive field values (`pii-guard.mdc`).
+- Do not emit from the agent/AI layer if the underlying service already emits.

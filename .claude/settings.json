@@ -1,0 +1,64 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run *)",
+      "Bash(uv sync*)",
+      "Bash(pnpm *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(bash scripts/dev/*)",
+      "Bash(docker compose ps*)",
+      "Bash(docker compose logs*)"
+    ],
+    "ask": [
+      "Bash(pnpm run deploy*:dev*)",
+      "Bash(pnpm run migrate:dev*)",
+      "Bash(pnpm run db:reset:local*)",
+      "Bash(git push*)",
+      "Bash(docker compose down*)"
+    ],
+    "deny": [
+      "Bash(pnpm run deploy*:prod*)",
+      "Bash(pnpm run migrate:prod*)",
+      "Bash(pnpm run rollback:db:prod*)",
+      "Read(./.env.production*)",
+      "Edit(./.env.production*)",
+      "Write(./.env.production*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/superpowers-lean-mode.sh", "timeout": 5 } ] }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-superpowers-opt-in.sh", "timeout": 5 },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-ai-tooling-sync.sh", "timeout": 10 },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-docs-sync-reminder.sh", "timeout": 5 },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-workflow-in-progress.sh", "timeout": 5 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-shell.sh", "timeout": 5 } ] },
+      { "matcher": "Edit", "hooks": [ { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-shipped-migrations.sh", "timeout": 5 } ] },
+      { "matcher": "Task", "hooks": [ { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-superpowers-subagents.sh", "timeout": 5 } ] }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/format-edited-file.sh", "timeout": 15 },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/check-stack-terminology.sh", "timeout": 5 },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/remind-docs-on-code-edit.sh", "timeout": 5 }
+        ]
+      }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/superpowers-lean-cleanup.sh", "timeout": 5 } ] }
+    ]
+  }
+}

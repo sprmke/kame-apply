@@ -1,0 +1,19 @@
+---
+description: DBOS durable workflow rules: determinism, idempotent steps, checkpoints, queues
+globs:
+  - apps/api/app/**/workflows.py
+  - apps/api/app/workflows/**
+---
+
+# DBOS workflows
+
+- Workflow functions are deterministic orchestration only: no I/O, randomness, or clock reads directly; all side effects live in `@DBOS.step()` functions.
+- Steps are idempotent and safe to retry; use an idempotency key for anything external (email, submit, charge-like actions).
+- Human checkpoints use `DBOS.recv` with a timeout and `DBOS.send` from the API; record the decision in the DB and `activity_log`.
+- Rate limits per host use `DBOS.register_queue` (after launch) with `partition_concurrency`/`partition_limiter` and `queue_partition_key=host`; never `sleep`-throttle inside a step.
+- Schedules are DB-backed (`DBOS.create_schedule`), one per Track schedule, paused/resumed/deleted as the Track changes (`@DBOS.scheduled` no longer exists).
+- Set the workspace context at the start of every step that touches tenant data (`workspace-scoping.mdc`).
+- Workflow inputs/outputs are small and JSON-serializable; large payloads go to R2 by key.
+- Test workflows with the DBOS test harness: crash/restart mid-workflow resumes from the last completed step.
+
+Skill: `dbos-workflows`. Workflow catalog: `docs/architecture/overview.md` §3.

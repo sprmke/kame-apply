@@ -1,0 +1,26 @@
+{
+  "id": "34_hr_generalist_mexico_city",
+  "lang": "en",
+  "text": "staff hr generalist in Mexico City, full-time",
+  "expected": {
+    "titles": ["HR Generalist"],
+    "seniority": ["staff"],
+    "locations": ["Mexico City"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "HR Generalist",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Mexico City"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

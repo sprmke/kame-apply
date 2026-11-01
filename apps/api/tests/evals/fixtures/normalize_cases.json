@@ -1,0 +1,227 @@
+[
+  { "title": "Senior Engineer 0", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 1", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 2", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 3", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 4", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 5", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 6", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 7", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 8", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 9", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 10", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 11", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 12", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 13", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 14", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 15", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 16", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 17", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 18", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 19", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 20", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 21", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 22", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 23", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 24", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 25", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 26", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 27", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 28", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 29", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 30", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 31", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 32", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 33", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 34", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 35", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 36", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 37", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 38", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 39", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 40", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 41", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 42", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 43", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 44", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 45", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 46", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 47", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 48", "expect_seniority": "senior" },
+  { "title": "Senior Engineer 49", "expect_seniority": "senior" },
+  { "title": "Junior Developer 0", "expect_seniority": "junior" },
+  { "title": "Junior Developer 1", "expect_seniority": "junior" },
+  { "title": "Junior Developer 2", "expect_seniority": "junior" },
+  { "title": "Junior Developer 3", "expect_seniority": "junior" },
+  { "title": "Junior Developer 4", "expect_seniority": "junior" },
+  { "title": "Junior Developer 5", "expect_seniority": "junior" },
+  { "title": "Junior Developer 6", "expect_seniority": "junior" },
+  { "title": "Junior Developer 7", "expect_seniority": "junior" },
+  { "title": "Junior Developer 8", "expect_seniority": "junior" },
+  { "title": "Junior Developer 9", "expect_seniority": "junior" },
+  { "title": "Junior Developer 10", "expect_seniority": "junior" },
+  { "title": "Junior Developer 11", "expect_seniority": "junior" },
+  { "title": "Junior Developer 12", "expect_seniority": "junior" },
+  { "title": "Junior Developer 13", "expect_seniority": "junior" },
+  { "title": "Junior Developer 14", "expect_seniority": "junior" },
+  { "title": "Junior Developer 15", "expect_seniority": "junior" },
+  { "title": "Junior Developer 16", "expect_seniority": "junior" },
+  { "title": "Junior Developer 17", "expect_seniority": "junior" },
+  { "title": "Junior Developer 18", "expect_seniority": "junior" },
+  { "title": "Junior Developer 19", "expect_seniority": "junior" },
+  { "title": "Junior Developer 20", "expect_seniority": "junior" },
+  { "title": "Junior Developer 21", "expect_seniority": "junior" },
+  { "title": "Junior Developer 22", "expect_seniority": "junior" },
+  { "title": "Junior Developer 23", "expect_seniority": "junior" },
+  { "title": "Junior Developer 24", "expect_seniority": "junior" },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  },
+  {
+    "location": "Remote - US only",
+    "remote": true,
+    "expect_mode": "remote",
+    "expect_countries": ["US"]
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "id": "36_research_scientist_dublin",
+  "lang": "en",
+  "text": "junior research scientist in Dublin, full-time",
+  "expected": {
+    "titles": ["Research Scientist"],
+    "seniority": ["junior"],
+    "locations": ["Dublin"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Research Scientist",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Dublin"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

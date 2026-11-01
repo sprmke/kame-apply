@@ -1,0 +1,18 @@
+{
+  "id": "02_icu_nurse_uae",
+  "lang": "en",
+  "text": "ICU nurse, night shifts, UAE or Saudi, visa sponsorship",
+  "expected": {
+    "titles": ["ICU Nurse"],
+    "visa_sponsorship": true
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "ICU Nurse",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

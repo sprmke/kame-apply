@@ -1,0 +1,67 @@
+{
+  "id": "11_pharmacist_my",
+  "country": "MY",
+  "role": "pharmacist",
+  "layout": "single",
+  "resume_text": "Aisha Rahman\nClinical Pharmacist\nKPJ Healthcare | MY\n2015-06 – Present\nLed work as clinical pharmacist with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Aisha Rahman",
+    "experiences": [
+      {
+        "company": "KPJ Healthcare",
+        "title": "Clinical Pharmacist",
+        "start_date": "2015-06-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Aisha Rahman",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Clinical Pharmacist",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "MY",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "KPJ Healthcare",
+        "title": "Clinical Pharmacist",
+        "start_date": "2015-06-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

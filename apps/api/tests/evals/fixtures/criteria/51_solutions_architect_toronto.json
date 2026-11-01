@@ -1,0 +1,26 @@
+{
+  "id": "51_solutions_architect_toronto",
+  "lang": "en",
+  "text": "junior solutions architect in Toronto, full-time",
+  "expected": {
+    "titles": ["Solutions Architect"],
+    "seniority": ["junior"],
+    "locations": ["Toronto"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Solutions Architect",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Toronto"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

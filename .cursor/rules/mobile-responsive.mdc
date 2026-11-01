@@ -1,0 +1,19 @@
+---
+description: Responsive rules: Reader / Brief / Workbench layouts at 375, 820, 1440
+globs:
+  - apps/web/**
+  - apps/extension/**
+  - packages/ui/**
+alwaysApply: false
+---
+
+# Mobile and responsive
+
+Verify every UI change at **375, 820, 1440**.
+
+- **Phone (<640):** stacked navigation (list → document → context) with a bottom action bar; bottom tab bar Today · Jobs · **Needs you** · Applications · More. Triage, approvals, checkpoints, and live runs must be fully usable here.
+- **Tablet (640–1023):** rail plus two panes; the context panel is a toggled overlay.
+- **Desktop (≥1024):** rail plus three-pane Reader (list 360 · document fluid max 72ch · context 360).
+- Touch targets ≥ 44x44px; no horizontal scroll at 375; sheets instead of centered modals on phone (Reka UI dialog styled as a sheet).
+- Respect safe-area insets; do not rely on hover for anything essential.
+- Skill: `accessibility`; capture with `pnpm run capture:design-screenshots`.

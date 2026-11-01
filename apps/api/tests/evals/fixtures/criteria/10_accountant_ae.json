@@ -1,0 +1,17 @@
+{
+  "id": "10_accountant_ae",
+  "lang": "en",
+  "text": "Accountant Dubai, visa sponsorship",
+  "expected": {
+    "titles": ["Accountant"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Accountant",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

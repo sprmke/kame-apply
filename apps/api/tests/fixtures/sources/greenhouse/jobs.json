@@ -1,0 +1,26 @@
+{
+  "jobs": [
+    {
+      "id": 101,
+      "title": "Senior Software Engineer",
+      "company_name": "Acme",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/101",
+      "location": {
+        "name": "Remote"
+      },
+      "content": "<p>Python and FastAPI. Salary $140k-$180k / year.</p>",
+      "first_published": "2026-10-01T00:00:00Z"
+    },
+    {
+      "id": 102,
+      "title": "ICU Nurse",
+      "company_name": "Acme Health",
+      "absolute_url": "https://boards.greenhouse.io/acme/jobs/102",
+      "location": {
+        "name": "Dubai, UAE"
+      },
+      "content": "<p>Night shifts. Visa sponsorship.</p>",
+      "first_published": "2026-10-02T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "15_volunteer_gap",
+  "country": "US",
+  "role": "career_changer",
+  "layout": "single",
+  "resume_text": "Riley Brooks\nProgram Coordinator\nRed Cross | US\nGap 2020-2021: full-time caregiver\n2022-01 – Present\nLed work as program coordinator with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Riley Brooks",
+    "experiences": [
+      {
+        "company": "Red Cross",
+        "title": "Program Coordinator",
+        "start_date": "2022-01-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Riley Brooks",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Program Coordinator",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "US",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Red Cross",
+        "title": "Program Coordinator",
+        "start_date": "2022-01-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

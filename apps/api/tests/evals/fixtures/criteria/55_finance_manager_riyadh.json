@@ -1,0 +1,26 @@
+{
+  "id": "55_finance_manager_riyadh",
+  "lang": "en",
+  "text": "lead finance manager in Riyadh, full-time",
+  "expected": {
+    "titles": ["Finance Manager"],
+    "seniority": ["lead"],
+    "locations": ["Riyadh"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Finance Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Riyadh"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "32_business_analyst_cairo",
+  "lang": "en",
+  "text": "mid business analyst in Cairo, full-time",
+  "expected": {
+    "titles": ["Business Analyst"],
+    "seniority": ["mid"],
+    "locations": ["Cairo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Business Analyst",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Cairo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

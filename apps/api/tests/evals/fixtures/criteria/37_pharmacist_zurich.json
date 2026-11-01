@@ -1,0 +1,26 @@
+{
+  "id": "37_pharmacist_zurich",
+  "lang": "en",
+  "text": "mid pharmacist in Zurich, full-time",
+  "expected": {
+    "titles": ["Pharmacist"],
+    "seniority": ["mid"],
+    "locations": ["Zurich"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Pharmacist",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Zurich"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

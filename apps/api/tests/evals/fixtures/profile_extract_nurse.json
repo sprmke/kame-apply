@@ -1,0 +1,33 @@
+{
+  "prompt_version": "profile_extract.v1",
+  "resume_text": "Ana Reyes\nRegistered Nurse\nManila\n\nSt. Luke's Medical Center — Registered Nurse (Mar 2019–Present)\n- Managed a 12-bed ICU float pool\n- Cut medication errors by mentoring new hires\n\nUniversity of the Philippines Manila — BSN, 2018\nRN License (Philippines)\nSkills: patient care, triage, EHR\n",
+  "expected_draft": {
+    "display_name": { "value": "Ana Reyes", "confidence": 0.95 },
+    "headline": { "value": "Registered Nurse", "confidence": 0.9 },
+    "location": { "value": "Manila", "confidence": 0.85 },
+    "experiences": [
+      {
+        "company": "St. Luke's Medical Center",
+        "title": "Registered Nurse",
+        "is_current": true,
+        "confidence": 0.9,
+        "bullets": [
+          { "text": "Managed a 12-bed ICU float pool", "confidence": 0.85 },
+          { "text": "Cut medication errors by mentoring new hires", "confidence": 0.8 }
+        ]
+      }
+    ],
+    "education": [
+      { "institution": "University of the Philippines Manila", "degree": "BSN", "confidence": 0.9 }
+    ],
+    "certifications": [
+      { "name": "RN License", "kind": "license", "jurisdiction": "Philippines", "confidence": 0.9 }
+    ],
+    "skills": [
+      { "name": "patient care", "confidence": 0.8 },
+      { "name": "triage", "confidence": 0.8 },
+      { "name": "EHR", "confidence": 0.8 }
+    ]
+  },
+  "must_not_contain": ["Ignore previous", "Acme Corp", "123-45-6789"]
+}

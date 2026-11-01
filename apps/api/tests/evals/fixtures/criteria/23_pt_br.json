@@ -1,0 +1,18 @@
+{
+  "id": "23_pt_br",
+  "lang": "pt",
+  "text": "Engenheiro de software remoto no Brasil",
+  "expected": {
+    "titles": ["Software Engineer"],
+    "synonyms": ["Engenheiro de software"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Software Engineer",
+        "synonyms": ["Engenheiro de software"],
+        "exclude": false
+      }
+    ]
+  }
+}

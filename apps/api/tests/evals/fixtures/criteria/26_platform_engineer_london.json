@@ -1,0 +1,26 @@
+{
+  "id": "26_platform_engineer_london",
+  "lang": "en",
+  "text": "junior platform engineer in London, full-time",
+  "expected": {
+    "titles": ["Platform Engineer"],
+    "seniority": ["junior"],
+    "locations": ["London"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Platform Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "London"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

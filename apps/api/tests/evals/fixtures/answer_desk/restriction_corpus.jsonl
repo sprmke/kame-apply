@@ -1,0 +1,128 @@
+{"id": "pos-000", "text": "Please complete the following. Do not use ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-001", "text": "Please complete the following. Don't use ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-002", "text": "Please complete the following. Do not use artificial intelligence. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-003", "text": "Please complete the following. Without using ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-004", "text": "Please complete the following. Without using ai tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-005", "text": "Please complete the following. Please answer without using ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-006", "text": "Please complete the following. Answer without using ai tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-007", "text": "Please complete the following. No ai tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-008", "text": "Please complete the following. No ai assistance. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-009", "text": "Please complete the following. No generative ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-010", "text": "Please complete the following. Ai tools are not permitted. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-011", "text": "Please complete the following. Ai is not allowed. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-012", "text": "Please complete the following. Chatgpt is not allowed. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-013", "text": "Please complete the following. Do not use chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-014", "text": "Please complete the following. Do not use generative ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-015", "text": "Please complete the following. Written without ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-016", "text": "Please complete the following. Must be written by you. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-017", "text": "Please complete the following. Write this yourself. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-018", "text": "Please complete the following. Human-written only. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-019", "text": "Please complete the following. Human only response. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-020", "text": "Please complete the following. Unaided by ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-021", "text": "Please complete the following. Unaided answers only. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-022", "text": "Please complete the following. Prohibited from using ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-023", "text": "Please complete the following. You may not use ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-024", "text": "Please complete the following. You must not use ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-025", "text": "Please complete the following. Answers must not be ai generated. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-026", "text": "Please complete the following. Ai-generated answers are prohibited. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-027", "text": "Please complete the following. No llm. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-028", "text": "Please complete the following. Without llm assistance. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-029", "text": "Please complete the following. Do not use large language models. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-030", "text": "Please complete the following. No automated drafting. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-031", "text": "Please complete the following. No automated writing tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-032", "text": "Please complete the following. Please do not use ai tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-033", "text": "Please complete the following. Kindly answer without ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-034", "text": "Please complete the following. Respond without ai assistance. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-035", "text": "Please complete the following. This question prohibits ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-036", "text": "Please complete the following. Ai use is forbidden. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-037", "text": "Please complete the following. Ban on ai assistance. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-038", "text": "Please complete the following. Exclude ai tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-039", "text": "Please complete the following. Refrain from using ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-040", "text": "Please complete the following. We prohibit ai-generated content. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-041", "text": "Please complete the following. No utilice ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-042", "text": "Please complete the following. No uses ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-043", "text": "Please complete the following. Sin usar ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-044", "text": "Please complete the following. Sin utilizar inteligencia artificial. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-045", "text": "Please complete the following. No use inteligencia artificial. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-046", "text": "Please complete the following. Prohibido usar ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-047", "text": "Please complete the following. No se permite ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-048", "text": "Please complete the following. Responda sin ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-049", "text": "Please complete the following. Respuesta sin ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-050", "text": "Please complete the following. Sin herramientas de ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-051", "text": "Please complete the following. No use chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-052", "text": "Please complete the following. Prohibido chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-053", "text": "Please complete the following. No use herramientas de ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-054", "text": "Please complete the following. Ia no permitida. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-055", "text": "Please complete the following. Ne pas utiliser l'ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-056", "text": "Please complete the following. Sans utiliser l'ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-057", "text": "Please complete the following. Sans intelligence artificielle. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-058", "text": "Please complete the following. Interdiction d'utiliser l'ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-059", "text": "Please complete the following. L'ia n'est pas autorisée. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-060", "text": "Please complete the following. Ne pas utiliser chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-061", "text": "Please complete the following. Répondez sans ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-062", "text": "Please complete the following. Sans outils d'ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-063", "text": "Please complete the following. Ia interdite. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-064", "text": "Please complete the following. Pas d'assistance ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-065", "text": "Please complete the following. Contenu généré par ia interdit. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-066", "text": "Please complete the following. Keine ki verwenden. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-067", "text": "Please complete the following. Ohne ki. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-068", "text": "Please complete the following. Ohne ki-tools. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-069", "text": "Please complete the following. Ki ist nicht erlaubt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-070", "text": "Please complete the following. Keine ki-unterstützung. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-071", "text": "Please complete the following. Bitte ohne ki antworten. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-072", "text": "Please complete the following. Chatgpt ist nicht erlaubt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-073", "text": "Please complete the following. Ki-generierte antworten verboten. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-074", "text": "Please complete the following. Keine generative ki. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-075", "text": "Please complete the following. Ki-nutzung verboten. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-076", "text": "Please complete the following. Antworten ohne ki. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-077", "text": "Please complete the following. Não use ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-078", "text": "Please complete the following. Sem usar ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-079", "text": "Please complete the following. Sem inteligência artificial. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-080", "text": "Please complete the following. Ia não é permitida. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-081", "text": "Please complete the following. Proibido usar ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-082", "text": "Please complete the following. Responda sem ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-083", "text": "Please complete the following. Sem ferramentas de ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-084", "text": "Please complete the following. Não use chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-085", "text": "Please complete the following. Proibido chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-086", "text": "Please complete the following. Conteúdo gerado por ia proibido. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-087", "text": "Please complete the following. Sem assistência de ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-088", "text": "Please complete the following. 请勿使用ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-089", "text": "Please complete the following. 不要使用ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-090", "text": "Please complete the following. 禁止使用ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-091", "text": "Please complete the following. 不得使用人工智能. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-092", "text": "Please complete the following. 请勿使用人工智能. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-093", "text": "Please complete the following. 不要使用chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-094", "text": "Please complete the following. 禁止chatgpt. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-095", "text": "Please complete the following. 禁止使用生成式ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-096", "text": "Please complete the following. 请自行作答. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-097", "text": "Please complete the following. 勿借助ai作答. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-098", "text": "Please complete the following. 不得借助人工智能. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-099", "text": "Please complete the following. 禁止ai辅助. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-100", "text": "Please complete the following. This application prohibits ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-101", "text": "Please complete the following. Ai tools are prohibited throughout. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-102", "text": "Please complete the following. Do not use ai anywhere in this application. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-103", "text": "Please complete the following. All answers must be written without ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-104", "text": "Please complete the following. Esta solicitud prohíbe el uso de ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-105", "text": "Please complete the following. Cette candidature interdit l'ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-106", "text": "Please complete the following. Diese bewerbung verbietet ki. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-107", "text": "Please complete the following. Esta candidatura proíbe ia. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-108", "text": "Please complete the following. 本申请禁止使用ai. Provide detail.", "label": "restricted", "lang": "mix"}
+{"id": "pos-x00", "text": "Candidates must answer without using AI tools on this form.", "label": "restricted", "lang": "EN"}
+{"id": "pos-x01", "text": "ChatGPT is not allowed for any written response.", "label": "restricted", "lang": "EN"}
+{"id": "pos-x02", "text": "Por favor responda sin herramientas de IA en esta sección.", "label": "restricted", "lang": "ES"}
+{"id": "pos-x03", "text": "Merci de répondre sans outils d'IA.", "label": "restricted", "lang": "FR"}
+{"id": "pos-x04", "text": "Bitte ohne KI-Tools antworten.", "label": "restricted", "lang": "DE"}
+{"id": "pos-x05", "text": "Responda sem ferramentas de IA, por favor.", "label": "restricted", "lang": "PT"}
+{"id": "pos-x06", "text": "请勿使用AI作答，请自行填写。", "label": "restricted", "lang": "ZH"}
+{"id": "pos-x07", "text": "Human-written only — automated drafting is prohibited.", "label": "restricted", "lang": "EN"}
+{"id": "pos-x08", "text": "Your own words only for this essay question.", "label": "restricted", "lang": "EN"}
+{"id": "neg-00", "text": "Describe a conflict at work and how you resolved it.", "label": "clear", "lang": "EN"}
+{"id": "neg-01", "text": "What are your salary expectations?", "label": "clear", "lang": "EN"}
+{"id": "neg-02", "text": "Are you authorized to work in the United States?", "label": "clear", "lang": "EN"}
+{"id": "neg-03", "text": "Tell us why you want this role.", "label": "clear", "lang": "EN"}
+{"id": "neg-04", "text": "List your top three skills.", "label": "clear", "lang": "EN"}
+{"id": "neg-05", "text": "How many years of Python experience do you have?", "label": "clear", "lang": "EN"}
+{"id": "neg-06", "text": "We use AI tools internally; describe your experience with them.", "label": "clear", "lang": "EN"}
+{"id": "neg-07", "text": "What is your notice period?", "label": "clear", "lang": "EN"}
+{"id": "neg-08", "text": "Do you prefer remote or hybrid work?", "label": "clear", "lang": "EN"}
+{"id": "neg-09", "text": "Write a short cover note for this role.", "label": "clear", "lang": "EN"}

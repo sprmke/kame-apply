@@ -1,0 +1,17 @@
+{
+  "id": "20_pt_ux_ph",
+  "lang": "en",
+  "text": "Part-time UX designer hybrid Manila",
+  "expected": {
+    "titles": ["UX Designer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "UX Designer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

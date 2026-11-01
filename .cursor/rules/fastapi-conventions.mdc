@@ -1,0 +1,37 @@
+---
+description: FastAPI router/service/schema layering, async SQLAlchemy, workspace dependencies
+globs:
+  - apps/api/**
+---
+
+# FastAPI conventions
+
+## Layering (non-negotiable)
+
+`router.py` → `service.py` → `models.py` per module. Routers parse HTTP, authorize, call one service function, return a Pydantic schema. **No DB access in routers.**
+
+Services own all business logic. DBOS workflows, AI tools, MCP tools, and extension endpoints call the same service functions; never duplicate logic.
+
+## Schemas (Pydantic v2)
+
+- `TrackCreate`, `TrackRead`, `TrackUpdate`: suffix by intent.
+- Response models exclude secrets (password hashes, raw tokens, API keys).
+- OpenAPI is the source for `packages/api-client`; regenerate after API changes.
+
+## Dependencies (`app/core/security.py`)
+
+- `get_current_user`: JWT access token → `User`.
+- `WorkspaceContext`: resolves `X-Workspace-Id`, verifies active membership, sets `app.workspace_id`/`app.user_id` for RLS (never trust a body `workspace_id`).
+- `require_role("owner", "admin", ...)`: RBAC factory.
+
+## DB sessions
+
+- Async SQLAlchemy 2 session via `Depends(get_db)`; services receive `AsyncSession`.
+- Use `select()` + `await session.execute()`, not legacy `session.query()`.
+- Commit in the service layer after a successful write; emit `activity_log` in the same transaction.
+
+## Errors
+
+- `HTTPException` with stable `detail` strings for client display.
+- 401 unauthenticated, 403 forbidden (RBAC), 404 not found (also for cross-tenant), 409 conflict.
+- Never leak stack traces, tokens, or user content in error payloads.

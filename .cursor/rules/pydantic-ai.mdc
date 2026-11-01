@@ -1,0 +1,19 @@
+---
+description: PydanticAI feature rules: prompt registry, structured outputs, budgets, drafts, evals
+globs:
+  - apps/api/app/ai/**
+  - apps/api/app/**/prompts/**
+---
+
+# PydanticAI features
+
+- Every LLM call goes through the provider router in `app/ai/` (model tier, workspace budget, cost metering). No direct provider SDK calls from feature code.
+- Prompts live in the prompt registry with a version id; changing one needs an eval case (`ai-evals` skill) and a fabrication check for resume/answer prompts (`truthful-content.mdc`).
+- Structured outputs with strict Pydantic models; validate and retry once, then fail visibly.
+- Calls that read untrusted text have no tools (`untrusted-content.mdc`).
+- Output is a **draft** until the user accepts; never write user-facing facts directly from model output.
+- Budget guard before every call; degrade to cheaper tier or skip with a visible reason, never silently.
+- Provider keys are the workspace's own (encrypted at rest). The server never accepts, stores, or relays Claude.ai subscription credentials (`docs/research/08-bring-your-own-claude.md`).
+- Stream via SSE for long outputs; log tokens and cost, never prompt contents containing PII.
+
+Skills: `pydantic-ai-features`, `ai-evals`.

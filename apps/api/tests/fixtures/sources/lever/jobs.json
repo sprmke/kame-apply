@@ -1,0 +1,16 @@
+[
+  {
+    "id": "lev-1",
+    "text": "Software Engineer",
+    "hostedUrl": "https://jobs.lever.co/acme/lev-1",
+    "applyUrl": "https://jobs.lever.co/acme/lev-1/apply",
+    "descriptionPlain": "Build APIs in Python",
+    "workplaceType": "remote",
+    "categories": {
+      "location": "Remote",
+      "commitment": "Full-time",
+      "allLocations": ["Remote"]
+    },
+    "createdAt": 1696118400000
+  }
+]

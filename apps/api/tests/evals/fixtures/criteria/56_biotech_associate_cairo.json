@@ -1,0 +1,26 @@
+{
+  "id": "56_biotech_associate_cairo",
+  "lang": "en",
+  "text": "junior biotech associate in Cairo, full-time",
+  "expected": {
+    "titles": ["Biotech Associate"],
+    "seniority": ["junior"],
+    "locations": ["Cairo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Biotech Associate",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Cairo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

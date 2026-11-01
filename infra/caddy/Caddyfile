@@ -1,0 +1,14 @@
+# Production reverse proxy (Phase 14). Replace {$API_HOST} via env or edit on the VM.
+{$API_HOST:api.kame.apply} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		X-Frame-Options DENY
+		# API is JSON-only; CSP is defensive for any accidental HTML error page.
+		Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+		-Server
+	}
+	reverse_proxy api:8100
+}

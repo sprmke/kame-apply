@@ -1,0 +1,55 @@
+[project]
+name = "kame-apply-api"
+version = "0.0.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.34",
+  "pydantic>=2.10",
+  "pydantic-settings>=2.7",
+  "sqlalchemy[asyncio]>=2.0.36",
+  "asyncpg>=0.30",
+  "alembic>=1.14",
+  "psycopg[binary]>=3.2",
+  "structlog>=24.4",
+  "sentry-sdk[fastapi]>=2.19",
+  "kame-apply-core",
+  "argon2-cffi>=25.1.0",
+  "pyjwt>=2.15.1",
+  "aiosmtplib>=5.1.3",
+  "httpx>=0.28.1",
+  "email-validator>=2.3.0",
+  "pydantic-ai-slim[anthropic,google,groq,openai]>=2.64.0",
+  "cryptography>=50.0.2",
+  "authlib>=1.9.1",
+  "boto3>=1.35",
+  "pdfplumber>=0.11",
+  "python-docx>=1.1",
+  "python-multipart>=0.0.20",
+  "dbos>=3.3,<4",
+  "nh3>=0.2",
+  "fastembed>=0.5",
+  "scikit-learn>=1.5",
+  "joblib>=1.4",
+  "pyyaml>=6.0",
+  "reportlab>=4.2",
+  "pypdf>=5.0",
+  "croniter>=2.0",
+  "mcp>=1.12",
+]
+
+[tool.uv.sources]
+kame-apply-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]

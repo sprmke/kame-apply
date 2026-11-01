@@ -1,0 +1,26 @@
+{
+  "id": "28_mobile_engineer_tokyo",
+  "lang": "en",
+  "text": "senior mobile engineer in Tokyo, full-time",
+  "expected": {
+    "titles": ["Mobile Engineer"],
+    "seniority": ["senior"],
+    "locations": ["Tokyo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Mobile Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Tokyo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

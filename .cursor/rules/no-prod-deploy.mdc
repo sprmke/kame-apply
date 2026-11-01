@@ -1,0 +1,44 @@
+---
+description: Block production deploys and remote DB writes unless user says unlock word applywave
+alwaysApply: true
+---
+
+# No production deploys (unlock: applywave)
+
+**Default for every agent session.** The production VM, production Postgres, and Cloudflare Pages prod stay untouched until the user unlocks them.
+
+## Unlock word
+
+**`applywave`**: the user must type this exact word in the **same message** that asks you to run or recommend a blocked production operation.
+
+Without **`applywave`**:
+
+- **Do not run** blocked commands.
+- **Do not recommend** blocked commands as the next step.
+- **Do not** offer prod deploy as an optional follow-up unless the user already unlocked.
+
+When the user **has** said **`applywave`**:
+
+- Run **only** the specific prod operation they asked for.
+- Include **`applywave`** in the shell command string so hooks allow it (e.g. `APPLYWAVE=applywave pnpm run deploy:api:prod`).
+- Remind them of `docs/architecture/deployment.md` (backup, diff, checklist) before executing.
+
+## Blocked without unlock
+
+| Pattern | Examples |
+| --- | --- |
+| Prod deploy scripts | `pnpm run deploy:api:prod`, `deploy:web:prod`, `deploy:runner:prod`, `migrate:prod`, `rollback:db:prod` |
+| Remote Alembic | `alembic upgrade` against a hosted `DATABASE_URL`, any `--db-url` pointing at non-local Postgres |
+| Remote SQL | Mutating SQL against prod or hosted URIs |
+| Prod env files | Writing `.env.production*` |
+
+## Allowed without unlock
+
+| Safe | Examples |
+| --- | --- |
+| Local stack | `pnpm run dev:docker`, `dev`, `db:migrate`, `db:reset:local` |
+| Dev deploy | `deploy:api:dev`, `deploy:web:dev`, `migrate:dev`, `rollback:db:dev` |
+| Backups / status | `backup:db:dev` / `:prod` (read dump), `env:status` |
+| Local migrations in repo | Add **new** files under `apps/api/migrations/versions/` (never edit shipped ones) |
+
+Shell hooks: `.claude/hooks/guard-shell.sh`, `scripts/dev/prod-deploy-guard-lib.sh`.

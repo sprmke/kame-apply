@@ -1,0 +1,67 @@
+{
+  "id": "07_designer_de",
+  "country": "DE",
+  "role": "designer",
+  "layout": "single",
+  "resume_text": "Mira Vogel\nProduct Designer\nZalando | DE\n2020-03 – 2025-01\nLed work as product designer with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Mira Vogel",
+    "experiences": [
+      {
+        "company": "Zalando",
+        "title": "Product Designer",
+        "start_date": "2020-03-01",
+        "end_date": "2025-01-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Mira Vogel",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Product Designer",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "DE",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Zalando",
+        "title": "Product Designer",
+        "start_date": "2020-03-01",
+        "end_date": "2025-01-01",
+        "is_current": false,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

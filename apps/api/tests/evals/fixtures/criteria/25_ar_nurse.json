@@ -1,0 +1,18 @@
+{
+  "id": "25_ar_nurse",
+  "lang": "ar",
+  "text": "ممرض في دبي مع تأشيرة عمل",
+  "expected": {
+    "titles": ["Nurse"],
+    "synonyms": ["ممرض"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Nurse",
+        "synonyms": ["ممرض"],
+        "exclude": false
+      }
+    ]
+  }
+}

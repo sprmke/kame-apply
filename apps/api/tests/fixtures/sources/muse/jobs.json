@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "id": 7,
+      "name": "Product Manager",
+      "company": {
+        "name": "MuseCo"
+      },
+      "refs": {
+        "landing_page": "https://themuse.com/7"
+      },
+      "contents": "<p>PM</p>",
+      "locations": [
+        {
+          "name": "New York, NY"
+        }
+      ],
+      "publication_date": "2026-10-01"
+    }
+  ]
+}

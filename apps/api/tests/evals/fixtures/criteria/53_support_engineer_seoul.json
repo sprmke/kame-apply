@@ -1,0 +1,26 @@
+{
+  "id": "53_support_engineer_seoul",
+  "lang": "en",
+  "text": "senior support engineer in Seoul, full-time",
+  "expected": {
+    "titles": ["Support Engineer"],
+    "seniority": ["senior"],
+    "locations": ["Seoul"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Support Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Seoul"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

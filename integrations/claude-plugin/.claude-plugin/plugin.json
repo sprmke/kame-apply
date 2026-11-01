@@ -1,0 +1,6 @@
+{
+  "name": "kame-apply",
+  "description": "Connect Claude to your Kame Apply workspace via MCP. Drafts only; you own Submit.",
+  "version": "0.1.0",
+  "author": { "name": "Kame Apply" }
+}

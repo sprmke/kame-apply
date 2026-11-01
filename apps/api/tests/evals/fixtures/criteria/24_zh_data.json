@@ -1,0 +1,18 @@
+{
+  "id": "24_zh_data",
+  "lang": "zh",
+  "text": "数据分析师 上海 全职",
+  "expected": {
+    "titles": ["Data Analyst"],
+    "synonyms": ["数据分析师"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Data Analyst",
+        "synonyms": ["数据分析师"],
+        "exclude": false
+      }
+    ]
+  }
+}

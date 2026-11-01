@@ -1,0 +1,21 @@
+---
+description: Sensitivity classes, redaction, and never storing sensitive values
+alwaysApply: true
+---
+
+# PII guard
+
+Field-level sensitivity classes (`apps/api/app/safety/pii.py`, Phase 7):
+
+| Class | Examples | Handling |
+| --- | --- | --- |
+| public | name, city, LinkedIn URL, skills | may autofill and appear in resumes |
+| personal | email, phone, address (city level), work history | stored in the profile; autofill allowed; never in logs |
+| **sensitive** | government IDs (SSN, SIN, NRIC, TFN, SSS/TIN/PhilHealth, Aadhaar, CPF...), bank/card numbers, full DOB, full street address before an offer, health/disability details beyond EEO defaults | **never stored, never sent to an LLM, always a checkpoint** where the human types it |
+
+- Sensitive values never enter the Career Profile, answer bank, logs, `activity_log`, step logs, screenshots shown without redaction, Sentry payloads, prompts, or fixtures.
+- Redact in logs and error tracking by default; log field class and ids, not values.
+- Prompts get the minimum facts needed for the task, not the whole profile.
+- Notifications and emails show job title and company only.
+- Use synthetic fixtures and seed data. Never paste a real resume or ID into a prompt, subagent task, or MCP call (`ai-usage.mdc`).
+- Unknown classification on a form field defaults to the stricter class and stops for the human.

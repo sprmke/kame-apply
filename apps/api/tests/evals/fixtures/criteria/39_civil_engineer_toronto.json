@@ -1,0 +1,26 @@
+{
+  "id": "39_civil_engineer_toronto",
+  "lang": "en",
+  "text": "staff civil engineer in Toronto, full-time",
+  "expected": {
+    "titles": ["Civil Engineer"],
+    "seniority": ["staff"],
+    "locations": ["Toronto"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Civil Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Toronto"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

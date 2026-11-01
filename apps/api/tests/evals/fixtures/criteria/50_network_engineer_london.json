@@ -1,0 +1,26 @@
+{
+  "id": "50_network_engineer_london",
+  "lang": "en",
+  "text": "lead network engineer in London, full-time",
+  "expected": {
+    "titles": ["Network Engineer"],
+    "seniority": ["lead"],
+    "locations": ["London"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Network Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "London"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

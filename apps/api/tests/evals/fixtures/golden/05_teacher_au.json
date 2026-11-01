@@ -1,0 +1,105 @@
+{
+  "id": "05_teacher_au",
+  "country": "AU",
+  "role": "teacher",
+  "layout": "single",
+  "resume_text": "Sam Okonkwo\nSecondary Teacher\nMelbourne High | AU\n2017-01 – 2023-12\nLed work as secondary teacher with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Sam Okonkwo",
+    "experiences": [
+      {
+        "company": "Melbourne High",
+        "title": "Secondary Teacher",
+        "start_date": "2017-01-01",
+        "end_date": "2023-12-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Sam Okonkwo",
+      "confidence": 1.0,
+      "span": "Sam Okonkwo"
+    },
+    "headline": {
+      "value": "Secondary Teacher",
+      "confidence": 1.0,
+      "span": "Secondary Teacher"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Melbourne High",
+        "title": "Secondary Teacher",
+        "employment_type": null,
+        "location": "AU",
+        "start_date": "2017-01-01",
+        "end_date": "2023-12-01",
+        "is_current": false,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as secondary teacher with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as secondary teacher with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "Secondary Teacher\nMelbourne High | AU\n2017-01 – 2023-12"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

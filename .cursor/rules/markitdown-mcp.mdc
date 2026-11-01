@@ -1,0 +1,14 @@
+---
+description: Convert PDF/Office attachments via MarkItDown MCP before reading into context
+alwaysApply: true
+---
+
+# MarkItDown MCP
+
+When the user attaches or points at a **PDF, DOCX, PPTX, XLSX, HTML, or image-with-text** document (resumes, job-offer PDFs), do **not** dump raw binary into context.
+
+1. Use **`markitdown`** MCP `convert_to_markdown` with `file:///absolute/path` or URL.
+2. Work from the returned markdown.
+3. If MCP unavailable, say so and use the smallest useful excerpt — do not invent contents.
+
+Not for: source code, markdown already in repo, UI screenshots meant for visual review.

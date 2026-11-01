@@ -1,0 +1,17 @@
+{
+  "id": "09_designer_de",
+  "lang": "en",
+  "text": "Product designer Berlin, Figma",
+  "expected": {
+    "titles": ["Product Designer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Product Designer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

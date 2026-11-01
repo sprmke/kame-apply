@@ -1,0 +1,15 @@
+# Claude Code setup: Kame Apply
+
+Root context: `CLAUDE.md`. After clone: `pnpm run setup:ai-tooling`.
+
+| Piece | Where |
+| --- | --- |
+| Settings, permissions, hooks | `settings.json` |
+| Hooks | `hooks/`: `guard-shell` (prod unlock, destructive commands, force-push to main, `.env.production`), `guard-shipped-migrations`, `format-edited-file` (ruff / Prettier), `check-stack-terminology` (evasion tooling blocks, stack drift warns), `remind-docs-on-code-edit`, session reminders, Superpowers lean mode |
+| Subagents | `agents/`: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer` |
+| Commands | `commands/`: `/ka-help`, `/ka-start-work`, `/ka-start-app`, `/ka-check-before-pr`, `/ka-submit-for-review`, `/ka-pull-new-changes`, `/ka-create-new-ticket`, `/ka-design-review`, `/workflow-*` |
+| Skills | `skills/` (symlinks to `.agent/skills/`; index in `.agent/skills/README.md`) |
+| Rules | `.cursor/rules/` (index in `.cursor/rules/README.md`); heavy rules are glob-scoped |
+| MCP | `/.mcp.json`: `context7`, `markitdown`, `playwright`, `postgres` (local read-only) |
+
+Hook tests: `pnpm run check:hooks`. Parity across Claude / Cursor / OpenCode: `pnpm run check:ai-tooling-sync` (also run in `ci:quality`).

@@ -1,0 +1,10 @@
+packages:
+  - apps/web
+  - apps/extension
+  - packages/ui
+  - packages/api-client
+
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - vue-demi

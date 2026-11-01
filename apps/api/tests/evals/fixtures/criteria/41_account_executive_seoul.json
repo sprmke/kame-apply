@@ -1,0 +1,26 @@
+{
+  "id": "41_account_executive_seoul",
+  "lang": "en",
+  "text": "junior account executive in Seoul, full-time",
+  "expected": {
+    "titles": ["Account Executive"],
+    "seniority": ["junior"],
+    "locations": ["Seoul"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Account Executive",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Seoul"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

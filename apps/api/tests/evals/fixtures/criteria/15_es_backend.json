@@ -1,0 +1,18 @@
+{
+  "id": "15_es_backend",
+  "lang": "es",
+  "text": "Desarrollador backend remoto, Python",
+  "expected": {
+    "titles": ["Backend Engineer"],
+    "synonyms": ["Desarrollador backend"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Backend Engineer",
+        "synonyms": ["Desarrollador backend"],
+        "exclude": false
+      }
+    ]
+  }
+}

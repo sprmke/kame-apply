@@ -1,0 +1,67 @@
+{
+  "id": "10_devops_nl",
+  "country": "NL",
+  "role": "devops",
+  "layout": "single",
+  "resume_text": "Noah Bakker\nDevOps Engineer\nBooking.com | NL\n2019-11 – Present\nLed work as devops engineer with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Noah Bakker",
+    "experiences": [
+      {
+        "company": "Booking.com",
+        "title": "DevOps Engineer",
+        "start_date": "2019-11-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Noah Bakker",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "DevOps Engineer",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "NL",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Booking.com",
+        "title": "DevOps Engineer",
+        "start_date": "2019-11-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

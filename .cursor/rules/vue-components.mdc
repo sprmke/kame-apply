@@ -1,0 +1,17 @@
+---
+description: Vue SFC conventions: script setup, typed props/emits, Reka UI wrapping, tailwind-variants
+globs:
+  - apps/web/**/*.vue
+  - apps/extension/**/*.vue
+  - packages/ui/**/*.vue
+---
+
+# Vue components
+
+- `<script setup lang="ts">`; typed `defineProps<…>()` / `defineEmits<…>()`; no Options API, no `any`.
+- Reusable components live in `packages/ui` (shared by web and extension); app-specific compositions stay in the app.
+- Wrap **Reka UI** primitives for dialogs, popovers, comboboxes, tabs, tooltips, toasts; never reimplement focus traps or ARIA patterns.
+- Variants with `tailwind-variants`; tokens from `packages/ui/src/tokens.css` only (`anti-slop-design.mdc`).
+- Signature components (proof mark, pencil text, fit ledger, route line, risk seal, grade ring, dossier, Needs-you stack, live window, command bar) are built once in `packages/ui` and reused; extend them, do not fork them. Skill: `field-notes-components`.
+- Every component has loading/empty/error variants where it shows data, and a story on the `/_design` route in light/dark at three widths.
+- Accessible by default: labels, keyboard, focus ring, 44px targets (`accessibility` skill).

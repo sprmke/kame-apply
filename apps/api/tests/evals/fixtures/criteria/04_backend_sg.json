@@ -1,0 +1,17 @@
+{
+  "id": "04_backend_sg",
+  "lang": "en",
+  "text": "Backend engineer Singapore, Go or Python, full-time",
+  "expected": {
+    "titles": ["Backend Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Backend Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

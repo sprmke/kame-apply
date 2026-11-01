@@ -1,0 +1,17 @@
+{
+  "id": "05_pm_remote",
+  "lang": "en",
+  "text": "Product manager remote worldwide",
+  "expected": {
+    "titles": ["Product Manager"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Product Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

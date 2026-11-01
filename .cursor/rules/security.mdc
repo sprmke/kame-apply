@@ -1,0 +1,24 @@
+---
+description: Security invariants pointer: tenancy, RBAC, PII, untrusted content, site access
+globs:
+  - apps/api/app/core/**
+  - apps/api/app/**/router.py
+---
+
+# Security
+
+Consolidated pointers; read the linked rules/skills for detail.
+
+| Topic | Rule / doc |
+| --- | --- |
+| Tenant isolation, RLS | `workspace-scoping.mdc`, `workspace-scoping` skill |
+| RBAC | `fastapi-jwt-auth`, `rbac-and-audit` skills |
+| Sensitive values, logs, prompts | `pii-guard.mdc` |
+| Postings / emails / pages as data | `untrusted-content.mdc` |
+| No evasion, politeness | `job-site-access.mdc` |
+| Truthful generated content | `truthful-content.mdc` |
+| Prod deploy guard | `no-prod-deploy.mdc` (unlock: **applywave**) |
+| Audit trail | `audit-logging` skill, `activity_log` on mutations |
+| Claude credentials | Never accepted, stored, or relayed by the server (`docs/research/08-bring-your-own-claude.md`) |
+
+Revoked or inactive memberships must fail auth even if the JWT is unexpired.

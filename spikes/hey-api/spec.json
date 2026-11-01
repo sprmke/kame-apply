@@ -1,0 +1,46 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "spike", "version": "0" },
+  "paths": {
+    "/api/v1/jobs": {
+      "get": {
+        "operationId": "list_jobs",
+        "parameters": [
+          { "name": "q", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JobPage" } } } } }
+      }
+    },
+    "/api/v1/jobs/{job_id}/risk": {
+      "get": {
+        "operationId": "get_job_risk",
+        "parameters": [{ "name": "job_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Risk" } } } } }
+      }
+    },
+    "/api/v1/tracks": {
+      "post": {
+        "operationId": "create_track",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TrackCreate" } } } },
+        "responses": { "201": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TrackCreate" } } } } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "JobPage": { "type": "object", "required": ["items", "next_cursor"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/Job" } }, "next_cursor": { "type": ["string", "null"] } } },
+      "Job": { "type": "object", "required": ["id", "title"], "properties": { "id": { "type": "string" }, "title": { "type": "string" } } },
+      "Risk": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/RiskClear" },
+          { "$ref": "#/components/schemas/RiskDanger" }
+        ],
+        "discriminator": { "propertyName": "level", "mapping": { "clear": "#/components/schemas/RiskClear", "danger": "#/components/schemas/RiskDanger" } }
+      },
+      "RiskClear": { "type": "object", "required": ["level"], "properties": { "level": { "type": "string", "const": "clear" } } },
+      "RiskDanger": { "type": "object", "required": ["level", "reasons"], "properties": { "level": { "type": "string", "const": "danger" }, "reasons": { "type": "array", "items": { "type": "string" } } } },
+      "TrackCreate": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 }, "remote_only": { "type": "boolean", "default": false } } }
+    }
+  }
+}

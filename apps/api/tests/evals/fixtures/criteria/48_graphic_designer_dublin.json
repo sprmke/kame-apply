@@ -1,0 +1,26 @@
+{
+  "id": "48_graphic_designer_dublin",
+  "lang": "en",
+  "text": "senior graphic designer in Dublin, full-time",
+  "expected": {
+    "titles": ["Graphic Designer"],
+    "seniority": ["senior"],
+    "locations": ["Dublin"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Graphic Designer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Dublin"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

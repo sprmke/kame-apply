@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Challenge</title>
+  </head>
+  <body>
+    <h1>Verify you are human</h1>
+    <div class="g-recaptcha" data-sitekey="fixture"></div>
+    <button
+      id="ok"
+      type="button"
+      onclick="
+        document.title = 'cleared';
+        this.remove();
+      "
+    >
+      I am human
+    </button>
+  </body>
+</html>

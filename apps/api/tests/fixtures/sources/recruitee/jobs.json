@@ -1,0 +1,13 @@
+{
+  "offers": [
+    {
+      "id": 55,
+      "title": "Mobile Engineer",
+      "careers_url": "https://acme.recruitee.com/o/55",
+      "description": "<p>iOS</p>",
+      "location": "Remote",
+      "remote": true,
+      "published_at": "2026-10-01"
+    }
+  ]
+}

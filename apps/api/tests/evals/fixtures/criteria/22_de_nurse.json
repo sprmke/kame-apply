@@ -1,0 +1,18 @@
+{
+  "id": "22_de_nurse",
+  "lang": "de",
+  "text": "Intensivpfleger in München, Nachtschicht",
+  "expected": {
+    "titles": ["ICU Nurse"],
+    "synonyms": ["Intensivpfleger"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "ICU Nurse",
+        "synonyms": ["Intensivpfleger"],
+        "exclude": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "id": "13_chef_fr",
+  "country": "FR",
+  "role": "chef",
+  "layout": "single",
+  "resume_text": "Camille Dupont\nSous Chef\nLe Comptoir | FR\n2017-09 – Present\nLed work as sous chef with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Camille Dupont",
+    "experiences": [
+      {
+        "company": "Le Comptoir",
+        "title": "Sous Chef",
+        "start_date": "2017-09-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "projects": [],
+    "languages": [],
+    "display_name": {
+      "value": "Camille Dupont",
+      "confidence": 0.95
+    },
+    "headline": {
+      "value": "Sous Chef",
+      "confidence": 0.9
+    },
+    "location": {
+      "value": "FR",
+      "confidence": 0.5
+    },
+    "experiences": [
+      {
+        "company": "Le Comptoir",
+        "title": "Sous Chef",
+        "start_date": "2017-09-01",
+        "end_date": null,
+        "is_current": true,
+        "confidence": 0.95,
+        "bullets": [
+          {
+            "text": "Delivered measurable outcomes",
+            "confidence": 0.8
+          }
+        ]
+      }
+    ],
+    "education": [],
+    "certifications": [],
+    "skills": []
+  }
+}

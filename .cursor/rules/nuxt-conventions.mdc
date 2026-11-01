@@ -1,0 +1,17 @@
+---
+description: Nuxt 4 SPA conventions: routes, middleware, composables, no business logic in the client
+globs:
+  - apps/web/**
+---
+
+# Nuxt conventions
+
+- App routes are a SPA (`ssr: false`); marketing/legal pages are prerendered. Pages are thin: compose feature components and composables.
+- **No business logic in the client.** Nuxt server routes are not an API; FastAPI owns every rule. Validation in the client is UX only and mirrors server schemas.
+- Auth and workspace selection live in route middleware (`middleware/auth.ts`, `middleware/workspace.ts`); the active workspace id is sent as `X-Workspace-Id`.
+- Server state: Vue Query via the generated Hey API client in `packages/api-client`. Pinia holds UI state only (panel open, density, filters not worth persisting server-side).
+- Composables in `composables/` (`useJobs`, `useTrack`), auto-imported; one concern each; reactive params as `computed` so queries refetch.
+- Forms: VeeValidate + Zod schemas generated from the OpenAPI spec; unsaved-changes guard on every editable form.
+- i18n: user-facing strings go through `@nuxtjs/i18n` from day one.
+- No React, no Next/TanStack Start idioms, no Nuxt UI default look; components come from `packages/ui`.
+- Use `context7` for current Nuxt/Vue APIs before relying on memory.

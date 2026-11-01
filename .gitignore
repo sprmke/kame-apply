@@ -1,0 +1,53 @@
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+apps/**/.env
+!apps/**/.env.example
+
+# Node / Nuxt / WXT
+node_modules/
+.pnpm-store/
+.nuxt/
+.output/
+.wxt/
+dist/
+.turbo/
+coverage/
+*.tsbuildinfo
+playwright-report/
+test-results/
+.playwright-mcp/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.basedpyright/
+*.egg-info/
+
+# Local data and artifacts (never commit)
+data/
+tmp/
+.backups/
+.audit-screenshots/
+browser-profiles/
+*.pdf
+!**/fixtures/**/*.pdf
+*.docx
+!**/fixtures/**/*.docx
+*.sqlite
+
+# Agent local state
+.claude/settings.local.json
+.claude/worktrees/
+.claude/.superpowers-lean
+.fallow/

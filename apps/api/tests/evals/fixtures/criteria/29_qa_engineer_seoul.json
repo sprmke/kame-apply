@@ -1,0 +1,26 @@
+{
+  "id": "29_qa_engineer_seoul",
+  "lang": "en",
+  "text": "staff qa engineer in Seoul, full-time",
+  "expected": {
+    "titles": ["QA Engineer"],
+    "seniority": ["staff"],
+    "locations": ["Seoul"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "QA Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Seoul"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

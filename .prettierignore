@@ -1,0 +1,13 @@
+docs/
+spikes/
+.agent/
+.claude/
+.cursor/
+.opencode/
+**/generated/
+**/.nuxt/
+**/.output/
+**/.wxt/
+pnpm-lock.yaml
+uv.lock
+packages/api-client/openapi.json

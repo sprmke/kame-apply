@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tooling:
+    name: Tooling and policy checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AI tooling sync, hooks, filenames, stack terminology
+        run: |
+          bash scripts/dev/check-ai-tooling-sync.sh
+          bash scripts/dev/test-hooks.sh
+          bash scripts/dev/check-filename-conventions.sh
+          bash scripts/dev/check-stack-terminology.sh
+
+  python:
+    name: Python (lint, types, tests)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: kame_apply
+          POSTGRES_PASSWORD: kame_apply_local_only
+          POSTGRES_DB: kame_apply_test
+        ports: ["5442:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kame_apply -d kame_apply_test"
+          --health-interval 3s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install psql client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Create app/ro roles for RLS tests
+        run: bash scripts/dev/ci-prepare-postgres.sh
+      - run: uv sync --all-packages --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run basedpyright
+      - run: uv run pytest apps/api -q
+
+  web:
+    name: Web (lint, types, tests, build, API client drift)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: uv sync --all-packages --frozen
+      - run: pnpm -r --if-present run lint
+      - run: pnpm -r --if-present run type-check
+      - run: pnpm -r --if-present run test
+      - run: pnpm -r --if-present run build
+      - name: OpenAPI client drift check
+        run: bash scripts/dev/gen-api-client.sh --check

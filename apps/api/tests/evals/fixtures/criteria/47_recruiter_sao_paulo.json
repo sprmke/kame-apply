@@ -1,0 +1,26 @@
+{
+  "id": "47_recruiter_sao_paulo",
+  "lang": "en",
+  "text": "mid recruiter in Sao Paulo, full-time",
+  "expected": {
+    "titles": ["Recruiter"],
+    "seniority": ["mid"],
+    "locations": ["Sao Paulo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Recruiter",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Sao Paulo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

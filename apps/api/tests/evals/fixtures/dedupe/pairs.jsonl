@@ -1,0 +1,330 @@
+{"same": true, "a": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112919}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112919}}
+{"same": true, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091927}, "b": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091928}}
+{"same": true, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601271}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601269}}
+{"same": true, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597943}, "b": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597942}}
+{"same": true, "a": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256119}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256115}}
+{"same": true, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784087}, "b": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784084}}
+{"same": true, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744023}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744017}}
+{"same": true, "a": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425303}, "b": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425298}}
+{"same": true, "a": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202823}, "b": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202831}}
+{"same": true, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555927}, "b": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555936}}
+{"same": true, "a": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727959}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727965}}
+{"same": true, "a": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367639}, "b": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367646}}
+{"same": true, "a": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743177}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743173}}
+{"same": true, "a": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645559}, "b": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645564}}
+{"same": true, "a": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351799}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351801}}
+{"same": true, "a": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573783}, "b": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573786}}
+{"same": true, "a": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556183}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556183}}
+{"same": true, "a": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649495}, "b": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649496}}
+{"same": true, "a": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304169}, "b": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304171}}
+{"same": true, "a": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081705}, "b": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081706}}
+{"same": true, "a": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465047}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465043}}
+{"same": true, "a": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902487}, "b": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902484}}
+{"same": true, "a": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040695}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040689}}
+{"same": true, "a": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859575}, "b": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859570}}
+{"same": true, "a": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059927}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059935}}
+{"same": true, "a": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723479}, "b": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723488}}
+{"same": true, "a": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143625}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143619}}
+{"same": true, "a": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734935}, "b": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734942}}
+{"same": true, "a": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563881}, "b": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563877}}
+{"same": true, "a": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423767}, "b": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423772}}
+{"same": true, "a": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414807}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414809}}
+{"same": true, "a": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383511}, "b": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383514}}
+{"same": true, "a": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333193}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333193}}
+{"same": true, "a": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355785}, "b": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355784}}
+{"same": true, "a": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197847}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197845}}
+{"same": true, "a": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043351}, "b": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043350}}
+{"same": true, "a": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759063}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759059}}
+{"same": true, "a": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640471}, "b": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640468}}
+{"same": true, "a": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694407}, "b": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694401}}
+{"same": true, "a": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708777}, "b": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708782}}
+{"same": true, "a": {"company": "Wayne", "title": "Software Engineer", "simhash": -6527236881897727959}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": -6527236881897727967}}
+{"same": true, "a": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -6527201665313114071}, "b": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -6527201665313114080}}
+{"same": true, "a": {"company": "Acme", "title": "ICU Nurse", "simhash": 2678138339104159753}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 2678138339104159747}}
+{"same": true, "a": {"company": "Globex", "title": "Product Manager", "simhash": -6545198471653468151}, "b": {"company": "Globex", "title": "Product Manager", "simhash": -6545198471653468158}}
+{"same": true, "a": {"company": "Initech", "title": "Data Scientist", "simhash": -6527201664238585751}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -6527201664238585755}}
+{"same": true, "a": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -6545216104623876055}, "b": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -6545216104623876060}}
+{"same": true, "a": {"company": "Stark", "title": "Mobile Engineer", "simhash": 2678155930082234633}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 2678155930082234631}}
+{"same": true, "a": {"company": "Wayne", "title": "QA Engineer", "simhash": -6527131053868951255}, "b": {"company": "Wayne", "title": "QA Engineer", "simhash": -6527131053868951258}}
+{"same": true, "a": {"company": "Soylent", "title": "Designer", "simhash": -6383139253124433623}, "b": {"company": "Soylent", "title": "Designer", "simhash": -6383139253124433623}}
+{"same": true, "a": {"company": "Acme", "title": "Platform Engineer", "simhash": 2678208990142814249}, "b": {"company": "Acme", "title": "Platform Engineer", "simhash": 2678208990142814248}}
+{"same": true, "a": {"company": "Globex", "title": "Software Engineer", "simhash": -5968755311518394327}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -5968755311518394325}}
+{"same": true, "a": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -6545216061674030999}, "b": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -6545216061674030998}}
+{"same": true, "a": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -6527201706518087671}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -6527201706518087667}}
+{"same": true, "a": {"company": "Stark", "title": "Product Manager", "simhash": 2678191124101355785}, "b": {"company": "Stark", "title": "Product Manager", "simhash": 2678191124101355788}}
+{"same": true, "a": {"company": "Wayne", "title": "Data Scientist", "simhash": -6527201707206092791}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": -6527201707206092785}}
+{"same": true, "a": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -6545233656024499927}, "b": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -6545233656024499922}}
+{"same": true, "a": {"company": "Acme", "title": "Mobile Engineer", "simhash": 2678138612774098953}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 2678138612774098945}}
+{"same": true, "a": {"company": "Globex", "title": "QA Engineer", "simhash": -5968682451659499479}, "b": {"company": "Globex", "title": "QA Engineer", "simhash": -5968682451659499488}}
+{"same": true, "a": {"company": "Initech", "title": "Designer", "simhash": -6401136058238862743}, "b": {"company": "Initech", "title": "Designer", "simhash": -6401136058238862749}}
+{"same": true, "a": {"company": "Umbrella", "title": "Platform Engineer", "simhash": -6547467897961555927}, "b": {"company": "Umbrella", "title": "Platform Engineer", "simhash": -6547467897961555934}}
+{"same": true, "a": {"company": "Stark", "title": "Software Engineer", "simhash": -5968755345879173079}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": -5968755345879173083}}
+{"same": true, "a": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -6527131328781461463}, "b": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -6527131328781461468}}
+{"same": true, "a": {"company": "Soylent", "title": "ICU Nurse", "simhash": -6527219299777875959}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": -6527219299777875961}}
+{"same": true, "a": {"company": "Acme", "title": "Product Manager", "simhash": 2678173531915311113}, "b": {"company": "Acme", "title": "Product Manager", "simhash": 2678173531915311110}}
+{"same": true, "a": {"company": "Globex", "title": "Data Scientist", "simhash": -5950756297598543831}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -5950756297598543831}}
+{"same": true, "a": {"company": "Initech", "title": "DevOps Engineer", "simhash": -6545216061674194903}, "b": {"company": "Initech", "title": "DevOps Engineer", "simhash": -6545216061674194904}}
+{"same": true, "a": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -6545216106772539351}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -6545216106772539349}}
+{"same": true, "a": {"company": "Stark", "title": "QA Engineer", "simhash": -5968683877588633303}, "b": {"company": "Stark", "title": "QA Engineer", "simhash": -5968683877588633302}}
+{"same": true, "a": {"company": "Wayne", "title": "Designer", "simhash": 2840320711374437177}, "b": {"company": "Wayne", "title": "Designer", "simhash": 2840320711374437181}}
+{"same": true, "a": {"company": "Soylent", "title": "Platform Engineer", "simhash": -6547485215286472407}, "b": {"company": "Soylent", "title": "Platform Engineer", "simhash": -6547485215286472404}}
+{"same": true, "a": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112919}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112913}}
+{"same": true, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091927}, "b": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091922}}
+{"same": true, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601271}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601279}}
+{"same": true, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597943}, "b": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597952}}
+{"same": true, "a": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256119}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256125}}
+{"same": true, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784087}, "b": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784094}}
+{"same": true, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744023}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744027}}
+{"same": true, "a": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425303}, "b": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425308}}
+{"same": true, "a": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202823}, "b": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202825}}
+{"same": true, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555927}, "b": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555930}}
+{"same": true, "a": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727959}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727959}}
+{"same": true, "a": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367639}, "b": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367640}}
+{"same": true, "a": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743177}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743179}}
+{"same": true, "a": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645559}, "b": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645558}}
+{"same": true, "a": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351799}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351795}}
+{"same": true, "a": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573783}, "b": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573780}}
+{"same": true, "a": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556183}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556177}}
+{"same": true, "a": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649495}, "b": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649490}}
+{"same": true, "a": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304169}, "b": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304161}}
+{"same": true, "a": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081705}, "b": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081696}}
+{"same": true, "a": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465047}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465053}}
+{"same": true, "a": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902487}, "b": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902494}}
+{"same": true, "a": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040695}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040699}}
+{"same": true, "a": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859575}, "b": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859580}}
+{"same": true, "a": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059927}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059929}}
+{"same": true, "a": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723479}, "b": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723482}}
+{"same": true, "a": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143625}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143625}}
+{"same": true, "a": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734935}, "b": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734936}}
+{"same": true, "a": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563881}, "b": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563883}}
+{"same": true, "a": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423767}, "b": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423766}}
+{"same": true, "a": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414807}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414803}}
+{"same": true, "a": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383511}, "b": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383508}}
+{"same": true, "a": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333193}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333199}}
+{"same": true, "a": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355785}, "b": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355790}}
+{"same": true, "a": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197847}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197855}}
+{"same": true, "a": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043351}, "b": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043360}}
+{"same": true, "a": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759063}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759069}}
+{"same": true, "a": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640471}, "b": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640478}}
+{"same": true, "a": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694407}, "b": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694411}}
+{"same": true, "a": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708777}, "b": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708772}}
+{"same": true, "a": {"company": "Wayne", "title": "Software Engineer", "simhash": -6527236881897727959}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": -6527236881897727961}}
+{"same": true, "a": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -6527201665313114071}, "b": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -6527201665313114074}}
+{"same": true, "a": {"company": "Acme", "title": "ICU Nurse", "simhash": 2678138339104159753}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 2678138339104159753}}
+{"same": true, "a": {"company": "Globex", "title": "Product Manager", "simhash": -6545198471653468151}, "b": {"company": "Globex", "title": "Product Manager", "simhash": -6545198471653468152}}
+{"same": true, "a": {"company": "Initech", "title": "Data Scientist", "simhash": -6527201664238585751}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -6527201664238585749}}
+{"same": true, "a": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -6545216104623876055}, "b": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -6545216104623876054}}
+{"same": true, "a": {"company": "Stark", "title": "Mobile Engineer", "simhash": 2678155930082234633}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 2678155930082234637}}
+{"same": true, "a": {"company": "Wayne", "title": "QA Engineer", "simhash": -6527131053868951255}, "b": {"company": "Wayne", "title": "QA Engineer", "simhash": -6527131053868951252}}
+{"same": true, "a": {"company": "Soylent", "title": "Designer", "simhash": -6383139253124433623}, "b": {"company": "Soylent", "title": "Designer", "simhash": -6383139253124433617}}
+{"same": true, "a": {"company": "Acme", "title": "Platform Engineer", "simhash": 2678208990142814249}, "b": {"company": "Acme", "title": "Platform Engineer", "simhash": 2678208990142814254}}
+{"same": true, "a": {"company": "Globex", "title": "Software Engineer", "simhash": -5968755311518394327}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -5968755311518394335}}
+{"same": true, "a": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -6545216061674030999}, "b": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -6545216061674031008}}
+{"same": true, "a": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -6527201706518087671}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -6527201706518087677}}
+{"same": true, "a": {"company": "Stark", "title": "Product Manager", "simhash": 2678191124101355785}, "b": {"company": "Stark", "title": "Product Manager", "simhash": 2678191124101355778}}
+{"same": true, "a": {"company": "Wayne", "title": "Data Scientist", "simhash": -6527201707206092791}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": -6527201707206092795}}
+{"same": true, "a": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -6545233656024499927}, "b": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -6545233656024499932}}
+{"same": true, "a": {"company": "Acme", "title": "Mobile Engineer", "simhash": 2678138612774098953}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 2678138612774098951}}
+{"same": true, "a": {"company": "Globex", "title": "QA Engineer", "simhash": -5968682451659499479}, "b": {"company": "Globex", "title": "QA Engineer", "simhash": -5968682451659499482}}
+{"same": true, "a": {"company": "Initech", "title": "Designer", "simhash": -6401136058238862743}, "b": {"company": "Initech", "title": "Designer", "simhash": -6401136058238862743}}
+{"same": true, "a": {"company": "Umbrella", "title": "Platform Engineer", "simhash": -6547467897961555927}, "b": {"company": "Umbrella", "title": "Platform Engineer", "simhash": -6547467897961555928}}
+{"same": true, "a": {"company": "Stark", "title": "Software Engineer", "simhash": -5968755345879173079}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": -5968755345879173077}}
+{"same": true, "a": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -6527131328781461463}, "b": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -6527131328781461462}}
+{"same": true, "a": {"company": "Soylent", "title": "ICU Nurse", "simhash": -6527219299777875959}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": -6527219299777875955}}
+{"same": true, "a": {"company": "Acme", "title": "Product Manager", "simhash": 2678173531915311113}, "b": {"company": "Acme", "title": "Product Manager", "simhash": 2678173531915311116}}
+{"same": true, "a": {"company": "Globex", "title": "Data Scientist", "simhash": -5950756297598543831}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -5950756297598543825}}
+{"same": true, "a": {"company": "Initech", "title": "DevOps Engineer", "simhash": -6545216061674194903}, "b": {"company": "Initech", "title": "DevOps Engineer", "simhash": -6545216061674194898}}
+{"same": true, "a": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -6545216106772539351}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -6545216106772539359}}
+{"same": true, "a": {"company": "Stark", "title": "QA Engineer", "simhash": -5968683877588633303}, "b": {"company": "Stark", "title": "QA Engineer", "simhash": -5968683877588633312}}
+{"same": true, "a": {"company": "Wayne", "title": "Designer", "simhash": 2840320711374437177}, "b": {"company": "Wayne", "title": "Designer", "simhash": 2840320711374437171}}
+{"same": true, "a": {"company": "Soylent", "title": "Platform Engineer", "simhash": -6547485215286472407}, "b": {"company": "Soylent", "title": "Platform Engineer", "simhash": -6547485215286472414}}
+{"same": true, "a": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112919}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -6545216096035112923}}
+{"same": true, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091927}, "b": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -5968682726571091932}}
+{"same": true, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601271}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -6545216654917601273}}
+{"same": true, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597943}, "b": {"company": "Umbrella", "title": "Product Manager", "simhash": -6545251281497597946}}
+{"same": true, "a": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256119}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": -5950739855374256119}}
+{"same": true, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784087}, "b": {"company": "Wayne", "title": "DevOps Engineer", "simhash": -6545216104640784088}}
+{"same": true, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744023}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -6545233415490744021}}
+{"same": true, "a": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425303}, "b": {"company": "Acme", "title": "QA Engineer", "simhash": -6545145452378425302}}
+{"same": true, "a": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202823}, "b": {"company": "Globex", "title": "Designer", "simhash": -6545161070926202819}}
+{"same": true, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555927}, "b": {"company": "Initech", "title": "Platform Engineer", "simhash": -6547467897961555924}}
+{"same": true, "a": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727959}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -6527236881897727953}}
+{"same": true, "a": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367639}, "b": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -5968683877623367634}}
+{"same": true, "a": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743177}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 2696169780580743169}}
+{"same": true, "a": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645559}, "b": {"company": "Soylent", "title": "Product Manager", "simhash": -6545268840397645568}}
+{"same": true, "a": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351799}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": -6527219299375351805}}
+{"same": true, "a": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573783}, "b": {"company": "Globex", "title": "DevOps Engineer", "simhash": -6545233647434573790}}
+{"same": true, "a": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556183}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": -6545216098181556187}}
+{"same": true, "a": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649495}, "b": {"company": "Umbrella", "title": "QA Engineer", "simhash": -6527199498467649500}}
+{"same": true, "a": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304169}, "b": {"company": "Stark", "title": "Designer", "simhash": 2822341496700304167}}
+{"same": true, "a": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081705}, "b": {"company": "Wayne", "title": "Platform Engineer", "simhash": 2678226582312081702}}
+{"same": true, "a": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465047}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -6527236849685465047}}
+{"same": true, "a": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902487}, "b": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -6545145727290902488}}
+{"same": true, "a": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040695}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": -6545234248580040693}}
+{"same": true, "a": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859575}, "b": {"company": "Initech", "title": "Product Manager", "simhash": -6545251247137859574}}
+{"same": true, "a": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059927}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -6527199508166059923}}
+{"same": true, "a": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723479}, "b": {"company": "Stark", "title": "DevOps Engineer", "simhash": -6545215007259723476}}
+{"same": true, "a": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143625}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 2678156204960143631}}
+{"same": true, "a": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734935}, "b": {"company": "Soylent", "title": "QA Engineer", "simhash": -6527201390400734930}}
+{"same": true, "a": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563881}, "b": {"company": "Acme", "title": "Designer", "simhash": 2822323904782563873}}
+{"same": true, "a": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423767}, "b": {"company": "Globex", "title": "Platform Engineer", "simhash": -6547414829362423776}}
+{"same": true, "a": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414807}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -6545251246046414813}}
+{"same": true, "a": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383511}, "b": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -6527199498502383518}}
+{"same": true, "a": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333193}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 2678155931290333189}}
+{"same": true, "a": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355785}, "b": {"company": "Wayne", "title": "Product Manager", "simhash": 2678191124101355780}}
+{"same": true, "a": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197847}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -6527219257516197849}}
+{"same": true, "a": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043351}, "b": {"company": "Acme", "title": "DevOps Engineer", "simhash": -6545233696810043354}}
+{"same": true, "a": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759063}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": -6545233406899759063}}
+{"same": true, "a": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640471}, "b": {"company": "Initech", "title": "QA Engineer", "simhash": -6545216061640640472}}
+{"same": true, "a": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694407}, "b": {"company": "Umbrella", "title": "Designer", "simhash": -6383119494932694405}}
+{"same": true, "a": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708777}, "b": {"company": "Stark", "title": "Platform Engineer", "simhash": 2678227406962708778}}
+{"same": false, "a": {"company": "Acme", "title": "Software Engineer", "simhash": 1815584739761888954}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -7191612318370718536}}
+{"same": false, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -7083525927313563975}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -4543517164887335872}}
+{"same": false, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": 289294846032656042}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": 288312428165370544}}
+{"same": false, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": 1518355884999876536}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -4395466000103366848}}
+{"same": false, "a": {"company": "Stark", "title": "Data Scientist", "simhash": 879129571570524080}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": 608349480021958576}}
+{"same": false, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": 4574662009823026}, "b": {"company": "Wayne", "title": "Designer", "simhash": 7189520674644835153}}
+{"same": false, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": 1166512374583433146}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 1238570097470117818}}
+{"same": false, "a": {"company": "Acme", "title": "QA Engineer", "simhash": 2103826385950777278}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -4489485254091850688}}
+{"same": false, "a": {"company": "Globex", "title": "Designer", "simhash": 878846872933932988}, "b": {"company": "Initech", "title": "Designer", "simhash": 2671701875009830842}}
+{"same": false, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": 1446289567942743978}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -2160980006167627712}}
+{"same": false, "a": {"company": "Umbrella", "title": "Software Engineer", "simhash": -7128561925469725008}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": 950893604593768370}}
+{"same": false, "a": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -8236147269542043725}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": -2093558417825185984}}
+{"same": false, "a": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4864381865202448}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": 13731389159552424}}
+{"same": false, "a": {"company": "Soylent", "title": "Product Manager", "simhash": 1455305352777734072}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -4457388295889087168}}
+{"same": false, "a": {"company": "Acme", "title": "Data Scientist", "simhash": 590053675542552248}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -8344525035491254600}}
+{"same": false, "a": {"company": "Globex", "title": "DevOps Engineer", "simhash": -8353541168280101442}, "b": {"company": "Globex", "title": "Designer", "simhash": -2116006871035790507}}
+{"same": false, "a": {"company": "Initech", "title": "Mobile Engineer", "simhash": 1518355958033848250}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": 1517795198510340018}}
+{"same": false, "a": {"company": "Umbrella", "title": "QA Engineer", "simhash": -7128553125038743626}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -2215187508352250816}}
+{"same": false, "a": {"company": "Stark", "title": "Designer", "simhash": 3259280884118896562}, "b": {"company": "Wayne", "title": "Designer", "simhash": 79739552027156400}}
+{"same": false, "a": {"company": "Wayne", "title": "Platform Engineer", "simhash": 293368338188343218}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4809888795569236289}}
+{"same": false, "a": {"company": "Soylent", "title": "Software Engineer", "simhash": -7479844897841441352}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": 1815584739761888954}}
+{"same": false, "a": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -7371756301042016582}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": -4398838476808634816}}
+{"same": false, "a": {"company": "Globex", "title": "ICU Nurse", "simhash": 878846451757650104}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": 289294846032656042}}
+{"same": false, "a": {"company": "Initech", "title": "Product Manager", "simhash": 1518637359976587192}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": -4394900846898569406}}
+{"same": false, "a": {"company": "Umbrella", "title": "Data Scientist", "simhash": -8327073659667571024}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": 879129571570524080}}
+{"same": false, "a": {"company": "Stark", "title": "DevOps Engineer", "simhash": 869829906518775730}, "b": {"company": "Stark", "title": "Designer", "simhash": 7179423584488536897}}
+{"same": false, "a": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 76641393606432562}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": 1166512374583433146}}
+{"same": false, "a": {"company": "Soylent", "title": "QA Engineer", "simhash": -7191603247357585478}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -2273749424212792000}}
+{"same": false, "a": {"company": "Acme", "title": "Designer", "simhash": 88606013332176830}, "b": {"company": "Globex", "title": "Designer", "simhash": 878846872933932988}}
+{"same": false, "a": {"company": "Globex", "title": "Platform Engineer", "simhash": 2031759855937656766}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": -4566040393738536895}}
+{"same": false, "a": {"company": "Initech", "title": "Software Engineer", "simhash": -7128564120194605382}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -7128561925469725008}}
+{"same": false, "a": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -7119537134013473104}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -2134653832330207680}}
+{"same": false, "a": {"company": "Stark", "title": "ICU Nurse", "simhash": 879126273171960706}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4864381865202448}}
+{"same": false, "a": {"company": "Wayne", "title": "Product Manager", "simhash": 365715855369609113}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 4829034139968151361}}
+{"same": false, "a": {"company": "Soylent", "title": "Data Scientist", "simhash": -8615304027512463432}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": 590053675542552248}}
+{"same": false, "a": {"company": "Acme", "title": "DevOps Engineer", "simhash": 4574731014545342}, "b": {"company": "Acme", "title": "Designer", "simhash": 7180689397252112196}}
+{"same": false, "a": {"company": "Globex", "title": "Mobile Engineer", "simhash": 2031768643426097082}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": 1518355958033848250}}
+{"same": false, "a": {"company": "Initech", "title": "QA Engineer", "simhash": -7128271650059673670}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -2233199707976614848}}
+{"same": false, "a": {"company": "Umbrella", "title": "Designer", "simhash": 2671279658315587508}, "b": {"company": "Stark", "title": "Designer", "simhash": 3259280884118896562}}
+{"same": false, "a": {"company": "Stark", "title": "Platform Engineer", "simhash": 878837110102038434}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 7107287349322592577}}
+{"same": false, "a": {"company": "Wayne", "title": "Software Engineer", "simhash": 653656035629768624}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -7479844897841441352}}
+{"same": false, "a": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -7407785104771342408}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -2129024333081199296}}
+{"same": false, "a": {"company": "Acme", "title": "ICU Nurse", "simhash": 13731461905561226}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": 878846451757650104}}
+{"same": false, "a": {"company": "Globex", "title": "Product Manager", "simhash": 2031766105080635321}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": -4602064230676357823}}
+{"same": false, "a": {"company": "Initech", "title": "Data Scientist", "simhash": -8344243620358873416}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -8327073659667571024}}
+{"same": false, "a": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -8930564799384772682}, "b": {"company": "Umbrella", "title": "Designer", "simhash": -2071076702757831852}}
+{"same": false, "a": {"company": "Stark", "title": "Mobile Engineer", "simhash": 950902396391823282}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 76641393606432562}}
+{"same": false, "a": {"company": "Wayne", "title": "QA Engineer", "simhash": 942179156786978738}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": -4480495647299465919}}
+{"same": false, "a": {"company": "Soylent", "title": "Designer", "simhash": 2320139487497469880}, "b": {"company": "Acme", "title": "Designer", "simhash": 88606013332176830}}
+{"same": false, "a": {"company": "Acme", "title": "Platform Engineer", "simhash": 1455297042075129774}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 4801022402800662592}}
+{"same": false, "a": {"company": "Globex", "title": "Software Engineer", "simhash": -7191612318370718536}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -7128564120194605382}}
+{"same": false, "a": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -7119255654744940870}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -2134091432132592064}}
+{"same": false, "a": {"company": "Umbrella", "title": "ICU Nurse", "simhash": 288312428165370544}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 879126273171960706}}
+{"same": false, "a": {"company": "Stark", "title": "Product Manager", "simhash": 951183806927378329}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 4837475086439028547}}
+{"same": false, "a": {"company": "Wayne", "title": "Data Scientist", "simhash": 608349480021958576}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -8615304027512463432}}
+{"same": false, "a": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -9218797505841195590}, "b": {"company": "Soylent", "title": "Designer", "simhash": -2132860185265553600}}
+{"same": false, "a": {"company": "Acme", "title": "Mobile Engineer", "simhash": 1238570097470117818}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": 2031768643426097082}}
+{"same": false, "a": {"company": "Globex", "title": "QA Engineer", "simhash": -7191603247366234178}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -4561540634350969791}}
+{"same": false, "a": {"company": "Initech", "title": "Designer", "simhash": 2671701875009830842}, "b": {"company": "Umbrella", "title": "Designer", "simhash": 2671279658315587508}}
+{"same": false, "a": {"company": "Umbrella", "title": "Platform Engineer", "simhash": 1446291762670737334}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -2143667104668702656}}
+{"same": false, "a": {"company": "Stark", "title": "Software Engineer", "simhash": 950893604593768370}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": 653656035629768624}}
+{"same": false, "a": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -8524378738762408015}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": -4398839095040139456}}
+{"same": false, "a": {"company": "Soylent", "title": "ICU Nurse", "simhash": 13731389159552424}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 13731461905561226}}
+{"same": false, "a": {"company": "Acme", "title": "Product Manager", "simhash": 1527363084253962136}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 4838041339297800002}}
+{"same": false, "a": {"company": "Globex", "title": "Data Scientist", "simhash": -8344525035491254600}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -8344243620358873416}}
+{"same": false, "a": {"company": "Initech", "title": "DevOps Engineer", "simhash": -8930004039864377414}, "b": {"company": "Initech", "title": "Designer", "simhash": -2088950363776598208}}
+{"same": false, "a": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": 1517795198510340018}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 950902396391823282}}
+{"same": false, "a": {"company": "Stark", "title": "QA Engineer", "simhash": 951187178527954866}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": -2183628228529210047}}
+{"same": false, "a": {"company": "Wayne", "title": "Designer", "simhash": 79739552027156400}, "b": {"company": "Soylent", "title": "Designer", "simhash": 2320139487497469880}}
+{"same": false, "a": {"company": "Soylent", "title": "Platform Engineer", "simhash": 1455296900324661162}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": -2134521083747360448}}
+{"same": false, "a": {"company": "Acme", "title": "Software Engineer", "simhash": 1815584739761888954}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -7191612318370718536}}
+{"same": false, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -7083525927313563975}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -4543517164887335872}}
+{"same": false, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": 289294846032656042}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": 288312428165370544}}
+{"same": false, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": 1518355884999876536}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -4395466000103366848}}
+{"same": false, "a": {"company": "Stark", "title": "Data Scientist", "simhash": 879129571570524080}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": 608349480021958576}}
+{"same": false, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": 4574662009823026}, "b": {"company": "Wayne", "title": "Designer", "simhash": 7189520674644835153}}
+{"same": false, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": 1166512374583433146}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 1238570097470117818}}
+{"same": false, "a": {"company": "Acme", "title": "QA Engineer", "simhash": 2103826385950777278}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -4489485254091850688}}
+{"same": false, "a": {"company": "Globex", "title": "Designer", "simhash": 878846872933932988}, "b": {"company": "Initech", "title": "Designer", "simhash": 2671701875009830842}}
+{"same": false, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": 1446289567942743978}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -2160980006167627712}}
+{"same": false, "a": {"company": "Umbrella", "title": "Software Engineer", "simhash": -7128561925469725008}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": 950893604593768370}}
+{"same": false, "a": {"company": "Stark", "title": "Senior Software Engineer", "simhash": -8236147269542043725}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": -2093558417825185984}}
+{"same": false, "a": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4864381865202448}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": 13731389159552424}}
+{"same": false, "a": {"company": "Soylent", "title": "Product Manager", "simhash": 1455305352777734072}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": -4457388295889087168}}
+{"same": false, "a": {"company": "Acme", "title": "Data Scientist", "simhash": 590053675542552248}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -8344525035491254600}}
+{"same": false, "a": {"company": "Globex", "title": "DevOps Engineer", "simhash": -8353541168280101442}, "b": {"company": "Globex", "title": "Designer", "simhash": -2116006871035790507}}
+{"same": false, "a": {"company": "Initech", "title": "Mobile Engineer", "simhash": 1518355958033848250}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": 1517795198510340018}}
+{"same": false, "a": {"company": "Umbrella", "title": "QA Engineer", "simhash": -7128553125038743626}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -2215187508352250816}}
+{"same": false, "a": {"company": "Stark", "title": "Designer", "simhash": 3259280884118896562}, "b": {"company": "Wayne", "title": "Designer", "simhash": 79739552027156400}}
+{"same": false, "a": {"company": "Wayne", "title": "Platform Engineer", "simhash": 293368338188343218}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4809888795569236289}}
+{"same": false, "a": {"company": "Soylent", "title": "Software Engineer", "simhash": -7479844897841441352}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": 1815584739761888954}}
+{"same": false, "a": {"company": "Acme", "title": "Senior Software Engineer", "simhash": -7371756301042016582}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": -4398838476808634816}}
+{"same": false, "a": {"company": "Globex", "title": "ICU Nurse", "simhash": 878846451757650104}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": 289294846032656042}}
+{"same": false, "a": {"company": "Initech", "title": "Product Manager", "simhash": 1518637359976587192}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": -4394900846898569406}}
+{"same": false, "a": {"company": "Umbrella", "title": "Data Scientist", "simhash": -8327073659667571024}, "b": {"company": "Stark", "title": "Data Scientist", "simhash": 879129571570524080}}
+{"same": false, "a": {"company": "Stark", "title": "DevOps Engineer", "simhash": 869829906518775730}, "b": {"company": "Stark", "title": "Designer", "simhash": 7179423584488536897}}
+{"same": false, "a": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 76641393606432562}, "b": {"company": "Soylent", "title": "Mobile Engineer", "simhash": 1166512374583433146}}
+{"same": false, "a": {"company": "Soylent", "title": "QA Engineer", "simhash": -7191603247357585478}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -2273749424212792000}}
+{"same": false, "a": {"company": "Acme", "title": "Designer", "simhash": 88606013332176830}, "b": {"company": "Globex", "title": "Designer", "simhash": 878846872933932988}}
+{"same": false, "a": {"company": "Globex", "title": "Platform Engineer", "simhash": 2031759855937656766}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": -4566040393738536895}}
+{"same": false, "a": {"company": "Initech", "title": "Software Engineer", "simhash": -7128564120194605382}, "b": {"company": "Umbrella", "title": "Software Engineer", "simhash": -7128561925469725008}}
+{"same": false, "a": {"company": "Umbrella", "title": "Senior Software Engineer", "simhash": -7119537134013473104}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -2134653832330207680}}
+{"same": false, "a": {"company": "Stark", "title": "ICU Nurse", "simhash": 879126273171960706}, "b": {"company": "Wayne", "title": "ICU Nurse", "simhash": 4864381865202448}}
+{"same": false, "a": {"company": "Wayne", "title": "Product Manager", "simhash": 365715855369609113}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 4829034139968151361}}
+{"same": false, "a": {"company": "Soylent", "title": "Data Scientist", "simhash": -8615304027512463432}, "b": {"company": "Acme", "title": "Data Scientist", "simhash": 590053675542552248}}
+{"same": false, "a": {"company": "Acme", "title": "DevOps Engineer", "simhash": 4574731014545342}, "b": {"company": "Acme", "title": "Designer", "simhash": 7180689397252112196}}
+{"same": false, "a": {"company": "Globex", "title": "Mobile Engineer", "simhash": 2031768643426097082}, "b": {"company": "Initech", "title": "Mobile Engineer", "simhash": 1518355958033848250}}
+{"same": false, "a": {"company": "Initech", "title": "QA Engineer", "simhash": -7128271650059673670}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -2233199707976614848}}
+{"same": false, "a": {"company": "Umbrella", "title": "Designer", "simhash": 2671279658315587508}, "b": {"company": "Stark", "title": "Designer", "simhash": 3259280884118896562}}
+{"same": false, "a": {"company": "Stark", "title": "Platform Engineer", "simhash": 878837110102038434}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 7107287349322592577}}
+{"same": false, "a": {"company": "Wayne", "title": "Software Engineer", "simhash": 653656035629768624}, "b": {"company": "Soylent", "title": "Software Engineer", "simhash": -7479844897841441352}}
+{"same": false, "a": {"company": "Soylent", "title": "Senior Software Engineer", "simhash": -7407785104771342408}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -2129024333081199296}}
+{"same": false, "a": {"company": "Acme", "title": "ICU Nurse", "simhash": 13731461905561226}, "b": {"company": "Globex", "title": "ICU Nurse", "simhash": 878846451757650104}}
+{"same": false, "a": {"company": "Globex", "title": "Product Manager", "simhash": 2031766105080635321}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": -4602064230676357823}}
+{"same": false, "a": {"company": "Initech", "title": "Data Scientist", "simhash": -8344243620358873416}, "b": {"company": "Umbrella", "title": "Data Scientist", "simhash": -8327073659667571024}}
+{"same": false, "a": {"company": "Umbrella", "title": "DevOps Engineer", "simhash": -8930564799384772682}, "b": {"company": "Umbrella", "title": "Designer", "simhash": -2071076702757831852}}
+{"same": false, "a": {"company": "Stark", "title": "Mobile Engineer", "simhash": 950902396391823282}, "b": {"company": "Wayne", "title": "Mobile Engineer", "simhash": 76641393606432562}}
+{"same": false, "a": {"company": "Wayne", "title": "QA Engineer", "simhash": 942179156786978738}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": -4480495647299465919}}
+{"same": false, "a": {"company": "Soylent", "title": "Designer", "simhash": 2320139487497469880}, "b": {"company": "Acme", "title": "Designer", "simhash": 88606013332176830}}
+{"same": false, "a": {"company": "Acme", "title": "Platform Engineer", "simhash": 1455297042075129774}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 4801022402800662592}}
+{"same": false, "a": {"company": "Globex", "title": "Software Engineer", "simhash": -7191612318370718536}, "b": {"company": "Initech", "title": "Software Engineer", "simhash": -7128564120194605382}}
+{"same": false, "a": {"company": "Initech", "title": "Senior Software Engineer", "simhash": -7119255654744940870}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -2134091432132592064}}
+{"same": false, "a": {"company": "Umbrella", "title": "ICU Nurse", "simhash": 288312428165370544}, "b": {"company": "Stark", "title": "ICU Nurse", "simhash": 879126273171960706}}
+{"same": false, "a": {"company": "Stark", "title": "Product Manager", "simhash": 951183806927378329}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 4837475086439028547}}
+{"same": false, "a": {"company": "Wayne", "title": "Data Scientist", "simhash": 608349480021958576}, "b": {"company": "Soylent", "title": "Data Scientist", "simhash": -8615304027512463432}}
+{"same": false, "a": {"company": "Soylent", "title": "DevOps Engineer", "simhash": -9218797505841195590}, "b": {"company": "Soylent", "title": "Designer", "simhash": -2132860185265553600}}
+{"same": false, "a": {"company": "Acme", "title": "Mobile Engineer", "simhash": 1238570097470117818}, "b": {"company": "Globex", "title": "Mobile Engineer", "simhash": 2031768643426097082}}
+{"same": false, "a": {"company": "Globex", "title": "QA Engineer", "simhash": -7191603247366234178}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -4561540634350969791}}
+{"same": false, "a": {"company": "Initech", "title": "Designer", "simhash": 2671701875009830842}, "b": {"company": "Umbrella", "title": "Designer", "simhash": 2671279658315587508}}
+{"same": false, "a": {"company": "Umbrella", "title": "Platform Engineer", "simhash": 1446291762670737334}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": -2143667104668702656}}
+{"same": false, "a": {"company": "Stark", "title": "Software Engineer", "simhash": 950893604593768370}, "b": {"company": "Wayne", "title": "Software Engineer", "simhash": 653656035629768624}}
+{"same": false, "a": {"company": "Wayne", "title": "Senior Software Engineer", "simhash": -8524378738762408015}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": -4398839095040139456}}
+{"same": false, "a": {"company": "Soylent", "title": "ICU Nurse", "simhash": 13731389159552424}, "b": {"company": "Acme", "title": "ICU Nurse", "simhash": 13731461905561226}}
+{"same": false, "a": {"company": "Acme", "title": "Product Manager", "simhash": 1527363084253962136}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 4838041339297800002}}
+{"same": false, "a": {"company": "Globex", "title": "Data Scientist", "simhash": -8344525035491254600}, "b": {"company": "Initech", "title": "Data Scientist", "simhash": -8344243620358873416}}
+{"same": false, "a": {"company": "Initech", "title": "DevOps Engineer", "simhash": -8930004039864377414}, "b": {"company": "Initech", "title": "Designer", "simhash": -2088950363776598208}}
+{"same": false, "a": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": 1517795198510340018}, "b": {"company": "Stark", "title": "Mobile Engineer", "simhash": 950902396391823282}}
+{"same": false, "a": {"company": "Stark", "title": "QA Engineer", "simhash": 951187178527954866}, "b": {"company": "Stark", "title": "Software Engineer", "simhash": -2183628228529210047}}
+{"same": false, "a": {"company": "Wayne", "title": "Designer", "simhash": 79739552027156400}, "b": {"company": "Soylent", "title": "Designer", "simhash": 2320139487497469880}}
+{"same": false, "a": {"company": "Soylent", "title": "Platform Engineer", "simhash": 1455296900324661162}, "b": {"company": "Soylent", "title": "ICU Nurse", "simhash": -2134521083747360448}}
+{"same": false, "a": {"company": "Acme", "title": "Software Engineer", "simhash": 1815584739761888954}, "b": {"company": "Globex", "title": "Software Engineer", "simhash": -7191612318370718536}}
+{"same": false, "a": {"company": "Globex", "title": "Senior Software Engineer", "simhash": -7083525927313563975}, "b": {"company": "Globex", "title": "Data Scientist", "simhash": -4543517164887335872}}
+{"same": false, "a": {"company": "Initech", "title": "ICU Nurse", "simhash": 289294846032656042}, "b": {"company": "Umbrella", "title": "ICU Nurse", "simhash": 288312428165370544}}
+{"same": false, "a": {"company": "Umbrella", "title": "Product Manager", "simhash": 1518355884999876536}, "b": {"company": "Umbrella", "title": "Mobile Engineer", "simhash": -4395466000103366848}}
+{"same": false, "a": {"company": "Stark", "title": "Data Scientist", "simhash": 879129571570524080}, "b": {"company": "Wayne", "title": "Data Scientist", "simhash": 608349480021958576}}
+{"same": false, "a": {"company": "Wayne", "title": "DevOps Engineer", "simhash": 4574662009823026}, "b": {"company": "Wayne", "title": "Designer", "simhash": 7189520674644835153}}
+{"same": false, "a": {"company": "Soylent", "title": "Mobile Engineer", "simhash": 1166512374583433146}, "b": {"company": "Acme", "title": "Mobile Engineer", "simhash": 1238570097470117818}}
+{"same": false, "a": {"company": "Acme", "title": "QA Engineer", "simhash": 2103826385950777278}, "b": {"company": "Acme", "title": "Software Engineer", "simhash": -4489485254091850688}}
+{"same": false, "a": {"company": "Globex", "title": "Designer", "simhash": 878846872933932988}, "b": {"company": "Initech", "title": "Designer", "simhash": 2671701875009830842}}
+{"same": false, "a": {"company": "Initech", "title": "Platform Engineer", "simhash": 1446289567942743978}, "b": {"company": "Initech", "title": "ICU Nurse", "simhash": -2160980006167627712}}

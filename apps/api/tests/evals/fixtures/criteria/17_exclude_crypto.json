@@ -1,0 +1,17 @@
+{
+  "id": "17_exclude_crypto",
+  "lang": "en",
+  "text": "Software engineer remote APAC, exclude crypto companies",
+  "expected": {
+    "titles": ["Software Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Software Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

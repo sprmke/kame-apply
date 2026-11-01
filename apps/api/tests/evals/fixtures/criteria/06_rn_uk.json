@@ -1,0 +1,17 @@
+{
+  "id": "06_rn_uk",
+  "lang": "en",
+  "text": "Registered nurse UK, English required",
+  "expected": {
+    "titles": ["Registered Nurse"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Registered Nurse",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

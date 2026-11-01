@@ -1,0 +1,17 @@
+{
+  "id": "08_devops_nl",
+  "lang": "en",
+  "text": "DevOps engineer Netherlands, Kubernetes",
+  "expected": {
+    "titles": ["DevOps Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "DevOps Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

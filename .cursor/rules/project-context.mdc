@@ -1,0 +1,49 @@
+---
+description: Kame Apply agent context: lean stack, doc index, where-to-edit pointers
+alwaysApply: true
+---
+
+# Kame Apply: agent context
+
+## Read first (task-scoped)
+
+1. `docs/README.md` → **`docs/prd.md`** (authoritative scope, principles P1–P7) and **`docs/tech-stack.md`** (authoritative stack)
+2. **`docs/phases/README.md`**: the build plan; read the current phase file before starting work
+3. `docs/architecture/overview.md`: system diagram, invariants, modules, workflows
+4. `docs/research/*`: background per area (site access 02, apply engine 03, safety 04, resumes 05, workflow 06, recruiters 07, bring-your-own-Claude 08)
+5. `docs/design/design-system.md` + `ux-blueprint.md` before any UI work
+6. Per-page behavior → `docs/guides/routes/README.md` (created when the first page ships)
+
+## Stack (see `docs/tech-stack.md`)
+
+- **Monorepo:** pnpm workspaces + Turborepo (TS) and a uv workspace (Python): `apps/{web,api,runner,extension}`, `packages/{ui,api-client,py-core}`
+- **Web (`apps/web`):** Vue 3 + Nuxt 4 (SPA), Tailwind v4, Reka UI, Vue Query, Pinia (UI state only), VeeValidate + Zod, Phosphor icons. UI only.
+- **Backend (`apps/api`):** FastAPI + Pydantic v2, SQLAlchemy 2 async + Alembic, **DBOS** durable workflows, PydanticAI. Owns all business logic.
+- **DB:** PostgreSQL 17 + pgvector + pg_trgm + RLS. No Redis.
+- **Runner / extension:** Playwright (Python) in `apps/runner`; WXT + Vue in `apps/extension`.
+- **Files:** Cloudflare R2 (MinIO locally), short-lived signed URLs.
+- **Auth:** FastAPI JWT access + refresh, Google OAuth, argon2. Workspace roles `owner | admin | member | viewer`.
+
+Out of scope here (see `tech-stack.md` §6): React/Next/TanStack Start/shadcn/Lucide, Supabase, Prisma/Drizzle, tRPC, Redis/ARQ, and any anti-detection tooling.
+
+## Tooling index
+
+- Rules/skills: `.cursor/rules/README.md` · Claude Code: `.claude/README.md` + root `CLAUDE.md` · OpenCode: `.opencode/README.md` + `opencode.json`
+- Session hygiene / model routing: `.cursor/rules/ai-usage.mdc`
+- Once after clone: `pnpm run setup:ai-tooling`
+- Prod deploy/migration: blocked unless the user says **`applywave`** (`no-prod-deploy.mdc`)
+
+## Where to edit (fill in as each phase lands real paths)
+
+| Concern | Path |
+| --- | --- |
+| API modules | `apps/api/app/<module>/{router,service,models,schemas,workflows}.py` |
+| DB schema | `apps/api/app/**/models.py` + `apps/api/migrations/versions/` |
+| Source / ATS adapters | `packages/py-core/…` and `apps/api/app/sources/` |
+| AI features | `apps/api/app/ai/` (prompt registry, router, budgets, evals) |
+| Web UI | `apps/web/`, shared components in `packages/ui/` |
+| Extension | `apps/extension/` |
+
+## Docs sync
+
+Behavior changes → update matching docs in the same change (`documentation-maintenance.mdc`). Phase progress → `docs/phases/README.md`.

@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Python Developer",
+      "company_name": "RemotiveCo",
+      "url": "https://remotive.com/1",
+      "description": "<p>Remote Python</p>",
+      "candidate_required_location": "Worldwide",
+      "job_type": "full_time",
+      "publication_date": "2026-10-01",
+      "salary": "USD 100k"
+    }
+  ]
+}

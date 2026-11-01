@@ -1,0 +1,21 @@
+---
+description: Python and TypeScript/Vue file naming conventions
+globs:
+  - apps/**
+  - packages/**
+---
+
+# Naming conventions
+
+| Context | Convention | Example |
+| --- | --- | --- |
+| Python modules | `snake_case.py` | `job_normalizer.py` |
+| SQLAlchemy models | `PascalCase` class | `class JobPosting` |
+| Pydantic schemas | `PascalCase` + intent suffix | `TrackCreate`, `TrackRead`, `TrackUpdate` |
+| Vue components | `PascalCase.vue` | `JobCard.vue` |
+| Composables | `useX.ts` (kebab-case file ok in `composables/` per Nuxt auto-import: `useJobs.ts`) | `useJobs.ts` |
+| TS files (lib, schemas, stores) | `kebab-case.ts` | `job-schema.ts`, `track-store.ts` |
+| Nuxt pages | file-route convention, kebab-case segments | `pages/jobs/[id].vue` |
+| Extension entrypoints | WXT convention | `entrypoints/sidepanel/` |
+
+`pnpm run check:filenames` enforces this (`scripts/dev/check-filename-conventions.sh`).

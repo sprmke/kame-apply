@@ -1,0 +1,19 @@
+---
+description: Agent self-checklist before declaring a task complete
+alwaysApply: false
+---
+
+# Self-review
+
+Before marking work done, verify:
+
+1. **Scope**: only what was asked; no drive-by refactors.
+2. **Docs**: `documentation-maintenance.mdc`: architecture, route guides, phase checklist if applicable.
+3. **Tenancy + RBAC**: `workspace_id` + RLS on new tables; server-side role checks; UI hiding is not security.
+4. **Audit**: mutating paths emit `activity_log` or document N/A.
+5. **Truthfulness / untrusted input / PII**: `truthful-content.mdc`, `untrusted-content.mdc`, `pii-guard.mdc`.
+6. **Site access**: no evasion tooling; politeness and terms respected (`job-site-access.mdc`).
+7. **Tests**: pytest/Vitest for non-trivial logic; an eval case for any prompt change.
+8. **CI**: `pnpm run ci:quality` green (or explain what could not run).
+
+Skill: `.agent/skills/self-review/SKILL.md` for deep module reviews.

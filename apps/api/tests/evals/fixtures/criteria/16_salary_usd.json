@@ -1,0 +1,18 @@
+{
+  "id": "16_salary_usd",
+  "lang": "en",
+  "text": "Staff engineer remote, salary at least 180000 USD per year",
+  "expected": {
+    "titles": ["Staff Engineer"],
+    "salary_min": 180000
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Staff Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,61 @@
+# L1 content rules for job risk scoring. Weights are additive toward 0–100 scam score.
+# Evidence is a short regex match quote when possible.
+version: 1
+rules:
+  - id: training_fee
+    weight: 45
+    signal: payment_request
+    pattern: '(?i)(?:training\s+(?:kit|fee|cost)|pay\s+(?:a\s+)?(?:fee|deposit)|\$\s?\d{2,4}\s+(?:fee|kit|equipment)|buy\s+(?:your\s+)?(?:equipment|laptop|kit)|we(?:''ll| will)\s+reimburse)'
+  - id: crypto_payout
+    weight: 40
+    signal: crypto_payout
+    pattern: '(?i)(?:paid\s+in\s+(?:crypto|bitcoin|btc|usdt|ethereum)|crypto(?:currency)?\s+payout|wallet\s+address)'
+  - id: chat_only_contact
+    weight: 35
+    signal: chat_only_contact
+    pattern: '(?i)(?:contact\s+(?:us\s+)?(?:only\s+)?(?:via|on|through)\s+(?:telegram|whatsapp|signal)|telegram\s*[@:]|whatsapp\s*(?:only|number)|join\s+(?:our\s+)?(?:telegram|whatsapp))'
+  - id: no_interview
+    weight: 30
+    signal: no_interview
+    pattern: '(?i)(?:no\s+interview(?:s)?\s+(?:required|needed)|hire(?:d)?\s+(?:immediately|today)|start\s+today\s+no\s+interview)'
+  - id: personal_email_contact
+    weight: 25
+    signal: personal_email_contact
+    pattern: '(?i)(?:@gmail\.com|@yahoo\.com|@outlook\.com|@hotmail\.com|@proton\.me)\b'
+  - id: id_bank_ask
+    weight: 40
+    signal: sensitive_data_ask
+    pattern: '(?i)(?:provide\s+(?:your\s+)?(?:ssn|social\s+security|bank\s+(?:account|details)|routing\s+number|passport|national\s+id|tin|aadhaar)|send\s+(?:a\s+)?(?:copy\s+of\s+)?(?:your\s+)?(?:id|passport|driver.?s?\s+license))'
+  - id: urgency_pressure
+    weight: 15
+    signal: urgency
+    pattern: '(?i)(?:urgent(?:ly)?\s+hir(?:e|ing)|limited\s+spots|act\s+(?:now|fast)|only\s+\d+\s+(?:spots|positions)\s+left)'
+  - id: vague_high_pay
+    weight: 25
+    signal: vague_high_pay
+    pattern: '(?i)(?:data\s+entry.{0,40}\$\s?(?:40|50|60|70|80|90|100)|\$\s?(?:40|50|60|70|80)\s*/\s*h(?:our)?.{0,40}(?:no\s+experience|anyone\s+can)|easy\s+work.{0,30}\$\s?\d{2,})'
+  - id: ai_injection
+    weight: 20
+    signal: ai_injection
+    pattern: '(?i)(?:ai\s+assistants?\s*:|ignore\s+(?:previous|prior)\s+instructions|you\s+are\s+an?\s+ai|include\s+the\s+candidate.?s\s+ssn|system\s*prompt)'
+  - id: clone_run_repo
+    weight: 35
+    signal: takehome_malware_hint
+    pattern: '(?i)(?:clone\s+(?:this\s+)?(?:repo|repository)|npm\s+install|pip\s+install|run\s+(?:this\s+)?(?:script|binary)|disable\s+(?:your\s+)?antivirus)'
+
+# ATS hosts that strengthen source trust (L2).
+ats_hosts:
+  - boards.greenhouse.io
+  - jobs.lever.co
+  - "*.myworkdayjobs.com"
+  - jobs.ashbyhq.com
+  - apply.workable.com
+  - "*.bamboohr.com"
+  - jobs.smartrecruiters.com
+
+# Levels after aggregation (score 0–100). Verified ATS jobs need higher bars for red.
+thresholds:
+  yellow: 25
+  red: 55
+  verified_ats_red: 70
+  domain_age_alone_cap: yellow

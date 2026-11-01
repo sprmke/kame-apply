@@ -1,0 +1,105 @@
+{
+  "id": "01_nurse_ph",
+  "country": "PH",
+  "role": "registered_nurse",
+  "layout": "single",
+  "resume_text": "Ana Reyes\nRegistered Nurse\nSt. Luke's Medical Center | PH\n2019-03 – Present\nLed work as registered nurse with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Ana Reyes",
+    "experiences": [
+      {
+        "company": "St. Luke's Medical Center",
+        "title": "Registered Nurse",
+        "start_date": "2019-03-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Ana Reyes",
+      "confidence": 1.0,
+      "span": "Ana Reyes"
+    },
+    "headline": {
+      "value": "Registered Nurse",
+      "confidence": 1.0,
+      "span": "Registered Nurse"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "St. Luke's Medical Center",
+        "title": "Registered Nurse",
+        "employment_type": null,
+        "location": "PH",
+        "start_date": "2019-03-01",
+        "end_date": null,
+        "is_current": true,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as registered nurse with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as registered nurse with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "St. Luke's Medical Center | PH\n2019-03 – Present"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

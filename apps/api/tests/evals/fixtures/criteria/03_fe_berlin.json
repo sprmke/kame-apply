@@ -1,0 +1,18 @@
+{
+  "id": "03_fe_berlin",
+  "lang": "en",
+  "text": "Senior frontend engineer in Berlin, hybrid, TypeScript",
+  "expected": {
+    "titles": ["Frontend Engineer"],
+    "seniority": ["senior"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Frontend Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

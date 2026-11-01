@@ -1,0 +1,26 @@
+{
+  "id": "49_database_administrator_zurich",
+  "lang": "en",
+  "text": "staff database administrator in Zurich, full-time",
+  "expected": {
+    "titles": ["Database Administrator"],
+    "seniority": ["staff"],
+    "locations": ["Zurich"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Database Administrator",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Zurich"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

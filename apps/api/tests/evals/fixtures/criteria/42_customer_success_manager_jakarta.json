@@ -1,0 +1,26 @@
+{
+  "id": "42_customer_success_manager_jakarta",
+  "lang": "en",
+  "text": "mid customer success manager in Jakarta, full-time",
+  "expected": {
+    "titles": ["Customer Success Manager"],
+    "seniority": ["mid"],
+    "locations": ["Jakarta"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Customer Success Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Jakarta"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

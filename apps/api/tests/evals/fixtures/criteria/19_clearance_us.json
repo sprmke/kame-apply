@@ -1,0 +1,17 @@
+{
+  "id": "19_clearance_us",
+  "lang": "en",
+  "text": "Security engineer, secret clearance",
+  "expected": {
+    "titles": ["Security Engineer"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Security Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ]
+  }
+}

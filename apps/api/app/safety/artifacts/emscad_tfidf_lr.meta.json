@@ -1,0 +1,7 @@
+{
+  "version": "emscad_tfidf_lr_v1",
+  "n_samples": 13,
+  "n_scam": 8,
+  "emscad": false,
+  "trained": true
+}

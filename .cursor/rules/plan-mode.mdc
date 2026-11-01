@@ -1,0 +1,16 @@
+---
+description: Plan mode output path and index maintenance
+alwaysApply: false
+---
+
+# Plan mode
+
+When planning **without implementing** (Cursor Plan mode, or user asks for a plan only):
+
+1. **Do not write application code** during planning.
+2. Save the finished plan to **`docs/workflow/planned/<slug>.md`** (no date prefix).
+3. Add a row to **`docs/workflow/planned/README.md`**.
+
+If Plan mode blocks file writes, persist the plan as the **first** step after switching to Agent mode.
+
+Superpowers uses the same paths — see `.agent/skills/superpowers/SKILL.md`.

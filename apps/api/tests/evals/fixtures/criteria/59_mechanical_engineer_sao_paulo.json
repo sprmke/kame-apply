@@ -1,0 +1,26 @@
+{
+  "id": "59_mechanical_engineer_sao_paulo",
+  "lang": "en",
+  "text": "staff mechanical engineer in Sao Paulo, full-time",
+  "expected": {
+    "titles": ["Mechanical Engineer"],
+    "seniority": ["staff"],
+    "locations": ["Sao Paulo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Mechanical Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Sao Paulo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

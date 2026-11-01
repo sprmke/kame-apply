@@ -1,0 +1,105 @@
+{
+  "id": "02_fe_us",
+  "country": "US",
+  "role": "frontend_engineer",
+  "layout": "single",
+  "resume_text": "Jordan Lee\nSenior Frontend Engineer\nAcme Labs | US\n2020-01 – 2024-06\nLed work as senior frontend engineer with measurable outcomes.\nSkills: communication, teamwork, documentation",
+  "expected": {
+    "display_name": "Jordan Lee",
+    "experiences": [
+      {
+        "company": "Acme Labs",
+        "title": "Senior Frontend Engineer",
+        "start_date": "2020-01-15",
+        "end_date": "2024-06-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Jordan Lee",
+      "confidence": 1.0,
+      "span": "Jordan Lee"
+    },
+    "headline": {
+      "value": "Senior Frontend Engineer",
+      "confidence": 1.0,
+      "span": "Senior Frontend Engineer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "language": {
+      "value": null,
+      "confidence": 0.5,
+      "span": null
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Acme Labs",
+        "title": "Senior Frontend Engineer",
+        "employment_type": null,
+        "location": "US",
+        "start_date": "2020-01-01",
+        "end_date": "2024-06-01",
+        "is_current": false,
+        "description": null,
+        "bullets": [
+          {
+            "text": "Led work as senior frontend engineer with measurable outcomes.",
+            "metrics": [],
+            "skills": [],
+            "confidence": 1.0,
+            "span": "Led work as senior frontend engineer with measurable outcomes."
+          }
+        ],
+        "confidence": 1.0,
+        "span": "Acme Labs | US\n2020-01 – 2024-06\nLed work as senior frontend engineer with measurable outcomes."
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "communication",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "communication"
+      },
+      {
+        "name": "teamwork",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "teamwork"
+      },
+      {
+        "name": "documentation",
+        "level": null,
+        "years": null,
+        "last_used": null,
+        "confidence": 1.0,
+        "span": "documentation"
+      }
+    ]
+  }
+}

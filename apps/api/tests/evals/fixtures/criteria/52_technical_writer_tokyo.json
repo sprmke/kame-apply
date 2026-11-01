@@ -1,0 +1,26 @@
+{
+  "id": "52_technical_writer_tokyo",
+  "lang": "en",
+  "text": "mid technical writer in Tokyo, full-time",
+  "expected": {
+    "titles": ["Technical Writer"],
+    "seniority": ["mid"],
+    "locations": ["Tokyo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Technical Writer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["mid"],
+    "locations": [
+      {
+        "place": "Tokyo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

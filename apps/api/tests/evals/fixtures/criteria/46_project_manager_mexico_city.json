@@ -1,0 +1,26 @@
+{
+  "id": "46_project_manager_mexico_city",
+  "lang": "en",
+  "text": "junior project manager in Mexico City, full-time",
+  "expected": {
+    "titles": ["Project Manager"],
+    "seniority": ["junior"],
+    "locations": ["Mexico City"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Project Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["junior"],
+    "locations": [
+      {
+        "place": "Mexico City"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

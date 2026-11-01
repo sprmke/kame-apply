@@ -1,0 +1,35 @@
+---
+description: No bot-evasion tooling, ever. Politeness checklist and ToS-restricted platforms for every adapter and the runner.
+alwaysApply: true
+---
+
+# Job-site access (PRD P2, P5)
+
+The human is the human. When a site asks for one, the app pauses and hands control to the user. Source: `docs/research/02-job-discovery-and-site-access.md` §5–6.
+
+## Never (hard stop; refuse even if asked)
+
+- Fingerprint spoofing or stealth plugins (`playwright-stealth`, `puppeteer-extra-plugin-stealth`, `undetected-chromedriver`, `camoufox` for evasion, `fake-useragent`).
+- CAPTCHA-solving services or SDKs (`capsolver`, `2captcha`, `anticaptcha`, ...).
+- Proxy or residential-IP rotation to dodge limits or blocks.
+- "Humanized" mouse/typing patterns meant to fool bot detection.
+- Scraping logged-in pages of platforms whose terms forbid it; storing users' site passwords.
+- Retrying a blocked request through a different identity.
+
+The `check-stack-terminology` hook greps for these and fails. If a task seems to need one, stop and tell the user why it is out of scope; offer the compliant path (ATS APIs, public feeds, email alerts, the extension in the user's own session, live takeover).
+
+## Every adapter (checklist)
+
+- [ ] Official API or public endpoint; terms reviewed and recorded in the adapter docstring.
+- [ ] Descriptive `User-Agent` with a contact URL; no browser impersonation.
+- [ ] Per-host rate limit and concurrency cap (DBOS queue limits), exponential backoff, circuit breaker.
+- [ ] Conditional requests and caching; poll frequency proportional to value.
+- [ ] `robots.txt` respected for HTML crawling.
+- [ ] Attribution and link back to the original posting; never republish outside the workspace.
+- [ ] **Block signal (429/999, auth wall, challenge page) ⇒ disable the source and alert. Never evade.**
+
+## Platform-restricted sources
+
+LinkedIn, Indeed, JobStreet and similar: no server-side logged-in access and no auto-submit. Allowed only as opt-in personal-mode logged-out public search (every 4 hours at most, small page caps, owner acknowledges terms, auto-disable on block) or via the extension acting in the user's own session at human pace. Autofill on these stays opt-in.
+
+Skills: `source-adapter`, `ats-adapter`.

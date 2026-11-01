@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "context7": { "command": "npx", "args": ["-y", "@upstash/context7-mcp"] },
+    "markitdown": { "command": "markitdown-mcp" },
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@latest"] },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://kame_apply_ro:kame_apply_ro_local_only@127.0.0.1:5442/kame_apply"
+      ]
+    }
+  }
+}

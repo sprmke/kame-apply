@@ -1,0 +1,26 @@
+{
+  "id": "30_ml_engineer_jakarta",
+  "lang": "en",
+  "text": "lead ml engineer in Jakarta, full-time",
+  "expected": {
+    "titles": ["ML Engineer"],
+    "seniority": ["lead"],
+    "locations": ["Jakarta"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "ML Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Jakarta"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

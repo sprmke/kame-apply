@@ -1,0 +1,26 @@
+{
+  "id": "35_sales_engineer_sao_paulo",
+  "lang": "en",
+  "text": "lead sales engineer in Sao Paulo, full-time",
+  "expected": {
+    "titles": ["Sales Engineer"],
+    "seniority": ["lead"],
+    "locations": ["Sao Paulo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Sales Engineer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Sao Paulo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

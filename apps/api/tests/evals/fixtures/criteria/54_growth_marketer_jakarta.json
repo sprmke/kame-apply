@@ -1,0 +1,26 @@
+{
+  "id": "54_growth_marketer_jakarta",
+  "lang": "en",
+  "text": "staff growth marketer in Jakarta, full-time",
+  "expected": {
+    "titles": ["Growth Marketer"],
+    "seniority": ["staff"],
+    "locations": ["Jakarta"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Growth Marketer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["staff"],
+    "locations": [
+      {
+        "place": "Jakarta"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

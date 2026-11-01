@@ -1,0 +1,68 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "CLAUDE.md",
+    ".cursor/rules/project-context.mdc",
+    ".cursor/rules/ai-usage.mdc",
+    ".cursor/rules/documentation-maintenance.mdc",
+    ".cursor/rules/ui-minimal-copy.mdc",
+    ".cursor/rules/human-copy.mdc",
+    ".cursor/rules/superpowers-opt-in.mdc",
+    ".cursor/rules/git-commits.mdc",
+    ".cursor/rules/no-prod-deploy.mdc",
+    ".cursor/rules/markitdown-mcp.mdc",
+    ".cursor/rules/route-guides.mdc",
+    ".cursor/rules/audit-logging.mdc",
+    ".cursor/rules/job-site-access.mdc",
+    ".cursor/rules/pii-guard.mdc",
+    ".cursor/rules/workspace-scoping.mdc",
+    "DESIGN.md"
+  ],
+  "skills": {
+    "paths": [".agent/skills"]
+  },
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    },
+    "markitdown": {
+      "type": "local",
+      "command": ["markitdown-mcp"],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "enabled": true
+    },
+    "postgres": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://kame_apply_ro:kame_apply_ro_local_only@127.0.0.1:5442/kame_apply"
+      ],
+      "enabled": true
+    }
+  },
+  "permission": {
+    "edit": {
+      "*": "allow",
+      "apps/api/migrations/versions/**": "deny",
+      ".env.production*": "deny"
+    },
+    "bash": {
+      "*": "allow",
+      "rm -rf /": "deny",
+      "rm -rf ~": "deny",
+      "pnpm run *:prod*": "deny",
+      "git push --force*": "ask"
+    },
+    "skill": {
+      "*": "allow"
+    }
+  }
+}

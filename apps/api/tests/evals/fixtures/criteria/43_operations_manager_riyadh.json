@@ -1,0 +1,26 @@
+{
+  "id": "43_operations_manager_riyadh",
+  "lang": "en",
+  "text": "senior operations manager in Riyadh, full-time",
+  "expected": {
+    "titles": ["Operations Manager"],
+    "seniority": ["senior"],
+    "locations": ["Riyadh"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Operations Manager",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Riyadh"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

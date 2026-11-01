@@ -1,0 +1,26 @@
+{
+  "id": "40_content_marketer_tokyo",
+  "lang": "en",
+  "text": "lead content marketer in Tokyo, full-time",
+  "expected": {
+    "titles": ["Content Marketer"],
+    "seniority": ["lead"],
+    "locations": ["Tokyo"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Content Marketer",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Tokyo"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

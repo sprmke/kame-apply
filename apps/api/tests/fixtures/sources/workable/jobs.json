@@ -1,0 +1,15 @@
+{
+  "name": "Acme",
+  "jobs": [
+    {
+      "shortcode": "w1",
+      "title": "Backend Engineer",
+      "city": "Berlin",
+      "country": "Germany",
+      "telecommuting": false,
+      "url": "https://apply.workable.com/acme/j/w1/",
+      "application_url": "https://apply.workable.com/acme/j/w1/apply/",
+      "published_on": "2026-10-01"
+    }
+  ]
+}

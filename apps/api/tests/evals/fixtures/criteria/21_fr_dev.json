@@ -1,0 +1,18 @@
+{
+  "id": "21_fr_dev",
+  "lang": "fr",
+  "text": "Développeur full stack à Lyon, remote hybride",
+  "expected": {
+    "titles": ["Full Stack Engineer"],
+    "synonyms": ["Développeur full stack"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Full Stack Engineer",
+        "synonyms": ["Développeur full stack"],
+        "exclude": false
+      }
+    ]
+  }
+}

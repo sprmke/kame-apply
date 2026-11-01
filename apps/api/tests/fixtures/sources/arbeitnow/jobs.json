@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "slug": "ab1",
+      "title": "DevOps",
+      "company_name": "DE Co",
+      "url": "https://arbeitnow.com/ab1",
+      "description": "<p>K8s</p>",
+      "location": "Berlin",
+      "remote": false,
+      "job_types": ["full-time"],
+      "created_at": "2026-10-01"
+    }
+  ]
+}

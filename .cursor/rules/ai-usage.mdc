@@ -1,0 +1,44 @@
+---
+description: AI usage — session hygiene, model routing, subagent discipline
+alwaysApply: true
+---
+
+# AI usage — session hygiene
+
+## Sessions
+
+- **One task ≈ one chat.** New phase, feature, bug, or doc pass → new session (`/clear`).
+- Do **not** continue multi-day threads. Long context (>150k) is expensive even when cached.
+- Prefer `/compact` mid-task only if you must stay in-thread; prefer `/clear` when switching goals.
+
+## Models (default)
+
+| Work | Prefer |
+| --- | --- |
+| Implementation, CRUD, UI polish, docs | Default agent model (Composer/Sonnet) |
+| Hard architecture, truthfulness/safety design, RLS and migration design, apply engine | Sonnet + thinking (sparingly) |
+| Opus / high-thinking / Max Mode | Rare — explicit hard judgment only (e.g. checkpoint model, scam-scoring design) |
+| Subagents: verify / test-runner | Cheapest capable model (`fast`/`haiku`) |
+
+Do **not** use high-thinking or Opus for CRUD boilerplate, copy tweaks, or mechanical refactors.
+
+## Subagents
+
+- Default: **no subagents.** One agent + targeted search/read.
+- Spawn `debugger` / `security-auditor` / `test-runner` / `verifier` only when the task matches their purpose (see `.cursor/agents/`).
+- Never chain explore → plan → execute unless the task is genuinely large and ambiguous (use Plan mode instead — `.cursor/rules/plan-mode.mdc`).
+
+## MCP
+
+- `context7` for current library docs (FastAPI, SQLAlchemy, DBOS, PydanticAI, Nuxt, Vue Query, WXT, Playwright: APIs change; note the plugin needs authorization via `/mcp`).
+- `markitdown` for PDF/Office attachments (uploaded resumes, job-offer PDFs) — see `.cursor/rules/markitdown-mcp.mdc`.
+- `postgres` (local dev DB only) for schema/data inspection — never point it at a hosted `DATABASE_URL`.
+- `playwright` for E2E-adjacent exploratory browser sessions; prefer direct code reading for pure logic questions.
+
+## PII in context
+
+Never paste a real resume, answer-bank entry, or sensitive value into a prompt, subagent task, or MCP call beyond what a specific tool call strictly needs. Use synthetic fixtures for exploration; see `.cursor/rules/pii-guard.mdc`.
+
+## Account routing (humans)
+
+Route day-to-day implementation through your default Included/Composer quota; reserve Claude Pro / high-thinking sessions for genuinely hard judgment calls (RLS and tenancy design, safety scoring, apply engine, security review) — not parallel "explore everything" sessions on the same task.

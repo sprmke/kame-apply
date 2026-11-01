@@ -1,0 +1,26 @@
+{
+  "id": "45_policy_analyst_lagos",
+  "lang": "en",
+  "text": "lead policy analyst in Lagos, full-time",
+  "expected": {
+    "titles": ["Policy Analyst"],
+    "seniority": ["lead"],
+    "locations": ["Lagos"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Policy Analyst",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["lead"],
+    "locations": [
+      {
+        "place": "Lagos"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}

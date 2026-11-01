@@ -1,0 +1,18 @@
+---
+description: Workflow doc lifecycle under docs/workflow/
+alwaysApply: false
+---
+
+# Workflow docs lifecycle
+
+| Folder | Purpose |
+| --- | --- |
+| `docs/workflow/intake/` | Raw ideas, scratchpads (`*-design.md`) |
+| `docs/workflow/planned/` | Approved plans (`<slug>.md` + `README.md` index) |
+| `docs/workflow/in-progress/` | Current execution docs (one scratchpad per phase: `phase-NN-<slug>.md`) |
+| `docs/workflow/done/` | Shipped, archived with a summary |
+| `docs/workflow/wont-do/` | Explicitly declined |
+
+**No silent moves**: update the index tables when status changes. Skill: `workflow`.
+
+Commands: `/workflow-start`, `/workflow-done`, `/workflow-wont-do`.

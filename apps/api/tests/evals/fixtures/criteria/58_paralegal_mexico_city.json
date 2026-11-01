@@ -1,0 +1,26 @@
+{
+  "id": "58_paralegal_mexico_city",
+  "lang": "en",
+  "text": "senior paralegal in Mexico City, full-time",
+  "expected": {
+    "titles": ["Paralegal"],
+    "seniority": ["senior"],
+    "locations": ["Mexico City"]
+  },
+  "recorded_patch": {
+    "titles": [
+      {
+        "title": "Paralegal",
+        "synonyms": [],
+        "exclude": false
+      }
+    ],
+    "seniority": ["senior"],
+    "locations": [
+      {
+        "place": "Mexico City"
+      }
+    ],
+    "employment_types": ["full_time"]
+  }
+}
