@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Chrome: Web",
+      "detail": "Requires Dev: Start everything or Dev: Web only",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3100",
+      "webRoot": "${workspaceFolder}/apps/web",
+      "sourceMaps": true
+    },
+    {
+      "name": "Chrome: Web + start web",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3100",
+      "webRoot": "${workspaceFolder}/apps/web",
+      "sourceMaps": true,
+      "preLaunchTask": "Dev: Web only"
+    },
+    {
+      "name": "Chrome: Attach :9222",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}/apps/web"
+    },
+    {
+      "name": "Python: API (uvicorn)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--reload", "--port", "8100"],
+      "cwd": "${workspaceFolder}/apps/api",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "envFile": "${workspaceFolder}/apps/api/.env",
+      "justMyCode": false
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug: API + Chrome Web",
+      "detail": "Starts the API debugger, then opens the web app on :3100",
+      "configurations": ["Python: API (uvicorn)", "Chrome: Web"],
+      "stopAll": true
+    }
+  ]
+}
