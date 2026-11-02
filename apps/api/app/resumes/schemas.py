@@ -41,6 +41,8 @@ class CritiqueRead(BaseModel):
     top_fixes: list[Any] = Field(default_factory=list)
     findings: list[Any] = Field(default_factory=list)
     skim_zone: dict[str, Any] = Field(default_factory=dict)
+    # Present when the LLM rubric ran; absent for the deterministic-only report.
+    ai: dict[str, Any] | None = None
 
 
 class ImproveBody(BaseModel):

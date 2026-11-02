@@ -851,6 +851,7 @@ export const zCriteriaCompileRequest = z.object({
  * CritiqueRead
  */
 export const zCritiqueRead = z.object({
+    ai: z.record(z.unknown()).nullish(),
     categories: z.record(z.unknown()),
     findings: z.array(z.unknown()).optional(),
     skim_zone: z.record(z.unknown()).optional(),

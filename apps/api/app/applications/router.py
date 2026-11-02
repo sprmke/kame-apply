@@ -28,6 +28,7 @@ Write = Depends(require_action("data.write"))
 )
 async def start_tailor(
     track_job_id: uuid.UUID,
+    request: Request,
     body: s.TailorStartBody | None = None,
     ctx: WorkspaceContext = Write,
 ):
@@ -37,6 +38,8 @@ async def start_tailor(
         track_job_id,
         include_cover_letter=body.include_cover_letter,
         base_version_id=body.base_version_id,
+        run_structured=getattr(request.app.state, "run_structured", None),
+        model_factory=getattr(request.app.state, "model_factory", None),
     )
 
 

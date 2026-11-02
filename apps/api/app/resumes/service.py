@@ -15,6 +15,7 @@ from app.core.security import WorkspaceContext
 from app.profiles import models as pm
 from app.resumes.content import ResumeContent
 from app.resumes.critique import critique_resume
+from app.resumes.critique_ai import enrich_critique
 from app.resumes.from_profile import build_from_profile
 from app.resumes.generate import apply_accepted_changes, propose_improvements
 from app.resumes.insights import compute_market_insights
@@ -222,7 +223,13 @@ async def get_version(ctx: WorkspaceContext, version_id: uuid.UUID) -> ResumeVer
     return row
 
 
-async def critique(ctx: WorkspaceContext, version_id: uuid.UUID) -> dict[str, Any]:
+async def critique(
+    ctx: WorkspaceContext,
+    version_id: uuid.UUID,
+    *,
+    run_structured=None,
+    model_factory=None,
+) -> dict[str, Any]:
     row = await get_version(ctx, version_id)
     content = ResumeContent.model_validate(row.content or {})
     insights = None
@@ -242,6 +249,16 @@ async def critique(ctx: WorkspaceContext, version_id: uuid.UUID) -> dict[str, An
         market_skills=(insights or {}).get("skills"),
         target_role=content.target_role,
     )
+    report = await enrich_critique(
+        ctx,
+        get_settings(),
+        report=report,
+        content=content,
+        market_skills=(insights or {}).get("skills"),
+        target_role=content.target_role,
+        run_structured=run_structured,
+        model_factory=model_factory,
+    )
     row.critique = report
     row.updated_at = datetime.now(UTC)
     await audit.record(
@@ -249,7 +266,10 @@ async def critique(ctx: WorkspaceContext, version_id: uuid.UUID) -> dict[str, An
         action="resume.critiqued",
         target_type="resume_version",
         target_id=str(row.id),
-        after={"fixes": len(report.get("top_fixes") or [])},
+        after={
+            "fixes": len(report.get("top_fixes") or []),
+            "ai": bool(report.get("ai")),
+        },
         actor_type="system",
     )
     await ctx.session.flush()

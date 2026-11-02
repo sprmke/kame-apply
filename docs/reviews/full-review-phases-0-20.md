@@ -96,7 +96,7 @@ The extension accepted any `apiBase` from a `kame.connect` message; a look-alike
 
 These are real and documented in the phase files rather than silently claimed done:
 
-- Resume critique, verifier, Lens and cover-letter prompts are deterministic; the registered LLM prompts are not called. Tailoring runs synchronously in the request and pre-applies its diff.
+- Resume critique and the cover letter now call their LLM prompts with a deterministic fallback and a sentence-level verifier. The Lens and the reviewer pass are still deterministic, and tailoring runs synchronously in the request and pre-applies its diff.
 - Discovery run-now is synchronous; the SSE progress stream cannot show intermediate counts.
 - Layer-2 feed sources do not mark closed jobs; conditional requests and `robots.txt` are not implemented for board crawling.
 - No runner container image/compose service, no crash-recovery reaper for runs stuck in `running`, no resume upload by the runner, no persisted step screenshots.

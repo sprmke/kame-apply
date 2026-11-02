@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.core.security import WorkspaceContext, require_action
 from app.resumes import schemas as s
@@ -44,8 +44,13 @@ async def get_resume(version_id: uuid.UUID, ctx: WorkspaceContext = Read):
 
 
 @router.post("/resumes/{version_id}/critique", response_model=s.CritiqueRead)
-async def critique_resume(version_id: uuid.UUID, ctx: WorkspaceContext = Write):
-    return await service.critique(ctx, version_id)
+async def critique_resume(version_id: uuid.UUID, request: Request, ctx: WorkspaceContext = Write):
+    return await service.critique(
+        ctx,
+        version_id,
+        run_structured=getattr(request.app.state, "run_structured", None),
+        model_factory=getattr(request.app.state, "model_factory", None),
+    )
 
 
 @router.post("/resumes/{version_id}/improve", response_model=list[s.ChangeRead])

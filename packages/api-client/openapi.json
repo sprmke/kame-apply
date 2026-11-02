@@ -3906,6 +3906,18 @@
       },
       "CritiqueRead": {
         "properties": {
+          "ai": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai"
+          },
           "categories": {
             "additionalProperties": true,
             "title": "Categories",

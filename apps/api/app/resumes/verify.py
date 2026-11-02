@@ -122,7 +122,12 @@ def _evidence_texts(facts: dict[str, Any], refs: list[str]) -> str:
     return " ".join(by_id.get(r, "") for r in refs).lower()
 
 
-def verify_line(line: ResumeLine, facts: dict[str, Any]) -> list[dict[str, Any]]:
+def verify_line(
+    line: ResumeLine,
+    facts: dict[str, Any],
+    *,
+    allowed_entities: set[str] | None = None,
+) -> list[dict[str, Any]]:
     """Return rejection records for unsupported numbers/claims on a line."""
     rejected: list[dict[str, Any]] = []
     if line.unverified and not line.evidence_refs:
@@ -191,15 +196,20 @@ def verify_line(line: ResumeLine, facts: dict[str, Any]) -> list[dict[str, Any]]
             )
 
     # Named entities (employers, products, technologies) must come from the evidence too.
+    # `allowed_entities` carries names from the target job (company, title) that are not profile
+    # facts but are legitimate to mention.
+    allowed = allowed_entities or set()
     for noun in _proper_nouns(line.text):
-        if noun.lower() not in evid_low and noun.lower() not in profile:
-            rejected.append(
-                {
-                    "line_id": line.id,
-                    "reason": "unsupported_entity",
-                    "detail": f"Named entity {noun} has no profile evidence",
-                }
-            )
+        low_noun = noun.lower()
+        if low_noun in evid_low or low_noun in profile or low_noun in allowed:
+            continue
+        rejected.append(
+            {
+                "line_id": line.id,
+                "reason": "unsupported_entity",
+                "detail": f"Named entity {noun} has no profile evidence",
+            }
+        )
     return rejected
 
 
@@ -218,7 +228,8 @@ def verify_operation(
     after_text: str,
     evidence_refs: list[str],
     facts: dict[str, Any],
+    allowed_entities: set[str] | None = None,
 ) -> VerifyResult:
     line = ResumeLine(text=after_text, evidence_refs=evidence_refs)
-    rejected = verify_line(line, facts)
+    rejected = verify_line(line, facts, allowed_entities=allowed_entities)
     return VerifyResult(ok=not rejected, rejected=rejected, gaps=[r["detail"] for r in rejected])

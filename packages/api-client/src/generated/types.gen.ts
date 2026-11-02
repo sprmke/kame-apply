@@ -2120,6 +2120,12 @@ export type CriteriaV1 = {
  */
 export type CritiqueRead = {
     /**
+     * Ai
+     */
+    ai?: {
+        [key: string]: unknown;
+    } | null;
+    /**
      * Categories
      */
     categories: {

@@ -10,6 +10,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.core.config import Settings
+from app.core.storage import MemoryStorage
 from app.ingest.parsers import detect_provider, parse_mime, unwrap_tracking_url
 from app.main import create_app
 from tests.conftest import TEST_DB_URL
@@ -194,6 +195,8 @@ async def env_unsecreted():
         auth_rate_limit_enabled=False,
     )
     app = create_app(settings)
+    # Dev-like environment for the fail-closed check, but no object store in CI.
+    app.state.storage = MemoryStorage()
     async with app.router.lifespan_context(app):
         async with AsyncClient(
             transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://t"
