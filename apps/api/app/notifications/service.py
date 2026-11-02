@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.audit import service as audit
 from app.auth.models import User
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.mail import Mail, Mailer
 from app.core.security import WorkspaceContext
@@ -113,6 +114,31 @@ async def emit(
                         await mailer.send(
                             Mail(to=user.email, subject=title[:120], text=body or title)
                         )
+
+        # Phone and Telegram alerts for Needs-you class events (Phase 17).
+        settings = get_settings()
+        if event in ("needs_review", "risk_flag", "run_failed", "budget_reached"):
+            href = str((payload or {}).get("href") or "/notifications")
+            if await _pref_enabled(ctx, user_id=user_id, channel="push", event=event):
+                from app.ingest import push as push_svc
+
+                await push_svc.notify_user(
+                    ctx,
+                    user_id=user_id,
+                    title=title,
+                    body=body,
+                    href=href,
+                    settings=settings,
+                )
+            if await _pref_enabled(ctx, user_id=user_id, channel="telegram", event=event):
+                from app.ingest import telegram as tg_svc
+
+                await tg_svc.notify_user(
+                    ctx,
+                    user_id=user_id,
+                    text=f"{title}\n{body}".strip(),
+                    settings=settings,
+                )
 
         return row
     except Exception:

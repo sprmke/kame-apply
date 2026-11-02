@@ -26,16 +26,54 @@ async def test_activity_requires_manager_filters_and_paginates(env):  # noqa: F8
     prefix = (await c.get("/api/v1/activity?action=member.", headers=owner.h(ws))).json()
     assert {i["action"] for i in prefix["items"]} == {"member.joined"}
     page = (await c.get("/api/v1/activity?limit=2", headers=owner.h(ws))).json()
-    assert len(page["items"]) == 2 and page["next_before"]
+    assert len(page["items"]) == 2 and page["next_before"] and page["next_before_id"]
     nxt = (
         await c.get(
             "/api/v1/activity",
-            params={"limit": 2, "before": page["next_before"]},
+            params={
+                "limit": 2,
+                "before": page["next_before"],
+                "before_id": page["next_before_id"],
+            },
             headers=owner.h(ws),
         )
     ).json()
     assert {i["id"] for i in nxt["items"]}.isdisjoint({i["id"] for i in page["items"]})
     assert (await c.get("/api/v1/activity?limit=0", headers=owner.h(ws))).status_code == 422
+
+
+async def test_activity_pagination_does_not_drop_rows_sharing_a_timestamp(env):  # noqa: F811
+    """Rows written in one transaction share created_at; the id must break the tie."""
+    c, outbox = env
+    owner, ws, _p = await team(c, outbox)
+    # Five rows, one transaction, one timestamp.
+    e = create_async_engine(TEST_OWNER_URL)
+    async with e.begin() as conn:
+        for _ in range(5):
+            await conn.execute(
+                text(
+                    "INSERT INTO activity_log (id, workspace_id, actor_type, action) "
+                    "VALUES (gen_random_uuid(), :w, 'user', 'test.tied')"
+                ),
+                {"w": uuid.UUID(ws)},
+            )
+    await e.dispose()
+
+    seen: list[str] = []
+    cursor: dict[str, str] = {"limit": "2", "action": "test.tied"}
+    for _ in range(4):
+        page = (await c.get("/api/v1/activity", params=cursor, headers=owner.h(ws))).json()
+        seen.extend(i["id"] for i in page["items"])
+        if not page["next_before"]:
+            break
+        cursor = {
+            "limit": "2",
+            "action": "test.tied",
+            "before": page["next_before"],
+            "before_id": page["next_before_id"],
+        }
+    assert len(seen) == 5
+    assert len(set(seen)) == 5
 
 
 async def test_activity_never_crosses_workspaces_or_shows_platform_rows(env):  # noqa: F811
@@ -141,3 +179,24 @@ async def test_kek_rewrap_script(env):  # noqa: F811
     # restore the dev key so later tests in this session still decrypt
     await rewrap(old, new, TEST_OWNER_URL)
     await e.dispose()
+
+
+async def test_logout_writes_a_session_revoked_audit_event(env):  # noqa: F811
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    out = await c.post("/api/v1/auth/logout", headers=h)
+    assert out.status_code in {200, 204}
+    e = create_async_engine(TEST_OWNER_URL)
+    async with e.begin() as conn:
+        n = (
+            await conn.execute(
+                text(
+                    "SELECT count(*) FROM activity_log "
+                    "WHERE action = 'auth.session_revoked' AND actor_id = :u"
+                ),
+                {"u": me.id},
+            )
+        ).scalar_one()
+    await e.dispose()
+    assert n == 1

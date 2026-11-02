@@ -47,7 +47,7 @@ Reliably ingest a large, fresh, deduplicated pool of real open jobs worldwide fr
 - [x] Track "Sources" tab: enable/disable per source, per-source params, coverage note for the Track's countries (`country_source_registry`).
 
 ### Frontend
-- [x] Run-now progress (SSE): counts by stage.
+- [ ] Run-now progress (SSE): counts by stage. `GET /discovery-runs/{id}` exposes `progress`, but the run executes inline in the request transaction, so a poller cannot see intermediate counts until commit. Run-now is synchronous and returns the finished run.
 - [x] Sources tab; admin source-health page; "add careers page" dialog.
 
 ## Edge cases & failure modes
@@ -71,4 +71,4 @@ Reliably ingest a large, fresh, deduplicated pool of real open jobs worldwide fr
 
 ## Exit criteria
 
-- [x] Scenarios 1–5 pass; ≥ 10 adapters live and healthy; directory ≥ 5,000 validated boards; dedupe targets met.
+- [x] Scenarios 1–5 pass; ≥ 10 adapters live and healthy; dedupe targets met. Directory: 64 curated validated boards plus ≥5,000 unverified candidate slugs (never polled); the original "≥5,000 validated" target is not met and needs real board validation.

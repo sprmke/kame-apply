@@ -18,7 +18,7 @@ scan() { # label pattern files...
   if [[ -n "$hits" ]]; then echo "VIOLATION ($label):"; echo "$hits"; V=$((V + 1)); fi
 }
 
-EXCLUDES=(--exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.git --exclude-dir=docs --exclude-dir=.agent --exclude-dir=.cursor --exclude-dir=.claude --exclude-dir=.opencode --exclude-dir=scripts --exclude-dir=.nuxt --exclude-dir=.output --exclude-dir=.wxt --exclude=opencode.json --exclude=CLAUDE.md --exclude=README.md --exclude=*.md --exclude=*.mdc)
+EXCLUDES=(--exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.git --exclude-dir=docs --exclude-dir=.agent --exclude-dir=.agents --exclude-dir=.cursor --exclude-dir=.claude --exclude-dir=.codex --exclude-dir=.opencode --exclude-dir=scripts --exclude-dir=.nuxt --exclude-dir=.output --exclude-dir=.wxt --exclude=opencode.json --exclude=CLAUDE.md --exclude=AGENTS.md --exclude=README.md --exclude=*.md --exclude=*.mdc)
 
 scan "bot-evasion tooling" "$EVASION" "${EXCLUDES[@]}" .
 

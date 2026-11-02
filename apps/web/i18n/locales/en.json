@@ -161,7 +161,6 @@
     "skip": "Skip",
     "empty": "No gap items. Suggest from track must-skills."
   },
-
   "onboarding": {
     "title": "Get set up",
     "ai": "Add an AI key",
@@ -626,7 +625,8 @@
     "template_not_found": "Template not found.",
     "reorder_mismatch": "Track order list is out of date. Refresh and try again.",
     "geocode_not_found": "Place not found.",
-    "ats_not_detected": "Could not detect an ATS from that URL."
+    "ats_not_detected": "Could not detect an ATS from that URL.",
+    "storage_unavailable": "Files could not be saved. Try again."
   },
   "autoSubmit": {
     "title": "Auto-submit",

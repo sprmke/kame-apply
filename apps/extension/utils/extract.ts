@@ -1,3 +1,17 @@
+// Never read or transmit these values, whatever the input type or autocomplete token says.
+const SENSITIVE_LABEL =
+  /(ssn|social\s*security|national\s*id|passport|tax\s*id|bank|account\s*number|routing|iban|swift|card\s*number|credit\s*card|date\s*of\s*birth|birth\s*date|dob)/i;
+const SENSITIVE_AUTOCOMPLETE = /^(cc-|current-password|new-password|one-time-code|bday|sex$|tax$)/i;
+
+export function isSensitiveField(el: HTMLElement, label: string): boolean {
+  const input = el as HTMLInputElement;
+  if ((input.type || "").toLowerCase() === "password") return true;
+  const ac = (el.getAttribute("autocomplete") || "").trim();
+  if (ac && SENSITIVE_AUTOCOMPLETE.test(ac)) return true;
+  const name = el.getAttribute("name") || "";
+  return SENSITIVE_LABEL.test(`${label} ${name}`);
+}
+
 export type ExtractedField = {
   id: string;
   label: string;
@@ -61,8 +75,9 @@ export function extractFields(root: ParentNode = document): ExtractedField[] {
   for (const el of Array.from(nodes)) {
     if ((el as HTMLInputElement).disabled) continue;
     const type = fieldType(el as HTMLInputElement);
-    // Never read sensitive values from the page for transmission
-    const sensitiveType = type === "password";
+    // Never read sensitive values from the page for transmission.
+    const label = labelFor(el);
+    const sensitiveType = isSensitiveField(el, label);
     const id = el.getAttribute("id") || el.getAttribute("name") || `field_${i}`;
     const section =
       el
@@ -71,7 +86,7 @@ export function extractFields(root: ParentNode = document): ExtractedField[] {
         ?.textContent?.trim() || "";
     out.push({
       id: `${id}#${i}`,
-      label: labelFor(el),
+      label,
       name: el.getAttribute("name") || "",
       type,
       autocomplete: el.getAttribute("autocomplete") || "",

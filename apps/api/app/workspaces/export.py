@@ -43,6 +43,8 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
     )[0]
 
     # Literals only; RLS still scopes tenant tables when app.workspace_id is set.
+    # `jobs` is a global (non-tenant) table, so it is exported only through this workspace's
+    # track_jobs rows instead of a bare SELECT *.
     tables_star = [
         "tracks",
         "track_criteria",
@@ -57,7 +59,6 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
         "profile_skills",
         "answer_bank",
         "voice_profiles",
-        "jobs",
         "track_jobs",
         "applications",
         "application_events",
@@ -73,7 +74,10 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
         "format_version": 1,
         "workspace": ws,
         "members": await _table_rows(
-            ctx, "SELECT user_id, role, is_active, created_at FROM workspace_members"
+            ctx,
+            "SELECT user_id, role, is_active, created_at FROM workspace_members "
+            "WHERE workspace_id = CAST(:wid AS uuid)",
+            {"wid": wid},
         ),
         "ai_credentials_meta": await _table_rows(
             ctx,
@@ -102,6 +106,15 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
     }
     for table in tables_star:
         payload[table] = await _table_rows(ctx, f"SELECT * FROM {table}")  # noqa: S608
+    payload["jobs"] = await _table_rows(
+        ctx,
+        "SELECT j.id, j.title, j.company_id, j.locations, j.work_mode, j.salary, j.status, "
+        "j.canonical_url, j.apply_url, j.posted_at, j.first_seen_at, tj.score, tj.status AS "
+        "track_status "
+        "FROM jobs j JOIN track_jobs tj ON tj.job_id = j.id "
+        "WHERE tj.workspace_id = CAST(:wid AS uuid)",
+        {"wid": wid},
+    )
     return payload
 
 

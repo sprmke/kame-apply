@@ -9,10 +9,26 @@ _REDACTED_KEYS = frozenset(
 )
 
 
+def _scrub(value: object, depth: int = 0) -> object:
+    """Recursively redact sensitive keys in nested dicts/lists (depth-limited)."""
+    if depth > 6:
+        return value
+    if isinstance(value, dict):
+        return {
+            k: ("[redacted]" if str(k).lower() in _REDACTED_KEYS else _scrub(v, depth + 1))
+            for k, v in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return type(value)(_scrub(v, depth + 1) for v in value)
+    return value
+
+
 def _redact(_logger: object, _method: str, event_dict: structlog.typing.EventDict):
     for key in list(event_dict):
         if key.lower() in _REDACTED_KEYS:
             event_dict[key] = "[redacted]"
+        else:
+            event_dict[key] = _scrub(event_dict[key])
     return event_dict
 
 

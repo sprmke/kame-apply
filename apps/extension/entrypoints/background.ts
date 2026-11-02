@@ -1,4 +1,4 @@
-import { apiFetch } from "../utils/api";
+import { apiFetch, isAllowedApiBase, looksLikeExtensionToken } from "../utils/api";
 import { clearSession, getSession, setSession, type ExtSession } from "../utils/storage";
 import { detectPlatform } from "../utils/platforms";
 import { initExtensionSentry } from "./background/sentry";
@@ -81,7 +81,6 @@ export default defineBackground(() => {
             url: page.url,
             title: page.hints?.title || tab.title || "",
             company: page.hints?.company || "",
-            description_text: page.hints?.description_text || "",
             json_ld: page.hints?.json_ld || null,
             track_id: session.trackId || null,
             platform: page.platform || detectPlatform(page.url),
@@ -192,7 +191,12 @@ export default defineBackground(() => {
   // Web app handshake: Settings → Connect extension
   browser.runtime.onMessageExternal.addListener((msg, _sender, sendResponse) => {
     const m = msg as ConnectMsg;
-    if (m?.type === "kame.connect" && m.token && m.workspaceId && m.apiBase) {
+    if (
+      m?.type === "kame.connect" &&
+      looksLikeExtensionToken(m.token || "") &&
+      m.workspaceId &&
+      isAllowedApiBase(m.apiBase || "")
+    ) {
       const session: ExtSession = {
         token: m.token,
         workspaceId: m.workspaceId,
@@ -201,6 +205,10 @@ export default defineBackground(() => {
         profileId: m.profileId,
       };
       setSession(session).then(() => sendResponse({ ok: true }));
+      return true;
+    }
+    if (m?.type === "kame.connect") {
+      sendResponse({ ok: false, error: "Untrusted connect request" });
       return true;
     }
     if ((msg as { type?: string })?.type === "kame.ping") {

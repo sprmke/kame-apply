@@ -19,7 +19,7 @@ Cover LinkedIn, JobStreet, Indeed, Glassdoor, and other gated boards through the
 - [x] Cloudflare Email Routing catch-all → Email Worker → signed webhook to API (raw MIME to R2).
 - [x] Parsers: LinkedIn, JobStreet/SEEK, Indeed, Glassdoor, Kalibrr, Google Alerts, generic; link unwrapping (tracking redirects resolved safely server-side with SSRF protection).
 - [x] Gmail-forward verification handling (forward confirmation emails surfaced to the user).
-- [x] PWA (manifest, service worker, VAPID web push), notification permission UX at the right moment.
+- [x] PWA (manifest, service worker, VAPID web push via `pywebpush`), notification permission UX at the right moment. Requires `VAPID_PRIVATE_KEY` (PEM contents) and `VAPID_PUBLIC_KEY`; without them push logs and sends nothing. Push and Telegram dispatch for Needs-you class events.
 - [x] Telegram bot (webhook), link/unlink, message templates, deep links.
 - [x] Optional personal/self-hosted mode: Gmail API listener (port kame-homes `gmail-listener`) behind a flag.
 

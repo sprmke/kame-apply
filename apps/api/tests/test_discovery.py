@@ -245,7 +245,9 @@ async def test_directory_seed_and_discover_with_fixtures(env_disc):
         assert len(health.json()) >= 10
         stats = await c.get("/api/v1/sources/directory/stats", headers=h)
         assert stats.status_code == 200
-        assert stats.json()["boards_active"] >= 5000
+        # Only curated boards are validated and polled; generated slugs are candidates.
+        assert stats.json()["boards_active"] >= 30
+        assert stats.json()["boards_active"] + stats.json()["boards_candidate"] >= 5000
         add = await c.post(
             "/api/v1/sources/careers",
             json={"url": "https://boards.greenhouse.io/newco-phase5"},

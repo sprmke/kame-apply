@@ -223,6 +223,32 @@ async def test_runner_token_start_claim_checkpoint_no_submit(env_r):
     gone = await c.get(f"/api/v1/runs/{run['id']}/ephemeral-sensitive", headers=rh)
     assert gone.json()["value"] is None
 
+    # A browser session must not be able to read a typed sensitive value.
+    as_user = await c.get(f"/api/v1/runs/{run['id']}/ephemeral-sensitive", headers=h)
+    assert as_user.status_code == 403
+
+    # The value never lands in the persisted run policy.
+    shown = await c.get(f"/api/v1/runs/{run['id']}", headers=h)
+    assert "_ephemeral_sensitive" not in shown.json()["policy"]
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        raw_policy = (
+            await conn.execute(
+                text("SELECT policy::text FROM apply_runs WHERE id = CAST(:r AS uuid)"),
+                {"r": run["id"]},
+            )
+        ).scalar_one()
+    await engine.dispose()
+    assert "123-45-6789" not in raw_policy
+
+    # Submit approval is only valid on a final_review checkpoint, never on a sensitive one.
+    wrong_kind = await c.post(
+        f"/api/v1/runs/checkpoints/{cp.json()['id']}/resolve",
+        json={"decision": "approve_submit"},
+        headers=h,
+    )
+    assert wrong_kind.status_code == 409
+
     final = await c.post(
         f"/api/v1/runs/{run['id']}/checkpoints",
         json={"kind": "final_review", "detail": {"message": "Review"}},
@@ -232,7 +258,7 @@ async def test_runner_token_start_claim_checkpoint_no_submit(env_r):
     # Complete with confirmation without approve_submit → 409
     bad = await c.post(
         f"/api/v1/runs/{run['id']}/complete",
-        params={"status": "completed", "confirmation": "true"},
+        params={"status": "completed", "confirmation": "true", "runner_id": "r1"},
         headers=rh,
     )
     assert bad.status_code == 409
@@ -246,7 +272,7 @@ async def test_runner_token_start_claim_checkpoint_no_submit(env_r):
 
     ok = await c.post(
         f"/api/v1/runs/{run['id']}/complete",
-        params={"status": "completed", "confirmation": "true"},
+        params={"status": "completed", "confirmation": "true", "runner_id": "r1"},
         headers=rh,
     )
     assert ok.status_code == 200, ok.text

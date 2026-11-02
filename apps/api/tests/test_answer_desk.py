@@ -82,6 +82,50 @@ async def test_parse_six_questions_and_restriction(env_ad):
 
 
 @pytest.mark.asyncio
+async def test_eligibility_and_story_questions_are_not_invented(env_ad):
+    c = env_ad
+    me = await signup(c)
+    h, p = await _profile(c, me)
+
+    parsed = await c.post(
+        "/api/v1/answer-desk/parse",
+        json={
+            "text": "1. Are you authorized to work in the US? Yes / No\n"
+            "2. Tell us about a conflict at work.",
+            "profile_id": p["id"],
+        },
+        headers=h,
+    )
+    assert parsed.status_code == 201, parsed.text
+    items = parsed.json()["items"]
+    auth_item = next(i for i in items if "authorized" in i["question"].lower())
+    story_item = next(i for i in items if "conflict" in i["question"].lower())
+
+    # No work_authorization on the profile yet: the drafter must ask, not guess "Yes".
+    assert auth_item["source"] == "needs_story"
+    assert auth_item["draft"] == ""
+    # No invented story attributed to the user's real employer.
+    assert story_item["source"] == "needs_story"
+    assert story_item["draft"] == ""
+
+    # With an explicit authorization fact, a yes/no question can be answered.
+    patched = await c.patch(
+        f"{P}/{p['id']}",
+        json={"work_authorization": {"countries": ["US"], "needs_sponsorship": False}},
+        headers=h,
+    )
+    assert patched.status_code == 200, patched.text
+    again = await c.post(
+        "/api/v1/answer-desk/parse",
+        json={"text": "Are you authorized to work in the US? Yes / No", "profile_id": p["id"]},
+        headers=h,
+    )
+    item = again.json()["items"][0]
+    assert item["source"] == "draft"
+    assert item["draft"] == "Yes"
+
+
+@pytest.mark.asyncio
 async def test_bank_verbatim_and_save(env_ad):
     c = env_ad
     me = await signup(c)

@@ -116,6 +116,7 @@ class RunnerClient:
         status: str = "completed",
         confirmation: bool = False,
         failure_reason: str | None = None,
+        runner_id: str | None = None,
     ) -> dict:
         r = httpx.post(
             self._url(f"/runs/{run_id}/complete"),
@@ -124,6 +125,7 @@ class RunnerClient:
                 "status": status,
                 "confirmation": str(confirmation).lower(),
                 **({"failure_reason": failure_reason} if failure_reason else {}),
+                **({"runner_id": runner_id} if runner_id else {}),
             },
             timeout=30.0,
         )

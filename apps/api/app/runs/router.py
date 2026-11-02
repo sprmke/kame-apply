@@ -165,13 +165,13 @@ async def mint_live_viewer_token(
         run_id=run.id,
         workspace_id=ctx.workspace_id,
         user_id=ctx.user_id,
-        role="viewer",
+        role=ctx.role,
     )
     if run.live_mode == "off":
         await service.set_live_mode(ctx, run_id, live_mode="screencast")
     return s.LiveTokenRead(
         token=token,
-        role="viewer",
+        role=ctx.role,
         ws_path=f"/api/v1/runs/{run.id}/live",
         expires_at=exp,
         run_id=run.id,
@@ -378,6 +378,9 @@ async def create_checkpoint(
 
 @router.get("/{run_id}/ephemeral-sensitive")
 async def ephemeral_sensitive(run_id: uuid.UUID, ctx: WorkspaceContext = RunnerWrite):
+    # Only the runner credential may read a typed sensitive value; a browser session may not.
+    if ctx.auth_kind != "runner":
+        raise AppError("forbidden", "Runner credential required", 403)
     value = await service.pop_ephemeral_sensitive(ctx, run_id)
     return {"value": value}
 
@@ -388,10 +391,16 @@ async def complete(
     status: str = "completed",
     confirmation: bool = False,
     failure_reason: str | None = None,
+    runner_id: str | None = None,
     ctx: WorkspaceContext = RunnerWrite,
 ):
     run = await service.complete_run(
-        ctx, run_id, status=status, failure_reason=failure_reason, confirmation=confirmation
+        ctx,
+        run_id,
+        status=status,
+        failure_reason=failure_reason,
+        confirmation=confirmation,
+        runner_id=runner_id,
     )
     signal_run_done(str(run_id), {"status": status, "confirmation": confirmation})
     return s.ApplyRunRead(**service.run_to_read(run))

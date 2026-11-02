@@ -13,10 +13,12 @@ from app.applications.models import Application
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.core.ssrf import is_public_http_url_literal
 from app.extension import models as m
 from app.jobs.models import Job
 from app.notifications import service as notif
 from app.resumes.models import ResumeVersion
+from app.runs import ephemeral as ephemeral_vault
 from app.runs.ats import NO_AUTO_SUBMIT, detect_ats
 from app.runs.tokens import hash_token, new_runner_token
 from app.safety.models import JobRisk, RiskOverride
@@ -135,6 +137,9 @@ async def preflight(ctx: WorkspaceContext, app: Application) -> dict[str, Any]:
     apply_url = app.apply_url or (job.apply_url if job else "") or ""
     if not apply_url:
         raise AppError("no_apply_url", "No apply URL on this application", 409)
+    # The runner navigates here inside the VM; never let it reach an internal address.
+    if not is_public_http_url_literal(apply_url):
+        raise AppError("ssrf_blocked", "That apply URL is not allowed", 422)
 
     from app.strategy import service as strategy_svc
 
@@ -432,25 +437,28 @@ async def resolve_checkpoint(
 
     run = await get_run(ctx, cp.run_id)
     payload: dict[str, Any] = {"decision": decision, "note": note}
-    # Sensitive typed values are never stored on the checkpoint row.
+    # Sensitive typed values are never stored: keep them in the process-local one-shot vault only.
     if decision == "typed_value" and cp.kind == "sensitive_field":
         payload["value_present"] = bool(value)
-        # Ephemeral: stash on run.policy for one-shot runner pickup, then clear on next heartbeat
-        # after use. Never write the raw value into activity_log or checkpoint.decision.
-        ephemeral = dict(run.policy or {})
-        ephemeral["_ephemeral_sensitive"] = {
-            "checkpoint_id": str(cp.id),
-            "value": value or "",
-        }
-        run.policy = ephemeral
+        ephemeral_vault.put(f"run:{run.id}", value or "")
     elif decision == "typed_value":
         payload["value"] = value
     elif decision == "approve_submit":
+        if cp.kind != "final_review":
+            raise AppError(
+                "invalid_status",
+                "Submit can only be approved from the final review checkpoint",
+                409,
+            )
         if run.policy.get("platform_no_auto_submit"):
             raise AppError("submit_forbidden", "This platform cannot be auto-submitted", 409)
         if not run.policy.get("allow_submit"):
-            # User's explicit final_review approval is the click even when track policy is assist.
-            pass
+            # Assist mode: the runner never clicks Submit; the human does it in live view.
+            raise AppError(
+                "submit_forbidden",
+                "This run is assist-only. Take over the browser and submit yourself.",
+                409,
+            )
         run.submit_approved = True
     elif decision == "deny_submit":
         run.submit_approved = False
@@ -504,15 +512,25 @@ async def complete_run(
     status: str,
     failure_reason: str | None = None,
     confirmation: bool = False,
+    runner_id: str | None = None,
 ) -> m.ApplyRun:
     run = await get_run(ctx, run_id)
+    # A runner token may only finish the run it claimed.
+    if ctx.auth_kind == "runner" and run.runner_id and runner_id != run.runner_id:
+        raise AppError("forbidden", "This run belongs to another runner", 403)
     if status == "completed":
-        # Never mark submitted unless final_review approved submit.
+        # Never mark submitted unless final_review approved submit and policy allows it.
         if confirmation:
             if not run.submit_approved:
                 raise AppError(
                     "submit_not_approved",
                     "Submit requires final review approval",
+                    409,
+                )
+            if not run.policy.get("allow_submit"):
+                raise AppError(
+                    "submit_forbidden",
+                    "This run is assist-only; the human submits it",
                     409,
                 )
             if run.application_id:
@@ -567,14 +585,9 @@ async def handoff(ctx: WorkspaceContext, run_id: uuid.UUID) -> dict[str, Any]:
 
 
 async def pop_ephemeral_sensitive(ctx: WorkspaceContext, run_id: uuid.UUID) -> str | None:
-    """Runner reads one-shot sensitive value; cleared immediately."""
+    """Runner reads the one-shot sensitive value; the vault entry is removed on read."""
     run = await get_run(ctx, run_id)
-    policy = dict(run.policy or {})
-    blob = policy.pop("_ephemeral_sensitive", None)
-    run.policy = policy
-    if not blob:
-        return None
-    return str(blob.get("value") or "") or None
+    return ephemeral_vault.pop(f"run:{run.id}")
 
 
 def run_to_read(run: m.ApplyRun) -> dict[str, Any]:

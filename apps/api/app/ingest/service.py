@@ -70,8 +70,8 @@ def format_address(token: str, settings: Settings) -> str:
 def verify_webhook_signature(settings: Settings, *, body: bytes, signature: str | None) -> bool:
     secret = getattr(settings, "inbound_webhook_secret", None) or ""
     if not secret:
-        # Local/test: allow when secret unset
-        return settings.environment in {"local", "test", "dev"}
+        # Local/test only: a deployed environment must sign every callback.
+        return settings.environment in {"local", "test"}
     if not signature:
         return False
     expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()

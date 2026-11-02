@@ -18,11 +18,11 @@ Tracks run on their own: discover on a schedule (per Track, per source, or all s
 ## Tasks
 
 - [x] `schedules` model + UI (presets: hourly, every N hours, daily at, weekdays, custom cron with human-readable preview; timezone; quiet hours; scope all/source).
-- [x] DBOS scheduled workflow dispatcher: one cron tick per minute → due schedules → `discover_track` (dedupe concurrent runs per Track with a queue key).
+- [x] Minute dispatcher: `app/schedules/scheduler.py` runs in deployed environments, lists workspaces via a security-definer helper, and ticks each with RLS context; due schedules run `discover_track` with per-Track concurrency dedupe. `POST /schedules/tick` is the manual/test hook. Not a DBOS cron (DBOS remains used for apply-run durability).
 - [x] Automation chain per autonomy level: discover → score → assess risk → (prepare: tailor top K within budget) → notify.
 - [x] Global fairness: per-tenant concurrency limits; shared source quotas; backoff when the VM is busy.
 - [x] Run history page (per Track): status, started, duration, counts per stage, errors, cost.
-- [x] Notifications module: event bus → `notifications` rows → channels (in-app real-time via WS/SSE, email via Resend with batching/digests); preferences matrix (event × channel); unsubscribe links; digest template (responsive email).
+- [x] Notifications module: event bus → `notifications` rows → channels (in-app, email via Resend with digests, push, Telegram); preferences matrix (event × channel); unsubscribe links; digest template. In-app is a snapshot endpoint (`GET /notifications/stream` emits one frame), not a live socket.
 - [x] Needs-you aggregation service (used by Phase 11 Home): tailoring reviews, answer approvals, risk decisions, failed runs, budget reached.
 
 ## Edge cases & failure modes

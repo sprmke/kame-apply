@@ -17,6 +17,8 @@ All ports bind to `127.0.0.1` and avoid the other Kame apps (3000/8000/5432). `p
 
 First run: `pnpm install`, `uv sync --all-packages`, copy `apps/api/.env.example` to `apps/api/.env`, `pnpm run dev:docker`, `pnpm run dev`.
 
+**Editor tasks (`.vscode/`):** `tasks.json` mirrors the commands above for Cursor and VS Code under `Run Task` (Dev, DB, Quality, Test, API client, dev deploy). `Dev: Start everything` is the default build task (`⇧⌘B`). `launch.json` adds API debugging (`debugpy` against `.venv/bin/python`) and Chrome debugging against `:3100`. Prod deploy, migrate, and rollback are deliberately absent from the task list; run those from the CLI with the unlock word. Task PATH additions live in `.vscode/settings.json` (`terminal.integrated.env.osx`).
+
 The init SQL runs only on a **fresh volume**. If the volume predates a change to it, run `pnpm run stop:docker`, remove the `kame-apply-dev_pgdata` volume, and start again (or apply the SQL by hand).
 
 ## 2. Database and migrations
@@ -52,12 +54,13 @@ Oracle Always Free A1 (fallback Hetzner CAX11) running Docker Compose behind Cad
 | Compose | `infra/docker-compose.prod.yml` (`caddy`, `api`, `postgres`, `clamav`, `backup`) |
 | Caddy TLS + headers | `infra/caddy/Caddyfile` (HSTS, CSP for API) |
 | Postgres tune | `infra/postgres/prod/postgresql.conf` |
-| Nightly dump → R2 | `infra/backup/backup-loop.sh` (14 daily + 8 weekly) |
+| Nightly dump → R2 | `infra/backup/backup-loop.sh` (14 daily + 8 weekly). Requires `MIGRATION_DATABASE_URL` (owner role; the app role dumps empty under RLS), verifies the dump with `pg_restore --list`, prunes old objects, and exits after three consecutive failures so the supervisor alerts. |
 | Host harden | `infra/host/harden.sh` (ufw, fail2ban, unattended-upgrades, log rotate) |
 | API image | `apps/api/Dockerfile` |
-| Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` |
+| Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` (set `KAME_REGISTRY` to push, otherwise the image is shipped over SSH; `DEPLOY_HEALTH_URL` adds a post-deploy check) |
 | Deploy web | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages) |
 | Migrate | `pnpm run migrate:dev\|prod` (prod runs `backup:db:prod` first) |
+| Scheduler | `SCHEDULER_ENABLED` (default true). The API process runs the minute tick; keep one uvicorn worker until a shared lock exists. |
 | Backup / restore | `backup:db:*`, `rollback:db:*`, `scripts/deploy/rollback-api.sh` |
 | Local restore drill | `pnpm run restore:drill:local` |
 

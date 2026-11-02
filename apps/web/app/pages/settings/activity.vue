@@ -9,6 +9,7 @@ const fmt = useFormat();
 const filter = ref("all");
 const items = ref<ActivityRead[]>([]);
 const nextBefore = ref<string | null>(null);
+const nextBeforeId = ref<string | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
@@ -29,12 +30,14 @@ async function load(more = false) {
         query: {
           action: filter.value === "all" ? undefined : filter.value,
           before: more ? (nextBefore.value ?? undefined) : undefined,
+          before_id: more ? (nextBeforeId.value ?? undefined) : undefined,
           limit: 25,
         },
       }),
     );
     items.value = more ? [...items.value, ...data.items] : data.items;
     nextBefore.value = data.next_before ?? null;
+    nextBeforeId.value = data.next_before_id ?? null;
   } catch (e) {
     error.value = apiError(e);
   } finally {

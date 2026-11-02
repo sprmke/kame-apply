@@ -17,6 +17,70 @@ _BANNED = (
     "leverage cutting-edge",
     "dynamic self-starter",
 )
+# Words that are capitalized for grammar, not because they name something.
+_SENTENCE_STARTERS = frozenset(
+    {
+        "i",
+        "we",
+        "the",
+        "a",
+        "an",
+        "my",
+        "our",
+        "this",
+        "that",
+        "led",
+        "built",
+        "managed",
+        "designed",
+        "created",
+        "developed",
+        "delivered",
+        "owned",
+        "ran",
+        "shipped",
+        "improved",
+        "reduced",
+        "increased",
+        "partnered",
+        "collaborated",
+        "mentored",
+        "wrote",
+        "launched",
+        "drove",
+        "established",
+        "supported",
+        "worked",
+        "using",
+        "with",
+    }
+)
+
+
+def _proper_nouns(text: str) -> list[str]:
+    """Capitalized names mid-sentence: employers, products, technologies, places.
+
+    The first word is skipped because sentence case capitalizes it regardless of meaning.
+    """
+    out: list[str] = []
+    for i, word in enumerate(text.split()):
+        core = word.strip(".,;:()[]\"'!?")
+        if i == 0 or len(core) < 2 or not core[0].isupper():
+            continue
+        if core.lower() in _SENTENCE_STARTERS:
+            continue
+        if core.isupper() and len(core) <= 1:
+            continue
+        out.append(core)
+    return out
+
+
+def _profile_skill_names(facts: dict[str, Any]) -> list[str]:
+    return [
+        str(s.get("name") or "").strip()
+        for s in (facts.get("skills") or [])
+        if isinstance(s, dict) and str(s.get("name") or "").strip()
+    ]
 
 
 @dataclass
@@ -111,6 +175,29 @@ def verify_line(line: ResumeLine, facts: dict[str, Any]) -> list[dict[str, Any]]
                     "line_id": line.id,
                     "reason": "banned_phrase",
                     "detail": phrase,
+                }
+            )
+
+    # Skills named on the line must be evidenced by this line's own refs, not just the profile.
+    evid_low = evidence.lower()
+    for skill in _profile_skill_names(facts):
+        if skill.lower() in low and skill.lower() not in evid_low:
+            rejected.append(
+                {
+                    "line_id": line.id,
+                    "reason": "unsupported_skill",
+                    "detail": f"Skill {skill} is not in this line's evidence",
+                }
+            )
+
+    # Named entities (employers, products, technologies) must come from the evidence too.
+    for noun in _proper_nouns(line.text):
+        if noun.lower() not in evid_low and noun.lower() not in profile:
+            rejected.append(
+                {
+                    "line_id": line.id,
+                    "reason": "unsupported_entity",
+                    "detail": f"Named entity {noun} has no profile evidence",
                 }
             )
     return rejected

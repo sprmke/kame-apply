@@ -14,20 +14,30 @@ class Adapter:
         "button:has-text('Next')",
         "button:has-text('Continue')",
         "button:has-text('Save and Continue')",
-        "input[type=submit]",
+        # Never a bare input[type=submit]: on single-page forms that is the Submit control.
+        "input[type=submit][value*='next' i]",
+        "input[type=submit][value*='continue' i]",
     )
     submit_selectors: tuple[str, ...] = (
         "button:has-text('Submit')",
         "button:has-text('Submit application')",
         "input[value='Submit']",
+        "input[value*='submit' i]",
     )
     confirmation_needles: tuple[str, ...] = (
-        "thank you",
         "application submitted",
+        "application received",
         "we received your application",
         "successfully applied",
+        "thank you for applying",
+        "your application has been received",
     )
-    login_needles: tuple[str, ...] = ("sign in", "log in", "create account", "password")
+    login_needles: tuple[str, ...] = (
+        "sign in to continue",
+        "log in to continue",
+        "sign in to apply",
+        "create an account to apply",
+    )
 
 
 _ADAPTERS: list[Adapter] = [

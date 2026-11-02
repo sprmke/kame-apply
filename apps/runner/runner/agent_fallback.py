@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 from playwright.async_api import Page
 
 from runner.adapters.base import Adapter
-from runner.fill import click_first
+from runner.fill import click_next
 
 SSO_HOSTS = frozenset({"accounts.google.com", "login.microsoftonline.com", "okta.com"})
 
@@ -41,7 +41,7 @@ async def constrained_fill(
             except Exception:  # noqa: S112 — try next field
                 continue
             # Click next only — never submit selectors
-        clicked = await click_first(page, adapter.next_selectors)
+        clicked = await click_next(page, adapter)
         log.append({"action": "click_next" if clicked else "noop", "step": step})
         if not clicked:
             break

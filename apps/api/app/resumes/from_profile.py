@@ -25,9 +25,11 @@ def build_from_profile(
         location=profile.get("location") or profile.get("city"),
         links=[u for u in (profile.get("links") or []) if u][:5],
     )
-    headline = profile.get("headline") or target_role
+    # The target role may label the document, but it is never presented as the candidate's own
+    # headline or summary: that would be a claim with no profile evidence.
+    headline = profile.get("headline")
     summary = None
-    if headline or profile.get("summary"):
+    if profile.get("summary") or headline:
         text = str(profile.get("summary") or headline or "").strip()
         if text:
             # Summary evidence: profile id itself when no dedicated summary fact

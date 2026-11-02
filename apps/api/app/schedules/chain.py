@@ -45,11 +45,13 @@ async def active_run_count(ctx: WorkspaceContext) -> int:
 async def has_active_track_run(ctx: WorkspaceContext, track_id: uuid.UUID) -> bool:
     row = (
         await ctx.session.execute(
-            select(DiscoveryRun).where(
+            select(DiscoveryRun)
+            .where(
                 DiscoveryRun.track_id == track_id,
                 DiscoveryRun.workspace_id == ctx.workspace_id,
                 DiscoveryRun.status.in_(("queued", "running")),
             )
+            .limit(1)
         )
     ).scalar_one_or_none()
     return row is not None

@@ -310,17 +310,42 @@ async def test_rls_agent_tables_wrong_workspace_zero_rows(tenancy):
 
 
 async def test_propose_resume_changes_rejects_invented_metric():
-    ops = [
-        {"op": "replace", "after": "Increased revenue 40%", "evidence_refs": []},
-        {"op": "replace", "after": "Led onboarding", "evidence_refs": [str(uuid.uuid4())]},
-    ]
-    accepted, rejected = [], []
-    for op in ops:
-        refs = op.get("evidence_refs") or []
-        after = str(op.get("after") or "")
-        if not refs and any(ch.isdigit() for ch in after):
-            rejected.append(op)
-        else:
-            accepted.append(op)
-    assert len(rejected) == 1 and len(accepted) == 1
+    """Calls the real verifier the MCP tool uses, not a copy of its predicate."""
+    from app.agent_bridge.tools import verify_proposed_ops
+
+    facts = {
+        "id": "p1",
+        "display_name": "Ada Lovelace",
+        "headline": "Engineer",
+        "summary": "",
+        "experiences": [{"id": "e1", "company": "Analytical Engines", "title": "Engineer"}],
+        "bullets": [
+            {
+                "id": "b1",
+                "experience_id": "e1",
+                "text": "Wrote algorithms serving 12 clients",
+                "skills": [],
+            }
+        ],
+        "skills": [{"id": "s1", "name": "Mathematics"}],
+        "education": [],
+        "certifications": [],
+        "projects": [],
+        "links": [],
+    }
+    accepted, rejected, gaps = verify_proposed_ops(
+        facts,
+        [
+            {"op": "rewrite", "after": "Increased revenue 40%", "evidence_refs": ["b1"]},
+            {
+                "op": "rewrite",
+                "after": "Wrote algorithms serving 12 clients",
+                "evidence_refs": ["b1"],
+            },
+            {"op": "rewrite", "after": "Wrote algorithms on Kubernetes", "evidence_refs": ["b1"]},
+        ],
+    )
+    assert [a["after"] for a in accepted] == ["Wrote algorithms serving 12 clients"]
+    assert len(rejected) == 2
+    assert gaps
     assert "truncated" in trim_payload({"items": list(range(500))}, max_chars=200)

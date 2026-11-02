@@ -203,7 +203,9 @@ async def refresh(
         return None
     session = (
         await db.execute(select(UserSession).where(UserSession.id == rt.session_id))
-    ).scalar_one()
+    ).scalar_one_or_none()
+    if session is None:
+        return None
     if session.revoked_at is not None or _now() - session.created_at > MAX_SESSION_AGE:
         return None
     if rt.used_at is not None:
@@ -231,11 +233,23 @@ async def refresh(
 
 
 async def logout(db: AsyncSession, session_id: uuid.UUID, meta: Meta) -> None:
+    session = (
+        await db.execute(select(UserSession).where(UserSession.id == session_id))
+    ).scalar_one_or_none()
     await db.execute(
         update(UserSession)
         .where(UserSession.id == session_id, UserSession.revoked_at.is_(None))
         .values(revoked_at=_now())
     )
+    if session is not None:
+        await audit.record_platform(
+            db,
+            action="auth.session_revoked",
+            actor_id=str(session.user_id),
+            request_id=meta.request_id,
+            target_type="session",
+            target_id=str(session_id),
+        )
 
 
 async def _consume(db: AsyncSession, raw: str, kind: str) -> AuthToken:

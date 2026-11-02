@@ -36,6 +36,7 @@ dependencies = [
   "pypdf>=5.0",
   "croniter>=2.0",
   "mcp>=1.12",
+  "pywebpush>=2.0",
 ]
 
 [tool.uv.sources]

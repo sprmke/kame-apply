@@ -21,7 +21,7 @@ from app.resumes.from_profile import build_from_profile
 from app.resumes.models import ResumeVersion
 from app.resumes.parse_gate import run_parse_gate
 from app.resumes.render import render_all
-from app.resumes.service import _load_profile_facts, render_version
+from app.resumes.service import load_profile_facts, render_version
 from app.resumes.tailor import tailor_once
 from app.tracks import models as track_models
 
@@ -95,7 +95,7 @@ async def start_tailor(
     await ctx.session.flush()
 
     try:
-        facts = await _load_profile_facts(ctx, profile_id)
+        facts = await load_profile_facts(ctx, profile_id)
         quals_rows = await matching.ensure_qualifications(ctx, job)
         qualifications = [
             {

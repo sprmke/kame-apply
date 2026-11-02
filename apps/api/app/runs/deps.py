@@ -72,6 +72,7 @@ async def _from_runner_token(
         workspace_id=row.workspace_id,
         role=membership[0],
         request_id=getattr(request.state, "request_id", None),
+        auth_kind="runner",
     )
 
 

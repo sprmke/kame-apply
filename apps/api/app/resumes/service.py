@@ -6,9 +6,10 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.audit import service as audit
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.profiles import models as pm
@@ -24,7 +25,7 @@ from app.resumes.verify import verify_content
 from app.tracks import models as track_models
 
 
-async def _load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> dict[str, Any]:
+async def load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> dict[str, Any]:
     profile = await ctx.session.get(pm.CandidateProfile, profile_id)
     if profile is None or profile.workspace_id != ctx.workspace_id:
         raise AppError("not_found", "Profile not found", 404)
@@ -47,6 +48,20 @@ async def _load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> d
     skills = await _rows(pm.Skill)
     education = await _rows(pm.Education)
     certifications = await _rows(pm.Certification)
+    contact_email = (
+        await ctx.session.execute(
+            text("SELECT email FROM users WHERE id = CAST(:u AS uuid)"), {"u": str(ctx.user_id)}
+        )
+    ).scalar_one_or_none()
+    phone = (
+        await ctx.session.execute(
+            text(
+                "SELECT answer FROM answer_bank WHERE profile_id = CAST(:p AS uuid) "
+                "AND key = 'phone' AND coalesce(answer, '') <> '' LIMIT 1"
+            ),
+            {"p": str(profile_id)},
+        )
+    ).scalar_one_or_none()
 
     def _d(obj, *fields) -> dict[str, Any]:
         out: dict[str, Any] = {"id": str(obj.id)}
@@ -67,8 +82,9 @@ async def _load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> d
         "headline": profile.headline,
         "summary": profile.summary,
         "location": profile.location,
-        "email": None,
-        "phone": None,
+        "email": contact_email,
+        "phone": phone,
+        "work_authorization": profile.work_authorization or {},
         "links": links,
         "experiences": [
             _d(
@@ -156,7 +172,7 @@ async def create_base(
     template: str = "classic",
     page_size: str = "letter",
 ) -> dict[str, Any]:
-    facts = await _load_profile_facts(ctx, profile_id)
+    facts = await load_profile_facts(ctx, profile_id)
     target = None
     if track_id:
         track = await ctx.session.get(track_models.Track, track_id)
@@ -244,7 +260,7 @@ async def improve(
     ctx: WorkspaceContext, version_id: uuid.UUID, *, window_days: int = 30
 ) -> list[dict[str, Any]]:
     row = await get_version(ctx, version_id)
-    facts = await _load_profile_facts(ctx, row.profile_id)
+    facts = await load_profile_facts(ctx, row.profile_id)
     content = ResumeContent.model_validate(row.content or {})
     if not row.critique:
         await critique(ctx, version_id)
@@ -383,7 +399,7 @@ async def apply_decisions(ctx: WorkspaceContext, version_id: uuid.UUID) -> dict[
         if c.status == "accepted"
     ]
     new_content = apply_accepted_changes(content, accepted)
-    facts = await _load_profile_facts(ctx, row.profile_id)
+    facts = await load_profile_facts(ctx, row.profile_id)
     vr = verify_content(new_content, facts)
     if not vr.ok:
         raise AppError(
@@ -414,6 +430,8 @@ async def render_version(
     broken: bool = False,
 ) -> dict[str, Any]:
     row = await get_version(ctx, version_id)
+    if broken and get_settings().is_prod:
+        raise AppError("bad_request", "broken is a development-only flag", 400)
     content = ResumeContent.model_validate(row.content or {})
     tpl = template or row.template
     size = page_size or row.page_size
@@ -435,7 +453,6 @@ async def render_version(
     row.updated_at = datetime.now(UTC)
 
     try:
-        from app.core.config import get_settings
         from app.core.storage import build_storage
 
         store = build_storage(get_settings())
@@ -457,9 +474,12 @@ async def render_version(
             await store.put(txt_key, result.text.encode("utf-8"), "text/plain")
             txt_url = await store.presign_get(txt_key)
     except Exception:
-        pdf_url = row.r2_pdf
-        docx_url = row.r2_docx
-        txt_url = row.r2_txt
+        # Never hand the client an object key disguised as a URL.
+        raise AppError(
+            "storage_unavailable",
+            "Rendered files could not be stored. Try again.",
+            502,
+        ) from None
 
     await audit.record(
         ctx,
@@ -487,7 +507,7 @@ async def refresh_insights(
     track = await ctx.session.get(track_models.Track, track_id)
     if track is None or track.workspace_id != ctx.workspace_id:
         raise AppError("not_found", "Track not found", 404)
-    facts = await _load_profile_facts(ctx, track.profile_id)
+    facts = await load_profile_facts(ctx, track.profile_id)
     profile_skills = {str(s["name"]).lower() for s in facts.get("skills") or []}
     # Resume skills: latest base for track if any
     resume_skills: set[str] = set()

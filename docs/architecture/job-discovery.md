@@ -18,13 +18,13 @@ Adapter package: `packages/py-core/kame_core/sources/`. Each adapter carries a t
 
 **Tenant (RLS):** `track_sources`, `track_jobs`, `discovery_runs`.
 
-Apply URL preference: company ATS > career page > board (`jobs/dedupe.py`).
+Apply URL preference: company ATS > career page > board (`jobs/dedupe.py`). Dedupe requires company + normalized title + location compatibility + SimHash distance ≤ 8, so two requisitions in different cities do not merge. One bad record rolls back to a savepoint, not the whole run; a failed run is persisted with `status=failed`.
 
-Closed detection: two consecutive poll misses on a board/source → `jobs.status=closed`.
+Closed detection: two consecutive poll misses on a board/source → `jobs.status=closed`. Implemented for ATS/board sources; Layer-2 feeds (Remotive, RemoteOK, Arbeitnow, Jobicy, Muse, Himalayas) are not yet marked closed.
 
 ## Directory
 
-Seed ≥ 5,000 active boards: `pnpm run db:seed` or `uv run python scripts/sources/refresh_directory.py --seed`.
+Directory seed: 64 curated boards (status `active`, validated) plus generated candidate slugs (status `candidate`, `validation_method=seed_unverified`). Only active, validated boards are polled; candidates exist so the directory can grow once a board is confirmed. `GET /sources/directory/stats` reports `boards_active` and `boards_candidate` separately.
 
 Monthly CDX import: `scripts/sources/refresh_directory.py --cdx-jsonl …`.
 

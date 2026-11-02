@@ -776,15 +776,29 @@ async def export_csv(
         w.writerow(
             {
                 "score": r.get("score"),
-                "title": r.get("title"),
-                "company_name": r.get("company_name"),
+                "title": _csv_safe(r.get("title")),
+                "company_name": _csv_safe(r.get("company_name")),
                 "eligibility": r.get("eligibility"),
                 "status": r.get("status"),
                 "work_mode": r.get("work_mode"),
                 "salary": sal.get("min") or sal.get("text") or "",
                 "posted_at": r.get("posted_at"),
-                "apply_url": r.get("apply_url"),
-                "reasons": "; ".join(r.get("reasons") or []),
+                "apply_url": _csv_safe(r.get("apply_url")),
+                "reasons": _csv_safe("; ".join(r.get("reasons") or [])),
             }
         )
     return buf.getvalue()
+
+
+def _csv_safe(value: object) -> object:
+    """Neutralize spreadsheet formula injection from untrusted posting text.
+
+    Job titles and company names come from third-party boards; a cell starting with = + - @ (or a
+    control character) executes when the file is opened in Excel or Sheets.
+    """
+    if value is None:
+        return ""
+    text = str(value)
+    if text[:1] in {"=", "+", "-", "@", "\t", "\r"}:
+        return "'" + text
+    return text

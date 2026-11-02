@@ -20,13 +20,22 @@ def run_parse_gate(
     expected = parse_view(content)
     extracted_text = text or ""
     if pdf:
-        extracted_text = _extract_pdf(pdf) or extracted_text
+        # The gate validates the artifact, never the source text it was rendered from.
+        extracted_text = _extract_pdf(pdf)
     elif docx:
-        extracted_text = _extract_docx(docx) or extracted_text
+        extracted_text = _extract_docx(docx)
 
     rule = _rule_parse(extracted_text)
     diagnostics: list[str] = []
     ok = True
+
+    if not extracted_text.strip():
+        # A scanned/corrupt file extracts nothing; the gate must fail, not pass on source text.
+        return {
+            "ok": False,
+            "diagnostics": ["unreadable_file"],
+            "extracted": {"chars": 0, "rule": rule, "expected": expected},
+        }
 
     def _need(label: str, value: str | None) -> None:
         nonlocal ok

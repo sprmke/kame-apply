@@ -16,7 +16,9 @@ Jobs land as `source_key=email_alert` via the shared upsert path.
 
 ## Web push
 
-PWA: `manifest.webmanifest` + `sw.js`. `POST /api/v1/push/subscriptions` stores endpoint keys. VAPID keys optional (`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`).
+PWA: `manifest.webmanifest` + `sw.js`. `POST /api/v1/push/subscriptions` stores endpoint keys. `notify_user` sends a real encrypted Web Push (`pywebpush`) when `VAPID_PRIVATE_KEY` (PEM contents) and `VAPID_PUBLIC_KEY` (base64url public key) are set; otherwise it logs and sends nothing. Endpoints are SSRF-checked. Needs-you class events (needs_review, risk_flag, run_failed, budget_reached) fan out to push and Telegram when those preferences are on.
+
+Webhooks fail closed outside local/test: inbound email needs a valid HMAC and Telegram needs `TELEGRAM_WEBHOOK_SECRET` (prod refuses to start with the bot enabled and no secret).
 
 ## Telegram
 

@@ -15,6 +15,27 @@ from app.core.errors import AppError
 from app.safety.sanitize import for_ai_context
 
 
+def verify_proposed_ops(
+    facts: dict[str, Any], ops: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """Run the truthfulness verifier over agent-proposed resume ops (no new facts)."""
+    from app.resumes.verify import verify_operation
+
+    accepted: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    gaps: list[str] = []
+    for op in ops:
+        refs = [str(r) for r in (op.get("evidence_refs") or [])]
+        after = str(op.get("after") or "")
+        verdict = verify_operation(after_text=after, evidence_refs=refs, facts=facts)
+        if not verdict.ok:
+            rejected.append({**op, "reasons": [r["reason"] for r in verdict.rejected]})
+            gaps.extend(verdict.gaps)
+            continue
+        accepted.append(op)
+    return accepted, rejected, gaps
+
+
 def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) -> None:
     """Attach all Kame MCP tools to an MCPServer instance."""
 
@@ -246,18 +267,35 @@ def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) 
         description="Propose resume ops; server runs truthfulness verifier. Returns accepted/rejected + gaps.",
     )
     async def propose_resume_changes(version_id: str, ops: list[dict[str, Any]]) -> dict[str, Any]:
+        from app.resumes import models as resume_models
+        from app.resumes import service as resumes_svc
+
         async with agent_session(session_factory, tool_name="propose_resume_changes") as bridge:
-            accepted: list[dict[str, Any]] = []
-            rejected: list[dict[str, Any]] = []
-            gaps: list[str] = []
-            for op in ops:
-                refs = op.get("evidence_refs") or []
-                after = str(op.get("after") or "")
-                if not refs and any(ch.isdigit() for ch in after):
-                    rejected.append(op)
-                    gaps.append("Claim has numbers but no evidence_refs; left as gap.")
-                else:
-                    accepted.append(op)
+            version = await resumes_svc.get_version(bridge.ctx, uuid.UUID(version_id))
+            facts = await resumes_svc.load_profile_facts(bridge.ctx, version.profile_id)
+            accepted, rejected, gaps = verify_proposed_ops(facts, ops)
+            saved: list[dict[str, Any]] = []
+            for op in accepted:
+                parsed_refs: list[uuid.UUID] = []
+                for r in op.get("evidence_refs") or []:
+                    try:
+                        parsed_refs.append(uuid.UUID(str(r)))
+                    except ValueError:
+                        continue
+                change = resume_models.ResumeChange(
+                    workspace_id=bridge.ctx.workspace_id,
+                    resume_version_id=version.id,
+                    path=str(op.get("path") or ""),
+                    op=str(op.get("op") or "rewrite"),
+                    before=str(op.get("before") or ""),
+                    after=str(op.get("after") or ""),
+                    reason=str(op.get("reason") or "Proposed by the agent"),
+                    evidence_refs=parsed_refs,
+                    status="proposed",
+                )
+                bridge.ctx.session.add(change)
+                await bridge.ctx.session.flush()
+                saved.append({"id": str(change.id), **op})
             await audit.record(
                 bridge.ctx,
                 action="agent.propose_resume_changes",
@@ -274,10 +312,10 @@ def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) 
             return trim_payload(
                 {
                     "version_id": version_id,
-                    "accepted": accepted,
+                    "accepted": saved,
                     "rejected": rejected,
                     "gaps": gaps,
-                    "note": "Accepted ops appear as drafts in the app for user review.",
+                    "note": "Accepted ops are saved as drafts; the user accepts each in the app.",
                 }
             )
 
@@ -363,20 +401,60 @@ def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) 
         description="Submit drafted answers through server verifier (no new facts; AI-restricted refused).",
     )
     async def submit_answers(session_id: str, items: list[dict[str, Any]]) -> dict[str, Any]:
+        from sqlalchemy import select as sa_select
+
+        from app.answers import models as answer_models
+
         async with agent_session(session_factory, tool_name="submit_answers") as bridge:
+            sid = uuid.UUID(session_id)
+            rows = list(
+                (
+                    await bridge.ctx.session.execute(
+                        sa_select(answer_models.AnswerDeskItem).where(
+                            answer_models.AnswerDeskItem.session_id == sid,
+                            answer_models.AnswerDeskItem.workspace_id == bridge.ctx.workspace_id,
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            by_question = {r.question.strip().lower(): r for r in rows}
+            accepted: list[str] = []
+            refused: list[dict[str, Any]] = []
+            for item in items:
+                q = str(item.get("question") or "").strip().lower()
+                answer = str(item.get("answer") or item.get("draft") or "")
+                row = by_question.get(q)
+                if row is None:
+                    refused.append({"question": item.get("question"), "reason": "unknown_question"})
+                    continue
+                if row.ai_restricted or row.source == "restricted":
+                    refused.append({"question": row.question, "reason": "ai_restricted"})
+                    continue
+                row.draft = answer
+                row.source = "agent_draft"
+                accepted.append(str(row.id))
+            await bridge.ctx.session.flush()
             await audit.record(
                 bridge.ctx,
                 action="agent.submit_answers",
                 target_type="answer_desk_session",
                 target_id=session_id,
-                after={"count": len(items), "client_id": bridge.client_id},
+                after={
+                    "count": len(items),
+                    "accepted": len(accepted),
+                    "refused": len(refused),
+                    "client_id": bridge.client_id,
+                },
                 actor_type="agent",
             )
             return {
-                "status": "draft_recorded",
+                "status": "drafts_saved",
                 "session_id": session_id,
-                "accepted": len(items),
-                "note": "Answers land as drafts in the app for user acceptance.",
+                "accepted": len(accepted),
+                "refused": refused,
+                "note": "Drafts are saved; the user accepts each answer in the app.",
             }
 
     @mcp.tool(name="save_answer_to_bank", description="Propose saving an answer to the bank.")
@@ -426,38 +504,61 @@ def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) 
         description="Log an agent-reported submit as submitted (unconfirmed) until user confirms.",
     )
     async def log_application(application_id: str, note: str = "agent_reported") -> dict[str, Any]:
+        from app.applications import tracker as app_tracker
+
         async with agent_session(session_factory, tool_name="log_application") as bridge:
+            try:
+                result = await app_tracker.update_status(
+                    bridge.ctx,
+                    uuid.UUID(application_id),
+                    status="submitted",
+                    note=f"Agent reported: {note}",
+                )
+            except AppError as exc:
+                return {"ok": False, "error": exc.code, "application_id": application_id}
             await audit.record(
                 bridge.ctx,
                 action="agent.log_application",
                 target_type="application",
                 target_id=application_id,
-                after={
-                    "note": note,
-                    "unconfirmed": True,
-                    "client_id": bridge.client_id,
-                    "proposed_status": "submitted",
-                },
+                after={"note": note, "unconfirmed": True, "client_id": bridge.client_id},
                 actor_type="agent",
             )
             return {
                 "application_id": application_id,
                 "status": "submitted_unconfirmed",
-                "note": "Confirm the submission in the app tracker.",
+                "application": result,
+                "note": "Marked submitted by the agent. Confirm it in the app tracker.",
             }
 
     @mcp.tool(name="update_application_status", description="Propose an application status change.")
     async def update_application_status(application_id: str, status: str) -> dict[str, Any]:
+        from app.applications import tracker as app_tracker
+
         async with agent_session(session_factory, tool_name="update_application_status") as bridge:
+            try:
+                result = await app_tracker.update_status(
+                    bridge.ctx,
+                    uuid.UUID(application_id),
+                    status=status,
+                    note="Updated by the agent",
+                )
+            except AppError as exc:
+                return {
+                    "ok": False,
+                    "error": exc.code,
+                    "application_id": application_id,
+                    "proposed": status,
+                }
             await audit.record(
                 bridge.ctx,
                 action="agent.update_application_status",
                 target_type="application",
                 target_id=application_id,
-                after={"proposed_status": status, "client_id": bridge.client_id},
+                after={"status": status, "client_id": bridge.client_id},
                 actor_type="agent",
             )
-            return {"status": "proposal", "application_id": application_id, "proposed": status}
+            return {"ok": True, "application_id": application_id, "application": result}
 
     @mcp.tool(name="log_run_step", description="Append a guided-apply run step.")
     async def log_run_step(

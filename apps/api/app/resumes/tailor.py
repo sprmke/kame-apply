@@ -25,7 +25,6 @@ def plan_tailor_ops(
         for s in (facts.get("skills") or [])
         if isinstance(s, dict) and s.get("name")
     }
-    bullets = [b for b in (facts.get("bullets") or []) if isinstance(b, dict) and b.get("text")]
     resume_text = content.plain_text().lower()
 
     must_terms: list[str] = []
@@ -63,29 +62,6 @@ def plan_tailor_ops(
                 }
                 if verify_operation(after_text=n_name, evidence_refs=[sid], facts=facts).ok:
                     proposals.append(op)
-            # Also try to mention in a recent bullet using posting terminology
-            matched_bullet = _find_bullet_for_skill(bullets, n_name)
-            if matched_bullet:
-                after = _rewrite_with_term(matched_bullet["text"], surface)
-                refs = [str(matched_bullet["id"])]
-                if (
-                    after != matched_bullet["text"]
-                    and verify_operation(after_text=after, evidence_refs=refs, facts=facts).ok
-                ):
-                    # Find line id on resume if present
-                    line_id = _line_id_for_bullet(content, matched_bullet["text"])
-                    proposals.append(
-                        {
-                            "op": "rewrite",
-                            "path": f"line:{line_id}" if line_id else "line:new",
-                            "before": matched_bullet["text"],
-                            "after": after,
-                            "reason": f"Use posting terminology for '{surface}'",
-                            "evidence_refs": refs,
-                            "qual_id": row.get("qual_id"),
-                            "bullet_id": matched_bullet["id"],
-                        }
-                    )
             continue
 
         if verdict in {"not_evidenced", "not_met", "partial"}:
@@ -131,15 +107,6 @@ def plan_tailor_ops(
         base = (facts.get("headline") or facts.get("summary") or "").strip()
         if base:
             after = f"{base} ({', '.join(top_must)})"
-            # Only if terms appear in profile blob (skills)
-            refs = [
-                str(facts["id"]),
-                *[
-                    profile_skills[k]
-                    for k in profile_skills
-                    if any(k.lower() == t.lower() for t in top_must)
-                ][:3],
-            ]
             # Only use skill names + headline already in the profile (no new claims)
             skill_blob = " ".join(profile_skills.keys()).lower()
             if all(t.lower() in skill_blob or t.lower() in base.lower() for t in top_must):
@@ -261,36 +228,6 @@ def skeptical_review(
             + ", ".join(skim["missing_in_zone"][:3])
         )
     return notes
-
-
-def _find_bullet_for_skill(bullets: list[dict[str, Any]], skill: str) -> dict[str, Any] | None:
-    if not skill:
-        return None
-    low = skill.lower()
-    for b in bullets:
-        text = str(b.get("text") or "").lower()
-        skills = [str(s).lower() for s in (b.get("skills") or [])]
-        if low in text or any(low in s or s in low for s in skills):
-            return b
-    # Fallback: first strong bullet
-    return bullets[0] if bullets else None
-
-
-def _rewrite_with_term(text: str, term: str) -> str:
-    if not term:
-        return text
-    if term.lower() in text.lower():
-        return text
-    # Append honest terminology without inventing metrics
-    return f"{text.rstrip('.')} ({term})."
-
-
-def _line_id_for_bullet(content: ResumeContent, bullet_text: str) -> str | None:
-    target = bullet_text.strip().lower()
-    for line in content.all_lines():
-        if line.text.strip().lower() == target:
-            return line.id
-    return None
 
 
 def _adjacent_skill(name: str, profile_skills: dict[str, str]) -> str | None:

@@ -4,13 +4,15 @@ from types import SimpleNamespace
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import Settings
 from app.core.mail import Outbox
 from app.core.ratelimit import client_ip
 from app.core.storage import MemoryStorage
 from app.main import create_app
-from tests.conftest import TEST_DB_URL
+from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
 from tests.test_workspaces import signup, team_with
 
 
@@ -53,6 +55,30 @@ async def test_export_and_delete_purges_r2(env):
     deleted = await c.delete("/api/v1/workspace", headers=owner.h(ws))
     assert deleted.status_code == 200, deleted.text
     assert key not in storage.objects
+
+
+async def test_export_does_not_leak_global_jobs_or_other_memberships(env):
+    """`jobs` is a global table and membership RLS exposes a user's other workspaces."""
+    c, app, _ = env
+    owner = await signup(c)
+    ws, _ = await team_with(c, owner, app.state.mailer, {})
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "INSERT INTO jobs (title, normalized_title, content_hash, canonical_url, apply_url) "
+                "VALUES ('Secret Staff Engineer', 'secret staff engineer', 'h1', "
+                "'https://other.example/j/1', 'https://other.example/j/1/apply')"
+            )
+        )
+    await engine.dispose()
+
+    body = (await c.get("/api/v1/workspace/export", headers=owner.h(ws))).json()
+    assert body["jobs"] == []  # a global job nobody in this workspace tracks
+    # The owner also belongs to their personal workspace; the export must list only this one.
+    assert {m["user_id"] for m in body["members"]} == {owner.id}
+    assert all(m["role"] == "owner" for m in body["members"])
 
 
 async def test_feedback_rejects_email_pii(env):

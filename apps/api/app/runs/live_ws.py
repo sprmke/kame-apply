@@ -7,9 +7,11 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
+from app.core.rbac import can
 from app.core.rls import set_request_context
 from app.extension.models import ApplyRun
 from app.runs.live_hub import get_live_hub
@@ -17,6 +19,11 @@ from app.runs.live_tokens import decode_live_token
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["live-view"])
+
+# Messages that change the page or control the run. Read-only roles may watch, never act.
+CONTROL_MESSAGES = frozenset(
+    {"takeover", "handback", "input", "mouse", "key", "text", "scroll", "paste"}
+)
 
 
 @router.websocket("/runs/{run_id}/live")
@@ -39,9 +46,22 @@ async def live_view_ws(websocket: WebSocket, run_id: UUID) -> None:
     workspace_id = claims["workspace_id"]
     user_id = claims["user_id"]
 
-    # Confirm run exists in workspace (RLS).
+    # Confirm the caller is still an active member and the run exists in that workspace (RLS).
     async with session_factory() as session:
         await set_request_context(session, user_id=str(user_id), workspace_id=str(workspace_id))
+        membership = (
+            await session.execute(
+                text(
+                    "SELECT 1 FROM workspace_members m JOIN users u ON u.id = m.user_id "
+                    "AND u.is_active WHERE m.workspace_id = :w AND m.user_id = :u "
+                    "AND m.is_active"
+                ),
+                {"w": workspace_id, "u": user_id},
+            )
+        ).first()
+        if membership is None:
+            await websocket.close(code=4403)
+            return
         run = await session.get(ApplyRun, run_id)
         if run is None or run.workspace_id != workspace_id:
             await websocket.close(code=4404)
@@ -145,6 +165,14 @@ async def _handle_message(
         return
 
     # Viewer messages
+    if role != "runner" and typ in CONTROL_MESSAGES and not can(role, "data.write"):
+        await hub._fanout(
+            room,
+            {"type": "error", "code": "read_only"},
+            include_runner=False,
+        )
+        return
+
     if typ == "ack":
         seq = int(msg.get("seq") or 0)
         for v in room.viewers:
