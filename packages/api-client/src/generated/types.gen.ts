@@ -745,6 +745,10 @@ export type ApplyRunStepRead = {
      */
     screenshot_r2: string | null;
     /**
+     * Screenshot Url
+     */
+    screenshot_url?: string | null;
+    /**
      * Seq
      */
     seq: number;
@@ -4999,6 +5003,10 @@ export type PlanPageResult = {
      */
     platform: string;
     /**
+     * Resume File Name
+     */
+    resume_file_name?: string | null;
+    /**
      * Resume Upload Url
      */
     resume_upload_url?: string | null;
@@ -6794,6 +6802,10 @@ export type StepUploadBody = {
      */
     pii_class?: string;
     /**
+     * Screenshot B64
+     */
+    screenshot_b64?: string | null;
+    /**
      * Screenshot R2
      */
     screenshot_r2?: string | null;
@@ -6873,6 +6885,16 @@ export type TailorAcceptBody = {
      * Method
      */
     method?: 'manual' | 'extension' | 'runner' | 'answer_desk';
+};
+
+/**
+ * TailorChangeDecisionBody
+ */
+export type TailorChangeDecisionBody = {
+    /**
+     * Status
+     */
+    status: 'accepted' | 'rejected';
 };
 
 /**
@@ -16760,6 +16782,50 @@ export type AcceptTailorApiV1TailorRunsRunIdAcceptPostResponses = {
 };
 
 export type AcceptTailorApiV1TailorRunsRunIdAcceptPostResponse = AcceptTailorApiV1TailorRunsRunIdAcceptPostResponses[keyof AcceptTailorApiV1TailorRunsRunIdAcceptPostResponses];
+
+export type DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostData = {
+    body: TailorChangeDecisionBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Run Id
+         */
+        run_id: string;
+        /**
+         * Change Id
+         */
+        change_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tailor-runs/{run_id}/changes/{change_id}';
+};
+
+export type DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostError = DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostErrors[keyof DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostErrors];
+
+export type DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: TailorRunRead;
+};
+
+export type DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostResponse = DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostResponses[keyof DecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostResponses];
 
 export type NormalizeOccupationApiV1TaxonomyOccupationsNormalizeGetData = {
     body?: never;

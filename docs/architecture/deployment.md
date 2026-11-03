@@ -51,16 +51,17 @@ Oracle Always Free A1 (fallback Hetzner CAX11) running Docker Compose behind Cad
 
 | Piece | Path / command |
 | --- | --- |
-| Compose | `infra/docker-compose.prod.yml` (`caddy`, `api`, `postgres`, `clamav`, `backup`) |
+| Compose | `infra/docker-compose.prod.yml` (`caddy`, `api`, `runner`, `postgres`, `clamav`, `backup`) |
 | Caddy TLS + headers | `infra/caddy/Caddyfile` (HSTS, CSP for API) |
 | Postgres tune | `infra/postgres/prod/postgresql.conf` |
 | Nightly dump → R2 | `infra/backup/backup-loop.sh` (14 daily + 8 weekly). Requires `MIGRATION_DATABASE_URL` (owner role; the app role dumps empty under RLS), verifies the dump with `pg_restore --list`, prunes old objects, and exits after three consecutive failures so the supervisor alerts. |
 | Host harden | `infra/host/harden.sh` (ufw, fail2ban, unattended-upgrades, log rotate) |
 | API image | `apps/api/Dockerfile` |
 | Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` (set `KAME_REGISTRY` to push, otherwise the image is shipped over SSH; `DEPLOY_HEALTH_URL` adds a post-deploy check) |
+| Deploy runner | `pnpm run deploy:runner:dev\|prod` → `scripts/deploy/deploy-runner.sh`; secrets in `/etc/kame-apply/runner.env` (`KAME_RUNNER_TOKEN`, `KAME_RUNNER_WORKSPACE_ID`) |
 | Deploy web | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages) |
 | Migrate | `pnpm run migrate:dev\|prod` (prod runs `backup:db:prod` first) |
-| Scheduler | `SCHEDULER_ENABLED` (default true). The API process runs the minute tick; keep one uvicorn worker until a shared lock exists. |
+| Scheduler | `SCHEDULER_ENABLED` (default true). The API process runs the minute tick under a Postgres advisory lock (a second worker skips), reaps lost runs, and purges workspaces past the 30-day window at 03:00. |
 | Backup / restore | `backup:db:*`, `rollback:db:*`, `scripts/deploy/rollback-api.sh` |
 | Local restore drill | `pnpm run restore:drill:local` |
 

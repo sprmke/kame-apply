@@ -252,3 +252,42 @@ async def test_skill_normalize_alias(env, seeded_templates):  # noqa: F811
     )
     assert r.status_code == 200
     assert r.json()["canonical"] == "Kubernetes"
+
+
+@pytest.mark.asyncio
+async def test_duplicate_carries_source_choices_and_settings(env, seeded_templates):  # noqa: F811
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await _profile(c, me)
+    track = await c.post(
+        T,
+        json={"profile_id": p["id"], "name": "Sourceful", "criteria": _criteria()},
+        headers=h,
+    )
+    assert track.status_code == 201, track.text
+    tid = track.json()["id"]
+    from app.companies.seed import seed_sources
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with factory() as session:
+        await seed_sources(session)
+        await session.commit()
+    await engine.dispose()
+    sources = (await c.get(f"{T}/{tid}/sources", headers=h)).json()
+    assert sources
+    source_id = sources[0]["source_id"]
+    patched = await c.patch(f"{T}/{tid}/sources/{source_id}", json={"enabled": False}, headers=h)
+    assert patched.status_code == 200, patched.text
+    updated = await c.patch(f"{T}/{tid}", json={"settings": {"min_score": 0.75}}, headers=h)
+    assert updated.status_code == 200, updated.text
+
+    dup = await c.post(f"{T}/{tid}/duplicate", headers=h)
+    assert dup.status_code == 201, dup.text
+    new_id = dup.json()["id"]
+    new_sources = (await c.get(f"{T}/{new_id}/sources", headers=h)).json()
+    by_source = {row["source_id"]: row for row in new_sources}
+    assert by_source[source_id]["enabled"] is False
+    new_track = (await c.get(f"{T}/{new_id}", headers=h)).json()
+    assert new_track["settings"] == {"min_score": 0.75}

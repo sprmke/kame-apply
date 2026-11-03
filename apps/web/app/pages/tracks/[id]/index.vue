@@ -2,6 +2,7 @@
 import {
   compileCriteriaApiV1TracksTrackIdCriteriaCompilePost,
   discoverNowApiV1TracksTrackIdDiscoverPost,
+  getDiscoveryRunApiV1DiscoveryRunsRunIdGet,
   getTrackApiV1TracksTrackIdGet,
   listJobsApiV1JobsGet,
   putCriteriaApiV1TracksTrackIdCriteriaPut,
@@ -121,6 +122,22 @@ async function runNow() {
       throwOnError: true,
     });
     runProgress.value = data?.progress ?? null;
+    // Deployed runs are queued and finish in a worker; poll until it stops changing.
+    if (data && (data.status === "queued" || data.status === "running")) {
+      for (let i = 0; i < 60; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const { data: latest } = await getDiscoveryRunApiV1DiscoveryRunsRunIdGet({
+            path: { run_id: String(data.id) },
+            throwOnError: true,
+          });
+          runProgress.value = latest?.progress ?? runProgress.value;
+          if (latest && latest.status !== "queued" && latest.status !== "running") break;
+        } catch {
+          break;
+        }
+      }
+    }
     await qc.invalidateQueries({ queryKey: ["track-jobs", ws.currentId, trackId.value] });
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });

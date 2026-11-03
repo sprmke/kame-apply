@@ -47,7 +47,7 @@ Reliably ingest a large, fresh, deduplicated pool of real open jobs worldwide fr
 - [x] Track "Sources" tab: enable/disable per source, per-source params, coverage note for the Track's countries (`country_source_registry`).
 
 ### Frontend
-- [ ] Run-now progress (SSE): counts by stage. `GET /discovery-runs/{id}` exposes `progress`, but the run executes inline in the request transaction, so a poller cannot see intermediate counts until commit. Run-now is synchronous and returns the finished run.
+- [x] Run-now progress: in deployed environments the run is committed, queued, and executed in a background task that commits progress per board/source; `GET /discovery-runs/{id}` and `GET /discovery-runs/{id}/events` expose the counts, and the Track page polls until the run finishes. Tests and local dev still run inline.
 - [x] Sources tab; admin source-health page; "add careers page" dialog.
 
 ## Edge cases & failure modes

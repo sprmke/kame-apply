@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import logging
 import tempfile
 from pathlib import Path
@@ -22,7 +23,7 @@ from runner.extract import (
     page_has_password_input,
     page_text,
 )
-from runner.fill import apply_instructions, click_first, click_next
+from runner.fill import apply_instructions, click_first, click_next, set_file_inputs
 from runner.live import LiveSession
 from runner.terminal_checkpoint import prompt_checkpoint
 
@@ -52,6 +53,8 @@ async def run_apply(
 
     context = await browser.new_context()
     page = await context.new_page()
+    resume_tmp: tempfile.TemporaryDirectory | None = None
+    resume_path: str | None = None
     seq = int(run.get("last_step_seq") or 0)
     live = LiveSession(
         page=page,
@@ -185,6 +188,16 @@ async def run_apply(
             counts = await apply_instructions(page, instructions)
             filled_n = counts["filled"]
 
+            # Attach the accepted resume once per run when the page asks for a file.
+            if resume_path is None and plan.get("resume_upload_url"):
+                resume_tmp = tempfile.TemporaryDirectory()
+                suffix = Path(str(plan.get("resume_file_name") or "resume.pdf")).suffix or ".pdf"
+                resume_path = client.download(
+                    str(plan["resume_upload_url"]), str(Path(resume_tmp.name) / f"resume{suffix}")
+                )
+            if resume_path:
+                await set_file_inputs(page, resume_path)
+
             # Fallback if almost nothing filled
             if filled_n == 0 and any(i.get("action") == "fill" for i in instructions) is False:
                 values = {
@@ -197,7 +210,7 @@ async def run_apply(
             with tempfile.TemporaryDirectory() as td:
                 shot = Path(td) / f"step-{seq + 1}.png"
                 await screenshot_blurred(page, shot)
-                # Upload screenshot bytes to R2 would go here; log step without key in CI.
+                screenshot_b64 = base64.b64encode(shot.read_bytes()).decode("ascii")
                 seq += 1
                 client.upload_step(
                     run_id,
@@ -207,6 +220,7 @@ async def run_apply(
                         "action": "page",
                         "field_label": f"filled={counts['filled']}",
                         "value_redacted": "",
+                        "screenshot_b64": screenshot_b64,
                         "outcome": "ok",
                     },
                 )
@@ -295,6 +309,8 @@ async def run_apply(
     finally:
         await live.close()
         await context.close()
+        if resume_tmp is not None:
+            resume_tmp.cleanup()
 
 
 async def _checkpoint(

@@ -64,7 +64,11 @@ export function applyInstructions(instructions: FillInstruction[]): {
       skipped += 1;
       continue;
     }
-    const el = findField(instr.field_id);
+    // Answer Desk inserts into whatever field the user is focused on.
+    const el =
+      instr.field_id === "focused"
+        ? (document.activeElement as HTMLElement | null)
+        : findField(instr.field_id);
     if (!el) {
       skipped += 1;
       continue;

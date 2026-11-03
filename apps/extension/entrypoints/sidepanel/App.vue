@@ -77,7 +77,7 @@ watch([trackId, profileId], async ([t, p]) => {
   });
 });
 
-async function run(action: "clip" | "autofill" | "logApplied") {
+async function run(action: "clip" | "autofill" | "logApplied" | "answerInsert") {
   busy.value = true;
   status.value = "";
   try {
@@ -90,6 +90,9 @@ async function run(action: "clip" | "autofill" | "logApplied") {
         jobId: lastJob.value?.job_id,
       });
       status.value = lastPlan.value?.autofill_allowed ? "Filled" : "Autofill off";
+    } else if (action === "answerInsert") {
+      const draft = await browser.runtime.sendMessage({ type: "kame.answerInsert" });
+      status.value = draft?.draft ? "Inserted" : draft?.ai_restricted ? "Restricted" : "No answer";
     } else {
       await browser.runtime.sendMessage({
         type: "kame.logApplied",
@@ -150,6 +153,7 @@ onMounted(refresh);
       <div class="flex flex-col gap-2">
         <FnButton tone="primary" :disabled="busy" @click="run('clip')">Save to Track</FnButton>
         <FnButton :disabled="busy" @click="run('autofill')">Autofill</FnButton>
+        <FnButton tone="ghost" :disabled="busy" @click="run('answerInsert')">Answer</FnButton>
         <FnButton tone="ghost" :disabled="busy" @click="run('logApplied')">I applied</FnButton>
       </div>
 

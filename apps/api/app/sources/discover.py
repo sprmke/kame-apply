@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.audit import service as audit
 from app.companies.models import CompanyBoard
 from app.core.errors import AppError
+from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
 from app.jobs.ingest import mark_missed_jobs, upsert_raw_job
 from app.jobs.models import DiscoveryRun, Job, TrackJob
@@ -105,6 +106,7 @@ async def run_discover_track(
     run_id: uuid.UUID | None = None,
     fixture_root: Path | None = None,
     board_limit: int = 6,
+    commit_progress: bool = False,
 ) -> DiscoveryRun:
     track = await ctx.session.get(track_models.Track, track_id)
     if track is None or track.workspace_id != ctx.workspace_id:
@@ -137,6 +139,19 @@ async def run_discover_track(
         run.progress = {"boards_checked": 0, "jobs_found": 0, "jobs_new": 0, "linked": 0}
 
     progress = dict(run.progress or {})
+
+    async def publish_progress() -> None:
+        """Flush progress; in the background path commit so pollers see counts mid-run."""
+        run.progress = progress
+        await ctx.session.flush()
+        if commit_progress:
+            await ctx.session.commit()
+            await set_request_context(
+                ctx.session,
+                user_id=str(ctx.user_id) if ctx.user_id else None,
+                workspace_id=str(ctx.workspace_id),
+            )
+
     try:
         # Board sources enabled for track (or defaults)
         track_sources = (
@@ -238,8 +253,7 @@ async def run_discover_track(
                 source.last_error_at = datetime.now(UTC)
                 source.error_count = (source.error_count or 0) + 1
             progress["boards_checked"] = int(progress.get("boards_checked") or 0) + 1
-            run.progress = progress
-            await ctx.session.flush()
+            await publish_progress()
 
         # Layer-2 boards without slug (remotive etc.) once per run
         for key in ("remotive", "remoteok", "arbeitnow", "jobicy", "muse", "himalayas"):
@@ -255,8 +269,15 @@ async def run_discover_track(
                 if fixture_root is not None and (fixture_root / key).is_dir():
                     kwargs["fixture_dir"] = fixture_root / key
                 adapter = get_adapter(key, **kwargs)
+                feed_seen: set[str] = set()
                 async for raw in adapter.discover({}):
-                    job, created = await upsert_raw_job(ctx.session, raw)
+                    try:
+                        async with ctx.session.begin_nested():
+                            job, created = await upsert_raw_job(ctx.session, raw)
+                    except Exception:
+                        progress["skipped"] = int(progress.get("skipped") or 0) + 1
+                        continue
+                    feed_seen.add(raw.external_id)
                     progress["jobs_found"] = int(progress.get("jobs_found") or 0) + 1
                     if created:
                         progress["jobs_new"] = int(progress.get("jobs_new") or 0) + 1
@@ -280,6 +301,15 @@ async def run_discover_track(
                                 )
                             )
                             progress["linked"] = int(progress.get("linked") or 0) + 1
+                # A feed that stops listing a job is the only signal it closed.
+                closed = await mark_missed_jobs(
+                    ctx.session,
+                    source_id=source.id,
+                    board_id=None,
+                    seen_external_ids=feed_seen,
+                )
+                if closed:
+                    progress["closed"] = int(progress.get("closed") or 0) + closed
                 source.last_success_at = datetime.now(UTC)
                 source.success_count = (source.success_count or 0) + 1
             except BlockSignalError as exc:
@@ -292,8 +322,7 @@ async def run_discover_track(
                 source.last_error_at = datetime.now(UTC)
                 source.error_count = (source.error_count or 0) + 1
             progress["boards_checked"] = int(progress.get("boards_checked") or 0) + 1
-            run.progress = progress
-            await ctx.session.flush()
+            await publish_progress()
 
         # Phase 6: rank linked jobs for this Track
         try:

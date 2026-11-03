@@ -70,6 +70,7 @@ class ApplyRunStepRead(BaseModel):
     source_fact_ref: str | None
     pii_class: str
     screenshot_r2: str | None
+    screenshot_url: str | None = None
     outcome: str
     created_at: datetime
 
@@ -119,6 +120,8 @@ class StepUploadBody(BaseModel):
     source_fact_ref: str | None = None
     pii_class: str = "personal"
     screenshot_r2: str | None = None
+    # Blurred PNG bytes, base64. Stored under ws/<workspace>/runs/<run>/step-<seq>.png.
+    screenshot_b64: str | None = None
     outcome: str = "ok"
 
 

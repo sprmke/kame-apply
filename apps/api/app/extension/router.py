@@ -91,7 +91,7 @@ async def plan_page(request: Request, body: s.PlanPageBody, ctx: WorkspaceContex
         limit=120,
         window_seconds=60,
     )
-    return await svc.plan_page(ctx, body)
+    return await svc.plan_page(ctx, body, storage=request.app.state.storage)
 
 
 @router.post("/log-applied", status_code=201)

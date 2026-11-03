@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import uuid
 from pathlib import Path
 
@@ -186,6 +187,18 @@ async def test_runner_token_start_claim_checkpoint_no_submit(env_r):
         headers=rh,
     )
     assert step.status_code == 201, step.text
+    # Blurred screenshots are stored by key, never inline.
+    png = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 32).decode()
+    shot = await c.post(
+        f"/api/v1/runs/{run['id']}/steps",
+        json={"seq": 7, "action": "page", "screenshot_b64": png},
+        headers=rh,
+    )
+    assert shot.status_code == 201, shot.text
+    assert shot.json()["screenshot_r2"]
+    steps = (await c.get(f"/api/v1/runs/{run['id']}/steps", headers=rh)).json()
+    assert any(st.get("screenshot_r2") for st in steps)
+
     # Idempotent same seq
     again = await c.post(
         f"/api/v1/runs/{run['id']}/steps",
@@ -248,6 +261,25 @@ async def test_runner_token_start_claim_checkpoint_no_submit(env_r):
         headers=h,
     )
     assert wrong_kind.status_code == 409
+
+    # The plan-page hands the runner a signed resume download for file inputs.
+    app = c._transport.app  # type: ignore[attr-defined]
+    await app.state.storage.put(
+        f"ws/{me.personal}/resumes/base.pdf", b"%PDF-1.4 test", "application/pdf"
+    )
+    plan = await c.post(
+        f"/api/v1/runs/{run['id']}/plan-page",
+        json={
+            "profile_id": run["profile_id"],
+            "platform": "greenhouse",
+            "page_url": run["page_url"],
+            "fields": [{"id": "fn#0", "label": "First Name", "type": "text"}],
+        },
+        headers=rh,
+    )
+    assert plan.status_code == 200, plan.text
+    assert plan.json()["resume_upload_url"]
+    assert plan.json()["resume_file_name"].endswith(".pdf")
 
     final = await c.post(
         f"/api/v1/runs/{run['id']}/checkpoints",
@@ -390,3 +422,105 @@ async def test_chaos_resume_from_last_step(env_r):
     # Re-claim does not steal a running run
     again = await c.post("/api/v1/runs/runner/claim", json={"runner_id": "chaos-2"}, headers=rh)
     assert again.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_company_cap_warns_instead_of_blocking_a_run(env_r):
+    c = env_r
+    me = await signup(c)
+    h, app_id, _ = await _seed_ready_application(
+        c, me, apply_url="https://boards.greenhouse.io/acme/jobs/cap"
+    )
+    prefs = await c.put(
+        "/api/v1/strategy/prefs",
+        json={"company_cap": 1, "company_cap_window_days": 90},
+        headers=h,
+    )
+    assert prefs.status_code == 200, prefs.text
+
+    # A second active application at the same company exhausts the user's cap.
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        job_id = (
+            await conn.execute(
+                text(
+                    "INSERT INTO jobs (title, normalized_title, content_hash, canonical_url, "
+                    "apply_url, status) VALUES ('Other Eng', 'other eng', 'cap-hash', "
+                    "'https://example.com/cap', 'https://example.com/cap/apply', 'open') "
+                    "RETURNING id"
+                )
+            )
+        ).scalar_one()
+        await conn.execute(
+            text(
+                "INSERT INTO applications (workspace_id, track_id, job_id, profile_id, status, "
+                "method, company_name, job_title) "
+                "SELECT workspace_id, track_id, :j, profile_id, 'ready', 'manual', "
+                "'Acme', 'Other Eng' FROM applications WHERE id = CAST(:a AS uuid)"
+            ),
+            {"j": job_id, "a": app_id},
+        )
+    await engine.dispose()
+
+    started = await c.post(
+        "/api/v1/runs/runner/start",
+        json={"application_id": app_id, "allow_submit": False},
+        headers=h,
+    )
+    assert started.status_code == 201, started.text
+    assert started.json()["policy"]["warnings"]
+
+
+@pytest.mark.asyncio
+async def test_reaper_requeues_then_fails_a_lost_run(env_r):
+    c = env_r
+    me = await signup(c)
+    h, app_id, _ = await _seed_ready_application(
+        c, me, apply_url="https://boards.greenhouse.io/acme/jobs/reap"
+    )
+    tok = await c.post("/api/v1/runs/tokens", json={"label": "cloud", "mode": "cloud"}, headers=h)
+    rh = {
+        "Authorization": f"Bearer {tok.json()['token']}",
+        "X-Workspace-Id": str(me.personal),
+    }
+    started = await c.post(
+        "/api/v1/runs/runner/start",
+        json={"application_id": app_id, "allow_submit": False},
+        headers=h,
+    )
+    run_id = started.json()["id"]
+    claimed = await c.post("/api/v1/runs/runner/claim", json={"runner_id": "lost-1"}, headers=rh)
+    assert claimed.status_code == 200
+
+    app = c._transport.app  # type: ignore[attr-defined]
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE apply_runs SET status = 'running', "
+                "heartbeat_at = now() - interval '10 minutes' WHERE id = CAST(:r AS uuid)"
+            ),
+            {"r": run_id},
+        )
+    await engine.dispose()
+
+    from app.runs.service import reap_stuck_runs
+
+    assert await reap_stuck_runs(app.state.session_factory) >= 1
+    requeued = await c.get(f"/api/v1/runs/{run_id}", headers=h)
+    assert requeued.json()["status"] == "queued"
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE apply_runs SET status = 'running', "
+                "heartbeat_at = now() - interval '10 minutes' WHERE id = CAST(:r AS uuid)"
+            ),
+            {"r": run_id},
+        )
+    await engine.dispose()
+    assert await reap_stuck_runs(app.state.session_factory) >= 1
+    failed = await c.get(f"/api/v1/runs/{run_id}", headers=h)
+    assert failed.json()["status"] == "failed"
+    assert failed.json()["failure_reason"] == "runner_lost"

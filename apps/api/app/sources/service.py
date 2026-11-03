@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import uuid
 from pathlib import Path
 
@@ -9,11 +11,17 @@ from sqlalchemy import select
 
 from app.audit import service as audit
 from app.core.errors import AppError
+from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
 from app.jobs.models import DiscoveryRun, Job, TrackJob
 from app.sources.discover import run_discover_track
 from app.sources.models import Source, TrackSource
 from app.tracks import models as track_models
+
+logger = logging.getLogger(__name__)
+
+# Keep strong references to background discovery tasks so they are not garbage collected.
+_BACKGROUND_TASKS: set[asyncio.Task] = set()
 
 
 async def list_source_health(session) -> list[Source]:
@@ -117,6 +125,7 @@ async def start_discovery(
     *,
     fixture_root: Path | None = None,
     background: bool = True,
+    session_factory=None,
 ) -> DiscoveryRun:
     from datetime import UTC, datetime
 
@@ -173,6 +182,47 @@ async def start_discovery(
         trigger="run_now",
         progress={"boards_checked": 0, "jobs_found": 0, "jobs_new": 0, "linked": 0},
     )
+    if background and session_factory is not None:
+        # Commit the run in its own transaction so the worker and the progress poller see it.
+        async with session_factory() as session, session.begin():
+            await set_request_context(
+                session, user_id=str(ctx.user_id), workspace_id=str(ctx.workspace_id)
+            )
+            session.add(run)
+            await session.flush()
+            run_id = run.id
+            worker_ctx = WorkspaceContext(
+                session=session,
+                user_id=ctx.user_id,
+                workspace_id=ctx.workspace_id,
+                role=ctx.role,
+                request_id=ctx.request_id,
+            )
+            await audit.record(
+                worker_ctx,
+                action="discovery.run_started",
+                target_type="discovery_run",
+                target_id=str(run_id),
+                after={"track_id": str(track_id), "trigger": "run_now"},
+            )
+        task = asyncio.create_task(
+            _run_discovery_background(
+                session_factory,
+                workspace_id=ctx.workspace_id,
+                user_id=ctx.user_id,
+                role=ctx.role,
+                request_id=ctx.request_id,
+                track_id=track_id,
+                run_id=run_id,
+                fixture_root=fixture_root,
+            )
+        )
+        _BACKGROUND_TASKS.add(task)
+        task.add_done_callback(_BACKGROUND_TASKS.discard)
+        loaded = await ctx.session.get(DiscoveryRun, run_id)
+        assert loaded is not None
+        return loaded
+
     ctx.session.add(run)
     await ctx.session.flush()
     await audit.record(
@@ -182,10 +232,52 @@ async def start_discovery(
         target_id=str(run.id),
         after={"track_id": str(track_id), "trigger": "run_now"},
     )
-    # Run inline for request durability in tests; production uses DBOS enqueue.
+    # Tests and local dev run inline so the caller sees the finished run.
     await run_discover_track(ctx, track_id, run_id=run.id, fixture_root=fixture_root, board_limit=8)
     await ctx.session.refresh(run)
     return run
+
+
+async def _run_discovery_background(
+    session_factory,
+    *,
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID,
+    role: str,
+    request_id: str | None,
+    track_id: uuid.UUID,
+    run_id: uuid.UUID,
+    fixture_root: Path | None,
+) -> None:
+    # No outer `session.begin()`: run_discover_track commits progress itself, and the wrapper
+    # commits the final status. An outer transaction would be inactive after the first commit.
+    async with session_factory() as session:
+        await set_request_context(
+            session, user_id=str(user_id) if user_id else None, workspace_id=str(workspace_id)
+        )
+        ctx = WorkspaceContext(
+            session=session,
+            user_id=user_id,
+            workspace_id=workspace_id,
+            role=role,
+            request_id=request_id,
+        )
+        try:
+            await run_discover_track(
+                ctx,
+                track_id,
+                run_id=run_id,
+                fixture_root=fixture_root,
+                board_limit=8,
+                commit_progress=True,
+            )
+            await session.commit()
+        except Exception:
+            logger.exception("discovery_background_failed run=%s", run_id)
+            try:
+                await session.commit()  # persist the failed run row
+            except Exception:
+                await session.rollback()
 
 
 async def get_run(ctx: WorkspaceContext, run_id: uuid.UUID) -> DiscoveryRun:

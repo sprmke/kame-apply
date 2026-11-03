@@ -15,6 +15,7 @@ from app.resumes.cover_letter_ai import AiCoverLetter, draft_cover_letter_ai
 from app.resumes.critique import critique_resume
 from app.resumes.critique_ai import AiCritique, AiCritiqueFinding, enrich_critique
 from app.resumes.from_profile import build_from_profile
+from app.resumes.review_ai import AiTailorReview, review_tailored_draft
 from tests.conftest import TEST_DB_URL
 from tests.test_workspaces import signup
 
@@ -335,3 +336,32 @@ async def test_critique_route_stays_deterministic_without_ai(env_ai):
     r = await c.post(f"{R}/{version_id}/critique", headers=h)
     assert r.status_code == 200, r.text
     assert r.json().get("ai") is None
+
+
+async def test_tailor_review_merges_ai_notes_and_falls_back():
+    content = build_from_profile(_facts(), target_role="Backend Engineer")
+    base_notes = ["Grade stayed the same"]
+    out = await review_tailored_draft(
+        None,  # type: ignore[arg-type]
+        SETTINGS,
+        content=content,
+        qualifications=[
+            {"kind": "must", "text": "Python", "normalized": {"type": "skill", "name": "Python"}}
+        ],
+        deterministic_notes=base_notes,
+        run_structured=fake_runner(
+            AiTailorReview(notes=["Move Python into the summary", "Move Python into the summary"])
+        ),
+    )
+    assert out[0] == "Grade stayed the same"
+    assert out.count("Move Python into the summary") == 1
+
+    fallback = await review_tailored_draft(
+        None,  # type: ignore[arg-type]
+        SETTINGS,
+        content=content,
+        qualifications=[],
+        deterministic_notes=base_notes,
+        run_structured=failing_runner("ai_not_configured"),
+    )
+    assert fallback == base_notes

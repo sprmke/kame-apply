@@ -51,6 +51,10 @@ class TailorRunRead(BaseModel):
     created_at: datetime | None = None
 
 
+class TailorChangeDecisionBody(BaseModel):
+    status: Literal["accepted", "rejected"]
+
+
 class TailorAcceptBody(BaseModel):
     include_cover_letter: bool = True
     method: Literal["manual", "extension", "runner", "answer_desk"] = "manual"

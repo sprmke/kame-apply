@@ -31,6 +31,7 @@ For a job the user really wants, produce the strongest **truthful** resume for t
 - [x] Terminology mapping: posting term ↔ profile skill via taxonomy aliases (use the posting's surface form when it's the same skill).
 - [x] Guard against keyword stuffing: per-term frequency cap, no hidden text, skills section limited to evidenced skills.
 - [x] Cover letter generator using voice profile + verifier: `cover_letter.v1` drafts from evidence quotes only, the draft is checked sentence by sentence against profile evidence (numbers, entities, banned phrases, 150-250 words), and any failure falls back to the deterministic letter.
+- [x] Reviewer pass: after the deterministic review, `resume_tailor_review.v1` adds up to three advisory notes (keyword stuffing, skim-zone misses, unsupported claims) through `try_structured`; the deterministic notes are returned when AI is unavailable. The Lens itself stays deterministic for consistent grading.
 - [x] Batch tailoring for shortlisted jobs (autonomy `prepare` in Phase 10) with per-run budget. *(service ready; batch deferred to Phase 10)*
 
 ### Frontend (blueprint §3.5)

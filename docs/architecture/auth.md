@@ -70,7 +70,7 @@ Sign-up creates a `personal` workspace (owner). Team workspaces: `POST /workspac
 | Route | Action | Notes |
 | --- | --- | --- |
 | `GET/POST /workspaces` | user-scoped | list mine, create team |
-| `GET/PATCH/DELETE /workspace` | read / update / delete | delete is a soft delete, team only; hard delete after 30 days is a Phase 10 job |
+| `GET/PATCH/DELETE /workspace` | read / update / delete | delete is a soft delete, team only; R2 objects are removed immediately and the scheduler hard-deletes rows after 30 days |
 | `GET /workspace/members`, `PATCH/DELETE /workspace/members/{user_id}` | read / change_role / remove | actors manage only roles strictly below their own and never grant their own level |
 | `POST /workspace/transfer`, `POST /workspace/leave` | transfer / leave | the owner must transfer before leaving; personal workspaces can be neither left nor transferred |
 | `GET/POST /workspace/invitations`, `DELETE .../{id}` | members.invite | one live invitation per email, 7 days, single use |

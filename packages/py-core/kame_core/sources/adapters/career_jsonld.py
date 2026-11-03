@@ -11,8 +11,10 @@ from collections.abc import AsyncIterator, Mapping
 from pathlib import Path
 from typing import Any
 
+import httpx
+
 from kame_core.sources.base import AdapterMeta, RawJob, SourceHealth
-from kame_core.sources.http import fetch_json
+from kame_core.sources.http import BlockSignalError, fetch_json, robots_allowed
 from kame_core.sources.registry import register_adapter
 from kame_core.sources.textutil import html_to_text, parse_iso_dt
 
@@ -62,6 +64,9 @@ class CareerJsonLdAdapter:
             url = str(params.get("url") or "").strip()
             if not url:
                 raise ValueError("url is required")
+            if not await robots_allowed(url):
+                host = httpx.URL(url).host or "unknown"
+                raise BlockSignalError(0, host, "robots_disallow")
             html, _, _ = await fetch_json(url, headers={"Accept": "text/html"})
             if not isinstance(html, str):
                 html = str(html)

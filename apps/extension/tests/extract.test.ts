@@ -13,6 +13,18 @@ describe("greenhouse fixture extract + fill", () => {
     document.body.innerHTML = html;
   });
 
+  it("fills the focused field for an answer insert", () => {
+    document.body.innerHTML =
+      '<label for="q">Why do you want this role?</label><textarea id="q"></textarea>';
+    const el = document.querySelector<HTMLTextAreaElement>("#q")!;
+    el.focus();
+    const result = applyInstructions([
+      { field_id: "focused", action: "fill", value: "Because the work is real." },
+    ]);
+    expect(result.filled).toBe(1);
+    expect(el.value).toBe("Because the work is real.");
+  });
+
   it("extracts fields and fills first name", () => {
     const fields = extractFields(document);
     expect(fields.some((f) => /first/i.test(f.label))).toBe(true);

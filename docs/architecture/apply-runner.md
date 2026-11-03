@@ -25,6 +25,8 @@ Auth: JWT session or runner bearer (`ka_run_…`) + `X-Workspace-Id`. Never trus
 - LinkedIn / Indeed / JobStreet: `platform_no_auto_submit`; `allow_submit` forced false.
 - Submit click only after `final_review` → `approve_submit` sets `submit_approved` (rejected on any other checkpoint kind, and when `allow_submit` is false: assist runs hand off to the human).
 - Sensitive typed values live only in an in-memory one-shot vault (`app/runs/ephemeral.py`); never in `apply_runs.policy`, `activity_log`, or `checkpoint.decision`. The API must run one worker process for the runner hand-off.
+- The minute scheduler reaps runs whose runner stopped heartbeating: after 5 minutes the run returns to `queued` (runner cleared) so another runner can resume from `last_step_seq`; after two attempts it is `failed` with `runner_lost`.
+- `plan-page` returns a signed `resume_upload_url` for the accepted resume; the runner downloads it and attaches it to visible file inputs. Blurred step screenshots are uploaded as base64, stored under `ws/<workspace>/runs/<run>/step-<seq>.png`, and listed with a signed `screenshot_url`.
 - Navigation clicks are screened: a control whose label is Submit/Apply now is never clicked by the Next/Continue path, and `input[type=submit]` is not a Next selector.
 
 ## Local mode

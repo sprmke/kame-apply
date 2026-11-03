@@ -13,10 +13,13 @@ from sqlalchemy import select
 from app.answers import draft as drafting
 from app.answers.restriction import detect_ai_restriction
 from app.applications import tracker as app_tracker
+from app.applications.models import Application
 from app.audit import service as audit
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.core.ssrf import is_public_http_url_literal
+from app.core.storage import build_storage
 from app.extension import brain
 from app.extension import models as m
 from app.extension import schemas as s
@@ -26,6 +29,7 @@ from app.jobs.models import Job, TrackJob
 from app.jobs.normalize import normalize_title
 from app.profiles import models as pm
 from app.profiles.service import get_profile
+from app.resumes.models import ResumeVersion
 from app.tracks import models as track_models
 
 _TOKEN_TTL_DAYS = 90
@@ -320,9 +324,13 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
             "platform": platform,
         },
     )
-    risk = None
-    if job.meta and isinstance(job.meta, dict):
-        risk = job.meta.get("risk_level")
+    # The safety pass stores the level in job_risk, not in job.meta.
+    from app.safety.models import JobRisk
+
+    risk_row = (
+        await ctx.session.execute(select(JobRisk).where(JobRisk.job_id == job.id))
+    ).scalar_one_or_none()
+    risk = risk_row.level if risk_row else None
     return s.ClipResult(
         job_id=job.id,
         track_job_id=track_job_id,
@@ -414,7 +422,9 @@ async def start_run(ctx: WorkspaceContext, body: s.StartRunBody) -> s.StartRunRe
     return s.StartRunResult(run_id=run.id, status=run.status, autofill_allowed=allowed)
 
 
-async def plan_page(ctx: WorkspaceContext, body: s.PlanPageBody) -> s.PlanPageResult:
+async def plan_page(
+    ctx: WorkspaceContext, body: s.PlanPageBody, *, storage: Any = None
+) -> s.PlanPageResult:
     await get_profile(ctx, body.profile_id)
     platform = (body.platform or detect_platform(body.page_url) or "generic").lower()
     allowed = await autofill_allowed(ctx, platform)
@@ -503,13 +513,31 @@ async def plan_page(ctx: WorkspaceContext, body: s.PlanPageBody) -> s.PlanPageRe
     run.updated_at = datetime.now(UTC)
     await ctx.session.flush()
 
+    # Signed download for the accepted resume, so the runner can attach it to file inputs.
+    resume_url = None
+    resume_name = None
+    if run.application_id:
+        application = await ctx.session.get(Application, run.application_id)
+        if application and application.resume_version_id:
+            rv = await ctx.session.get(ResumeVersion, application.resume_version_id)
+            key = (rv.r2_pdf or rv.r2_docx) if rv else None
+            if key and rv is not None:
+                try:
+                    store = storage or build_storage(get_settings())
+                    resume_url = await store.presign_get(key)
+                    suffix = ".pdf" if key.endswith(".pdf") else ".docx"
+                    resume_name = f"resume-{rv.id}{suffix}"
+                except Exception:
+                    resume_url = None
+
     return s.PlanPageResult(
         run_id=run.id,
         platform=platform,
         autofill_allowed=allowed,
         instructions=instructions,
         page_ai_restricted=page_restricted,
-        resume_upload_url=None,
+        resume_upload_url=resume_url,
+        resume_file_name=resume_name,
         notes=notes,
     )
 

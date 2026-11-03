@@ -41,6 +41,24 @@ services:
         limits:
           memory: 3G
 
+  runner:
+    image: ${KAME_RUNNER_IMAGE:-kame-apply-runner:latest}
+    restart: unless-stopped
+    env_file:
+      - ${KAME_RUNNER_ENV_FILE:-/etc/kame-apply/runner.env}
+    environment:
+      KAME_RUNNER_MODE: cloud
+      KAME_RUNNER_HEADED: "false"
+      KAME_RUNNER_API_BASE: http://api:8100
+    depends_on:
+      api:
+        condition: service_healthy
+    shm_size: "1g"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
   postgres:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
