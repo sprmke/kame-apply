@@ -38,6 +38,25 @@ def assert_public_http_url(url: str, *, allow_private: bool = False) -> str:
     return url
 
 
+def is_public_http_url_literal(url: str) -> bool:
+    """Cheap check for stored URLs: http(s), no localhost, no literal private/link-local IP.
+
+    Hostnames are not resolved here (that happens at fetch time through the full guard), so this
+    is safe to call per record without blocking the event loop.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower().rstrip(".")
+    if host in {"localhost", "metadata.google.internal"} or host.endswith(".localhost"):
+        return False
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return True
+    return not _blocked(ip)
+
+
 def is_safe_outbound_url(url: str, *, allow_private: bool = False) -> bool:
     try:
         assert_public_http_url(url, allow_private=allow_private)

@@ -12,7 +12,7 @@ Users bring their own provider keys (Gemini, Groq, OpenAI, Anthropic, OpenRouter
 - Prod refuses to start with the public local default KEK.
 - Never accept or store a user's Claude.ai credentials (`research/08`). An Anthropic API key is a normal provider key.
 
-**Rotating the master key:** set `MASTER_KEK` to the new key and `MASTER_KEK_PREVIOUS` to the old one, re-wrap every `workspace_keys.wrapped_dek` (unwrap with old, wrap with new, bump `kek_version`), then remove `MASTER_KEK_PREVIOUS`. Provider keys are not re-encrypted. The re-wrap script is not written yet; write it before the first prod deploy (Phase 14).
+**Rotating the master key:** set `MASTER_KEK` to the new key and `MASTER_KEK_PREVIOUS` to the old one, run `python -m app.ops.rewrap_keks` (re-wraps every `workspace_keys.wrapped_dek`, bumps `kek_version`), then remove `MASTER_KEK_PREVIOUS`. Provider keys are not re-encrypted. The script is covered by `tests/test_activity_limits_rewrap.py`.
 
 Ollama accepts a custom base URL. Hosted deployments refuse URLs resolving to private, loopback, or link-local addresses (SSRF); local development allows them.
 
@@ -31,6 +31,8 @@ Both share the same path:
 4. Record tokens and estimated cost in `ai_usage` (append-only for the app role).
 
 Versioned prompts live in `app/ai/prompts.py`. Resume parse uses `profile_extract.v1` via `run_structured` (see `docs/architecture/profile.md`).
+
+**Optional AI.** Features that must keep working on a free tier call `app/ai/optional.try_structured`, which returns `None` for `ai_not_configured`, `budget_reached`, `ai_provider_error`, `ai_output_invalid`, and `ai_credential_invalid`. Callers keep their deterministic result. Used by the resume critique rubric and the cover letter drafter; the letter is verified sentence by sentence against profile evidence before it is returned.
 
 Errors: `ai_not_configured` (409), `budget_reached` (402), `ai_credential_invalid` (409), `ai_provider_error` (502/504), `ai_output_invalid` (502). Optional fallback to other providers' `valid` credentials only when `fallback_enabled` is on.
 

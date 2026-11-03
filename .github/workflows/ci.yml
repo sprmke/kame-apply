@@ -24,6 +24,11 @@ jobs:
           bash scripts/dev/test-hooks.sh
           bash scripts/dev/check-filename-conventions.sh
           bash scripts/dev/check-stack-terminology.sh
+          if [[ -f scripts/dev/check-untrusted-prompts.sh ]]; then bash scripts/dev/check-untrusted-prompts.sh; fi
+      - name: Design token contrast and anti-slop checks
+        run: |
+          node scripts/dev/check-token-contrast.mjs
+          bash scripts/dev/check-design-slop.sh
 
   python:
     name: Python (lint, types, tests)
@@ -53,6 +58,20 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run basedpyright
       - run: uv run pytest apps/api -q
+      - name: Evals (deterministic, no live models)
+        run: uv run pytest apps/api/tests/evals -q -m 'not live'
+
+  runner:
+    name: Runner (browser submit-gate tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --frozen
+      - run: uv run playwright install --with-deps chromium
+      - run: uv run pytest apps/runner -q
 
   web:
     name: Web (lint, types, tests, build, API client drift)

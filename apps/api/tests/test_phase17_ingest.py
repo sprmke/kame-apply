@@ -10,6 +10,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.core.config import Settings
+from app.core.storage import MemoryStorage
 from app.ingest.parsers import detect_provider, parse_mime, unwrap_tracking_url
 from app.main import create_app
 from tests.conftest import TEST_DB_URL
@@ -182,3 +183,60 @@ async def test_inbound_cross_tenant(env_i):
     msgs = await c.get("/api/v1/inbound/messages", headers=bh)
     assert msgs.status_code == 200
     assert msgs.json() == []
+
+
+@pytest.fixture
+async def env_unsecreted():
+    """A deployed-like environment that forgot to configure the webhook secrets."""
+    settings = Settings(
+        database_url=TEST_DB_URL,
+        environment="dev",
+        log_json=False,
+        auth_rate_limit_enabled=False,
+    )
+    app = create_app(settings)
+    # Dev-like environment for the fail-closed check, but no object store in CI.
+    app.state.storage = MemoryStorage()
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://t"
+        ) as c:
+            yield c, settings
+
+
+@pytest.mark.asyncio
+async def test_webhooks_fail_closed_without_a_secret(env_unsecreted):
+    c, _ = env_unsecreted
+    tg = await c.post("/api/v1/webhooks/telegram", json={"message": {"text": "/start x"}})
+    assert tg.status_code == 401
+    mail = await c.post("/api/v1/webhooks/inbound-email?token=abc", content=b"raw")
+    assert mail.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_telegram_webhook_rejects_a_wrong_secret(env_i):
+    c, settings = env_i
+    settings.telegram_webhook_secret = "s3cret"
+    bad = await c.post(
+        "/api/v1/webhooks/telegram",
+        json={"message": {"text": "/start x"}},
+        headers={"X-Telegram-Bot-Api-Secret-Token": "nope"},
+    )
+    assert bad.status_code == 401
+    good = await c.post(
+        "/api/v1/webhooks/telegram",
+        json={"update_id": 1},
+        headers={"X-Telegram-Bot-Api-Secret-Token": "s3cret"},
+    )
+    assert good.status_code == 200
+
+
+def test_prod_requires_a_telegram_secret_when_the_bot_is_enabled():
+    with pytest.raises(ValueError, match="TELEGRAM_WEBHOOK_SECRET"):
+        Settings(
+            environment="prod",
+            jwt_secret="x" * 40,
+            master_kek="MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
+            cookie_secure=True,
+            telegram_bot_token="123:abc",
+        )

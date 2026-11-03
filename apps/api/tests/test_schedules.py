@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -30,6 +31,19 @@ async def env_s():
             transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://t"
         ) as c:
             yield c
+
+
+@pytest.fixture
+async def env_scheduler():
+    settings = Settings(
+        database_url=TEST_DB_URL, environment="test", log_json=False, auth_rate_limit_enabled=False
+    )
+    app = create_app(settings)
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://t"
+        ) as c:
+            yield c, app
 
 
 async def _track(c, me):
@@ -84,16 +98,16 @@ async def test_schedule_crud_and_tick(env_s):
     # Force due: set next_run_at in the past via owner
     engine = create_async_engine(TEST_OWNER_URL)
     factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    frozen = datetime.now(UTC).replace(second=0, microsecond=0) + timedelta(hours=1)
     async with factory() as session:
         await session.execute(
             text("UPDATE schedules SET next_run_at = :t WHERE id = :id"),
-            {"t": datetime.now(UTC) - timedelta(minutes=5), "id": sched["id"]},
+            {"t": frozen - timedelta(minutes=5), "id": sched["id"]},
         )
         await session.commit()
     await engine.dispose()
 
-    # Midday Manila (not quiet hours): 2026-11-02 10:00 Manila = 02:00 UTC
-    frozen = datetime(2026, 11, 2, 2, 0, tzinfo=UTC)
+    # A due schedule fires once at the frozen time (derived from now, so the test cannot rot).
     tick = await c.post(
         "/api/v1/schedules/tick",
         json={"now": frozen.isoformat(), "workspace_only": True},
@@ -213,6 +227,22 @@ async def test_notification_prefs_and_emit(env_s):
     )
     assert digest_email["enabled"] is False
 
+    # The matrix exposes push/telegram; saving those cells must not hit a check constraint.
+    push_cells = await c.put(
+        "/api/v1/notification-prefs",
+        json={
+            "cells": [
+                {"channel": "push", "event": "needs_review", "enabled": True},
+                {"channel": "telegram", "event": "risk_flag", "enabled": True},
+            ]
+        },
+        headers=h,
+    )
+    assert push_cells.status_code == 200, push_cells.text
+    saved = {(x["channel"], x["event"]): x["enabled"] for x in push_cells.json()["cells"]}
+    assert saved[("push", "needs_review")] is True
+    assert saved[("telegram", "risk_flag")] is True
+
     needs = await c.get("/api/v1/needs-you", headers=h)
     assert needs.status_code == 200
     assert "count" in needs.json()
@@ -258,3 +288,88 @@ async def test_schedules_rls_wrong_workspace(env_s):
     )
     # Track not in other workspace → 404
     assert cross.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_two_active_runs_do_not_break_the_tick(env_s):
+    """Two concurrent runs used to raise MultipleResultsFound and skip every cycle."""
+    c = env_s
+    me = await signup(c)
+    h, track = await _track(c, me)
+    tid = track["id"]
+    await c.post(
+        f"/api/v1/tracks/{tid}/schedules",
+        json={"preset": "hourly", "timezone": "UTC"},
+        headers=h,
+    )
+    frozen = datetime.now(UTC).replace(second=0, microsecond=0) + timedelta(hours=1)
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text("UPDATE schedules SET next_run_at = :t WHERE track_id = :tid"),
+            {"t": frozen - timedelta(minutes=5), "tid": tid},
+        )
+        for _ in range(2):
+            await conn.execute(
+                text(
+                    "INSERT INTO discovery_runs (workspace_id, track_id, status, trigger, progress) "
+                    "VALUES (:w, :t, 'queued', 'schedule', '{}')"
+                ),
+                {"w": me.personal, "t": tid},
+            )
+    await engine.dispose()
+
+    tick = await c.post(
+        "/api/v1/schedules/tick",
+        json={"now": frozen.isoformat(), "workspace_only": True},
+        headers=h,
+    )
+    assert tick.status_code == 200, tick.text
+    assert any(d.get("skip") == "previous_run_still_active" for d in tick.json().get("details", []))
+
+
+@pytest.mark.asyncio
+async def test_scheduler_runs_due_schedules_for_every_workspace(env_scheduler, monkeypatch):
+    """The in-process scheduler must reach every tenant, which needs the security-definer helper."""
+    from types import SimpleNamespace
+
+    from app.schedules import chain
+    from app.schedules.scheduler import run_once
+
+    c, app = env_scheduler
+    ids = []
+    for _ in range(2):
+        me = await signup(c)
+        h, track = await _track(c, me)
+        await c.post(
+            f"/api/v1/tracks/{track['id']}/schedules",
+            json={"preset": "hourly", "timezone": "UTC"},
+            headers=h,
+        )
+        ids.append((me.personal, track["id"]))
+
+    frozen = datetime.now(UTC).replace(second=0, microsecond=0) + timedelta(hours=1)
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        for ws, tid in ids:
+            await conn.execute(
+                text(
+                    "UPDATE schedules SET next_run_at = :t "
+                    "WHERE workspace_id = CAST(:w AS uuid) AND track_id = CAST(:tid AS uuid)"
+                ),
+                {"t": frozen - timedelta(minutes=5), "w": ws, "tid": tid},
+            )
+    await engine.dispose()
+
+    calls: list[str] = []
+
+    async def fake_chain(ctx, track_id, **kwargs):
+        calls.append(str(track_id))
+        return SimpleNamespace(id=uuid.uuid4(), status="succeeded")
+
+    monkeypatch.setattr(chain, "run_automation_chain", fake_chain)
+    result = await run_once(app, now=frozen)
+    # The scheduler sees every workspace in the database, including ones from other tests.
+    assert result["workspaces"] >= 2
+    assert set(calls) >= {tid for _ws, tid in ids}
+    assert result["fired"] >= 2

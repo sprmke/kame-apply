@@ -57,12 +57,53 @@ def looks_like_login(text: str, needles: tuple[str, ...]) -> bool:
     return any(n in low for n in needles)
 
 
-def looks_like_captcha(page_html: str) -> bool:
-    low = page_html.lower()
+_CAPTCHA_SELECTORS = (
+    "iframe[src*='recaptcha']",
+    "iframe[src*='hcaptcha']",
+    "iframe[src*='turnstile']",
+    "div.g-recaptcha",
+    "div.h-captcha",
+    "#cf-turnstile",
+)
+
+
+async def page_has_captcha(page: Page) -> bool:
+    """Only a *visible* challenge counts; a reCAPTCHA script tag alone is not a block."""
+    try:
+        visible = await page.evaluate(
+            """(selectors) => selectors.some((sel) => {
+                const el = document.querySelector(sel);
+                if (!el) return false;
+                const r = el.getBoundingClientRect();
+                const style = window.getComputedStyle(el);
+                return r.width > 0 && r.height > 0 && style.visibility !== 'hidden'
+                  && style.display !== 'none';
+            })""",
+            list(_CAPTCHA_SELECTORS),
+        )
+    except Exception:
+        visible = False
+    if visible:
+        return True
+    text = (await page_text(page)).lower()
     return any(
-        x in low
-        for x in ("recaptcha", "hcaptcha", "cf-turnstile", "captcha", "verify you are human")
+        phrase in text
+        for phrase in ("verify you are human", "complete the captcha", "i'm not a robot")
     )
+
+
+async def page_has_password_input(page: Page) -> bool:
+    try:
+        return bool(
+            await page.evaluate(
+                """() => Array.from(document.querySelectorAll('input[type=password]')).some((el) => {
+                    const r = el.getBoundingClientRect();
+                    return r.width > 0 && r.height > 0 && !el.disabled;
+                })"""
+            )
+        )
+    except Exception:
+        return False
 
 
 def looks_like_confirmation(text: str, needles: tuple[str, ...]) -> bool:

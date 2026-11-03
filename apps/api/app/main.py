@@ -1,5 +1,6 @@
+import asyncio
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -59,9 +60,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if mcp_server is not None:
             mcp_cm = mcp_server.session_manager.run()
             await mcp_cm.__aenter__()
+        scheduler_task: asyncio.Task[None] | None = None
+        if settings.scheduler_enabled and settings.environment in {"dev", "prod"}:
+            from app.schedules.scheduler import scheduler_loop
+
+            scheduler_task = asyncio.create_task(scheduler_loop(app))
         try:
             yield
         finally:
+            if scheduler_task is not None:
+                scheduler_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await scheduler_task
             if mcp_cm is not None:
                 try:
                     await mcp_cm.__aexit__(None, None, None)

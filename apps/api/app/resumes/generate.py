@@ -44,17 +44,17 @@ def propose_improvements(
         if vr.ok:
             proposals.append(op)
 
-    # Summary targeting — only from profile headline/summary (never invent role-only fluff)
+    # Summary targeting — only reuses the profile's own headline/summary text (never invents one).
     role = content.target_role or ""
     if role and (
         not content.summary or role.lower().split()[0] not in (content.summary.text or "").lower()
     ):
         refs = [str(facts["id"])] if facts.get("id") else []
         base = (facts.get("headline") or facts.get("summary") or "").strip()
-        if refs and base:
-            after = base if role.lower() in base.lower() else f"{role}. {base}".strip()
+        if refs and base and role.lower() in base.lower():
+            after = base
             vr = verify_operation(after_text=after, evidence_refs=refs, facts=facts)
-            if vr.ok:
+            if vr.ok and after != (content.summary.text if content.summary else ""):
                 proposals.append(
                     {
                         "op": "summary",

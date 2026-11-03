@@ -156,11 +156,7 @@ async def seed_sources(session: AsyncSession) -> int:
 
 async def seed_directory(session: AsyncSession, *, target_boards: int = 5000) -> dict[str, int]:
     await seed_sources(session)
-    count = (
-        await session.execute(
-            select(func.count()).select_from(CompanyBoard).where(CompanyBoard.status == "active")
-        )
-    ).scalar_one()
+    count = (await session.execute(select(func.count()).select_from(CompanyBoard))).scalar_one()
     if count >= target_boards:
         return {"boards": int(count), "added": 0}
 
@@ -188,27 +184,25 @@ async def seed_directory(session: AsyncSession, *, target_boards: int = 5000) ->
             session.add(company)
             await session.flush()
             company_cache[ckey] = company
+        curated = slug in CURATED.get(ats, [])
+        # Only curated boards are known to exist. Generated slugs are candidates: they are listed
+        # for later validation but never polled, so a fake slug cannot open a circuit breaker on a
+        # real ATS host.
         session.add(
             CompanyBoard(
                 company_id=company.id,
                 ats=ats,
                 slug=slug,
                 url=board_public_url(ats, slug),
-                status="active",
+                status="active" if curated else "candidate",
                 poll_tier="cold",
-                validated_at=now,
-                validation_method="seed_curated"
-                if slug in CURATED.get(ats, [])
-                else "seed_expanded",
+                validated_at=now if curated else None,
+                validation_method="seed_curated" if curated else "seed_unverified",
             )
         )
         added += 1
         if added % 500 == 0:
             await session.flush()
     await session.flush()
-    total = (
-        await session.execute(
-            select(func.count()).select_from(CompanyBoard).where(CompanyBoard.status == "active")
-        )
-    ).scalar_one()
+    total = (await session.execute(select(func.count()).select_from(CompanyBoard))).scalar_one()
     return {"boards": int(total), "added": added}

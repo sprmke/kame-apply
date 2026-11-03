@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "charliermarsh.ruff",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "editorconfig.editorconfig",
+    "bradlc.vscode-tailwindcss",
+    "tamasfe.even-better-toml"
+  ],
+  "unwantedRecommendations": ["ms-vscode.vscode-typescript-next"]
+}

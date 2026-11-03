@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from app.applications.models import Application, CoverLetter, TailorRun
 from app.audit import service as audit
+from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.jobs.models import Job, TrackJob
@@ -17,11 +18,12 @@ from app.matching import service as matching
 from app.profiles import models as pm
 from app.resumes.content import ResumeContent
 from app.resumes.cover_letter import draft_cover_letter
+from app.resumes.cover_letter_ai import draft_cover_letter_ai
 from app.resumes.from_profile import build_from_profile
 from app.resumes.models import ResumeVersion
 from app.resumes.parse_gate import run_parse_gate
 from app.resumes.render import render_all
-from app.resumes.service import _load_profile_facts, render_version
+from app.resumes.service import load_profile_facts, render_version
 from app.resumes.tailor import tailor_once
 from app.tracks import models as track_models
 
@@ -70,6 +72,8 @@ async def start_tailor(
     *,
     include_cover_letter: bool = True,
     base_version_id: uuid.UUID | None = None,
+    run_structured=None,
+    model_factory=None,
 ) -> dict[str, Any]:
     tj = await ctx.session.get(TrackJob, track_job_id)
     if tj is None or tj.workspace_id != ctx.workspace_id:
@@ -95,7 +99,7 @@ async def start_tailor(
     await ctx.session.flush()
 
     try:
-        facts = await _load_profile_facts(ctx, profile_id)
+        facts = await load_profile_facts(ctx, profile_id)
         quals_rows = await matching.ensure_qualifications(ctx, job)
         qualifications = [
             {
@@ -208,16 +212,28 @@ async def start_tailor(
                             "evidence_ref": b.get("id"),
                         }
                     )
-            letter = draft_cover_letter(
+            job_payload = {
+                "title": job.title,
+                "company_name": company_name or "",
+                "description_text": job.description_text or "",
+            }
+            letter = await draft_cover_letter_ai(
+                ctx,
+                get_settings(),
                 facts=facts,
-                job={
-                    "title": job.title,
-                    "company_name": company_name or "",
-                    "description_text": job.description_text or "",
-                },
+                job=job_payload,
                 matches=matches,
                 voice=voice,
+                run_structured=run_structured,
+                model_factory=model_factory,
             )
+            if letter is None:
+                letter = draft_cover_letter(
+                    facts=facts,
+                    job=job_payload,
+                    matches=matches,
+                    voice=voice,
+                )
             refs = []
             for r in letter.get("evidence_refs") or []:
                 try:

@@ -30,6 +30,41 @@ async def env_l():
             yield c, settings
 
 
+@pytest.mark.asyncio
+async def test_viewer_cannot_control_the_run():
+    """A read-only member may watch the live view but never take over or type into the page."""
+    from app.runs.live_hub import LiveRoom
+    from app.runs.live_ws import _handle_message
+
+    rid, wid, uid = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    room = LiveRoom(run_id=rid, workspace_id=wid)
+    for typ in ("takeover", "handback", "input", "mouse", "key", "text", "scroll", "paste"):
+        await _handle_message(
+            room=room,
+            role="viewer",
+            user_id=uid,
+            msg={"type": typ, "text": "x", "x": 1, "y": 1},
+            session_factory=None,  # type: ignore[arg-type]
+            workspace_id=wid,
+        )
+    assert room.control_mode == "agent"
+    assert room.controller_user_id is None
+
+
+@pytest.mark.asyncio
+async def test_live_token_roundtrip_keeps_workspace_role():
+    settings = Settings(
+        database_url=TEST_DB_URL, environment="test", log_json=False, auth_rate_limit_enabled=False
+    )
+    rid, wid, uid = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
+    raw, _ = issue_live_token(settings, run_id=rid, workspace_id=wid, user_id=uid, role="member")
+    assert decode_live_token(settings, raw)["role"] == "member"
+    from app.core.errors import AppError
+
+    with pytest.raises(AppError):
+        issue_live_token(settings, run_id=rid, workspace_id=wid, user_id=uid, role="root")
+
+
 def test_map_pointer_to_page():
     x, y = map_pointer_to_page(
         canvas_x=100, canvas_y=50, canvas_w=200, canvas_h=100, page_w=1280, page_h=720
@@ -100,10 +135,12 @@ async def test_live_token_takeover_handback(env_l):
     tok = await c.post(f"/api/v1/runs/{run_id}/live/token", headers=h)
     assert tok.status_code == 200, tok.text
     body = tok.json()
-    assert body["role"] == "viewer"
+    # The token carries the real workspace role so the relay can refuse writes from viewers.
+    assert body["role"] == "owner"
     assert body["ws_path"].endswith(f"/runs/{run_id}/live")
     claims = decode_live_token(settings, body["token"])
     assert str(claims["run_id"]) == run_id
+    assert claims["role"] == "owner"
 
     state = await c.get(f"/api/v1/runs/{run_id}/live/state", headers=h)
     assert state.status_code == 200

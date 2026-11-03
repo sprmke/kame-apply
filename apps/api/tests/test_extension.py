@@ -105,6 +105,18 @@ async def test_extension_token_clip_plan_and_policy(env):
     job_id = clip.json()["job_id"]
     assert clip.json()["track_job_id"]
 
+    # Page prose sent by a client is ignored: a clip stores URL + title + company only.
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        stored = (
+            await conn.execute(
+                text("SELECT description_text FROM jobs WHERE id = CAST(:j AS uuid)"),
+                {"j": job_id},
+            )
+        ).scalar_one()
+    await engine.dispose()
+    assert "Build things" not in (stored or "")
+
     plan = await c.post(
         f"{E}/runs/plan-page",
         json={
@@ -126,6 +138,14 @@ async def test_extension_token_clip_plan_and_policy(env):
     actions = {i["field_id"]: i["action"] for i in body["instructions"]}
     assert actions["fn#0"] == "fill"
     assert actions["ssn#1"] == "checkpoint"
+
+    # A clip can never point the runner at an internal address.
+    blocked = await c.post(
+        f"{E}/clip",
+        json={"url": "http://169.254.169.254/latest/meta-data", "title": "x"},
+        headers=ext_h,
+    )
+    assert blocked.status_code == 422
 
     # LinkedIn autofill off by default
     li = await c.post(

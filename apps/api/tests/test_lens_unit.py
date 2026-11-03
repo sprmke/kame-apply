@@ -154,3 +154,80 @@ def test_cover_letter_word_band_and_no_banned():
 def test_must_coverage_helper():
     assert must_coverage({"counts": {"must_total": 4, "must_met": 4}}) == 1.0
     assert must_coverage({"counts": {"must_total": 0, "must_met": 0}}) == 1.0
+
+
+def _lens_with(qual_name: str, *, facts=None):
+    facts = facts or _facts()
+    content = build_from_profile(facts)
+    quals = [
+        {
+            "id": "q1",
+            "kind": "must",
+            "text": qual_name,
+            "quote": qual_name,
+            "normalized": {"type": "skill", "name": qual_name},
+        }
+    ]
+    return run_lens(content, qualifications=quals, facts=facts)
+
+
+def test_lens_does_not_match_a_substring_skill():
+    # "Java" must not be satisfied by "JavaScript"; "C" must not be satisfied by "C++".
+    facts = _facts()
+    facts["skills"].append({"id": "s9", "name": "JavaScript", "level": None, "years": None})
+    lens = _lens_with("Java", facts=facts)
+    verdict = lens["qualifications"][0]["verdict"]
+    assert verdict != "met"
+
+
+def test_lens_without_skills_section_does_not_grade_everything_met():
+    facts = _facts()
+    facts["skills"] = []
+    facts["bullets"][0]["skills"] = []
+    lens = _lens_with("Kubernetes", facts=facts)
+    assert lens["qualifications"][0]["verdict"] != "met"
+
+
+def test_lens_uses_work_authorization_for_knockouts():
+    facts = _facts()
+    facts["work_authorization"] = {"countries": ["US"], "needs_sponsorship": False}
+    content = build_from_profile(facts)
+    quals = [
+        {
+            "id": "q1",
+            "kind": "knockout",
+            "text": "Must be authorized to work in the US without sponsorship",
+            "quote": "Must be authorized to work in the US without sponsorship",
+            "normalized": {"type": "authorization", "raw": "must be authorized to work in the us"},
+        }
+    ]
+    lens = run_lens(content, qualifications=quals, facts=facts)
+    assert lens["knockout_pass"] is True
+
+    # A candidate who needs sponsorship fails a posting that offers none.
+    facts["work_authorization"] = {"countries": ["US"], "needs_sponsorship": True}
+    lens2 = run_lens(
+        build_from_profile(facts),
+        qualifications=[
+            {
+                "id": "q1",
+                "kind": "knockout",
+                "text": "No visa sponsorship available",
+                "quote": "No visa sponsorship available",
+                "normalized": {"type": "authorization", "raw": "no visa sponsorship available"},
+            }
+        ],
+        facts=facts,
+    )
+    assert lens2["knockout_pass"] is False
+
+
+def test_lens_years_union_does_not_double_count_overlaps():
+    from app.resumes.lens import _years_from_facts
+
+    facts = _facts()
+    facts["experiences"] = [
+        {"id": "e1", "start_date": "2019-01-01", "end_date": "2023-01-01"},
+        {"id": "e2", "start_date": "2019-01-01", "end_date": "2023-01-01"},
+    ]
+    assert _years_from_facts(facts) == 4.0

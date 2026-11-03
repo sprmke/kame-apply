@@ -57,6 +57,7 @@ async def _profile_bundle(ctx: WorkspaceContext, profile_id: uuid.UUID) -> dict[
         "headline": profile.headline,
         "summary": profile.summary,
         "location": profile.location,
+        "work_authorization": profile.work_authorization or {},
         "experiences": [{"title": e.title, "company": e.company, "id": str(e.id)} for e in exps],
         "skills": [{"name": sk.name, "id": str(sk.id)} for sk in skills],
         "voice": {

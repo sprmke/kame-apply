@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 import uuid
 
 from fastapi import APIRouter, Depends, Header, Request
@@ -222,9 +223,14 @@ async def telegram_unlink(ctx: WorkspaceContext = Write):
 async def telegram_webhook(request: Request, session: AsyncSession = Depends(get_db)):
     settings = _settings(request)
     secret = getattr(settings, "telegram_webhook_secret", None)
-    if secret:
-        got = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
-        if got != secret:
+    if not secret:
+        # Fail closed outside local/test: an unauthenticated update could link an attacker's chat
+        # or trigger actions on a workspace.
+        if settings.environment not in {"local", "test"}:
+            raise AppError("unauthenticated", "Authentication required", 401)
+    else:
+        got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") or ""
+        if not hmac.compare_digest(got, secret):
             raise AppError("unauthenticated", "Authentication required", 401)
     update = await request.json()
     await set_request_context(session, user_id=None, workspace_id=None)

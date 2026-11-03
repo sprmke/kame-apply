@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import re
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -17,6 +16,7 @@ from app.applications import tracker as app_tracker
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.core.ssrf import is_public_http_url_literal
 from app.extension import brain
 from app.extension import models as m
 from app.extension import schemas as s
@@ -213,15 +213,12 @@ async def autofill_allowed(ctx: WorkspaceContext, platform: str) -> bool:
     return bool(row and row.autofill_enabled and row.terms_acknowledged_at)
 
 
-def _sanitize_clip_text(text: str, limit: int = 8000) -> str:
-    t = re.sub(r"\s+", " ", (text or "").strip())
-    return t[:limit]
-
-
 async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
     url = (body.url or "").strip()
     if not url or not urlparse(url).scheme.startswith("http"):
         raise AppError("validation_error", "A valid http(s) URL is required", 422)
+    if not is_public_http_url_literal(url):
+        raise AppError("validation_error", "That URL is not allowed", 422)
 
     title = (body.title or "").strip() or "Untitled job"
     company = (body.company or "").strip()
@@ -234,7 +231,8 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
             company = org or company
 
     platform = (body.platform or detect_platform(url)).lower()
-    desc = _sanitize_clip_text(body.description_text)
+    # Phase 13: a clip captures the URL, title, and company only. Page prose is never persisted
+    # into the shared job corpus (it is untrusted and may contain personal data).
     # Prefer existing job by canonical URL
     existing = (
         await ctx.session.execute(select(Job).where(Job.canonical_url == url).limit(1))
@@ -248,7 +246,7 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
         job = Job(
             title=title[:500],
             normalized_title=normalize_title(title),
-            description_text=desc or f"{title} at {company}".strip(),
+            description_text=f"{title} at {company}".strip(),
             description_html="",
             content_hash=content_hash,
             simhash=0,

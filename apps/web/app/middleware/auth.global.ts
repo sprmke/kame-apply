@@ -1,24 +1,15 @@
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
-
-const PUBLIC = [
-  "/login",
-  "/register",
-  "/verify-email",
-  "/forgot-password",
-  "/reset-password",
-  "/auth/callback",
-  "/_design",
-];
+import { isPublicPath } from "~/lib/public-routes";
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuthStore();
   await auth.bootstrap();
-  const isPublic = PUBLIC.includes(to.path);
+  const isPublic = isPublicPath(to.path);
 
   if (!auth.isAuthed) {
     // /invite is reachable signed out so it can explain what to do, then return here.
-    if (isPublic || to.path === "/invite") return;
+    if (isPublic) return;
     return navigateTo({ path: "/login", query: { next: to.fullPath } });
   }
 

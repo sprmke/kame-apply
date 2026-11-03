@@ -1,9 +1,12 @@
 docs/
 spikes/
 .agent/
+.agents/
 .claude/
+.codex/
 .cursor/
 .opencode/
+.vscode/
 **/generated/
 **/.nuxt/
 **/.output/

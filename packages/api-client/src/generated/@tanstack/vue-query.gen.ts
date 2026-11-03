@@ -44,7 +44,7 @@ export const listActivityApiV1ActivityGetQueryKey = (options?: Options<ListActiv
 /**
  * List Activity
  *
- * Newest first, keyset-paginated by `created_at`. RLS already restricts rows to the workspace.
+ * Newest first, keyset-paginated by `(created_at, id)`. RLS already scopes the rows.
  */
 export const listActivityApiV1ActivityGetOptions = (options?: Options<ListActivityApiV1ActivityGetData>) => queryOptions<ListActivityApiV1ActivityGetResponse, ListActivityApiV1ActivityGetError, ListActivityApiV1ActivityGetResponse, ReturnType<typeof listActivityApiV1ActivityGetQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -93,7 +93,7 @@ export const listActivityApiV1ActivityGetInfiniteQueryKey = (options?: Options<L
 /**
  * List Activity
  *
- * Newest first, keyset-paginated by `created_at`. RLS already restricts rows to the workspace.
+ * Newest first, keyset-paginated by `(created_at, id)`. RLS already scopes the rows.
  */
 export const listActivityApiV1ActivityGetInfiniteOptions = (options?: Options<ListActivityApiV1ActivityGetData>) => {
     const opts = infiniteQueryOptions<ListActivityApiV1ActivityGetResponse, ListActivityApiV1ActivityGetError, InfiniteData<ListActivityApiV1ActivityGetResponse>, QueryKey<Options<ListActivityApiV1ActivityGetData>>, string | null | Pick<QueryKey<Options<ListActivityApiV1ActivityGetData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
@@ -3913,7 +3913,10 @@ export const midRunApiV1SafetyMidRunPostMutation = (options?: Partial<Options<Mi
 /**
  * Schedules Tick
  *
- * Advance due schedules. Pass `now` to freeze time in tests/dev.
+ * Advance this workspace's due schedules. Pass `now` to freeze time in tests/dev.
+ *
+ * Always scoped to the caller's workspace: a context-less global tick cannot see tenant rows
+ * through RLS, and the in-process scheduler handles every workspace in deployed environments.
  */
 export const schedulesTickApiV1SchedulesTickPostMutation = (options?: Partial<Options<SchedulesTickApiV1SchedulesTickPostData>>): UseMutationOptions<SchedulesTickApiV1SchedulesTickPostResponse, SchedulesTickApiV1SchedulesTickPostError, Options<SchedulesTickApiV1SchedulesTickPostData>> => {
     const mutationOptions: UseMutationOptions<SchedulesTickApiV1SchedulesTickPostResponse, SchedulesTickApiV1SchedulesTickPostError, Options<SchedulesTickApiV1SchedulesTickPostData>> = {

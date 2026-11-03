@@ -21,7 +21,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * List Activity
  *
- * Newest first, keyset-paginated by `created_at`. RLS already restricts rows to the workspace.
+ * Newest first, keyset-paginated by `(created_at, id)`. RLS already scopes the rows.
  */
 export const listActivityApiV1ActivityGet = <ThrowOnError extends boolean = false>(options?: Options<ListActivityApiV1ActivityGetData, ThrowOnError>): RequestResult<ListActivityApiV1ActivityGetResponses, ListActivityApiV1ActivityGetErrors, ThrowOnError> => (options?.client ?? client).get<ListActivityApiV1ActivityGetResponses, ListActivityApiV1ActivityGetErrors, ThrowOnError>({ url: '/api/v1/activity', ...options });
 
@@ -1723,7 +1723,10 @@ export const midRunApiV1SafetyMidRunPost = <ThrowOnError extends boolean = false
 /**
  * Schedules Tick
  *
- * Advance due schedules. Pass `now` to freeze time in tests/dev.
+ * Advance this workspace's due schedules. Pass `now` to freeze time in tests/dev.
+ *
+ * Always scoped to the caller's workspace: a context-less global tick cannot see tenant rows
+ * through RLS, and the in-process scheduler handles every workspace in deployed environments.
  */
 export const schedulesTickApiV1SchedulesTickPost = <ThrowOnError extends boolean = false>(options?: Options<SchedulesTickApiV1SchedulesTickPostData, ThrowOnError>): RequestResult<SchedulesTickApiV1SchedulesTickPostResponses, SchedulesTickApiV1SchedulesTickPostErrors, ThrowOnError> => (options?.client ?? client).post<SchedulesTickApiV1SchedulesTickPostResponses, SchedulesTickApiV1SchedulesTickPostErrors, ThrowOnError>({
     url: '/api/v1/schedules/tick',

@@ -245,6 +245,8 @@ async def update_answer(
         _reject_sensitive(str(changes["answer_json"]))
 
     next_scope = changes.get("scope", row.scope)
+    if next_scope is None:
+        raise AppError("validation_error", "scope cannot be null", 422)
     next_track = changes["track_id"] if "track_id" in changes else row.track_id
     next_country = changes["country"] if "country" in changes else row.country
     _validate_scope(next_scope, next_track)

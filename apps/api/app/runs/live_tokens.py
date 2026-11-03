@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any, Literal
+from typing import Any
 
 import jwt
 
@@ -14,6 +14,8 @@ from app.core.errors import AppError
 ALGORITHM = "HS256"
 LIVE_TYP = "live_view"
 DEFAULT_TTL_SECONDS = 10 * 60
+# The token carries the caller's real workspace role so the relay can refuse writes from viewers.
+LIVE_ROLES = frozenset({"owner", "admin", "member", "viewer", "runner"})
 
 
 def issue_live_token(
@@ -22,9 +24,11 @@ def issue_live_token(
     run_id: uuid.UUID,
     workspace_id: uuid.UUID,
     user_id: uuid.UUID,
-    role: Literal["viewer", "runner"],
+    role: str,
     ttl_seconds: int = DEFAULT_TTL_SECONDS,
 ) -> tuple[str, datetime]:
+    if role not in LIVE_ROLES:
+        raise AppError("bad_request", "Unknown live-view role", 400)
     now = datetime.now(UTC)
     exp = now + timedelta(seconds=ttl_seconds)
     claims = {
@@ -49,7 +53,7 @@ def decode_live_token(settings: Settings, token: str) -> dict[str, Any]:
         )
         if claims.get("typ") != LIVE_TYP:
             raise ValueError("wrong typ")
-        if claims.get("role") not in {"viewer", "runner"}:
+        if claims.get("role") not in LIVE_ROLES:
             raise ValueError("bad role")
         return {
             "user_id": uuid.UUID(claims["sub"]),

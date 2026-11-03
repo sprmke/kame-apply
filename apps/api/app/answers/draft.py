@@ -55,6 +55,16 @@ def collect_fact_notes(profile: dict[str, Any], *, limit: int = 6) -> list[dict[
         notes.append({"id": "profile.summary", "text": str(profile["summary"])[:240]})
     if profile.get("location"):
         notes.append({"id": "profile.location", "text": f"Location: {profile['location']}"})
+    auth = profile.get("work_authorization") or {}
+    if auth.get("countries") or auth.get("needs_sponsorship") is not None:
+        countries = ", ".join(str(c) for c in (auth.get("countries") or [])) or "not set"
+        sponsor = "yes" if auth.get("needs_sponsorship") else "no"
+        notes.append(
+            {
+                "id": "work_authorization",
+                "text": f"Work authorization: {countries}; needs sponsorship: {sponsor}",
+            }
+        )
     for i, exp in enumerate(profile.get("experiences") or []):
         line = f"{exp.get('title') or ''} at {exp.get('company') or ''}".strip()
         if line:
@@ -107,30 +117,47 @@ def draft_answer(
     refs = [n["id"] for n in notes[:4]]
 
     if fmt == "yes_no":
-        draft = (
-            "Yes" if any(x in q for x in ("authorized", "willing", "able", "available")) else "No"
+        auth = profile.get("work_authorization") or {}
+        countries = [str(c).upper() for c in (auth.get("countries") or [])]
+        asks_auth = any(
+            x in q
+            for x in (
+                "authorized to work",
+                "authorised to work",
+                "right to work",
+                "legally authorized",
+                "work authorization",
+                "work authorisation",
+            )
         )
-        source = "draft"
-    elif "conflict" in q or "tell us about a time" in q or "describe a situation" in q:
-        if not exps:
+        asks_sponsor = "sponsor" in q or "visa" in q
+        if asks_auth and countries:
+            draft, source = "Yes", "draft"
+            refs = ["work_authorization"]
+        elif asks_sponsor and auth.get("needs_sponsorship") is not None:
+            draft = "Yes" if auth.get("needs_sponsorship") else "No"
+            source = "draft"
+            refs = ["work_authorization"]
+        else:
+            # Eligibility claims are the user's to make, never the drafter's guess.
             return {
                 "draft": "",
                 "source": "needs_story",
                 "fact_notes": notes,
                 "evidence_refs": [],
                 "banned_hits": [],
-                "message": "No suitable story in your profile. Add one experience bullet.",
+                "message": "Answer this one yourself: it is an eligibility claim.",
             }
-        exp = exps[0]
-        draft = (
-            f"At {exp.get('company') or 'my last role'}, as {exp.get('title') or 'an engineer'}, "
-            f"I faced a delivery conflict between scope and a fixed date. "
-            f"I clarified the tradeoffs with the team, cut non-critical work, and shipped the "
-            f"must-have path on time. The result was a release that met the deadline without "
-            f"hiding risk from stakeholders."
-        )
-        refs = ["experience.0"]
-        source = "draft"
+    elif "conflict" in q or "tell us about a time" in q or "describe a situation" in q:
+        # Never invent a story, and never attach one to a real employer.
+        return {
+            "draft": "",
+            "source": "needs_story",
+            "fact_notes": notes,
+            "evidence_refs": [],
+            "banned_hits": [],
+            "message": "Tell me which of your own stories to use for this question.",
+        }
     else:
         skill_bit = f" using {', '.join(skills[:3])}" if skills else ""
         role_bit = ""

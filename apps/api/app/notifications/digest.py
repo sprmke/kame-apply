@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def _is_digest_hour(now: datetime, tz_name: str) -> bool:
     local = now.astimezone(ZoneInfo(tz_name))
-    return local.hour == 8 and local.minute < 2  # within the minute-tick window near 08:00
+    return local.hour == 8 and local.minute == 0  # one minute per day, so one send
 
 
 def render_digest_text(

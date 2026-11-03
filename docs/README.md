@@ -3,6 +3,8 @@
 **Status:** Eng phases 0–20 complete; operator leftovers in [`phases/REMAINING.md`](./phases/REMAINING.md).
 **Last updated:** 2026-11-02
 
+Portfolio README (features, screenshots, quick start): [`../README.md`](../README.md). Screenshot set: [`screenshots/`](./screenshots/).
+
 Kame Apply is a multi-tenant web app that helps people find real, relevant jobs anywhere in the world, strengthen their resume using live market data, and apply faster with AI, while the human stays in control of anything that matters (logins, CAPTCHAs, sensitive data, and by default the final Submit).
 
 ## Reading order
@@ -25,6 +27,7 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 11 | [`phases/README.md`](./phases/README.md) | **The build plan.** Ordered phases, one at a time, each with exit criteria. |
 | 12 | [`review/requirements-traceability.md`](./review/requirements-traceability.md) | Every request from the original brief mapped to a feature, doc, and phase, so nothing gets missed. |
 | 13 | [`review/plan-critique-and-risks.md`](./review/plan-critique-and-risks.md) | Critical review of the whole plan: failure modes, edge cases, risks, and how each is handled. |
+| 14 | [`reviews/full-review-phases-0-20.md`](./reviews/full-review-phases-0-20.md) | Full code review of phases 0–20: defects found and fixed, test coverage, and the gaps that remain open. |
 
 ## How to use these docs in a session
 

@@ -16,12 +16,13 @@ from runner.client import RunnerClient
 from runner.extract import (
     already_applied,
     extract_fields,
-    looks_like_captcha,
     looks_like_confirmation,
     looks_like_login,
+    page_has_captcha,
+    page_has_password_input,
     page_text,
 )
-from runner.fill import apply_instructions, click_first
+from runner.fill import apply_instructions, click_first, click_next
 from runner.live import LiveSession
 from runner.terminal_checkpoint import prompt_checkpoint
 
@@ -74,18 +75,18 @@ async def run_apply(
         for _ in range(step_budget):
             await live.wait_if_human()
             text = await page_text(page)
-            html = await page.content()
+            fields = await extract_fields(page)
 
             if already_applied(text):
-                client.complete(run_id, status="completed", confirmation=False)
+                client.complete(run_id, runner_id=runner_id, status="completed", confirmation=False)
                 return
 
-            if looks_like_confirmation(text, adapter.confirmation_needles):
+            if looks_like_confirmation(text, adapter.confirmation_needles) and not fields:
                 # Confirmation without our submit means user/site finished.
-                client.complete(run_id, status="completed", confirmation=False)
+                client.complete(run_id, runner_id=runner_id, status="completed", confirmation=False)
                 return
 
-            if looks_like_captcha(html):
+            if await page_has_captcha(page):
                 await live.notify_human_for_checkpoint()
                 await _checkpoint(
                     client,
@@ -99,7 +100,7 @@ async def run_apply(
                 )
                 continue
 
-            if looks_like_login(text, adapter.login_needles):
+            if await page_has_password_input(page) or looks_like_login(text, adapter.login_needles):
                 await live.notify_human_for_checkpoint()
                 await _checkpoint(
                     client,
@@ -113,7 +114,6 @@ async def run_apply(
                 )
                 continue
 
-            fields = await extract_fields(page)
             if not fields:
                 await _checkpoint(
                     client,
@@ -172,7 +172,7 @@ async def run_apply(
                 )
                 decision = await _resolve(client, run_id, cp, terminal_checkpoints, headed, page)
                 if decision.get("decision") == "cancel":
-                    client.complete(run_id, status="cancelled")
+                    client.complete(run_id, runner_id=runner_id, status="cancelled")
                     return
                 if decision.get("decision") == "handoff_extension":
                     return
@@ -225,7 +225,7 @@ async def run_apply(
                 except Exception:  # noqa: S112 — try next submit selector
                     continue
 
-            clicked_next = await click_first(page, adapter.next_selectors)
+            clicked_next = await click_next(page, adapter)
             if clicked_next:
                 await page.wait_for_timeout(500)
                 continue
@@ -247,22 +247,30 @@ async def run_apply(
                     if not fresh.get("submit_approved"):
                         log.error("submit blocked: not approved on server")
                         client.complete(
-                            run_id, status="failed", failure_reason="submit_not_approved"
+                            run_id,
+                            runner_id=runner_id,
+                            status="failed",
+                            failure_reason="submit_not_approved",
                         )
                         return
                     if fresh.get("policy", {}).get("platform_no_auto_submit"):
                         client.complete(
-                            run_id, status="failed", failure_reason="platform_no_auto_submit"
+                            run_id,
+                            runner_id=runner_id,
+                            status="failed",
+                            failure_reason="platform_no_auto_submit",
                         )
                         return
                     await click_first(page, adapter.submit_selectors)
                     await page.wait_for_timeout(800)
                     text2 = await page_text(page)
                     ok = looks_like_confirmation(text2, adapter.confirmation_needles)
-                    client.complete(run_id, status="completed", confirmation=ok)
+                    client.complete(
+                        run_id, runner_id=runner_id, status="completed", confirmation=ok
+                    )
                     return
                 if decision.get("decision") == "cancel":
-                    client.complete(run_id, status="cancelled")
+                    client.complete(run_id, runner_id=runner_id, status="cancelled")
                     return
                 # deny / handoff
                 return
@@ -280,10 +288,10 @@ async def run_apply(
             )
             break
 
-        client.complete(run_id, status="failed", failure_reason="step_budget")
+        client.complete(run_id, runner_id=runner_id, status="failed", failure_reason="step_budget")
     except Exception as exc:
         log.exception("run_failed")
-        client.complete(run_id, status="failed", failure_reason=str(exc)[:200])
+        client.complete(run_id, runner_id=runner_id, status="failed", failure_reason=str(exc)[:200])
     finally:
         await live.close()
         await context.close()

@@ -26,6 +26,10 @@ export type ActivityPage = {
      * Next Before
      */
     next_before: string | null;
+    /**
+     * Next Before Id
+     */
+    next_before_id?: string | null;
 };
 
 /**
@@ -2116,6 +2120,12 @@ export type CriteriaV1 = {
  */
 export type CritiqueRead = {
     /**
+     * Ai
+     */
+    ai?: {
+        [key: string]: unknown;
+    } | null;
+    /**
      * Categories
      */
     categories: {
@@ -2159,6 +2169,10 @@ export type DirectoryStatsRead = {
      * Boards Active
      */
     boards_active: number;
+    /**
+     * Boards Candidate
+     */
+    boards_candidate?: number;
     /**
      * Companies
      */
@@ -4238,7 +4252,7 @@ export type LiveTokenRead = {
     /**
      * Role
      */
-    role: 'viewer' | 'runner';
+    role: string;
     /**
      * Run Id
      */
@@ -7966,6 +7980,10 @@ export type ListActivityApiV1ActivityGetData = {
          * Before
          */
         before?: string | null;
+        /**
+         * Before Id
+         */
+        before_id?: string | null;
         /**
          * Limit
          */
@@ -15642,6 +15660,10 @@ export type CompleteApiV1RunsRunIdCompletePostData = {
          * Failure Reason
          */
         failure_reason?: string | null;
+        /**
+         * Runner Id
+         */
+        runner_id?: string | null;
     };
     url: '/api/v1/runs/{run_id}/complete';
 };

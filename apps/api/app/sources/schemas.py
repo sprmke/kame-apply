@@ -115,5 +115,6 @@ class OkRead(BaseModel):
 
 class DirectoryStatsRead(BaseModel):
     boards_active: int
+    boards_candidate: int = 0
     companies: int
     sources: int

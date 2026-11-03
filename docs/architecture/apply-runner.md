@@ -14,8 +14,8 @@ Cloud or local Playwright runner fills company-ATS forms and pauses at every che
 | `POST /api/v1/runs/{id}/steps` | runner | Idempotent step log by `seq` |
 | `POST /api/v1/runs/{id}/checkpoints` | runner | Open checkpoint → `needs_you` |
 | `POST /api/v1/runs/checkpoints/{id}/resolve` | member or runner | Human decision (`DBOS.send` when configured) |
-| `GET /api/v1/runs/{id}/ephemeral-sensitive` | runner | One-shot sensitive value; cleared |
-| `POST /api/v1/runs/{id}/complete` | runner | Finish; confirmation requires `submit_approved` |
+| `GET /api/v1/runs/{id}/ephemeral-sensitive` | runner token only | One-shot value from the process-local vault (5 min TTL); removed on read, never in Postgres |
+| `POST /api/v1/runs/{id}/complete` | runner | Finish; confirmation requires `submit_approved` **and** `policy.allow_submit`; the runner may only finish the run it claimed |
 | `POST /api/v1/runs/{id}/handoff` | member | Pause + open URL for extension |
 
 Auth: JWT session or runner bearer (`ka_run_…`) + `X-Workspace-Id`. Never trust client `workspace_id` in the body.
@@ -23,8 +23,9 @@ Auth: JWT session or runner bearer (`ka_run_…`) + `X-Workspace-Id`. Never trus
 ## Policy
 
 - LinkedIn / Indeed / JobStreet: `platform_no_auto_submit`; `allow_submit` forced false.
-- Submit click only after `final_review` → `approve_submit` sets `submit_approved`.
-- Sensitive typed values live only in ephemeral policy blob; never in `activity_log` or checkpoint.decision.
+- Submit click only after `final_review` → `approve_submit` sets `submit_approved` (rejected on any other checkpoint kind, and when `allow_submit` is false: assist runs hand off to the human).
+- Sensitive typed values live only in an in-memory one-shot vault (`app/runs/ephemeral.py`); never in `apply_runs.policy`, `activity_log`, or `checkpoint.decision`. The API must run one worker process for the runner hand-off.
+- Navigation clicks are screened: a control whose label is Submit/Apply now is never clicked by the Next/Continue path, and `input[type=submit]` is not a Next selector.
 
 ## Local mode
 

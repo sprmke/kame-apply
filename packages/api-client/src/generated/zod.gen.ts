@@ -30,7 +30,8 @@ export const zActivityRead = z.object({
  */
 export const zActivityPage = z.object({
     items: z.array(zActivityRead),
-    next_before: z.string().datetime().nullable()
+    next_before: z.string().datetime().nullable(),
+    next_before_id: z.string().uuid().nullish()
 });
 
 /**
@@ -850,6 +851,7 @@ export const zCriteriaCompileRequest = z.object({
  * CritiqueRead
  */
 export const zCritiqueRead = z.object({
+    ai: z.record(z.unknown()).nullish(),
     categories: z.record(z.unknown()),
     findings: z.array(z.unknown()).optional(),
     skim_zone: z.record(z.unknown()).optional(),
@@ -869,6 +871,7 @@ export const zDecideProposalBody = z.object({
  */
 export const zDirectoryStatsRead = z.object({
     boards_active: z.number().int(),
+    boards_candidate: z.number().int().optional().default(0),
     companies: z.number().int(),
     sources: z.number().int()
 });
@@ -1722,7 +1725,7 @@ export const zLiveStateRead = z.object({
  */
 export const zLiveTokenRead = z.object({
     expires_at: z.string().datetime(),
-    role: z.enum(['viewer', 'runner']),
+    role: z.string(),
     run_id: z.string().uuid(),
     token: z.string(),
     ws_path: z.string()
@@ -3583,6 +3586,7 @@ export const zListActivityApiV1ActivityGetQuery = z.object({
     target_type: z.string().max(48).nullish(),
     actor_id: z.string().max(64).nullish(),
     before: z.string().datetime().nullish(),
+    before_id: z.string().uuid().nullish(),
     limit: z.number().int().gte(1).lte(200).optional().default(50)
 });
 
@@ -6215,7 +6219,8 @@ export const zCompleteApiV1RunsRunIdCompletePostPath = z.object({
 export const zCompleteApiV1RunsRunIdCompletePostQuery = z.object({
     status: z.string().optional().default('completed'),
     confirmation: z.boolean().optional().default(false),
-    failure_reason: z.string().nullish()
+    failure_reason: z.string().nullish(),
+    runner_id: z.string().nullish()
 });
 
 /**

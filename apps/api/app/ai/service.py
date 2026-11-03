@@ -359,6 +359,8 @@ async def _invoke(
         api_key = crypto.decrypt_secret(dek, cred.encrypted_key, ctx.workspace_id)
     if cred.base_url:
         await revalidate_base_url(cred.base_url, allow_private=not settings.is_prod)
+    # Every model call passes the budget guard, including credential tests and fallbacks.
+    await check_budget(ctx, _estimate(cred.provider, model_name, system, prompt, max_out))
     model = model_factory(cred.provider, api_key=api_key, model=model_name, base_url=cred.base_url)
     # No tools: untrusted text in `prompt` cannot trigger actions.
     agent_kwargs: dict[str, Any] = {"system_prompt": system}
@@ -525,6 +527,9 @@ async def test_credential(
             model_factory=model_factory,
         )
     except AppError as e:
+        # Budget and safety stops are not a property of the key; surface them to the caller.
+        if e.code in {"budget_reached", "ssrf_blocked", "decryption_failed"}:
+            raise
         status = "invalid" if e.code == "ai_credential_invalid" else "error"
         detail = e.code
     if status != "error":

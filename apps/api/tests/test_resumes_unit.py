@@ -64,6 +64,60 @@ def test_fabrication_rejected_for_new_numbers():
     assert any(r["reason"] == "fabricated_number" for r in vr.rejected)
 
 
+def test_stuffing_a_profile_skill_into_an_unrelated_bullet_is_rejected():
+    """The old tailor path appended posting terms to whatever bullet came first."""
+    facts = _facts()
+    facts["bullets"][0]["skills"] = []
+    vr = verify_operation(
+        after_text="Wrote algorithms serving 12 clients (Mathematics).",
+        evidence_refs=["b1"],
+        facts=facts,
+    )
+    # Mathematics is a real profile skill but this bullet's own evidence does not contain it.
+    assert any(r["reason"] == "unsupported_skill" for r in vr.rejected)
+    assert not vr.ok
+
+
+def test_invented_named_entity_is_rejected():
+    vr = verify_operation(
+        after_text="Wrote algorithms serving 12 clients on the Kubernetes platform.",
+        evidence_refs=["b1"],
+        facts=_facts(),
+    )
+    assert any(r["reason"] == "unsupported_entity" for r in vr.rejected)
+
+
+def test_target_role_never_becomes_the_candidate_summary():
+    facts = _facts(headline="", summary="")
+    content = build_from_profile(facts, target_role="Staff Platform Engineer")
+    assert content.summary is None
+    assert content.target_role == "Staff Platform Engineer"
+
+
+def test_propose_improvements_does_not_prepend_the_target_role():
+    facts = _facts(headline="Builds analytical engines", summary="")
+    content = build_from_profile(facts, target_role="Staff Platform Engineer")
+    proposals = propose_improvements(
+        content,
+        critique={"top_fixes": []},
+        insights={"skills": [], "comparison": {}},
+        facts=facts,
+    )
+    summaries = [p for p in proposals if p.get("op") == "summary"]
+    assert all("Staff Platform Engineer" not in (p.get("after") or "") for p in summaries)
+
+
+def test_parse_gate_fails_when_the_rendered_file_cannot_be_read():
+    content = build_from_profile(_facts())
+    gate = run_parse_gate(content, pdf=b"not-a-real-pdf", docx=None, text=content_text(content))
+    assert gate["ok"] is False
+    assert "unreadable_file" in gate["diagnostics"]
+
+
+def content_text(content: ResumeContent) -> str:
+    return parse_view(content).get("name") or ""
+
+
 def test_missing_evidence_rejected():
     content = ResumeContent(
         contact=ContactBlock(full_name="Ada"),
@@ -195,3 +249,16 @@ def test_golden_fabrication_zero_on_synthetic_set():
         # Inject fabrication must fail
         content.summary = ResumeLine(text="Increased NPS 99%", evidence_refs=[facts["id"]])
         assert not verify_content(content, facts).ok
+
+
+def test_pdf_wraps_long_bullets_instead_of_truncating():
+    facts = _facts()
+    tail = "tail-marker-zzz"
+    facts["bullets"][0]["text"] = ("Wrote algorithms serving clients across teams " * 6) + tail
+    content = build_from_profile(facts)
+    out = render_all(content)
+    from app.resumes.parse_gate import _extract_pdf
+
+    assert out.pdf is not None
+    text = _extract_pdf(out.pdf).replace("\n", "")
+    assert tail in text

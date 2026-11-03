@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.companies.models import Company
+from app.core.ssrf import is_public_http_url_literal
 from app.jobs.dedupe import company_norm, prefer_apply_url, same_job
 from app.jobs.models import Job, JobSource
 from app.jobs.normalize import normalize_raw
@@ -41,6 +42,10 @@ async def upsert_raw_job(
     board_id: uuid.UUID | None = None,
 ) -> tuple[Job, bool]:
     """Returns (job, created_new_job)."""
+    # Untrusted feed data: never persist a URL that points at the API host or an internal address.
+    for candidate in (raw.url, raw.apply_url):
+        if candidate and not is_public_http_url_literal(candidate):
+            raise ValueError(f"unsafe url from source {raw.source_key}")
     norm = normalize_raw(raw)
     source = await _get_source(session, raw.source_key)
     if source is None:
@@ -96,6 +101,8 @@ async def upsert_raw_job(
             company_b=company.normalized_name,
             title_b=norm["title"],
             simhash_b=norm["simhash"] or 0,
+            locations_a=norm["locations"],
+            locations_b=cand.locations or [],
         ):
             match = cand
             break

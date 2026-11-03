@@ -81,6 +81,8 @@ class Settings(BaseSettings):
     gmail_listener_enabled: bool = False
     # Phase 19: global kill for auto-submit (off by default until go/no-go).
     auto_submit_enabled: bool = False
+    # Phase 10/14: in-process minute scheduler for due Track schedules (dev/prod only).
+    scheduler_enabled: bool = True
 
     @property
     def trusted_proxy_networks(self) -> list[str]:
@@ -88,6 +90,14 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _prod_requires_real_secrets(self) -> "Settings":
+        import base64
+
+        try:
+            kek = base64.b64decode(self.master_kek)
+        except Exception as exc:
+            raise ValueError("MASTER_KEK must be valid base64") from exc
+        if len(kek) != 32:
+            raise ValueError("MASTER_KEK must decode to exactly 32 bytes")
         if self.environment == "prod":
             if self.jwt_secret.startswith("dev-only") or len(self.jwt_secret) < 32:
                 raise ValueError("JWT_SECRET must be set to a strong value in prod")
@@ -95,6 +105,10 @@ class Settings(BaseSettings):
                 raise ValueError("MASTER_KEK must be set to a private key in prod")
             if not self.cookie_secure:
                 raise ValueError("COOKIE_SECURE must be true in prod")
+            if self.telegram_bot_token and not self.telegram_webhook_secret:
+                raise ValueError(
+                    "TELEGRAM_WEBHOOK_SECRET must be set when the Telegram bot is enabled"
+                )
         return self
 
     @property

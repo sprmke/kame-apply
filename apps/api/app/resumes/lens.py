@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from app.matching.knockout import predict_knockouts
@@ -32,15 +33,11 @@ def _grade(score: float) -> str:
 
 
 def _resume_skill_names(content: ResumeContent) -> set[str]:
+    """Only names the resume actually shows in its skills section, never the whole document."""
     names: set[str] = set()
-    blob = content.plain_text().lower()
     for sec in content.sections:
         if sec.kind == "skills":
-            names.update(line.text.lower() for line in sec.lines)
-    # Also surface skills mentioned in bullets
-    for line in content.all_lines():
-        names.add(line.text.lower())
-    names.add(blob)
+            names.update(line.text.strip().lower() for line in sec.lines if line.text.strip())
     return names
 
 
@@ -53,7 +50,9 @@ def _profile_skill_set(facts: dict[str, Any]) -> set[str]:
 
 
 def _years_from_facts(facts: dict[str, Any]) -> float:
-    years = 0.0
+    """Union overlapping roles so two concurrent jobs do not double-count years."""
+    ranges: list[tuple[int, int]] = []
+    current_year = datetime.now(UTC).year
     for exp in facts.get("experiences") or []:
         if not isinstance(exp, dict):
             continue
@@ -61,12 +60,21 @@ def _years_from_facts(facts: dict[str, Any]) -> float:
         end = str(exp.get("end_date") or "")[:4]
         try:
             s_y = int(start) if start.isdigit() else 0
-            e_y = int(end) if end.isdigit() else 2026
-            if s_y:
-                years += max(0, e_y - s_y)
+            e_y = int(end) if end.isdigit() else current_year
+            if s_y and e_y >= s_y:
+                ranges.append((s_y, e_y))
         except ValueError:
             continue
-    return float(years)
+    if not ranges:
+        return 0.0
+    ranges.sort()
+    merged: list[list[int]] = []
+    for s_y, e_y in ranges:
+        if merged and s_y <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], e_y)
+        else:
+            merged.append([s_y, e_y])
+    return float(sum(e - s for s, e in merged))
 
 
 def run_lens(
@@ -109,7 +117,9 @@ def run_lens(
                 for c in (facts.get("certifications") or [])
                 if isinstance(c, dict)
             ],
-            "country": (facts.get("location") or "")[:2].upper() if facts.get("location") else "",
+            "country": str(
+                ((facts.get("work_authorization") or {}).get("countries") or [""])[0]
+            ).upper(),
         },
         answers=answers,
     )

@@ -19,6 +19,8 @@ node_modules/
 dist/
 .turbo/
 coverage/
+.coverage
+.coverage.*
 *.tsbuildinfo
 playwright-report/
 test-results/

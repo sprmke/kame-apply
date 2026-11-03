@@ -59,7 +59,7 @@ Authorization code flow with PKCE via Authlib (`app/auth/google.py`), behind a s
 
 `workspace_limits` holds per-workspace caps (members, AI keys, Tracks, sources, storage, AI budget). A missing row means the defaults in `app/workspaces/models.py::DEFAULT_LIMITS`. The app role can only read the table, so a tenant cannot raise its own limits. Members (counting pending invitations), AI keys and AI budget are enforced now; Tracks, sources and storage are enforced by their phases. `GET /workspace/limits` returns caps and seats used.
 
-`GET /activity` (owner and admin) lists the workspace audit trail newest first, filtered by action (exact, or a prefix ending in `.`), target type and actor, keyset paginated by `before`. RLS hides other workspaces and platform (auth) events.
+`GET /activity` (owner and admin) lists the workspace audit trail newest first, filtered by action (exact, or a prefix ending in `.`), target type and actor, keyset paginated by `(created_at, id)` (`before` + `before_id`, response `next_before` + `next_before_id`) so rows written in one transaction are not skipped. RLS hides other workspaces and platform (auth) events.
 
 A lesson worth keeping: the `workspace_members` policy also exposes a user's own memberships in other workspaces (needed to resolve the active workspace), so every membership query filters `workspace_id` explicitly. A test covers it.
 

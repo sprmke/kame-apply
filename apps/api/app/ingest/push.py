@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
-from datetime import UTC, datetime, timedelta
 
-import httpx
-import jwt
+from pywebpush import WebPushException, webpush
 from sqlalchemy import select
 
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.core.ssrf import is_public_http_url_literal
 from app.ingest.models import PushSubscription
 
 log = logging.getLogger(__name__)
@@ -77,31 +77,6 @@ async def delete_subscription(ctx: WorkspaceContext, sub_id: uuid.UUID) -> None:
     await ctx.session.delete(row)
 
 
-def _vapid_auth_header(settings: Settings, endpoint: str) -> str | None:
-    priv = getattr(settings, "vapid_private_key", None)
-    pub = getattr(settings, "vapid_public_key", None)
-    email = getattr(settings, "vapid_subject", None) or "mailto:ops@kameapply.local"
-    if not priv or not pub:
-        return None
-    # Minimal JWT for tests; production should use proper ES256 VAPID keys.
-    try:
-        audience = f"{httpx.URL(endpoint).scheme}://{httpx.URL(endpoint).host}"
-        token = jwt.encode(
-            {
-                "aud": audience,
-                "exp": datetime.now(UTC) + timedelta(hours=12),
-                "sub": email,
-            },
-            priv,
-            algorithm="HS256",
-            headers={"typ": "JWT"},
-        )
-        return f"vapid t={token}, k={pub}"
-    except Exception:
-        log.exception("vapid_jwt_failed")
-        return None
-
-
 async def notify_user(
     ctx: WorkspaceContext,
     *,
@@ -111,6 +86,7 @@ async def notify_user(
     href: str,
     settings: Settings,
 ) -> int:
+    """Send a real Web Push notification to every subscription for this user."""
     rows = list(
         (
             await ctx.session.execute(
@@ -123,30 +99,39 @@ async def notify_user(
     )
     if not rows:
         return 0
-    payload = json.dumps({"title": title, "body": body, "href": href}).encode()
+    payload = json.dumps({"title": title, "body": body, "href": href})
     sent = 0
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        for row in rows:
-            headers = {
-                "TTL": "60",
-                "Content-Type": "application/octet-stream",
-            }
-            auth = _vapid_auth_header(settings, row.endpoint)
-            if auth:
-                headers["Authorization"] = auth
-            try:
-                # Without full Web Push encryption we POST a clear payload only in test/local.
-                # Real browsers need encrypted bodies; client SW still receives when using a
-                # push service that accepts this in development, or when encrypted later.
-                if settings.environment in {"local", "test", "dev"}:
-                    r = await client.post(row.endpoint, content=payload, headers=headers)
-                    if r.status_code < 300 or r.status_code in {404, 410}:
-                        sent += 1
-                        if r.status_code in {404, 410}:
-                            await ctx.session.delete(row)
-                else:
-                    # Prod without encryption library: skip network; still count subscription
-                    sent += 1
-            except Exception:
-                log.exception("push_send_failed")
+    for row in rows:
+        # Endpoints are user-supplied; never POST to a private address.
+        if not is_public_http_url_literal(row.endpoint):
+            log.warning("push_endpoint_blocked")
+            continue
+        if not settings.vapid_private_key or not settings.vapid_public_key:
+            log.warning("push_not_configured")
+            return sent
+        try:
+            await asyncio.to_thread(_send_one, row, payload, settings)
+            sent += 1
+        except WebPushException as exc:
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            if status in {404, 410}:
+                await ctx.session.delete(row)
+            else:
+                log.warning("push_send_failed status=%s", status)
+        except Exception:
+            log.exception("push_send_failed")
     return sent
+
+
+def _send_one(row: PushSubscription, payload: str, settings: Settings) -> None:
+    """Blocking Web Push call (runs in a worker thread)."""
+    webpush(
+        subscription_info={
+            "endpoint": row.endpoint,
+            "keys": {"p256dh": row.p256dh, "auth": row.auth},
+        },
+        data=payload,
+        vapid_private_key=settings.vapid_private_key,
+        vapid_claims={"sub": settings.vapid_subject},
+        timeout=10,
+    )

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 from datetime import UTC, datetime
@@ -23,6 +24,8 @@ from app.tracks import models as track_models
 from app.tracks.criteria import criteria_from_dict
 from kame_core.sources import get_adapter
 from kame_core.sources.http import BlockSignalError
+
+logger = logging.getLogger(__name__)
 
 
 def _rule_match(job: Job, structured: dict[str, Any]) -> bool:
@@ -181,17 +184,12 @@ async def run_discover_track(
                 async for raw in adapter.discover({"slug": board.slug}):
                     seen.add(raw.external_id)
                     try:
-                        job, created = await upsert_raw_job(ctx.session, raw, board_id=board.id)
+                        # A savepoint isolates one bad record; a full rollback would discard the
+                        # run row and every job already ingested in this run.
+                        async with ctx.session.begin_nested():
+                            job, created = await upsert_raw_job(ctx.session, raw, board_id=board.id)
                     except Exception:
-                        await ctx.session.rollback()
-                        # Re-bind tenant context after rollback
-                        from app.core.rls import set_request_context
-
-                        await set_request_context(
-                            ctx.session,
-                            user_id=str(ctx.user_id) if ctx.user_id else None,
-                            workspace_id=str(ctx.workspace_id),
-                        )
+                        progress["skipped"] = int(progress.get("skipped") or 0) + 1
                         continue
                     progress["jobs_found"] = int(progress.get("jobs_found") or 0) + 1
                     if created:
@@ -320,8 +318,12 @@ async def run_discover_track(
         await ctx.session.flush()
         return run
     except Exception as exc:
+        # Persist the failure instead of re-raising: a raise would roll back the request
+        # transaction and erase the run row, so failures would be invisible to the UI and ops.
         run.status = "failed"
         run.error = str(exc)[:1000]
         run.finished_at = datetime.now(UTC)
+        run.progress = progress
         await ctx.session.flush()
-        raise
+        logger.exception("discovery_failed run=%s", run.id)
+        return run

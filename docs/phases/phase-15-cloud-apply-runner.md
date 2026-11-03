@@ -42,6 +42,7 @@ Fixture forms (saved HTML for each ATS + synthetic tricky forms) in CI; chaos te
 
 ## Exit criteria
 
-- [x] Scenarios 1–7 covered by API + runner unit/fixture tests (submit-without-approval blocked; sensitive ephemeral; LinkedIn no auto-submit; chaos last_step_seq; Needs you; cross-tenant 404; RLS on runner_tokens); ≥ fixture coverage for Greenhouse/Lever/Ashby; 0 submits without approval in logs.
+- [x] Scenarios 1–7 covered by API + runner unit/fixture tests (submit-without-approval blocked; sensitive ephemeral; LinkedIn no auto-submit; chaos last_step_seq; Needs you; cross-tenant 404; RLS on runner_tokens); fixture coverage for Greenhouse/Lever/Ashby; 0 submits without approval in logs.
+  Known gaps: no runner Docker image or compose service (the runner runs from a developer machine); no crash-recovery reaper for runs stuck in `running`; resume files are not uploaded by the runner yet; step screenshots are not persisted.
 - [x] Docs: `docs/architecture/apply-runner.md`, route guides for application detail + integrations, phase status.
 - [x] `pnpm run ci:quality` green.

@@ -19,7 +19,7 @@ Tell the user exactly what's wrong with their resume for each Track, backed by e
 
 ### Backend / AI
 - [x] Resume content model (`ResumeContent`: header, summary, sections with items, each line with `evidence_refs`), stored in `resume_versions.content`.
-- [x] Critique engine: deterministic checks (length, dates, tense, banned phrases, quantification ratio, heading names) + LLM rubric scoring with line-level findings (structured output); prioritize by impact model (market-fit gaps × visibility).
+- [x] Critique engine: deterministic checks (length, dates, tense, banned phrases, quantification ratio, heading names) + LLM rubric scoring with line-level findings (structured output); prioritize by impact model (market-fit gaps × visibility). The rubric runs through `app/ai/optional.try_structured`; scores merge with `min`, line ids are validated, and the deterministic report is returned when AI is unavailable.
 - [x] Market insights job (`compute_market_insights` per Track, nightly + on demand): aggregation over `job_qualifications`/skills of matched jobs (30/90d), trends, salary distribution, titles, certifications, years-required distribution; compare to profile evidence.
 - [x] Optional AI web research (budgeted, cited, labeled secondary). *(stub `secondary_research` field; live research deferred)*
 - [x] Generator: proposal operations (rewrite/reorder/add-to-skills/summary/condense) → **truthfulness verifier** (deterministic: numbers, entities, dates, skill evidence; LLM: claim-support check) → rejected ops → gaps list.

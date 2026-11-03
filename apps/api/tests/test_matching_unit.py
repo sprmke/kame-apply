@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from app.matching.embed import cosine, embed_texts, similarity_to_score
 from app.matching.extract import extract_rule_based
 from app.matching.feedback import skip_reason_bucket, update_weights
@@ -168,3 +170,32 @@ def test_clamp_weights():
     w = clamp_weights({"title": 10.0, "skills": 0.01})
     assert abs(sum(w.values()) - 1.0) < 1e-6
     assert all(v > 0 for v in w.values())
+
+
+@pytest.mark.asyncio
+async def test_export_csv_neutralizes_spreadsheet_formulas(monkeypatch):
+    import uuid as _uuid
+
+    from app.matching import service as matching
+
+    async def fake_list_board(*args, **kwargs):
+        return [
+            {
+                "title": '=HYPERLINK("http://evil.example","x")',
+                "company_name": "@SUM(1+1)",
+                "eligibility": "eligible",
+                "status": "new",
+                "work_mode": "remote",
+                "salary": {},
+                "posted_at": None,
+                "apply_url": "https://boards.greenhouse.io/acme/1",
+                "reasons": ["+cmd"],
+                "score": 0.9,
+            }
+        ]
+
+    monkeypatch.setattr(matching, "list_board", fake_list_board)
+    text = await matching.export_csv(None, track_id=_uuid.uuid4())  # type: ignore[arg-type]
+    assert "'=HYPERLINK" in text
+    assert "'@SUM" in text
+    assert "'+cmd" in text

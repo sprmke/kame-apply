@@ -71,6 +71,8 @@ class WorkspaceContext:
     workspace_id: uuid.UUID
     role: str
     request_id: str | None
+    # "user" (JWT), "runner" (scoped runner token), or "extension" (scoped extension token).
+    auth_kind: str = "user"
 
 
 def _parse_workspace_id(raw: str | None) -> uuid.UUID:

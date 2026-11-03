@@ -63,10 +63,16 @@ async def directory_stats(session) -> dict[str, int]:
             select(func.count()).select_from(CompanyBoard).where(CompanyBoard.status == "active")
         )
     ).scalar_one()
+    candidates = (
+        await session.execute(
+            select(func.count()).select_from(CompanyBoard).where(CompanyBoard.status == "candidate")
+        )
+    ).scalar_one()
     companies = (await session.execute(select(func.count()).select_from(Company))).scalar_one()
     sources = (await session.execute(select(func.count()).select_from(Source))).scalar_one()
     return {
         "boards_active": int(boards),
+        "boards_candidate": int(candidates),
         "companies": int(companies),
         "sources": int(sources),
     }

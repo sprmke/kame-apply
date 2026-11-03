@@ -30,7 +30,7 @@ For a job the user really wants, produce the strongest **truthful** resume for t
 - [x] Steps: load → Lens(before) → plan ops per research/05 §6 → drafter → fresh-context reviewer ("skeptical recruiter for this role") → revise once → truthfulness verifier → length budget → render → parse gate → Lens(after) → await accept.
 - [x] Terminology mapping: posting term ↔ profile skill via taxonomy aliases (use the posting's surface form when it's the same skill).
 - [x] Guard against keyword stuffing: per-term frequency cap, no hidden text, skills section limited to evidenced skills.
-- [x] Cover letter generator using voice profile + verifier.
+- [x] Cover letter generator using voice profile + verifier: `cover_letter.v1` drafts from evidence quotes only, the draft is checked sentence by sentence against profile evidence (numbers, entities, banned phrases, 150-250 words), and any failure falls back to the deterministic letter.
 - [x] Batch tailoring for shortlisted jobs (autonomy `prepare` in Phase 10) with per-run budget. *(service ready; batch deferred to Phase 10)*
 
 ### Frontend (blueprint §3.5)

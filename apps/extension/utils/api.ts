@@ -1,5 +1,27 @@
 import { getSession, type ExtSession } from "./storage";
 
+// The extension only ever talks to our own API. A page that hands us any other origin would
+// receive the extension token and every clipped page, so the base is allowlisted.
+const ALLOWED_API_ORIGINS = [
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.kame\.apply$/,
+];
+
+export function isAllowedApiBase(base: string): boolean {
+  try {
+    const url = new URL(base);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    return ALLOWED_API_ORIGINS.some((re) => re.test(url.origin));
+  } catch {
+    return false;
+  }
+}
+
+export function looksLikeExtensionToken(token: string): boolean {
+  return typeof token === "string" && token.startsWith("ka_ext_");
+}
+
 export class ExtApiError extends Error {
   constructor(
     message: string,

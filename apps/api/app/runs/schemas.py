@@ -140,7 +140,7 @@ class OkRead(BaseModel):
 
 class LiveTokenRead(BaseModel):
     token: str
-    role: Literal["viewer", "runner"]
+    role: str
     ws_path: str
     expires_at: datetime
     run_id: uuid.UUID

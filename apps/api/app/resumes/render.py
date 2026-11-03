@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import os
 import re
+import textwrap
 from dataclasses import dataclass
 from typing import Any
 
@@ -174,12 +175,15 @@ def _reportlab_pdf(
         lines = [ln for ln in text.splitlines() if "@" not in ln and "Phone" not in ln]
         text = "\n".join(reversed(lines))
     for line in text.splitlines():
-        if y < 54:
-            c.showPage()
-            y = height - 54
-        c.setFont("Helvetica", 10)
-        c.drawString(54, y, line[:110])
-        y -= 14
+        # Wrap instead of truncating: a long bullet must not lose its tail in the PDF.
+        chunks = textwrap.wrap(line, width=110) or [""]
+        for chunk in chunks:
+            if y < 54:
+                c.showPage()
+                y = height - 54
+            c.setFont("Helvetica", 10)
+            c.drawString(54, y, chunk)
+            y -= 14
     c.save()
     return buf.getvalue()
 

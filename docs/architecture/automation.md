@@ -18,7 +18,7 @@ Pausing a Track (`POST /tracks/{id}/pause`) disables its schedules; resume recal
 2. Advance `next_run_at` before work (idempotent; missed ticks do not stack).
 3. Run the automation chain.
 
-DBOS minute cron can call the same tick when `DBOS_SYSTEM_DATABASE_URL` is set (optional in local/tests).
+Deployed environments run an in-process minute loop (`app/schedules/scheduler.py`, `SCHEDULER_ENABLED`). It lists live workspaces through the `scheduler_workspace_ids()` security-definer helper (tenant RLS hides `workspaces` from a context-less transaction), then ticks each workspace with its own RLS context. `POST /schedules/tick` is always scoped to the caller's workspace and remains the test/manual hook. A duplicate tick is a no-op because `next_run_at` advances before work.
 
 ## Automation chain
 

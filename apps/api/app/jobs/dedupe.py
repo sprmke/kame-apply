@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from typing import Any
 
 from app.jobs.normalize import hamming64, normalize_title
 
@@ -22,6 +24,20 @@ def company_norm(name: str) -> str:
     return " ".join((name or "").lower().split())
 
 
+def _location_keys(locations: list[Any] | tuple[Any, ...] | None) -> set[str]:
+    out: set[str] = set()
+    for loc in locations or []:
+        if isinstance(loc, dict):
+            text = " ".join(str(v) for v in loc.values() if v)
+        else:
+            text = str(loc)
+        for part in re.split(r"[,;/|]", text.lower()):
+            part = part.strip()
+            if part:
+                out.add(part)
+    return out
+
+
 def same_job(
     *,
     company_a: str,
@@ -30,10 +46,17 @@ def same_job(
     company_b: str,
     title_b: str,
     simhash_b: int,
+    locations_a: list[Any] | tuple[Any, ...] | None = None,
+    locations_b: list[Any] | tuple[Any, ...] | None = None,
 ) -> bool:
     if company_norm(company_a) != company_norm(company_b):
         return False
     if normalize_title(title_a) != normalize_title(title_b):
+        return False
+    # Two requisitions for the same title at the same company in different cities are different
+    # jobs; near-identical boilerplate would otherwise collapse them.
+    loc_a, loc_b = _location_keys(locations_a), _location_keys(locations_b)
+    if loc_a and loc_b and loc_a.isdisjoint(loc_b):
         return False
     return hamming64(simhash_a or 0, simhash_b or 0) <= SIMHASH_MAX_DISTANCE
 

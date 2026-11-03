@@ -340,6 +340,25 @@ async def test_budget_guard_blocks_before_calling_the_model(env):
     assert (await c.post("/api/v1/_ai_probe", headers=owner.h(ws))).status_code == 200
 
 
+async def test_credential_test_respects_the_budget_guard(env):
+    """Testing a key is still an AI call; it must not spend past the monthly cap."""
+    c, outbox = env
+    owner, ws, _ = await team(c, outbox)
+    cred = await add(c, owner, ws)
+    await c.patch("/api/v1/ai/settings", json={"monthly_budget_cents": 0}, headers=owner.h(ws))
+    calls.clear()
+    r = await c.post(f"/api/v1/ai/credentials/{cred['id']}/test", headers=owner.h(ws))
+    assert r.status_code == 402 and r.json()["error"]["code"] == "budget_reached"
+    assert calls == []
+
+
+def test_master_kek_is_validated_at_startup():
+    with pytest.raises(ValueError, match="base64"):
+        Settings(master_kek="not-base64!!")
+    with pytest.raises(ValueError, match="32 bytes"):
+        Settings(master_kek="c2hvcnQ=")
+
+
 async def test_budget_counts_spend_so_far(env):
     c, outbox = env
     owner, ws, _ = await team(c, outbox)

@@ -32,6 +32,18 @@
               }
             ],
             "title": "Next Before"
+          },
+          "next_before_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Before Id"
           }
         },
         "required": [
@@ -3894,6 +3906,18 @@
       },
       "CritiqueRead": {
         "properties": {
+          "ai": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai"
+          },
           "categories": {
             "additionalProperties": true,
             "title": "Categories",
@@ -3944,6 +3968,11 @@
         "properties": {
           "boards_active": {
             "title": "Boards Active",
+            "type": "integer"
+          },
+          "boards_candidate": {
+            "default": 0,
+            "title": "Boards Candidate",
             "type": "integer"
           },
           "companies": {
@@ -7559,10 +7588,6 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "viewer",
-              "runner"
-            ],
             "title": "Role",
             "type": "string"
           },
@@ -13995,7 +14020,7 @@
   "paths": {
     "/api/v1/activity": {
       "get": {
-        "description": "Newest first, keyset-paginated by `created_at`. RLS already restricts rows to the workspace.",
+        "description": "Newest first, keyset-paginated by `(created_at, id)`. RLS already scopes the rows.",
         "operationId": "list_activity_api_v1_activity_get",
         "parameters": [
           {
@@ -14066,6 +14091,23 @@
                 }
               ],
               "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before Id"
             }
           },
           {
@@ -29289,6 +29331,22 @@
             }
           },
           {
+            "in": "query",
+            "name": "runner_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Runner Id"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -30670,7 +30728,7 @@
     },
     "/api/v1/schedules/tick": {
       "post": {
-        "description": "Advance due schedules. Pass `now` to freeze time in tests/dev.",
+        "description": "Advance this workspace's due schedules. Pass `now` to freeze time in tests/dev.\n\nAlways scoped to the caller's workspace: a context-less global tick cannot see tenant rows\nthrough RLS, and the in-process scheduler handles every workspace in deployed environments.",
         "operationId": "schedules_tick_api_v1_schedules_tick_post",
         "parameters": [
           {

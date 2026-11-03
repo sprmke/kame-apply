@@ -39,6 +39,8 @@ The execution plan from an empty repo to Release 1 (MVP) and Release 2. Scope is
 
 Phases 7 and 8 both depend only on 6 and may run in either order. Phases 17 and 18 can run in parallel with 15–16.
 
+The 2026-11-03 full review ([`../reviews/full-review-phases-0-20.md`](../reviews/full-review-phases-0-20.md)) fixed the P0 safety/tenancy/truthfulness defects and lists the gaps that are still open (LLM critique, discovery SSE, runner packaging, closed-job detection for feeds, auto-submit execution). Read it before trusting a phase's Done status for those areas.
+
 **After eng 0–20:** only operator/human leftovers remain. See [`REMAINING.md`](./REMAINING.md).
 
 ## Why this order

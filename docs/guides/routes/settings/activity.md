@@ -22,13 +22,13 @@ Shows what changed and when: renames, member changes, invitations, AI key change
 
 ## List
 
-Newest first with a filter; times in your timezone.
+Newest first with a filter; times in your timezone. Load more uses a `(created_at, id)` cursor, so events written in the same transaction (identical timestamps) are never skipped.
 
 ## API reference
 
 | Call | Purpose |
 | --- | --- |
-| `GET /api/v1/activity` | Filters: action (prefix ends with a dot), target type, actor, before, limit |
+| `GET /api/v1/activity` | Filters: action (prefix ends with a dot), target type, actor, `before` + `before_id`, limit. Response carries `next_before` / `next_before_id`. |
 
 ## Implementation map
 

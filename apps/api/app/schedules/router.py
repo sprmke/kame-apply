@@ -87,10 +87,13 @@ async def schedules_tick(
     body: s.TickBody | None = None,
     ctx: WorkspaceContext = Write,
 ):
-    """Advance due schedules. Pass `now` to freeze time in tests/dev."""
+    """Advance this workspace's due schedules. Pass `now` to freeze time in tests/dev.
+
+    Always scoped to the caller's workspace: a context-less global tick cannot see tenant rows
+    through RLS, and the in-process scheduler handles every workspace in deployed environments.
+    """
     body = body or s.TickBody()
     now: datetime | None = body.now
     mailer = getattr(request.app.state, "mailer", None)
-    ws = ctx.workspace_id if body.workspace_only else None
-    result = await tick(ctx.session, now=now, workspace_id=ws, mailer=mailer)
+    result = await tick(ctx.session, now=now, workspace_id=ctx.workspace_id, mailer=mailer)
     return result

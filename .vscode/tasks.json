@@ -1,0 +1,404 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // Local stack
+    {
+      "label": "Dev: Start everything",
+      "detail": "Docker, migrations, API :8100, web :3100 (pnpm run dev)",
+      "type": "shell",
+      "command": "pnpm run dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true },
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Dev: Docker up",
+      "detail": "Postgres :5442, MinIO :9100, Mailpit :8125",
+      "type": "shell",
+      "command": "pnpm run dev:docker",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Dev: Docker down",
+      "type": "shell",
+      "command": "pnpm run stop:docker",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Dev: Free ports",
+      "detail": "Stop stale listeners on :3100 and :8100",
+      "type": "shell",
+      "command": "pnpm run dev:free-ports",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Dev: API only",
+      "type": "shell",
+      "command": "pnpm run dev:api",
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "owner": "kame-uvicorn",
+          "pattern": [{ "regexp": "^$" }],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".*",
+            "endsPattern": "Application startup complete"
+          }
+        }
+      ],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Dev: Web only",
+      "type": "shell",
+      "command": "pnpm run dev:web",
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "owner": "kame-nuxt",
+          "pattern": [{ "regexp": "^$" }],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".*",
+            "endsPattern": "localhost:3100"
+          }
+        }
+      ],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Dev: Extension",
+      "detail": "WXT dev build for apps/extension",
+      "type": "shell",
+      "command": "pnpm --filter @kame/extension dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Setup: Install dependencies",
+      "detail": "pnpm install + uv sync, then AI tooling links",
+      "type": "shell",
+      "command": "pnpm install && uv sync --all-packages && pnpm run setup:ai-tooling",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Setup: AI tooling",
+      "type": "shell",
+      "command": "pnpm run setup:ai-tooling",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Env: Status",
+      "type": "shell",
+      "command": "pnpm run env:status",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Open: API docs",
+      "detail": "macOS: http://localhost:8100/docs",
+      "type": "shell",
+      "command": "open http://localhost:8100/docs",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open: Mailpit",
+      "detail": "macOS: http://localhost:8125",
+      "type": "shell",
+      "command": "open http://localhost:8125",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open: MinIO console",
+      "detail": "macOS: http://localhost:9101",
+      "type": "shell",
+      "command": "open http://localhost:9101",
+      "problemMatcher": []
+    },
+
+    // Database
+    {
+      "label": "DB: Migrate to head",
+      "type": "shell",
+      "command": "pnpm run db:migrate",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "DB: New migration",
+      "detail": "Autogenerate in apps/api/migrations, review by hand",
+      "type": "shell",
+      "command": "pnpm run db:migrate:new -- \"${input:migrationMessage}\"",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "DB: Reset local (drops DB)",
+      "detail": "Local only; refuses non-local URLs",
+      "type": "shell",
+      "command": "pnpm run db:reset:local",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "DB: Seed taxonomy",
+      "detail": "Curated occupations, skills, Track templates, FX fallback",
+      "type": "shell",
+      "command": "pnpm run db:seed",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "DB: Current revision",
+      "type": "shell",
+      "command": "cd apps/api && uv run alembic current",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "DB: psql",
+      "type": "shell",
+      "command": "docker compose -f infra/docker-compose.dev.yml exec postgres psql -U kame_apply -d kame_apply",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+
+    // Quality
+    {
+      "label": "Quality: Lint",
+      "detail": "ruff + ESLint across the workspace",
+      "type": "shell",
+      "command": "pnpm run lint",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Lint and fix",
+      "type": "shell",
+      "command": "pnpm run lint:fix",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Format",
+      "type": "shell",
+      "command": "pnpm run format",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Format check",
+      "type": "shell",
+      "command": "pnpm run format:check",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Type check",
+      "detail": "basedpyright + vue-tsc",
+      "type": "shell",
+      "command": "pnpm run type-check",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Build",
+      "type": "shell",
+      "command": "pnpm run build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: CI gate",
+      "detail": "Everything CI runs (pnpm run ci:quality)",
+      "type": "shell",
+      "command": "pnpm run ci:quality",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "Quality: Filenames",
+      "type": "shell",
+      "command": "pnpm run check:filenames",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Stack terminology",
+      "type": "shell",
+      "command": "pnpm run check:stack-terminology",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Design slop",
+      "type": "shell",
+      "command": "pnpm run check:design-slop",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Token contrast",
+      "type": "shell",
+      "command": "pnpm run check:token-contrast",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: A11y smoke",
+      "type": "shell",
+      "command": "pnpm run check:a11y-smoke",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: Agent hooks",
+      "type": "shell",
+      "command": "pnpm run check:hooks",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Quality: AI tooling sync",
+      "type": "shell",
+      "command": "pnpm run check:ai-tooling-sync",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+
+    // Tests
+    {
+      "label": "Test: All",
+      "detail": "pytest (API + runner) then Vitest (web, ui, extension)",
+      "type": "shell",
+      "command": "pnpm run test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: API",
+      "detail": "Needs Dev: Docker up",
+      "type": "shell",
+      "command": "pnpm run test:api",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: Web",
+      "type": "shell",
+      "command": "pnpm run test:web",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: Web watch",
+      "type": "shell",
+      "command": "pnpm --filter @kame/web exec vitest",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Test: Pytest current file",
+      "type": "shell",
+      "command": "uv run pytest \"${relativeFile}\" -q",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: E2E",
+      "detail": "Playwright against the local stack",
+      "type": "shell",
+      "command": "pnpm run test:e2e",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: E2E current file",
+      "type": "shell",
+      "command": "pnpm exec playwright test \"${relativeFile}\"",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Test: E2E report",
+      "type": "shell",
+      "command": "pnpm exec playwright show-report",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Test: Evals",
+      "type": "shell",
+      "command": "pnpm run test:evals",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+
+    // API client
+    {
+      "label": "API: Generate client",
+      "detail": "OpenAPI to packages/api-client",
+      "type": "shell",
+      "command": "pnpm run gen:api-client",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "API: Check client drift",
+      "type": "shell",
+      "command": "pnpm run check:api-client",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+
+    // Deploy: dev only. Prod deploy, migrate, and rollback stay on the CLI behind the
+    // applywave unlock (.cursor/rules/no-prod-deploy.mdc).
+    {
+      "label": "Deploy dev: API",
+      "type": "shell",
+      "command": "pnpm run deploy:api:dev",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Deploy dev: Web",
+      "type": "shell",
+      "command": "pnpm run deploy:web:dev",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Deploy dev: Migrate",
+      "type": "shell",
+      "command": "pnpm run migrate:dev",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    },
+    {
+      "label": "Deploy dev: Backup DB",
+      "type": "shell",
+      "command": "pnpm run backup:db:dev",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "migrationMessage",
+      "type": "promptString",
+      "description": "Migration message (short, snake_case)",
+      "default": "add_table"
+    }
+  ]
+}
