@@ -20,11 +20,13 @@ from app.resumes.content import ResumeContent
 from app.resumes.cover_letter import draft_cover_letter
 from app.resumes.cover_letter_ai import draft_cover_letter_ai
 from app.resumes.from_profile import build_from_profile
-from app.resumes.models import ResumeVersion
+from app.resumes.lens import run_lens
+from app.resumes.models import ResumeChange, ResumeVersion
 from app.resumes.parse_gate import run_parse_gate
 from app.resumes.render import render_all
+from app.resumes.review_ai import review_tailored_draft
 from app.resumes.service import load_profile_facts, render_version
-from app.resumes.tailor import tailor_once
+from app.resumes.tailor import apply_tailor_ops, tailor_once
 from app.tracks import models as track_models
 
 
@@ -141,11 +143,19 @@ async def start_tailor(
 
         run.progress = {**(run.progress or {}), "step": "lens_before"}
         result = tailor_once(content, qualifications=qualifications, facts=facts)
+        result["review"] = await review_tailored_draft(
+            ctx,
+            get_settings(),
+            content=result["content"],
+            qualifications=qualifications,
+            deterministic_notes=result["review"],
+            run_structured=run_structured,
+            model_factory=model_factory,
+        )
         run.lens_before = result["lens_before"]
         run.lens_after = result["lens_after"]
         run.gaps = result["gaps"]
         run.knockouts = result["knockouts"]
-        run.proposed_changes = result["applied"] or result["proposals"]
         run.progress = {
             "step": "done",
             "review": result["review"],
@@ -172,6 +182,34 @@ async def start_tailor(
         ctx.session.add(draft)
         await ctx.session.flush()
         run.draft_version_id = draft.id
+
+        # Per-change review: every proposal becomes a row the user can keep or remove.
+        applied_ids = {id(p) for p in (result["applied"] or [])}
+        proposed_changes: list[dict[str, Any]] = []
+        for proposal in result["proposals"]:
+            refs: list[uuid.UUID] = []
+            for r in proposal.get("evidence_refs") or []:
+                try:
+                    refs.append(uuid.UUID(str(r)))
+                except ValueError:
+                    continue
+            change = ResumeChange(
+                workspace_id=ctx.workspace_id,
+                resume_version_id=draft.id,
+                path=str(proposal.get("path") or ""),
+                op=str(proposal.get("op") or "rewrite"),
+                before=str(proposal.get("before") or ""),
+                after=str(proposal.get("after") or ""),
+                reason=str(proposal.get("reason") or ""),
+                evidence_refs=refs,
+                status="accepted" if id(proposal) in applied_ids else "rejected",
+            )
+            ctx.session.add(change)
+            await ctx.session.flush()
+            proposed_changes.append(
+                {**proposal, "change_id": str(change.id), "status": change.status}
+            )
+        run.proposed_changes = proposed_changes
 
         # Render + parse gate on draft
         rendered = render_all(result["content"], template=draft.template, page_size=draft.page_size)
@@ -283,6 +321,136 @@ async def start_tailor(
         run.error = "tailor_failed"
         await ctx.session.flush()
         raise AppError("tailor_failed", "Tailoring failed", 500) from exc
+
+
+async def decide_tailor_change(
+    ctx: WorkspaceContext,
+    run_id: uuid.UUID,
+    change_id: uuid.UUID,
+    *,
+    status: str,
+) -> dict[str, Any]:
+    """Keep or remove one proposed change, then rebuild the draft from the base resume."""
+    run = await ctx.session.get(TailorRun, run_id)
+    if run is None or run.workspace_id != ctx.workspace_id:
+        raise AppError("not_found", "Tailor run not found", 404)
+    if run.status not in {"ready", "accepted"}:
+        raise AppError("bad_request", "Tailor run is not ready", 422)
+    change = await ctx.session.get(ResumeChange, change_id)
+    if (
+        change is None
+        or change.workspace_id != ctx.workspace_id
+        or change.resume_version_id != run.draft_version_id
+    ):
+        raise AppError("not_found", "Change not found", 404)
+    change.status = status
+    change.updated_at = datetime.now(UTC)
+    await _recompute_tailor_draft(ctx, run)
+    await audit.record(
+        ctx,
+        action="tailor.change_decided",
+        target_type="tailor_run",
+        target_id=str(run.id),
+        after={"change_id": str(change_id), "status": status},
+    )
+    await ctx.session.flush()
+    return await get_tailor_run(ctx, run_id)
+
+
+async def _recompute_tailor_draft(ctx: WorkspaceContext, run: TailorRun) -> None:
+    """Rebuild the draft from the base resume plus the changes the user kept."""
+    if not run.draft_version_id:
+        raise AppError("bad_request", "No draft resume", 422)
+    draft = await ctx.session.get(ResumeVersion, run.draft_version_id)
+    if draft is None or draft.workspace_id != ctx.workspace_id:
+        raise AppError("not_found", "Draft resume not found", 404)
+
+    job = await ctx.session.get(Job, run.job_id)
+    if job is None:
+        raise AppError("not_found", "Job not found", 404)
+    track = await ctx.session.get(track_models.Track, run.track_id)
+    facts = await load_profile_facts(ctx, run.profile_id)
+
+    base: ResumeVersion | None = None
+    if run.base_version_id:
+        base = await ctx.session.get(ResumeVersion, run.base_version_id)
+    if base is not None and base.workspace_id == ctx.workspace_id:
+        base_content = ResumeContent.model_validate(base.content or {})
+    else:
+        target = job.title or (track.name if track else None)
+        base_content = build_from_profile(facts, target_role=target)
+
+    changes = list(
+        (
+            await ctx.session.execute(
+                select(ResumeChange)
+                .where(
+                    ResumeChange.resume_version_id == draft.id,
+                    ResumeChange.workspace_id == ctx.workspace_id,
+                )
+                .order_by(ResumeChange.created_at.asc())
+            )
+        ).scalars()
+    )
+    proposals = [
+        {
+            "op": c.op,
+            "path": c.path,
+            "before": c.before,
+            "after": c.after,
+            "reason": c.reason,
+            "evidence_refs": [str(r) for r in (c.evidence_refs or [])],
+        }
+        for c in changes
+        if c.status == "accepted"
+    ]
+
+    quals_rows = await matching.ensure_qualifications(ctx, job)
+    qualifications = [
+        {
+            "id": str(q.id),
+            "kind": q.kind,
+            "text": q.text,
+            "quote": q.quote,
+            "normalized": q.normalized or {},
+        }
+        for q in quals_rows
+    ]
+    terms = [
+        str((q.get("normalized") or {}).get("name") or q.get("quote") or "")
+        for q in qualifications
+        if q.get("kind") == "must"
+    ]
+    content, _applied = apply_tailor_ops(
+        base_content,
+        proposals,
+        facts=facts,
+        posting_terms=[t for t in terms if t],
+    )
+    lens_after = run_lens(content, qualifications=qualifications, facts=facts)
+
+    draft.content = content.model_dump(mode="json")
+    draft.lens_report = {
+        "before": run.lens_before or {},
+        "after": lens_after,
+        "simulation": True,
+    }
+    draft.updated_at = datetime.now(UTC)
+    run.lens_after = lens_after
+    run.proposed_changes = [
+        {
+            "change_id": str(c.id),
+            "op": c.op,
+            "path": c.path,
+            "before": c.before,
+            "after": c.after,
+            "reason": c.reason,
+            "evidence_refs": [str(r) for r in (c.evidence_refs or [])],
+            "status": c.status,
+        }
+        for c in changes
+    ]
+    run.updated_at = datetime.now(UTC)
 
 
 async def get_tailor_run(ctx: WorkspaceContext, run_id: uuid.UUID) -> dict[str, Any]:

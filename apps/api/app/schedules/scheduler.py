@@ -21,10 +21,37 @@ from app.schedules.dispatcher import tick
 log = logging.getLogger(__name__)
 
 
+# One advisory lock for the whole tick, so a second API worker skips instead of double-firing.
+SCHEDULER_LOCK_KEY = 0x4B414D45  # "KAME"
+
+
 async def run_once(app: Any, *, now: datetime | None = None) -> dict[str, int]:
     """Tick every live workspace once. Returns fired/skipped totals."""
     now = now or datetime.now(UTC)
     session_factory = app.state.session_factory
+    totals = {"fired": 0, "skipped": 0, "workspaces": 0}
+    async with session_factory() as lock_session:
+        acquired = bool(
+            (
+                await lock_session.execute(
+                    text("SELECT pg_try_advisory_lock(:k)"), {"k": SCHEDULER_LOCK_KEY}
+                )
+            ).scalar()
+        )
+        if not acquired:
+            log.info("scheduler_tick_skipped_lock")
+            totals["skipped_lock"] = 1
+            return totals
+        try:
+            totals = await _tick_all(app, session_factory, now)
+        finally:
+            await lock_session.execute(
+                text("SELECT pg_advisory_unlock(:k)"), {"k": SCHEDULER_LOCK_KEY}
+            )
+    return totals
+
+
+async def _tick_all(app: Any, session_factory: Any, now: datetime) -> dict[str, int]:
     totals = {"fired": 0, "skipped": 0, "workspaces": 0}
     async with session_factory() as session:
         ids = [row[0] for row in (await session.execute(text("SELECT scheduler_workspace_ids()")))]
@@ -44,6 +71,23 @@ async def run_once(app: Any, *, now: datetime | None = None) -> dict[str, int]:
             totals["workspaces"] += 1
         except Exception:
             log.exception("scheduler_workspace_failed workspace=%s", wid)
+
+    # Recover runs whose runner stopped heartbeating.
+    try:
+        from app.runs.service import reap_stuck_runs
+
+        totals["reaped"] = await reap_stuck_runs(session_factory, now=now)
+    except Exception:
+        log.exception("scheduler_reaper_failed")
+
+    # Hard-remove workspaces past the 30-day recovery window once a day.
+    if now.hour == 3 and now.minute == 0:
+        try:
+            from app.workspaces.service import purge_deleted_workspaces
+
+            totals["purged_workspaces"] = await purge_deleted_workspaces(session_factory, now=now)
+        except Exception:
+            log.exception("scheduler_purge_failed")
     return totals
 
 

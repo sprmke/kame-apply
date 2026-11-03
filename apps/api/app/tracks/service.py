@@ -12,6 +12,7 @@ from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.profiles import models as profile_models
+from app.sources.models import TrackSource
 from app.taxonomy import models as tax_models
 from app.tracks import models as m
 from app.tracks.compile_filter import compile_filter
@@ -295,6 +296,34 @@ async def duplicate_track(ctx: WorkspaceContext, track_id: uuid.UUID) -> dict[st
         criteria=criteria_from_dict(src_crit.structured),
     )
     created = await create_track(ctx, body)
+    new_track = created["track"]
+    # Carry over per-source choices and track settings; schedules stay opt-in on the copy.
+    new_track.settings = dict(src.settings or {})
+    source_rows = list(
+        (
+            await ctx.session.execute(
+                select(TrackSource).where(
+                    TrackSource.track_id == src.id,
+                    TrackSource.workspace_id == ctx.workspace_id,
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    for row in source_rows:
+        ctx.session.add(
+            TrackSource(
+                workspace_id=ctx.workspace_id,
+                track_id=new_track.id,
+                source_id=row.source_id,
+                enabled=row.enabled,
+                params=dict(row.params or {}),
+            )
+        )
+    if source_rows:
+        await ctx.session.flush()
+    await ctx.session.refresh(new_track)
     await audit.record(
         ctx,
         action="track.duplicated",

@@ -48,6 +48,16 @@ async def get_tailor_run(run_id: uuid.UUID, ctx: WorkspaceContext = Read):
     return await service.get_tailor_run(ctx, run_id)
 
 
+@router.post("/tailor-runs/{run_id}/changes/{change_id}", response_model=s.TailorRunRead)
+async def decide_tailor_change(
+    run_id: uuid.UUID,
+    change_id: uuid.UUID,
+    body: s.TailorChangeDecisionBody,
+    ctx: WorkspaceContext = Write,
+):
+    return await service.decide_tailor_change(ctx, run_id, change_id, status=body.status)
+
+
 @router.post("/tailor-runs/{run_id}/accept", response_model=s.ApplicationRead)
 async def accept_tailor(
     run_id: uuid.UUID, body: s.TailorAcceptBody | None = None, ctx: WorkspaceContext = Write

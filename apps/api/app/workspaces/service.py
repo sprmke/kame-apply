@@ -21,6 +21,7 @@ from app.workspaces.models import Invitation, Workspace, WorkspaceMember
 RANK = {"viewer": 0, "member": 1, "admin": 2, "owner": 3}
 INVITE_TTL = timedelta(days=7)
 MAX_OWNED_TEAM_WORKSPACES = 5
+PURGE_AFTER_DAYS = 30
 
 
 def _now() -> datetime:
@@ -135,6 +136,30 @@ async def soft_delete(ctx: WorkspaceContext, *, storage=None) -> dict:
         after={"r2_objects_purged": purged},
     )
     return {"r2_objects_purged": purged}
+
+
+async def purge_deleted_workspaces(session_factory, *, now: datetime | None = None) -> int:
+    """Hard-remove workspaces soft-deleted more than 30 days ago. Blobs were removed at delete."""
+    cutoff = (now or _now()) - timedelta(days=PURGE_AFTER_DAYS)
+    purged = 0
+    async with session_factory() as session:
+        ids = [
+            row[0]
+            for row in (
+                await session.execute(
+                    text("SELECT deleted_workspace_ids_before(:cutoff)"), {"cutoff": cutoff}
+                )
+            )
+        ]
+    for wid in ids:
+        try:
+            async with session_factory() as session, session.begin():
+                await set_request_context(session, user_id=None, workspace_id=str(wid))
+                result = await session.execute(delete(Workspace).where(Workspace.id == wid))
+                purged += int(getattr(result, "rowcount", 0) or 0)
+        except Exception:  # noqa: S112 — one bad workspace must not stop the purge
+            continue
+    return purged
 
 
 # --- members ------------------------------------------------------------------------------------

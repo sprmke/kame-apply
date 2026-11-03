@@ -165,6 +165,48 @@ async def test_tailor_accept_creates_application(env_t):
 
 
 @pytest.mark.asyncio
+async def test_tailor_change_can_be_removed_and_restored(env_t):
+    import json
+
+    c = env_t
+    me = await signup(c)
+    _p, _track, _job_id, tj_id, h = await _seed(c, me)
+    started = await c.post(
+        f"/api/v1/track-jobs/{tj_id}/tailor", json={"include_cover_letter": False}, headers=h
+    )
+    assert started.status_code == 201, started.text
+    run = started.json()
+    changes = run["proposed_changes"]
+    assert changes, run
+    target = next((ch for ch in changes if ch["status"] == "accepted" and ch.get("after")), None)
+    assert target is not None, changes
+
+    rejected = await c.post(
+        f"/api/v1/tailor-runs/{run['id']}/changes/{target['change_id']}",
+        json={"status": "rejected"},
+        headers=h,
+    )
+    assert rejected.status_code == 200, rejected.text
+    after_reject = rejected.json()
+    by_id = {ch["change_id"]: ch["status"] for ch in after_reject["proposed_changes"]}
+    assert by_id[target["change_id"]] == "rejected"
+    if target["op"] in {"summary", "add_to_skills"}:
+        assert target["after"] not in json.dumps(after_reject["draft_content"])
+
+    restored = await c.post(
+        f"/api/v1/tailor-runs/{run['id']}/changes/{target['change_id']}",
+        json={"status": "accepted"},
+        headers=h,
+    )
+    assert restored.status_code == 200, restored.text
+    if target["op"] in {"summary", "add_to_skills"}:
+        assert target["after"] in json.dumps(restored.json()["draft_content"])
+
+    accepted = await c.post(f"/api/v1/tailor-runs/{run['id']}/accept", json={}, headers=h)
+    assert accepted.status_code == 200, accepted.text
+
+
+@pytest.mark.asyncio
 async def test_tailor_cross_tenant_404(env_t):
     c = env_t
     a = await signup(c)

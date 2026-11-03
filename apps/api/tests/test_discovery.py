@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 
@@ -285,3 +286,44 @@ async def test_track_jobs_cross_tenant_404(env_disc):
     hb = b.h(b.personal)
     r = await c.get(f"/api/v1/tracks/{track_id}/jobs", headers=hb)
     assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_run_now_can_return_before_discovery_finishes(env_disc, monkeypatch):
+    """Deployed environments queue the run and return immediately; the worker commits progress."""
+    c, app = env_disc
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await _profile(c, me)
+    track = await c.post(
+        "/api/v1/tracks",
+        json={
+            "profile_id": p["id"],
+            "name": "Background",
+            "nl_text": "engineer",
+            "criteria": {
+                "schema_version": 1,
+                "titles": [{"title": "Engineer", "synonyms": [], "exclude": False}],
+            },
+        },
+        headers=h,
+    )
+    assert track.status_code == 201, track.text
+
+    called: list[tuple] = []
+
+    async def fake_bg(*args, **kwargs):
+        called.append((args, kwargs))
+
+    from app.sources import service as src_service
+
+    monkeypatch.setattr(src_service, "_run_discovery_background", fake_bg)
+    app.state.settings.environment = "dev"
+    try:
+        started = await c.post(f"/api/v1/tracks/{track.json()['id']}/discover", headers=h)
+    finally:
+        app.state.settings.environment = "test"
+    assert started.status_code == 201, started.text
+    assert started.json()["status"] == "queued"
+    await asyncio.sleep(0.05)
+    assert called

@@ -82,24 +82,34 @@ async def get_run(run_id: uuid.UUID, ctx: WorkspaceContext = RunnerRead):
 
 
 @router.get("/{run_id}/steps", response_model=list[s.ApplyRunStepRead])
-async def list_steps(run_id: uuid.UUID, ctx: WorkspaceContext = RunnerRead):
-    return [
-        s.ApplyRunStepRead(
-            id=st.id,
-            seq=st.seq,
-            page_url=st.page_url,
-            action=st.action,
-            field_label=st.field_label,
-            value_redacted=st.value_redacted,
-            canonical_key=st.canonical_key,
-            source_fact_ref=st.source_fact_ref,
-            pii_class=st.pii_class,
-            screenshot_r2=st.screenshot_r2,
-            outcome=st.outcome,
-            created_at=st.created_at,
+async def list_steps(run_id: uuid.UUID, request: Request, ctx: WorkspaceContext = RunnerRead):
+    store = getattr(request.app.state, "storage", None)
+    out: list[s.ApplyRunStepRead] = []
+    for st in await service.list_steps(ctx, run_id):
+        url = None
+        if st.screenshot_r2 and store is not None:
+            try:
+                url = await store.presign_get(st.screenshot_r2)
+            except Exception:
+                url = None
+        out.append(
+            s.ApplyRunStepRead(
+                id=st.id,
+                seq=st.seq,
+                page_url=st.page_url,
+                action=st.action,
+                field_label=st.field_label,
+                value_redacted=st.value_redacted,
+                canonical_key=st.canonical_key,
+                source_fact_ref=st.source_fact_ref,
+                pii_class=st.pii_class,
+                screenshot_r2=st.screenshot_r2,
+                screenshot_url=url,
+                outcome=st.outcome,
+                created_at=st.created_at,
+            )
         )
-        for st in await service.list_steps(ctx, run_id)
-    ]
+    return out
 
 
 @router.get("/{run_id}/checkpoints", response_model=list[s.CheckpointRead])
@@ -325,7 +335,10 @@ async def heartbeat(run_id: uuid.UUID, body: s.HeartbeatBody, ctx: WorkspaceCont
 
 @router.post("/{run_id}/plan-page", response_model=ext_schemas.PlanPageResult)
 async def plan_page_for_run(
-    run_id: uuid.UUID, body: ext_schemas.PlanPageBody, ctx: WorkspaceContext = RunnerWrite
+    run_id: uuid.UUID,
+    body: ext_schemas.PlanPageBody,
+    request: Request,
+    ctx: WorkspaceContext = RunnerWrite,
 ):
     run = await service.get_run(ctx, run_id)
     body.run_id = run.id
@@ -335,7 +348,7 @@ async def plan_page_for_run(
     body.application_id = body.application_id or run.application_id
     body.job_id = body.job_id or run.job_id
     body.track_id = body.track_id or run.track_id
-    return await ext_service.plan_page(ctx, body)
+    return await ext_service.plan_page(ctx, body, storage=request.app.state.storage)
 
 
 @router.post("/{run_id}/steps", response_model=s.ApplyRunStepRead, status_code=201)

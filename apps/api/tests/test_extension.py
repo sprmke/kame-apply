@@ -105,6 +105,32 @@ async def test_extension_token_clip_plan_and_policy(env):
     job_id = clip.json()["job_id"]
     assert clip.json()["track_job_id"]
 
+    # The risk banner reads job_risk, not a job.meta field nothing writes.
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "INSERT INTO job_risk (job_id, level, score, reasons) "
+                "VALUES (CAST(:j AS uuid), 'yellow', 45, '[]') "
+                "ON CONFLICT (job_id) DO UPDATE SET level = 'yellow'"
+            ),
+            {"j": job_id},
+        )
+    await engine.dispose()
+    again = await c.post(
+        f"{E}/clip",
+        json={
+            "url": "https://boards.greenhouse.io/acme/jobs/123",
+            "title": "Engineer",
+            "company": "Acme",
+            "track_id": tid,
+            "platform": "greenhouse",
+        },
+        headers=ext_h,
+    )
+    assert again.status_code == 201, again.text
+    assert again.json()["risk_level"] == "yellow"
+
     # Page prose sent by a client is ignored: a clip stores URL + title + company only.
     engine = create_async_engine(TEST_OWNER_URL)
     async with engine.begin() as conn:

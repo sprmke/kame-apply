@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   acceptTailorApiV1TailorRunsRunIdAcceptPost,
+  decideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPost,
   startTailorApiV1TrackJobsTrackJobIdTailorPost,
   type TailorRunRead,
 } from "@kame/api-client";
@@ -33,6 +34,32 @@ const startMut = useMutation({
   },
   onError: (e) => toast.push({ title: apiError(e), tone: "danger" }),
 });
+
+const changeMut = useMutation({
+  mutationFn: async ({
+    changeId,
+    status,
+  }: {
+    changeId: string;
+    status: "accepted" | "rejected";
+  }) => {
+    if (!run.value?.id) throw new Error("No run");
+    const { data } = await decideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPost({
+      path: { run_id: String(run.value.id), change_id: changeId },
+      body: { status },
+      throwOnError: true,
+    });
+    return data as TailorRunRead;
+  },
+  onSuccess: (data) => {
+    run.value = data;
+  },
+  onError: (e) => toast.push({ title: apiError(e), tone: "danger" }),
+});
+
+function decideChange(changeId: string | undefined, status: "accepted" | "rejected") {
+  if (changeId) changeMut.mutate({ changeId, status });
+}
 
 const acceptMut = useMutation({
   mutationFn: async () => {
@@ -103,6 +130,8 @@ const knockouts = computed(
 const changes = computed(
   () =>
     (run.value?.proposed_changes as Array<{
+      change_id?: string;
+      status?: string;
       op?: string;
       before?: string;
       after?: string;
@@ -215,11 +244,29 @@ const letter = computed(
         <section v-show="tab === 'changes'" class="min-w-0 lg:!block">
           <p v-if="!changes.length" class="text-sm text-ink-600">No text changes</p>
           <ul v-else class="divide-y divide-ink-100 border border-ink-100 text-sm">
-            <li v-for="(ch, i) in changes" :key="i" class="p-3">
+            <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="p-3">
               <p class="font-medium">{{ ch.op }}</p>
               <p class="text-ink-600">{{ ch.reason }}</p>
               <p v-if="ch.before" class="mt-1 text-ink-500 line-through">{{ ch.before }}</p>
               <p v-if="ch.after" class="text-ink-900">{{ ch.after }}</p>
+              <div v-if="ch.change_id" class="mt-2 flex gap-1">
+                <FnButton
+                  size="sm"
+                  :tone="ch.status === 'accepted' ? 'primary' : 'ghost'"
+                  :disabled="ch.status === 'accepted' || changeMut.isPending.value"
+                  @click="decideChange(ch.change_id, 'accepted')"
+                >
+                  Keep
+                </FnButton>
+                <FnButton
+                  size="sm"
+                  :tone="ch.status === 'rejected' ? 'primary' : 'ghost'"
+                  :disabled="ch.status === 'rejected' || changeMut.isPending.value"
+                  @click="decideChange(ch.change_id, 'rejected')"
+                >
+                  Remove
+                </FnButton>
+              </div>
             </li>
           </ul>
         </section>

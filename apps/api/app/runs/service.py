@@ -2,18 +2,23 @@
 
 from __future__ import annotations
 
+import base64
+import logging
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.applications import status as app_status
 from app.applications.models import Application
 from app.audit import service as audit
+from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
 from app.core.ssrf import is_public_http_url_literal
+from app.core.storage import build_storage
 from app.extension import models as m
 from app.jobs.models import Job
 from app.notifications import service as notif
@@ -143,13 +148,11 @@ async def preflight(ctx: WorkspaceContext, app: Application) -> dict[str, Any]:
 
     from app.strategy import service as strategy_svc
 
+    warnings: list[str] = []
     cap = await strategy_svc.company_cap_for_application(ctx, app.id)
-    if cap.exceeds:
-        raise AppError(
-            "company_cap",
-            cap.message,
-            409,
-        )
+    if cap.exceeds or cap.warn:
+        # Warn, do not block (PRD P4): the cap is the user's own strategy setting.
+        warnings.append(cap.message)
 
     ats = detect_ats(apply_url)
     allow_submit_requested = False  # set by start()
@@ -169,6 +172,7 @@ async def preflight(ctx: WorkspaceContext, app: Application) -> dict[str, Any]:
         "platform_no_auto_submit": ats in NO_AUTO_SUBMIT,
         "allow_submit_requested": allow_submit_requested,
         "company_cap": cap.model_dump(mode="json"),
+        "warnings": warnings,
         "freshness": freshness,
     }
 
@@ -355,6 +359,21 @@ async def append_step(
     ).scalar_one_or_none()
     if existing:
         return existing
+    screenshot_key = body.get("screenshot_r2")
+    if body.get("screenshot_b64"):
+        try:
+            raw = base64.b64decode(body["screenshot_b64"], validate=True)
+        except Exception:
+            raise AppError("bad_request", "Invalid screenshot payload", 422) from None
+        if len(raw) > 2_000_000:
+            raise AppError("bad_request", "Screenshot is too large", 413)
+        screenshot_key = f"ws/{ctx.workspace_id}/runs/{run_id}/step-{body['seq']}.png"
+        try:
+            store = build_storage(get_settings())
+            await store.put(screenshot_key, raw, "image/png")
+        except Exception:
+            logging.getLogger(__name__).warning("screenshot_store_failed run=%s", run_id)
+            screenshot_key = None
     step = m.ApplyRunStep(
         workspace_id=ctx.workspace_id,
         run_id=run_id,
@@ -366,7 +385,7 @@ async def append_step(
         canonical_key=body.get("canonical_key"),
         source_fact_ref=body.get("source_fact_ref"),
         pii_class=body.get("pii_class") or "personal",
-        screenshot_r2=body.get("screenshot_r2"),
+        screenshot_r2=screenshot_key,
         outcome=body.get("outcome") or "ok",
     )
     ctx.session.add(step)
@@ -582,6 +601,69 @@ async def handoff(ctx: WorkspaceContext, run_id: uuid.UUID) -> dict[str, Any]:
         "last_step_seq": run.last_step_seq,
         "open_checkpoint_id": open_cp.id if open_cp else None,
     }
+
+
+STALE_RUN_SECONDS = 300
+MAX_REAP_ATTEMPTS = 2
+
+
+async def reap_stuck_runs(session_factory: Any, *, now: datetime | None = None) -> int:
+    """Requeue runs whose runner stopped heartbeating; fail them after two attempts."""
+    now = now or _now()
+    cutoff = now - timedelta(seconds=STALE_RUN_SECONDS)
+    reaped = 0
+    async with session_factory() as session:
+        workspace_ids = [
+            row[0] for row in (await session.execute(text("SELECT scheduler_workspace_ids()")))
+        ]
+    for wid in workspace_ids:
+        async with session_factory() as session, session.begin():
+            await set_request_context(session, user_id=None, workspace_id=str(wid))
+            rows = list(
+                (
+                    await session.execute(
+                        select(m.ApplyRun).where(
+                            m.ApplyRun.workspace_id == wid,
+                            m.ApplyRun.status == "running",
+                            m.ApplyRun.heartbeat_at.is_not(None),
+                            m.ApplyRun.heartbeat_at < cutoff,
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            for run in rows:
+                policy = dict(run.policy or {})
+                attempts = int(policy.get("reap_count") or 0) + 1
+                policy["reap_count"] = attempts
+                run.policy = policy
+                if attempts >= MAX_REAP_ATTEMPTS:
+                    run.status = "failed"
+                    run.failure_reason = "runner_lost"
+                    run.ended_at = now
+                else:
+                    run.status = "queued"
+                    run.runner_id = None
+                    run.heartbeat_at = None
+                run.updated_at = now
+                ctx = WorkspaceContext(
+                    session=session,
+                    user_id=uuid.UUID(int=0),
+                    workspace_id=wid,
+                    role="system",
+                    request_id=None,
+                )
+                await audit.record(
+                    ctx,
+                    action="apply_run.reaped",
+                    target_type="apply_run",
+                    target_id=str(run.id),
+                    after={"attempt": attempts, "status": run.status},
+                    actor_type="system",
+                )
+                reaped += 1
+    return reaped
 
 
 async def pop_ephemeral_sensitive(ctx: WorkspaceContext, run_id: uuid.UUID) -> str | None:

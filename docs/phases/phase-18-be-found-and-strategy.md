@@ -11,7 +11,7 @@ Increase inbound recruiter contact and application quality: an optimized, consis
 1. Per Track: suggested LinkedIn headline (≤ 220 chars), About section, top skills order, experience title/description wording, all truthful, with copy buttons and a "why" for each.
 2. Paste current LinkedIn profile text → consistency report vs Career Profile/resume (dates, titles, companies, skills) with fixes.
 3. "Open to work (recruiters only)" checklist with target titles/locations from the Track.
-4. Per-company cap (default 3 active applications per company per 90 days) warns before exceeding; freshness boost visible ("Posted 6h ago").
+4. Per-company cap (default 3 active applications per company per 90 days) warns before exceeding in runner preflight (`policy.warnings`), never blocks; freshness boost visible ("Posted 6h ago").
 5. Salary suggestion for an application: posting range + market data → suggested truthful answer within the user's floor.
 6. Follow-up drafts at day 7/14 (user sends).
 

@@ -94,6 +94,97 @@ def reset_politeness_state() -> None:
     """Test helper."""
     _breakers.clear()
     _global_limiter._hits.clear()
+    _robots_cache.clear()
+
+
+# robots.txt cache: host -> (allowed_for_root, fetched_at). One fetch per host per hour.
+_ROBOTS_TTL = 3600.0
+_robots_cache: dict[str, tuple[bool, float]] = {}
+_ROBOTS_UA = "KameApplyBot"
+
+
+def robots_allows_text(text: str, url: str, *, user_agent: str = _ROBOTS_UA) -> bool:
+    """Parse robots.txt and decide whether `url` may be fetched.
+
+    The most specific matching user-agent group wins, then the longest path prefix, with Allow
+    winning ties. Python's RobotFileParser takes the first matching group, which would let a
+    generic `*` block hide a specific allow.
+    """
+    from urllib.parse import urlparse
+
+    groups: list[tuple[list[str], list[tuple[str, str]]]] = []
+    agents: list[str] = []
+    rules: list[tuple[str, str]] = []
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line or ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        key = key.strip().lower()
+        value = value.strip()
+        if key == "user-agent":
+            if rules:
+                groups.append((agents, rules))
+                agents, rules = [], []
+            agents.append(value.lower())
+        elif key in {"allow", "disallow"} and agents:
+            rules.append((key, value))
+    if rules:
+        groups.append((agents, rules))
+    if not groups:
+        return True
+
+    ua = user_agent.lower()
+    selected: list[tuple[str, str]] | None = None
+    best_len = -1
+    for group_agents, group_rules in groups:
+        for agent in group_agents:
+            if agent == "*":
+                continue
+            if agent and agent in ua and len(agent) > best_len:
+                selected, best_len = group_rules, len(agent)
+    if selected is None:
+        for group_agents, group_rules in groups:
+            if "*" in group_agents:
+                selected = group_rules
+                break
+    if selected is None:
+        return True
+
+    path = urlparse(url).path or "/"
+    allowed = True
+    best_match = -1
+    for kind, prefix in selected:
+        if not prefix or not path.startswith(prefix):
+            continue
+        if len(prefix) > best_match or (len(prefix) == best_match and kind == "allow"):
+            best_match = len(prefix)
+            allowed = kind == "allow"
+    return allowed
+
+
+async def robots_allowed(url: str, *, request_timeout: float = 10.0) -> bool:
+    """Fetch and cache robots.txt for the URL's host. Missing or unreadable robots allows."""
+    parsed = httpx.URL(url)
+    host = parsed.host or ""
+    if not host:
+        return False
+    cached = _robots_cache.get(host)
+    if cached and time.monotonic() - cached[1] < _ROBOTS_TTL:
+        return cached[0]
+    scheme = parsed.scheme or "https"
+    robots_url = f"{scheme}://{host}/robots.txt"
+    allowed = True
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=request_timeout) as client:
+            resp = await client.get(robots_url, headers={"User-Agent": DEFAULT_UA})
+        if resp.status_code == 200:
+            allowed = robots_allows_text(resp.text, url)
+        # 4xx/5xx: no usable rules; the fetch path still applies block detection.
+    except Exception:
+        allowed = True
+    _robots_cache[host] = (allowed, time.monotonic())
+    return allowed
 
 
 def _is_block(status: int, body: str) -> bool:

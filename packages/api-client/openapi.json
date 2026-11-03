@@ -1345,6 +1345,17 @@
             ],
             "title": "Screenshot R2"
           },
+          "screenshot_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screenshot Url"
+          },
           "seq": {
             "title": "Seq",
             "type": "integer"
@@ -8835,6 +8846,17 @@
             "title": "Platform",
             "type": "string"
           },
+          "resume_file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume File Name"
+          },
           "resume_upload_url": {
             "anyOf": [
               {
@@ -12120,6 +12142,17 @@
             "title": "Pii Class",
             "type": "string"
           },
+          "screenshot_b64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screenshot B64"
+          },
           "screenshot_r2": {
             "anyOf": [
               {
@@ -12242,6 +12275,23 @@
           }
         },
         "title": "TailorAcceptBody",
+        "type": "object"
+      },
+      "TailorChangeDecisionBody": {
+        "properties": {
+          "status": {
+            "enum": [
+              "accepted",
+              "rejected"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "TailorChangeDecisionBody",
         "type": "object"
       },
       "TailorRunRead": {
@@ -31544,6 +31594,101 @@
           }
         },
         "summary": "Accept Tailor",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/tailor-runs/{run_id}/changes/{change_id}": {
+      "post": {
+        "operationId": "decide_tailor_change_api_v1_tailor_runs__run_id__changes__change_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Change Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TailorChangeDecisionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TailorRunRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Decide Tailor Change",
         "tags": [
           "applications"
         ]

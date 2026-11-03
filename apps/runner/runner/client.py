@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -131,6 +132,12 @@ class RunnerClient:
         )
         r.raise_for_status()
         return r.json()
+
+    def download(self, url: str, dest: str) -> str:
+        r = httpx.get(url, timeout=60.0, follow_redirects=True)
+        r.raise_for_status()
+        Path(dest).write_bytes(r.content)
+        return dest
 
     def get_run(self, run_id: str) -> dict:
         r = httpx.get(self._url(f"/runs/{run_id}"), headers=self._headers, timeout=30.0)

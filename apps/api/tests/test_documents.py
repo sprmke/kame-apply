@@ -14,7 +14,7 @@ P = "/api/v1/profiles"
 
 
 def _storage(c) -> MemoryStorage:
-    return c._transport.app.state.storage
+    return c._transport.app.state.storage  # type: ignore[attr-defined]
 
 
 def _txt(content: str, name: str = "resume.txt") -> dict:

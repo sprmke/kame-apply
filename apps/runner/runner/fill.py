@@ -71,6 +71,21 @@ async def _control_label(loc) -> str:
         return ""
 
 
+async def set_file_inputs(page: Page, path: str) -> int:
+    """Attach the accepted resume to visible file inputs."""
+    attached = 0
+    inputs = page.locator("input[type=file]")
+    for i in range(await inputs.count()):
+        el = inputs.nth(i)
+        try:
+            if await el.is_visible():
+                await el.set_input_files(path)
+                attached += 1
+        except Exception:  # noqa: S112 — try the next input
+            continue
+    return attached
+
+
 async def click_first(page: Page, selectors: tuple[str, ...]) -> bool:
     for sel in selectors:
         loc = page.locator(sel).first

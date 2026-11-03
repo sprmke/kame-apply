@@ -373,3 +373,18 @@ async def test_scheduler_runs_due_schedules_for_every_workspace(env_scheduler, m
     assert result["workspaces"] >= 2
     assert set(calls) >= {tid for _ws, tid in ids}
     assert result["fired"] >= 2
+
+
+@pytest.mark.asyncio
+async def test_scheduler_tick_takes_a_lock(env_scheduler):
+    """A second worker must skip the tick rather than double-fire schedules."""
+    from app.schedules.scheduler import SCHEDULER_LOCK_KEY, run_once
+
+    _c, app = env_scheduler
+    async with app.state.session_factory() as holder:
+        await holder.execute(text("SELECT pg_advisory_lock(:k)"), {"k": SCHEDULER_LOCK_KEY})
+        try:
+            result = await run_once(app)
+            assert result.get("skipped_lock") == 1
+        finally:
+            await holder.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": SCHEDULER_LOCK_KEY})

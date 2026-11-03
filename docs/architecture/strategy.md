@@ -10,7 +10,7 @@
 
 ## Caps and freshness
 
-Workspace prefs `PUT /api/v1/strategy/prefs` (`company_cap` default 3 / 90 days). Runner preflight raises `company_cap` when exceeded. `GET /applications/{id}/company-cap`. Job freshness: `GET /jobs/{id}/freshness` (high within 24h).
+Workspace prefs `PUT /api/v1/strategy/prefs` (`company_cap` default 3 / 90 days). Runner preflight adds a `policy.warnings` entry when the cap is reached or nearly reached; it does not block (PRD P4). `GET /applications/{id}/company-cap`. Job freshness: `GET /jobs/{id}/freshness` (high within 24h).
 
 ## Salary and follow-ups
 

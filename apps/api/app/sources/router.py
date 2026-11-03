@@ -6,7 +6,7 @@ import asyncio
 import json
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
 from app.companies import service as company_service
@@ -53,8 +53,14 @@ async def patch_track_source(
 
 
 @router.post("/tracks/{track_id}/discover", response_model=s.DiscoveryRunRead, status_code=201)
-async def discover_now(track_id: uuid.UUID, ctx: WorkspaceContext = Write):
-    return await service.start_discovery(ctx, track_id)
+async def discover_now(track_id: uuid.UUID, request: Request, ctx: WorkspaceContext = Write):
+    settings = request.app.state.settings
+    return await service.start_discovery(
+        ctx,
+        track_id,
+        background=settings.environment in {"dev", "prod"},
+        session_factory=request.app.state.session_factory,
+    )
 
 
 @router.get("/discovery-runs/{run_id}", response_model=s.DiscoveryRunRead)

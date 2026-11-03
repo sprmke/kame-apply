@@ -45,12 +45,13 @@
     "deploy:api:prod": "bash scripts/deploy/deploy-api.sh prod",
     "deploy:web:dev": "bash scripts/deploy/deploy-web.sh dev",
     "deploy:web:prod": "bash scripts/deploy/deploy-web.sh prod",
-    "deploy:runner:prod": "echo 'runner ships in Phase 15'",
+    "deploy:runner:prod": "bash scripts/deploy/deploy-runner.sh prod",
     "restore:drill:local": "bash scripts/deploy/restore-drill-local.sh",
     "check:a11y-smoke": "bash scripts/dev/a11y-smoke.sh",
     "check:token-contrast": "node scripts/dev/check-token-contrast.mjs",
     "test:e2e": "playwright test",
-    "check:design-slop": "bash scripts/dev/check-design-slop.sh"
+    "check:design-slop": "bash scripts/dev/check-design-slop.sh",
+    "deploy:runner:dev": "bash scripts/deploy/deploy-runner.sh dev"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

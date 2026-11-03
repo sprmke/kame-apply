@@ -9,7 +9,7 @@ from pathlib import Path
 
 from runner.adapters.base import Adapter, get_adapter
 from runner.extract import page_has_captcha, page_has_password_input
-from runner.fill import click_next, is_submit_like
+from runner.fill import click_next, is_submit_like, set_file_inputs
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -84,3 +84,12 @@ async def test_login_detection_requires_a_password_input(page):
     assert await page_has_password_input(page) is False
     await page.goto((FIXTURES / "workday_login.html").as_uri())
     assert await page_has_password_input(page) is True
+
+
+async def test_resume_attaches_to_file_inputs(page, tmp_path):
+    resume = tmp_path / "resume.pdf"
+    resume.write_bytes(b"%PDF-1.4 test")
+    await page.set_content('<input id="cv" type="file" />')
+    assert await set_file_inputs(page, str(resume)) == 1
+    count = await page.evaluate("() => document.querySelector('#cv').files.length")
+    assert count == 1

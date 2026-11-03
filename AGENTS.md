@@ -6,7 +6,7 @@ Guidance for Codex in this repository. Cursor and OpenCode read it too (`.cursor
 
 **Kame Apply**: a multi-tenant web app that finds real, relevant jobs worldwide on a schedule, scores and safety-checks them, strengthens the user's resume with evidence from live postings, tailors each application, and helps apply faster. The human stays in control of anything that matters (logins, CAPTCHAs, sensitive data, and by default the final Submit). Core loop: **Track** (a role search) → discover → match → safety score → tailor → apply (assist) → track.
 
-Authoritative docs: scope **`docs/prd.md`**, stack **`docs/tech-stack.md`**, build plan **`docs/phases/README.md`** (read the current phase file before any work), system **`docs/architecture/overview.md`**, design **`docs/design/design-system.md`**. Status: Phase 0 (tooling) built; Phase 1 (scaffold, CI, spikes) in progress; see `docs/phases/README.md`.
+Authoritative docs: scope **`docs/prd.md`**, stack **`docs/tech-stack.md`**, build plan **`docs/phases/README.md`** (read the current phase file before any work), system **`docs/architecture/overview.md`**, design **`docs/design/design-system.md`**. Status: eng phases 0–20 complete (operator leftovers in `docs/phases/REMAINING.md`; open engineering gaps in `docs/reviews/full-review-phases-0-20.md`).
 
 Stack: pnpm + Turborepo (TS) and uv workspace (Python). `apps/web` Vue 3 + Nuxt 4 SPA · `apps/api` FastAPI + SQLAlchemy 2 + Alembic + **DBOS** + PydanticAI (owns all business logic) · `apps/runner` Playwright · `apps/extension` WXT + Vue · `packages/{ui,api-client,py-core}`. Postgres 17 + pgvector + pg_trgm + **RLS**. Cloudflare R2, Resend. No Redis, Supabase, Prisma/Drizzle, tRPC, or React.
 

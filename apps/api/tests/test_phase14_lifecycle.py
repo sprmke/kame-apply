@@ -139,3 +139,35 @@ async def test_client_ip_trusts_proxy_header():
         app=fastapi_app,
     )
     assert client_ip(req2) == "203.0.113.50"  # type: ignore[arg-type]
+
+
+async def test_purge_hard_removes_workspaces_after_30_days(env):
+    c, app, _ = env
+    owner = await signup(c)
+    ws, _ = await team_with(c, owner, app.state.mailer, {})
+    assert (await c.delete("/api/v1/workspace", headers=owner.h(ws))).status_code == 200
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE workspaces SET deleted_at = now() - interval '31 days' "
+                "WHERE id = CAST(:w AS uuid)"
+            ),
+            {"w": ws},
+        )
+    await engine.dispose()
+
+    from app.workspaces.service import purge_deleted_workspaces
+
+    assert await purge_deleted_workspaces(app.state.session_factory) >= 1
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        left = (
+            await conn.execute(
+                text("SELECT count(*) FROM workspaces WHERE id = CAST(:w AS uuid)"), {"w": ws}
+            )
+        ).scalar_one()
+    await engine.dispose()
+    assert left == 0

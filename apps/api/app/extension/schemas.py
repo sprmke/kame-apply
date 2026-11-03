@@ -109,6 +109,7 @@ class PlanPageResult(BaseModel):
     instructions: list[FillInstruction]
     page_ai_restricted: bool = False
     resume_upload_url: str | None = None
+    resume_file_name: str | None = None
     notes: list[str] = Field(default_factory=list)
 
 

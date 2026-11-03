@@ -269,6 +269,7 @@ export const zApplyRunStepRead = z.object({
     page_url: z.string(),
     pii_class: z.string(),
     screenshot_r2: z.string().nullable(),
+    screenshot_url: z.string().nullish(),
     seq: z.number().int(),
     source_fact_ref: z.string().nullable(),
     value_redacted: z.string()
@@ -2118,6 +2119,7 @@ export const zPlanPageResult = z.object({
     notes: z.array(z.string()).optional(),
     page_ai_restricted: z.boolean().optional().default(false),
     platform: z.string(),
+    resume_file_name: z.string().nullish(),
     resume_upload_url: z.string().nullish(),
     run_id: z.string().uuid()
 });
@@ -2928,6 +2930,7 @@ export const zStepUploadBody = z.object({
     outcome: z.string().optional().default('ok'),
     page_url: z.string().optional().default(''),
     pii_class: z.string().optional().default('personal'),
+    screenshot_b64: z.string().nullish(),
     screenshot_r2: z.string().nullish(),
     seq: z.number().int(),
     source_fact_ref: z.string().nullish(),
@@ -2985,6 +2988,13 @@ export const zTailorAcceptBody = z.object({
         'runner',
         'answer_desk'
     ]).optional().default('manual')
+});
+
+/**
+ * TailorChangeDecisionBody
+ */
+export const zTailorChangeDecisionBody = z.object({
+    status: z.enum(['accepted', 'rejected'])
 });
 
 /**
@@ -6610,6 +6620,23 @@ export const zAcceptTailorApiV1TailorRunsRunIdAcceptPostPath = z.object({
  * Successful Response
  */
 export const zAcceptTailorApiV1TailorRunsRunIdAcceptPostResponse = zApplicationRead;
+
+export const zDecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostBody = zTailorChangeDecisionBody;
+
+export const zDecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zDecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostPath = z.object({
+    run_id: z.string().uuid(),
+    change_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDecideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPostResponse = zTailorRunRead;
 
 export const zNormalizeOccupationApiV1TaxonomyOccupationsNormalizeGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
