@@ -249,7 +249,9 @@ async def _run_discovery_background(
     run_id: uuid.UUID,
     fixture_root: Path | None,
 ) -> None:
-    async with session_factory() as session, session.begin():
+    # No outer `session.begin()`: run_discover_track commits progress itself, and the wrapper
+    # commits the final status. An outer transaction would be inactive after the first commit.
+    async with session_factory() as session:
         await set_request_context(
             session, user_id=str(user_id) if user_id else None, workspace_id=str(workspace_id)
         )
@@ -269,8 +271,13 @@ async def _run_discovery_background(
                 board_limit=8,
                 commit_progress=True,
             )
+            await session.commit()
         except Exception:
             logger.exception("discovery_background_failed run=%s", run_id)
+            try:
+                await session.commit()  # persist the failed run row
+            except Exception:
+                await session.rollback()
 
 
 async def get_run(ctx: WorkspaceContext, run_id: uuid.UUID) -> DiscoveryRun:
