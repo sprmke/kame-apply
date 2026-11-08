@@ -106,12 +106,12 @@ The extension accepted any `apiBase` from a `kame.connect` message; a look-alike
 These are real and documented in the phase files rather than silently claimed done:
 
 - Resume critique, the cover letter, and the tailor reviewer call their LLM prompts with a deterministic fallback (and a sentence-level verifier for letters). The Lens stays deterministic for consistent grading.
-- Tailoring keeps or removes each change and rebuilds the draft, but the run is still synchronous in the request (no streamed progress).
-- Board crawling now checks `robots.txt`; conditional requests are supported by the HTTP client but not wired into the board poller.
-- Per-ATS account steps and skip-filled-on-resume are missing from the runner.
-- Auto-submit is policy-only; the runner always pauses at `final_review`.
+- Tailoring keeps or removes each change and rebuilds the draft; deployed runs are queued and the page polls, while local dev and tests run inline.
+- Board crawling checks `robots.txt` and sends conditional `HEAD` requests for career-page boards.
+- Per-ATS account steps are still generic (password/login detection); skip-filled-on-resume now avoids overwriting an already-correct field.
+- Auto-submit live execution is implemented behind `AUTO_SUBMIT_ENABLED` and the policy gates; with the flag off (default) every run pauses at `final_review`.
 - Web push needs operator VAPID keys; without them it logs and sends nothing.
-- The in-app notification stream is a one-frame snapshot, not a live socket.
+- The in-app notification stream endpoint is a one-frame snapshot; the web app polls notifications every 15 seconds and the Needs-you badge every 20 seconds.
 - Coverage hot spots below 50%: `tracks/service.py`, `workspaces/service.py`, `strategy/service.py`, `taxonomy/normalize.py`, `tracks/geocode.py`.
 
 ## Verification

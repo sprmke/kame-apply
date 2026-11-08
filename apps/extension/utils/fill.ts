@@ -82,11 +82,24 @@ export function applyInstructions(instructions: FillInstruction[]): {
       skipped += 1;
       continue;
     }
+    // On resume, do not overwrite a value that is already correct.
+    if (
+      (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) &&
+      el.value &&
+      el.value === String(instr.value)
+    ) {
+      skipped += 1;
+      continue;
+    }
     if (el instanceof HTMLSelectElement) {
       const opt = Array.from(el.options).find(
         (o) => o.value === instr.value || o.textContent?.trim() === instr.value,
       );
       if (opt) {
+        if (el.value === opt.value) {
+          skipped += 1;
+          continue;
+        }
         el.value = opt.value;
         el.dispatchEvent(new Event("change", { bubbles: true }));
         filled += 1;
@@ -104,6 +117,10 @@ export function applyInstructions(instructions: FillInstruction[]): {
           `input[type=radio][name="${CSS.escape(name)}"][value="${CSS.escape(instr.value)}"]`,
         );
         if (match) {
+          if (match.checked) {
+            skipped += 1;
+            continue;
+          }
           match.checked = true;
           match.dispatchEvent(new Event("change", { bubbles: true }));
           filled += 1;

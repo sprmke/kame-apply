@@ -202,8 +202,8 @@ async def start_runner(
             policy["auto_submit"] = auto_verdict.model_dump(mode="json")
             if auto_verdict.allow_submit:
                 allow_submit = True
-            elif auto_verdict.dry_run:
-                allow_submit = False
+                # The user opted this Track into live auto-submit and every gate passed.
+                policy["auto_submit_authorized"] = True
             else:
                 allow_submit = False
 
@@ -222,11 +222,21 @@ async def start_runner(
         page_url=policy["apply_url"],
         status="queued",
         policy=policy,
-        submit_approved=False,
+        submit_approved=bool(policy.get("auto_submit_authorized")),
         created_by=ctx.user_id,
     )
     ctx.session.add(run)
     await ctx.session.flush()
+
+    if auto_verdict and auto_verdict.allow_submit:
+        await audit.record(
+            ctx,
+            action="apply_run.auto_submit_authorized",
+            target_type="apply_run",
+            target_id=str(run.id),
+            after={"summary": auto_verdict.summary},
+            actor_type="system",
+        )
 
     if auto_verdict and auto_verdict.dry_run:
         from app.autosubmit import service as autosubmit_svc

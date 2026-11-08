@@ -4,7 +4,7 @@
 
 ## Behavior
 
-Per-job tailor workbench. Starts a tailor run for the track job, shows Lens grade before → after, Fit ledger with before/after verdicts, gaps, knockouts, proposed changes, resume preview, and optional cover letter. Every proposed change has Keep / Remove; the draft is rebuilt from the base resume with only the kept changes, and the Lens grade is recomputed. Accept freezes the current draft and creates or updates an application (`ready`).
+Per-job tailor workbench. Starts a tailor run for the track job, shows Lens grade before → after, Fit ledger with before/after verdicts, gaps, knockouts, proposed changes, resume preview, and optional cover letter. In deployed environments the run is queued and the page polls until it is ready; local dev and tests run inline. Every proposed change has Keep / Remove; the draft is rebuilt from the base resume with only the kept changes, and the Lens grade is recomputed. Accept freezes the current draft and creates or updates an application (`ready`).
 
 Desktop: three panes (ledger / changes / preview+letter). Mobile: tabs.
 

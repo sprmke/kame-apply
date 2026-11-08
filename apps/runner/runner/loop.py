@@ -30,6 +30,17 @@ from runner.terminal_checkpoint import prompt_checkpoint
 log = logging.getLogger("kame.runner")
 
 
+def auto_submit_allowed(run: dict[str, Any]) -> bool:
+    """Live auto-submit only when the API policy authorized it for this run."""
+    policy = run.get("policy") or {}
+    auto = policy.get("auto_submit") or {}
+    return (
+        bool(auto.get("allow_submit"))
+        and bool(policy.get("allow_submit"))
+        and not policy.get("platform_no_auto_submit")
+    )
+
+
 async def run_apply(
     *,
     browser: Browser,
@@ -245,7 +256,20 @@ async def run_apply(
                 continue
 
             if submit_visible:
-                # Always pause for final_review — never click Submit without approval.
+                # Live auto-submit: only when the API policy authorized it and submit_approved is
+                # recorded. Otherwise always pause for final_review.
+                fresh = client.get_run(run_id)
+                if auto_submit_allowed(fresh) and fresh.get("submit_approved"):
+                    await click_first(page, adapter.submit_selectors)
+                    await page.wait_for_timeout(800)
+                    ok = looks_like_confirmation(
+                        await page_text(page), adapter.confirmation_needles
+                    )
+                    client.complete(
+                        run_id, runner_id=runner_id, status="completed", confirmation=ok
+                    )
+                    return
+
                 cp = client.open_checkpoint(
                     run_id,
                     "final_review",

@@ -15,6 +15,7 @@ from app.core.rls import set_request_context
 from app.jobs.models import Job, TrackJob
 from app.main import create_app
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
+from tests.test_phase15_runs import _seed_ready_application
 from tests.test_workspaces import signup
 
 P = "/api/v1/profiles"
@@ -242,3 +243,52 @@ async def test_batch_approve_and_cross_tenant(env_a19):
     )
     assert ba.status_code == 200
     assert ba.json()["updated"] == 0
+
+
+@pytest.fixture
+async def env_auto():
+    settings = Settings(
+        database_url=TEST_DB_URL,
+        environment="test",
+        log_json=False,
+        auth_rate_limit_enabled=False,
+        auto_submit_enabled=True,
+    )
+    app = create_app(settings)
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://t"
+        ) as c:
+            yield c
+
+
+@pytest.mark.asyncio
+async def test_live_auto_submit_authorizes_the_run(env_auto):
+    c = env_auto
+    me = await signup(c)
+    h, app_id, _pid = await _seed_ready_application(
+        c, me, apply_url="https://boards.greenhouse.io/acme/jobs/auto"
+    )
+    application = (await c.get(f"/api/v1/applications/{app_id}", headers=h)).json()
+    track_id = application["track_id"]
+
+    patched = await c.patch(
+        f"/api/v1/tracks/{track_id}", json={"autonomy": "auto_submit"}, headers=h
+    )
+    assert patched.status_code == 200, patched.text
+    auto = await c.put(
+        f"/api/v1/tracks/{track_id}/auto-submit",
+        json={"live_enabled": True, "dry_run_remaining": 0, "score_threshold": 70},
+        headers=h,
+    )
+    assert auto.status_code == 200, auto.text
+
+    started = await c.post(
+        "/api/v1/runs/runner/start",
+        json={"application_id": app_id, "allow_submit": True},
+        headers=h,
+    )
+    assert started.status_code == 201, started.text
+    body = started.json()
+    assert body["policy"]["auto_submit"]["allow_submit"] is True
+    assert body["submit_approved"] is True

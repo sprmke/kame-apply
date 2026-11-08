@@ -1,6 +1,6 @@
 # Auto-submit policies (Phase 19)
 
-**Go/no-go:** Live mode stays behind `AUTO_SUBMIT_ENABLED` (default off). Enable only after assist-mode fill accuracy meets the phase gate.
+**Go/no-go:** Live mode stays behind `AUTO_SUBMIT_ENABLED` (default off). Enable only after assist-mode fill accuracy meets the phase gate. When the policy allows a live run, the API sets `submit_approved` and audits `apply_run.auto_submit_authorized`; the runner clicks Submit only for that run, and never on a restricted platform.
 
 ## Policy (every condition must pass)
 

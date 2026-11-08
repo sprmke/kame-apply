@@ -2,6 +2,7 @@
 import {
   acceptTailorApiV1TailorRunsRunIdAcceptPost,
   decideTailorChangeApiV1TailorRunsRunIdChangesChangeIdPost,
+  getTailorRunApiV1TailorRunsRunIdGet,
   startTailorApiV1TrackJobsTrackJobIdTailorPost,
   type TailorRunRead,
 } from "@kame/api-client";
@@ -29,8 +30,24 @@ const startMut = useMutation({
     });
     return data as TailorRunRead;
   },
-  onSuccess: (data) => {
+  onSuccess: async (data) => {
     run.value = data;
+    // Deployed runs are queued and finish in a worker; poll until it stops changing.
+    if (data && (data.status === "queued" || data.status === "running")) {
+      for (let i = 0; i < 60; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const { data: latest } = await getTailorRunApiV1TailorRunsRunIdGet({
+            path: { run_id: String(data.id) },
+            throwOnError: true,
+          });
+          run.value = latest as TailorRunRead;
+          if (latest && latest.status !== "queued" && latest.status !== "running") break;
+        } catch {
+          break;
+        }
+      }
+    }
   },
   onError: (e) => toast.push({ title: apiError(e), tone: "danger" }),
 });
@@ -172,6 +189,9 @@ const letter = computed(
     <header class="flex flex-wrap items-center gap-2">
       <h1 class="font-display text-xl text-ink-900">Tailor</h1>
       <div class="font-mono text-sm text-ink-700">{{ beforeGrade }} → {{ afterGrade }}</div>
+      <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')" tone="neutral">
+        {{ run.status }}
+      </FnChip>
       <div class="ml-auto flex flex-wrap gap-1">
         <FnButton size="sm" tone="ghost" @click="router.push('/jobs')">Back</FnButton>
         <FnButton

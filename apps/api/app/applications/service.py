@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.applications.models import Application, CoverLetter, TailorRun
 from app.audit import service as audit
 from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
 from app.jobs.models import Job, TrackJob
 from app.matching import service as matching
@@ -28,6 +31,8 @@ from app.resumes.review_ai import review_tailored_draft
 from app.resumes.service import load_profile_facts, render_version
 from app.resumes.tailor import apply_tailor_ops, tailor_once
 from app.tracks import models as track_models
+
+logger = logging.getLogger(__name__)
 
 
 def _run_read(
@@ -76,6 +81,8 @@ async def start_tailor(
     base_version_id: uuid.UUID | None = None,
     run_structured=None,
     model_factory=None,
+    background: bool = False,
+    session_factory=None,
 ) -> dict[str, Any]:
     tj = await ctx.session.get(TrackJob, track_job_id)
     if tj is None or tj.workspace_id != ctx.workspace_id:
@@ -97,221 +104,70 @@ async def start_tailor(
         status="running",
         progress={"step": "load"},
     )
-    ctx.session.add(run)
-    await ctx.session.flush()
-
-    try:
-        facts = await load_profile_facts(ctx, profile_id)
-        quals_rows = await matching.ensure_qualifications(ctx, job)
-        qualifications = [
-            {
-                "id": str(q.id),
-                "kind": q.kind,
-                "text": q.text,
-                "quote": q.quote,
-                "normalized": q.normalized or {},
-            }
-            for q in quals_rows
-        ]
-
-        # Base resume: explicit version, latest track base, or build from profile
-        base_row: ResumeVersion | None = None
-        if base_version_id:
-            base_row = await ctx.session.get(ResumeVersion, base_version_id)
-            if base_row is None or base_row.workspace_id != ctx.workspace_id:
-                raise AppError("not_found", "Resume not found", 404)
-        else:
-            base_row = (
-                await ctx.session.execute(
-                    select(ResumeVersion)
-                    .where(
-                        ResumeVersion.workspace_id == ctx.workspace_id,
-                        ResumeVersion.track_id == track.id,
-                        ResumeVersion.kind.in_(("base", "tailored")),
-                    )
-                    .order_by(ResumeVersion.updated_at.desc())
-                    .limit(1)
-                )
-            ).scalar_one_or_none()
-
-        if base_row:
-            content = ResumeContent.model_validate(base_row.content or {})
-            run.base_version_id = base_row.id
-        else:
-            content = build_from_profile(facts, target_role=job.title or track.name)
-            run.progress = {**(run.progress or {}), "step": "built_from_profile"}
-
-        run.progress = {**(run.progress or {}), "step": "lens_before"}
-        result = tailor_once(content, qualifications=qualifications, facts=facts)
-        result["review"] = await review_tailored_draft(
-            ctx,
-            get_settings(),
-            content=result["content"],
-            qualifications=qualifications,
-            deterministic_notes=result["review"],
-            run_structured=run_structured,
-            model_factory=model_factory,
-        )
-        run.lens_before = result["lens_before"]
-        run.lens_after = result["lens_after"]
-        run.gaps = result["gaps"]
-        run.knockouts = result["knockouts"]
-        run.progress = {
-            "step": "done",
-            "review": result["review"],
-            "grade_before": result["lens_before"].get("grade"),
-            "grade_after": result["lens_after"].get("grade"),
-        }
-
-        draft = ResumeVersion(
-            workspace_id=ctx.workspace_id,
-            profile_id=profile_id,
-            track_id=track.id,
-            kind="draft",
-            label=f"Tailor: {job.title}"[:200],
-            content=result["content"].model_dump(mode="json"),
-            parent_id=run.base_version_id,
-            lens_report={
-                "before": result["lens_before"],
-                "after": result["lens_after"],
-                "simulation": True,
-            },
-            template=(base_row.template if base_row else "classic"),
-            page_size=(base_row.page_size if base_row else "letter"),
-        )
-        ctx.session.add(draft)
-        await ctx.session.flush()
-        run.draft_version_id = draft.id
-
-        # Per-change review: every proposal becomes a row the user can keep or remove.
-        applied_ids = {id(p) for p in (result["applied"] or [])}
-        proposed_changes: list[dict[str, Any]] = []
-        for proposal in result["proposals"]:
-            refs: list[uuid.UUID] = []
-            for r in proposal.get("evidence_refs") or []:
-                try:
-                    refs.append(uuid.UUID(str(r)))
-                except ValueError:
-                    continue
-            change = ResumeChange(
+    use_background = background and session_factory is not None
+    run.status = "queued" if use_background else "running"
+    if use_background:
+        assert session_factory is not None
+        # Commit the run so the worker and the UI poller can see it, then return immediately.
+        async with session_factory() as session, session.begin():
+            await set_request_context(
+                session, user_id=str(ctx.user_id), workspace_id=str(ctx.workspace_id)
+            )
+            session.add(run)
+            await session.flush()
+            run_id = run.id
+            worker_ctx = WorkspaceContext(
+                session=session,
+                user_id=ctx.user_id,
                 workspace_id=ctx.workspace_id,
-                resume_version_id=draft.id,
-                path=str(proposal.get("path") or ""),
-                op=str(proposal.get("op") or "rewrite"),
-                before=str(proposal.get("before") or ""),
-                after=str(proposal.get("after") or ""),
-                reason=str(proposal.get("reason") or ""),
-                evidence_refs=refs,
-                status="accepted" if id(proposal) in applied_ids else "rejected",
+                role=ctx.role,
+                request_id=ctx.request_id,
             )
-            ctx.session.add(change)
-            await ctx.session.flush()
-            proposed_changes.append(
-                {**proposal, "change_id": str(change.id), "status": change.status}
+            await audit.record(
+                worker_ctx,
+                action="tailor.started",
+                target_type="tailor_run",
+                target_id=str(run_id),
+                after={"track_job_id": str(tj.id)},
             )
-        run.proposed_changes = proposed_changes
-
-        # Render + parse gate on draft
-        rendered = render_all(result["content"], template=draft.template, page_size=draft.page_size)
-        gate = run_parse_gate(
-            result["content"], pdf=rendered.pdf, docx=rendered.docx, text=rendered.text
-        )
-        draft.parse_gate = gate
-        if not gate.get("ok"):
-            run.error = "parse_gate_failed"
-            # Still return ready so user can see; accept will re-render
-
-        cover_row = None
-        if include_cover_letter:
-            voice = await _load_voice(ctx, profile_id)
-            company_name = None
-            if job.company_id:
-                from app.companies.models import Company
-
-                co = await ctx.session.get(Company, job.company_id)
-                company_name = co.name if co else None
-            matches = []
-            for row in (result["lens_after"].get("qualifications") or [])[:5]:
-                if row.get("verdict") == "met" and row.get("evidence_quote"):
-                    matches.append(
-                        {
-                            "text": row.get("text"),
-                            "evidence_quote": row.get("evidence_quote"),
-                            "evidence_ref": None,
-                        }
-                    )
-            # Prefer bullet evidence refs
-            for b in facts.get("bullets") or []:
-                if isinstance(b, dict) and b.get("text") and len(matches) < 3:
-                    matches.append(
-                        {
-                            "text": b["text"],
-                            "evidence_quote": b["text"],
-                            "evidence_ref": b.get("id"),
-                        }
-                    )
-            job_payload = {
-                "title": job.title,
-                "company_name": company_name or "",
-                "description_text": job.description_text or "",
-            }
-            letter = await draft_cover_letter_ai(
-                ctx,
-                get_settings(),
-                facts=facts,
-                job=job_payload,
-                matches=matches,
-                voice=voice,
+        task = asyncio.create_task(
+            _tailor_worker(
+                session_factory,
+                workspace_id=ctx.workspace_id,
+                user_id=ctx.user_id,
+                role=ctx.role,
+                request_id=ctx.request_id,
+                run_id=run_id,
+                include_cover_letter=include_cover_letter,
+                base_version_id=base_version_id,
                 run_structured=run_structured,
                 model_factory=model_factory,
             )
-            if letter is None:
-                letter = draft_cover_letter(
-                    facts=facts,
-                    job=job_payload,
-                    matches=matches,
-                    voice=voice,
-                )
-            refs = []
-            for r in letter.get("evidence_refs") or []:
-                try:
-                    refs.append(uuid.UUID(str(r)))
-                except ValueError:
-                    continue
-            cover_row = CoverLetter(
-                workspace_id=ctx.workspace_id,
-                profile_id=profile_id,
-                job_id=job.id,
-                track_id=track.id,
-                resume_version_id=draft.id,
-                content=letter["content"],
-                word_count=letter["word_count"],
-                evidence_refs=refs,
-                company_reason=letter["company_reason"],
-                status="draft",
-            )
-            ctx.session.add(cover_row)
-            await ctx.session.flush()
-            run.cover_letter_id = cover_row.id
-
-        # Job closed while tailoring
-        if job.status and job.status != "open":
-            run.progress = {**(run.progress or {}), "job_closed": True}
-
-        run.status = "ready"
-        await audit.record(
-            ctx,
-            action="tailor.completed",
-            target_type="tailor_run",
-            target_id=str(run.id),
-            after={
-                "grade_before": run.progress.get("grade_before"),
-                "grade_after": run.progress.get("grade_after"),
-                "gaps": len(run.gaps or []),
-            },
         )
-        await ctx.session.flush()
-        return _run_read(run, cover=cover_row, draft=draft)
+        _TAILOR_TASKS.add(task)
+        task.add_done_callback(_TAILOR_TASKS.discard)
+        loaded = await ctx.session.get(TailorRun, run_id)
+        assert loaded is not None
+        return _run_read(loaded)
+
+    ctx.session.add(run)
+    await ctx.session.flush()
+    await audit.record(
+        ctx,
+        action="tailor.started",
+        target_type="tailor_run",
+        target_id=str(run.id),
+        after={"track_job_id": str(tj.id)},
+    )
+    try:
+        return await _execute_tailor(
+            ctx,
+            run,
+            include_cover_letter=include_cover_letter,
+            base_version_id=base_version_id,
+            run_structured=run_structured,
+            model_factory=model_factory,
+        )
     except AppError:
         run.status = "failed"
         await ctx.session.flush()
@@ -321,6 +177,329 @@ async def start_tailor(
         run.error = "tailor_failed"
         await ctx.session.flush()
         raise AppError("tailor_failed", "Tailoring failed", 500) from exc
+
+
+async def _execute_tailor(
+    ctx: WorkspaceContext,
+    run: TailorRun,
+    *,
+    include_cover_letter: bool,
+    base_version_id: uuid.UUID | None,
+    run_structured=None,
+    model_factory=None,
+) -> dict[str, Any]:
+    """Run the deterministic tailor pass, draft, cover letter, and render gate."""
+    tj = await ctx.session.get(TrackJob, run.track_job_id)
+    if tj is None or tj.workspace_id != ctx.workspace_id:
+        raise AppError("not_found", "Track job not found", 404)
+    track = await ctx.session.get(track_models.Track, run.track_id)
+    if track is None or track.workspace_id != ctx.workspace_id:
+        raise AppError("not_found", "Track not found", 404)
+    job = await ctx.session.get(Job, run.job_id)
+    if job is None:
+        raise AppError("not_found", "Job not found", 404)
+    profile_id = run.profile_id
+    facts = await load_profile_facts(ctx, profile_id)
+    quals_rows = await matching.ensure_qualifications(ctx, job)
+    qualifications = [
+        {
+            "id": str(q.id),
+            "kind": q.kind,
+            "text": q.text,
+            "quote": q.quote,
+            "normalized": q.normalized or {},
+        }
+        for q in quals_rows
+    ]
+
+    # Base resume: explicit version, latest track base, or build from profile
+    base_row: ResumeVersion | None = None
+    if base_version_id:
+        base_row = await ctx.session.get(ResumeVersion, base_version_id)
+        if base_row is None or base_row.workspace_id != ctx.workspace_id:
+            raise AppError("not_found", "Resume not found", 404)
+    else:
+        base_row = (
+            await ctx.session.execute(
+                select(ResumeVersion)
+                .where(
+                    ResumeVersion.workspace_id == ctx.workspace_id,
+                    ResumeVersion.track_id == track.id,
+                    ResumeVersion.kind.in_(("base", "tailored")),
+                )
+                .order_by(ResumeVersion.updated_at.desc())
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+
+    if base_row:
+        content = ResumeContent.model_validate(base_row.content or {})
+        run.base_version_id = base_row.id
+    else:
+        content = build_from_profile(facts, target_role=job.title or track.name)
+        run.progress = {**(run.progress or {}), "step": "built_from_profile"}
+
+    run.progress = {**(run.progress or {}), "step": "lens_before"}
+    result = tailor_once(content, qualifications=qualifications, facts=facts)
+    result["review"] = await review_tailored_draft(
+        ctx,
+        get_settings(),
+        content=result["content"],
+        qualifications=qualifications,
+        deterministic_notes=result["review"],
+        run_structured=run_structured,
+        model_factory=model_factory,
+    )
+    run.lens_before = result["lens_before"]
+    run.lens_after = result["lens_after"]
+    run.gaps = result["gaps"]
+    run.knockouts = result["knockouts"]
+    run.progress = {
+        "step": "done",
+        "review": result["review"],
+        "grade_before": result["lens_before"].get("grade"),
+        "grade_after": result["lens_after"].get("grade"),
+    }
+
+    draft = ResumeVersion(
+        workspace_id=ctx.workspace_id,
+        profile_id=profile_id,
+        track_id=track.id,
+        kind="draft",
+        label=f"Tailor: {job.title}"[:200],
+        content=result["content"].model_dump(mode="json"),
+        parent_id=run.base_version_id,
+        lens_report={
+            "before": result["lens_before"],
+            "after": result["lens_after"],
+            "simulation": True,
+        },
+        template=(base_row.template if base_row else "classic"),
+        page_size=(base_row.page_size if base_row else "letter"),
+    )
+    ctx.session.add(draft)
+    await ctx.session.flush()
+    run.draft_version_id = draft.id
+
+    # Per-change review: every proposal becomes a row the user can keep or remove.
+    applied_ids = {id(p) for p in (result["applied"] or [])}
+    proposed_changes: list[dict[str, Any]] = []
+    for proposal in result["proposals"]:
+        refs: list[uuid.UUID] = []
+        for r in proposal.get("evidence_refs") or []:
+            try:
+                refs.append(uuid.UUID(str(r)))
+            except ValueError:
+                continue
+        change = ResumeChange(
+            workspace_id=ctx.workspace_id,
+            resume_version_id=draft.id,
+            path=str(proposal.get("path") or ""),
+            op=str(proposal.get("op") or "rewrite"),
+            before=str(proposal.get("before") or ""),
+            after=str(proposal.get("after") or ""),
+            reason=str(proposal.get("reason") or ""),
+            evidence_refs=refs,
+            status="accepted" if id(proposal) in applied_ids else "rejected",
+        )
+        ctx.session.add(change)
+        await ctx.session.flush()
+        proposed_changes.append({**proposal, "change_id": str(change.id), "status": change.status})
+    run.proposed_changes = proposed_changes
+
+    # Render + parse gate on draft
+    rendered = render_all(result["content"], template=draft.template, page_size=draft.page_size)
+    gate = run_parse_gate(
+        result["content"], pdf=rendered.pdf, docx=rendered.docx, text=rendered.text
+    )
+    draft.parse_gate = gate
+    if not gate.get("ok"):
+        run.error = "parse_gate_failed"
+        # Still return ready so user can see; accept will re-render
+
+    cover_row = None
+    if include_cover_letter:
+        voice = await _load_voice(ctx, profile_id)
+        company_name = None
+        if job.company_id:
+            from app.companies.models import Company
+
+            co = await ctx.session.get(Company, job.company_id)
+            company_name = co.name if co else None
+        matches = []
+        for row in (result["lens_after"].get("qualifications") or [])[:5]:
+            if row.get("verdict") == "met" and row.get("evidence_quote"):
+                matches.append(
+                    {
+                        "text": row.get("text"),
+                        "evidence_quote": row.get("evidence_quote"),
+                        "evidence_ref": None,
+                    }
+                )
+        # Prefer bullet evidence refs
+        for b in facts.get("bullets") or []:
+            if isinstance(b, dict) and b.get("text") and len(matches) < 3:
+                matches.append(
+                    {
+                        "text": b["text"],
+                        "evidence_quote": b["text"],
+                        "evidence_ref": b.get("id"),
+                    }
+                )
+        job_payload = {
+            "title": job.title,
+            "company_name": company_name or "",
+            "description_text": job.description_text or "",
+        }
+        letter = await draft_cover_letter_ai(
+            ctx,
+            get_settings(),
+            facts=facts,
+            job=job_payload,
+            matches=matches,
+            voice=voice,
+            run_structured=run_structured,
+            model_factory=model_factory,
+        )
+        if letter is None:
+            letter = draft_cover_letter(
+                facts=facts,
+                job=job_payload,
+                matches=matches,
+                voice=voice,
+            )
+        refs = []
+        for r in letter.get("evidence_refs") or []:
+            try:
+                refs.append(uuid.UUID(str(r)))
+            except ValueError:
+                continue
+        cover_row = CoverLetter(
+            workspace_id=ctx.workspace_id,
+            profile_id=profile_id,
+            job_id=job.id,
+            track_id=track.id,
+            resume_version_id=draft.id,
+            content=letter["content"],
+            word_count=letter["word_count"],
+            evidence_refs=refs,
+            company_reason=letter["company_reason"],
+            status="draft",
+        )
+        ctx.session.add(cover_row)
+        await ctx.session.flush()
+        run.cover_letter_id = cover_row.id
+
+    # Job closed while tailoring
+    if job.status and job.status != "open":
+        run.progress = {**(run.progress or {}), "job_closed": True}
+
+    run.status = "ready"
+    await audit.record(
+        ctx,
+        action="tailor.completed",
+        target_type="tailor_run",
+        target_id=str(run.id),
+        after={
+            "grade_before": run.progress.get("grade_before"),
+            "grade_after": run.progress.get("grade_after"),
+            "gaps": len(run.gaps or []),
+        },
+    )
+    await ctx.session.flush()
+    return _run_read(run, cover=cover_row, draft=draft)
+
+
+_TAILOR_TASKS: set[asyncio.Task] = set()
+
+
+async def _tailor_worker(
+    session_factory,
+    *,
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID,
+    role: str,
+    request_id: str | None,
+    run_id: uuid.UUID,
+    include_cover_letter: bool,
+    base_version_id: uuid.UUID | None,
+    run_structured=None,
+    model_factory=None,
+) -> None:
+    async with session_factory() as session:
+        await set_request_context(session, user_id=str(user_id), workspace_id=str(workspace_id))
+        ctx = WorkspaceContext(
+            session=session,
+            user_id=user_id,
+            workspace_id=workspace_id,
+            role=role,
+            request_id=request_id,
+        )
+        run = await session.get(TailorRun, run_id)
+        if run is None:
+            return
+        run.status = "running"
+        run.progress = {"step": "load"}
+        await session.commit()
+        try:
+            await _execute_tailor(
+                ctx,
+                run,
+                include_cover_letter=include_cover_letter,
+                base_version_id=base_version_id,
+                run_structured=run_structured,
+                model_factory=model_factory,
+            )
+            await session.commit()
+        except Exception:
+            logger.exception("tailor_background_failed run=%s", run_id)
+            await session.rollback()
+            async with session_factory() as failed_session, failed_session.begin():
+                await set_request_context(
+                    failed_session,
+                    user_id=str(user_id),
+                    workspace_id=str(workspace_id),
+                )
+                failed = await failed_session.get(TailorRun, run_id)
+                if failed is not None:
+                    failed.status = "failed"
+                    failed.error = "tailor_failed"
+
+
+STALE_TAILOR_SECONDS = 900
+
+
+async def reap_stale_tailor_runs(session_factory, *, now: datetime | None = None) -> int:
+    """Fail tailor runs whose worker never finished (API restart or crash)."""
+    now = now or datetime.now(UTC)
+    cutoff = now - timedelta(seconds=STALE_TAILOR_SECONDS)
+    reaped = 0
+    async with session_factory() as session:
+        workspace_ids = [
+            row[0] for row in (await session.execute(text("SELECT scheduler_workspace_ids()")))
+        ]
+    for wid in workspace_ids:
+        async with session_factory() as session, session.begin():
+            await set_request_context(session, user_id=None, workspace_id=str(wid))
+            rows = list(
+                (
+                    await session.execute(
+                        select(TailorRun).where(
+                            TailorRun.workspace_id == wid,
+                            TailorRun.status.in_(("queued", "running")),
+                            TailorRun.updated_at < cutoff,
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            for run in rows:
+                run.status = "failed"
+                run.error = "worker_lost"
+                run.updated_at = now
+                reaped += 1
+    return reaped
 
 
 async def decide_tailor_change(
