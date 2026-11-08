@@ -40,6 +40,8 @@ async def start_tailor(
         base_version_id=body.base_version_id,
         run_structured=getattr(request.app.state, "run_structured", None),
         model_factory=getattr(request.app.state, "model_factory", None),
+        background=request.app.state.settings.environment in {"dev", "prod"},
+        session_factory=request.app.state.session_factory,
     )
 
 

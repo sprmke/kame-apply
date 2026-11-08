@@ -10,6 +10,7 @@ from pathlib import Path
 from runner.adapters.base import Adapter, get_adapter
 from runner.extract import page_has_captcha, page_has_password_input
 from runner.fill import click_next, is_submit_like, set_file_inputs
+from runner.loop import auto_submit_allowed
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 
@@ -93,3 +94,22 @@ async def test_resume_attaches_to_file_inputs(page, tmp_path):
     assert await set_file_inputs(page, str(resume)) == 1
     count = await page.evaluate("() => document.querySelector('#cv').files.length")
     assert count == 1
+
+
+def test_auto_submit_requires_the_api_policy_to_authorize_it():
+    assert auto_submit_allowed(
+        {"policy": {"allow_submit": True, "auto_submit": {"allow_submit": True}}}
+    )
+    assert not auto_submit_allowed({"policy": {"allow_submit": True}})
+    assert not auto_submit_allowed(
+        {"policy": {"allow_submit": False, "auto_submit": {"allow_submit": True}}}
+    )
+    assert not auto_submit_allowed(
+        {
+            "policy": {
+                "allow_submit": True,
+                "auto_submit": {"allow_submit": True},
+                "platform_no_auto_submit": True,
+            }
+        }
+    )

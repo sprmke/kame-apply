@@ -10,7 +10,7 @@ Ingest open jobs from compliant sources into a global pool, dedupe them, and lin
 | 2 boards | remotive, remoteok, himalayas, arbeitnow, jobicy, muse |
 | 3 career pages | career_jsonld (JobPosting JSON-LD) |
 
-Adapter package: `packages/py-core/kame_core/sources/`. Each adapter carries a terms note, descriptive UA, and fails closed on block signals (never evasion). Career-page crawling checks `robots.txt` first (`robots_allowed`, cached per host for an hour) and raises a block signal on a disallow. Conditional requests (ETag/Last-Modified) are supported by the HTTP client but not yet wired into the board poller.
+Adapter package: `packages/py-core/kame_core/sources/`. Each adapter carries a terms note, descriptive UA, and fails closed on block signals (never evasion). Career-page crawling checks `robots.txt` first (`robots_allowed`, cached per host for an hour) and raises a block signal on a disallow. Career-page boards also send a conditional `HEAD` with the stored ETag/Last-Modified and skip the fetch on `304`.
 
 ## Data model
 

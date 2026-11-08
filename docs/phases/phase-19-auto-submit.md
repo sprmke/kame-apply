@@ -6,7 +6,7 @@
 
 **Operator decision, not eng.** Enable live only if assist-mode data shows human approval time is the bottleneck **and** ≥ 98% fill accuracy with 0 incorrect eligibility answers over ≥ 100 runs. Otherwise keep improving assist mode.
 
-Engineering shipped the policy engine, dry-run, kill switches, and explain UI with `AUTO_SUBMIT_ENABLED=false` by default. Flipping live in prod still needs the gate above **and** `applywave` for the prod env change.
+Engineering shipped the policy engine, dry-run, kill switches, explain UI, and the live runner path with `AUTO_SUBMIT_ENABLED=false` by default. When the policy returns `allow_submit`, the API records `submit_approved` and an `apply_run.auto_submit_authorized` audit event; the runner clicks Submit only for that run and only when `platform_no_auto_submit` is false. Flipping live in prod still needs the gate above **and** `applywave` for the prod env change.
 
 ## Goal
 

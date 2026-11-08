@@ -80,6 +80,14 @@ async def _tick_all(app: Any, session_factory: Any, now: datetime) -> dict[str, 
     except Exception:
         log.exception("scheduler_reaper_failed")
 
+    # Fail tailor runs whose worker never finished (API restart/crash).
+    try:
+        from app.applications.service import reap_stale_tailor_runs
+
+        totals["stale_tailor"] = await reap_stale_tailor_runs(session_factory, now=now)
+    except Exception:
+        log.exception("scheduler_stale_tailor_failed")
+
     # Fail queued discovery runs whose worker never started (API restart/crash).
     try:
         from app.sources.service import reap_stale_discovery_runs

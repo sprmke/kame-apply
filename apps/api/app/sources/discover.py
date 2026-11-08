@@ -24,7 +24,7 @@ from app.sources.models import Source, TrackSource
 from app.tracks import models as track_models
 from app.tracks.criteria import criteria_from_dict
 from kame_core.sources import get_adapter
-from kame_core.sources.http import BlockSignalError
+from kame_core.sources.http import BlockSignalError, fetch_json
 
 logger = logging.getLogger(__name__)
 
@@ -194,6 +194,24 @@ async def run_discover_track(
                     fd = fixture_root / board.ats
                     if fd.is_dir():
                         kwargs["fixture_dir"] = fd
+                if board.ats == "career_jsonld" and fixture_root is None:
+                    # Cheap conditional HEAD for HTML career pages; skip the fetch when unchanged.
+                    _, cond_headers, cond_status = await fetch_json(
+                        board.url,
+                        method="HEAD",
+                        etag=board.etag,
+                        last_modified=board.last_modified,
+                    )
+                    if cond_status == 304:
+                        board.last_polled_at = datetime.now(UTC)
+                        progress["not_modified"] = int(progress.get("not_modified") or 0) + 1
+                        progress["boards_checked"] = int(progress.get("boards_checked") or 0) + 1
+                        await publish_progress()
+                        continue
+                    if cond_headers.get("etag"):
+                        board.etag = cond_headers["etag"][:255]
+                    if cond_headers.get("last-modified"):
+                        board.last_modified = cond_headers["last-modified"][:255]
                 adapter = get_adapter(board.ats, **kwargs)
                 seen: set[str] = set()
                 async for raw in adapter.discover({"slug": board.slug}):

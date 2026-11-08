@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 
 import pytest
@@ -247,3 +248,57 @@ async def test_applications_rls_wrong_workspace(env_t):
         assert int(n3) == 0
         await session.execute(text("RESET ROLE"))
     await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_tailor_background_returns_queued(env_t, monkeypatch):
+    """Deployed environments queue the run and finish it in a worker."""
+    from app.applications import service as app_service
+
+    c = env_t
+    me = await signup(c)
+    _p, _track, _job_id, tj_id, h = await _seed(c, me)
+    app = c._transport.app
+    called: list[dict] = []
+
+    async def fake_worker(*args, **kwargs):
+        called.append(kwargs)
+
+    monkeypatch.setattr(app_service, "_tailor_worker", fake_worker)
+    app.state.settings.environment = "dev"
+    try:
+        started = await c.post(f"/api/v1/track-jobs/{tj_id}/tailor", json={}, headers=h)
+    finally:
+        app.state.settings.environment = "test"
+    assert started.status_code == 201, started.text
+    assert started.json()["status"] == "queued"
+    await asyncio.sleep(0.05)
+    assert called
+
+
+@pytest.mark.asyncio
+async def test_reap_stale_tailor_runs(env_t):
+    from app.applications.service import reap_stale_tailor_runs
+
+    c = env_t
+    me = await signup(c)
+    _p, _track, _job_id, tj_id, h = await _seed(c, me)
+    started = await c.post(f"/api/v1/track-jobs/{tj_id}/tailor", json={}, headers=h)
+    run_id = started.json()["id"]
+    app = c._transport.app
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE tailor_runs SET status = 'running', "
+                "updated_at = now() - interval '20 minutes' WHERE id = CAST(:r AS uuid)"
+            ),
+            {"r": run_id},
+        )
+    await engine.dispose()
+
+    assert await reap_stale_tailor_runs(app.state.session_factory) >= 1
+    got = await c.get(f"/api/v1/tailor-runs/{run_id}", headers=h)
+    assert got.json()["status"] == "failed"
+    assert got.json()["error"] == "worker_lost"
