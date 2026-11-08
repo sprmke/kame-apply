@@ -97,9 +97,10 @@ def reset_politeness_state() -> None:
     _robots_cache.clear()
 
 
-# robots.txt cache: host -> (allowed_for_root, fetched_at). One fetch per host per hour.
+# robots.txt cache: host -> (robots_text, fetched_at). Rules are path-specific, so cache the
+# document, never a single allow/deny decision.
 _ROBOTS_TTL = 3600.0
-_robots_cache: dict[str, tuple[bool, float]] = {}
+_robots_cache: dict[str, tuple[str, float]] = {}
 _ROBOTS_UA = "KameApplyBot"
 
 
@@ -171,20 +172,20 @@ async def robots_allowed(url: str, *, request_timeout: float = 10.0) -> bool:
         return False
     cached = _robots_cache.get(host)
     if cached and time.monotonic() - cached[1] < _ROBOTS_TTL:
-        return cached[0]
+        return robots_allows_text(cached[0], url)
     scheme = parsed.scheme or "https"
     robots_url = f"{scheme}://{host}/robots.txt"
-    allowed = True
+    text = ""
     try:
         async with httpx.AsyncClient(follow_redirects=True, timeout=request_timeout) as client:
             resp = await client.get(robots_url, headers={"User-Agent": DEFAULT_UA})
         if resp.status_code == 200:
-            allowed = robots_allows_text(resp.text, url)
+            text = resp.text
         # 4xx/5xx: no usable rules; the fetch path still applies block detection.
     except Exception:
-        allowed = True
-    _robots_cache[host] = (allowed, time.monotonic())
-    return allowed
+        text = ""
+    _robots_cache[host] = (text, time.monotonic())
+    return robots_allows_text(text, url)
 
 
 def _is_block(status: int, body: str) -> bool:

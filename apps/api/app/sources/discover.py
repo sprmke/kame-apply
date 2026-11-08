@@ -243,11 +243,15 @@ async def run_discover_track(
                 )
                 board.last_polled_at = datetime.now(UTC)
             except BlockSignalError as exc:
-                source.circuit_open = True
+                # One blocked board must not disable every board on that ATS host.
+                board.status = "inactive"
+                board.meta = {
+                    **(board.meta or {}),
+                    "blocked": str(exc)[:300],
+                    "blocked_at": datetime.now(UTC).isoformat(),
+                }
                 source.block_signals = (source.block_signals or 0) + 1
-                source.last_error = str(exc)
-                source.last_error_at = datetime.now(UTC)
-                source.error_count = (source.error_count or 0) + 1
+                logger.warning("board_blocked ats=%s slug=%s", board.ats, board.slug)
             except Exception as exc:
                 source.last_error = str(exc)[:500]
                 source.last_error_at = datetime.now(UTC)

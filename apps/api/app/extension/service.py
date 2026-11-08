@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -33,6 +34,16 @@ from app.resumes.models import ResumeVersion
 from app.tracks import models as track_models
 
 _TOKEN_TTL_DAYS = 90
+
+
+def _clip_description(raw: str) -> str:
+    """Keep posting structure (headings, bullets) from JSON-LD for qualification extraction."""
+    text = re.sub(r"(?i)<li[^>]*>", "\n- ", raw or "")
+    text = re.sub(r"(?i)<br\s*/?>|</p>|</div>|</h[1-6]>", "\n", text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    lines = [line.strip() for line in text.splitlines()]
+    return "\n".join(line for line in lines if line)[:8000]
 
 
 def _redact(value: str | None, pii_class: str) -> str:
@@ -226,6 +237,7 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
 
     title = (body.title or "").strip() or "Untitled job"
     company = (body.company or "").strip()
+    structured_description = ""
     if body.json_ld:
         title = str(body.json_ld.get("title") or title)
         org = body.json_ld.get("hiringOrganization") or {}
@@ -233,6 +245,8 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
             company = str(org.get("name") or company)
         elif isinstance(org, str):
             company = org or company
+        # JSON-LD is the posting's own structured data, unlike arbitrary page prose.
+        structured_description = _clip_description(str(body.json_ld.get("description") or ""))
 
     platform = (body.platform or detect_platform(url)).lower()
     # Phase 13: a clip captures the URL, title, and company only. Page prose is never persisted
@@ -250,7 +264,7 @@ async def clip_job(ctx: WorkspaceContext, body: s.ClipBody) -> s.ClipResult:
         job = Job(
             title=title[:500],
             normalized_title=normalize_title(title),
-            description_text=f"{title} at {company}".strip(),
+            description_text=structured_description or f"{title} at {company}".strip(),
             description_html="",
             content_hash=content_hash,
             simhash=0,

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import uuid
 from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.companies.ats_detect import detect_ats_url
 from app.companies.seed import seed_directory
@@ -327,3 +329,110 @@ async def test_run_now_can_return_before_discovery_finishes(env_disc, monkeypatc
     assert started.json()["status"] == "queued"
     await asyncio.sleep(0.05)
     assert called
+
+
+@pytest.mark.asyncio
+async def test_background_discovery_commits_and_finishes(env_disc):
+    """The deployed worker path: run in a separate session, commit progress, finish the run."""
+    from app.companies.seed import seed_sources
+    from app.core.rls import set_request_context
+    from app.core.security import WorkspaceContext
+    from app.sources import service as src_service
+
+    c, app = env_disc
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await _profile(c, me)
+    engine = create_async_engine(TEST_OWNER_URL)
+    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with factory() as session:
+        await seed_sources(session)
+        await session.commit()
+    await engine.dispose()
+
+    track = await c.post(
+        "/api/v1/tracks",
+        json={
+            "profile_id": p["id"],
+            "name": "Background worker",
+            "nl_text": "engineer",
+            "criteria": {
+                "schema_version": 1,
+                "titles": [{"title": "Engineer", "synonyms": [], "exclude": False}],
+            },
+        },
+        headers=h,
+    )
+    assert track.status_code == 201, track.text
+    track_id = uuid.UUID(track.json()["id"])
+
+    async with app.state.session_factory() as session:
+        await set_request_context(session, user_id=str(me.id), workspace_id=str(me.personal))
+        ctx = WorkspaceContext(
+            session=session,
+            user_id=uuid.UUID(me.id),
+            workspace_id=uuid.UUID(me.personal),
+            role="owner",
+            request_id=None,
+        )
+        run = await src_service.start_discovery(
+            ctx,
+            track_id,
+            fixture_root=FIXTURES,
+            background=True,
+            session_factory=app.state.session_factory,
+        )
+        run_id = run.id
+        assert run.status == "queued"
+
+    body = {}
+    for _ in range(80):
+        await asyncio.sleep(0.25)
+        response = await c.get(f"/api/v1/discovery-runs/{run_id}", headers=h)
+        assert response.status_code == 200, response.text
+        body = response.json()
+        if body["status"] not in {"queued", "running"}:
+            break
+    assert body.get("status") == "succeeded", body
+    assert body["progress"]["boards_checked"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_stale_queued_discovery_runs_fail(env_disc):
+    from app.sources.service import reap_stale_discovery_runs
+
+    c, app = env_disc
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await _profile(c, me)
+    track = await c.post(
+        "/api/v1/tracks",
+        json={
+            "profile_id": p["id"],
+            "name": "Stale",
+            "nl_text": "engineer",
+            "criteria": {
+                "schema_version": 1,
+                "titles": [{"title": "Engineer", "synonyms": [], "exclude": False}],
+            },
+        },
+        headers=h,
+    )
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        run_id = (
+            await conn.execute(
+                text(
+                    "INSERT INTO discovery_runs (workspace_id, track_id, status, trigger, "
+                    "progress, created_at) VALUES (CAST(:w AS uuid), CAST(:t AS uuid), 'queued', "
+                    "'run_now', '{}', now() - interval '20 minutes') RETURNING id"
+                ),
+                {"w": me.personal, "t": track.json()["id"]},
+            )
+        ).scalar_one()
+    await engine.dispose()
+
+    assert await reap_stale_discovery_runs(app.state.session_factory) >= 1
+    got = await c.get(f"/api/v1/discovery-runs/{run_id}", headers=h)
+    assert got.json()["status"] == "failed"
+    assert got.json()["error"] == "worker_lost"

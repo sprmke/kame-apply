@@ -68,7 +68,15 @@ async def _track(c, me):
 
 
 @pytest.mark.asyncio
-async def test_schedule_crud_and_tick(env_s):
+async def test_schedule_crud_and_tick(env_s, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.schedules import chain
+
+    async def fake_chain(ctx, track_id, **kwargs):
+        return SimpleNamespace(id=uuid.uuid4(), status="succeeded")
+
+    monkeypatch.setattr(chain, "run_automation_chain", fake_chain)
     c = env_s
     me = await signup(c)
     h, track = await _track(c, me)

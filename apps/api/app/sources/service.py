@@ -7,7 +7,7 @@ import logging
 import uuid
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.audit import service as audit
 from app.core.errors import AppError
@@ -19,6 +19,8 @@ from app.sources.models import Source, TrackSource
 from app.tracks import models as track_models
 
 logger = logging.getLogger(__name__)
+
+STALE_QUEUED_SECONDS = 900
 
 # Keep strong references to background discovery tasks so they are not garbage collected.
 _BACKGROUND_TASKS: set[asyncio.Task] = set()
@@ -236,6 +238,56 @@ async def start_discovery(
     await run_discover_track(ctx, track_id, run_id=run.id, fixture_root=fixture_root, board_limit=8)
     await ctx.session.refresh(run)
     return run
+
+
+async def reap_stale_discovery_runs(session_factory, *, now=None) -> int:
+    """Fail queued runs whose background worker never started (API restart or crash)."""
+    from datetime import UTC, datetime, timedelta
+
+    now = now or datetime.now(UTC)
+    cutoff = now - timedelta(seconds=STALE_QUEUED_SECONDS)
+    reaped = 0
+    async with session_factory() as session:
+        workspace_ids = [
+            row[0] for row in (await session.execute(text("SELECT scheduler_workspace_ids()")))
+        ]
+    for wid in workspace_ids:
+        async with session_factory() as session, session.begin():
+            await set_request_context(session, user_id=None, workspace_id=str(wid))
+            rows = list(
+                (
+                    await session.execute(
+                        select(DiscoveryRun).where(
+                            DiscoveryRun.workspace_id == wid,
+                            DiscoveryRun.status == "queued",
+                            DiscoveryRun.created_at < cutoff,
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            for run in rows:
+                run.status = "failed"
+                run.error = "worker_lost"
+                run.finished_at = now
+                worker_ctx = WorkspaceContext(
+                    session=session,
+                    user_id=uuid.UUID(int=0),
+                    workspace_id=wid,
+                    role="system",
+                    request_id=None,
+                )
+                await audit.record(
+                    worker_ctx,
+                    action="discovery.run_failed",
+                    target_type="discovery_run",
+                    target_id=str(run.id),
+                    after={"reason": "worker_lost"},
+                    actor_type="system",
+                )
+                reaped += 1
+    return reaped
 
 
 async def _run_discovery_background(

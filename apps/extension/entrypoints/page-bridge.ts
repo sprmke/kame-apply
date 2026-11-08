@@ -13,6 +13,22 @@ export default defineUnlistedScript(() => {
   if (w.__kamePageBridge) return;
   w.__kamePageBridge = true;
 
+  // Clicking the side panel can move focus out of the page; remember the last form field.
+  let lastFocused: HTMLElement | null = null;
+  const isField = (el: EventTarget | null): el is HTMLElement =>
+    el instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
+  document.addEventListener(
+    "focusin",
+    (e) => {
+      if (isField(e.target)) lastFocused = e.target;
+    },
+    true,
+  );
+  const focusedField = (): HTMLElement | null =>
+    isField(document.activeElement) ? document.activeElement : lastFocused;
+  const fieldId = (el: HTMLElement | null): string =>
+    el ? el.id || el.getAttribute("name") || "" : "";
+
   browser.runtime.onMessage.addListener((msg) => {
     if (!msg || typeof msg !== "object") return;
     const type = (msg as { type?: string }).type;
@@ -27,19 +43,26 @@ export default defineUnlistedScript(() => {
       });
     }
     if (type === "kame.fill") {
-      const instructions = ((msg as { instructions?: FillInstruction[] }).instructions ||
+      const raw = ((msg as { instructions?: FillInstruction[] }).instructions ||
         []) as FillInstruction[];
+      const target = fieldId(focusedField());
+      const instructions = raw.map((instr) =>
+        instr.field_id === "focused" && target ? { ...instr, field_id: target } : instr,
+      );
       return Promise.resolve(applyInstructions(instructions));
     }
     if (type === "kame.focused") {
-      const el = document.activeElement as HTMLElement | null;
-      if (!el) return Promise.resolve({ question: "" });
+      const el = focusedField();
+      if (!el) return Promise.resolve({ question: "", field_id: "" });
       const label =
         el.getAttribute("aria-label") ||
         (el as HTMLInputElement).placeholder ||
         el.closest("label")?.textContent ||
         "";
-      return Promise.resolve({ question: String(label).trim().slice(0, 500) });
+      return Promise.resolve({
+        question: String(label).trim().slice(0, 500),
+        field_id: fieldId(el),
+      });
     }
     return undefined;
   });

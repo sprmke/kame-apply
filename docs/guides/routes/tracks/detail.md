@@ -11,7 +11,7 @@
 
 ## Overview
 
-Edit Track criteria via natural language (compile + optional apply), chips (must-skills, no agencies), or More filters (work mode, location, region, salary, keywords, companies). **Run now** starts discovery and lists matched jobs (rule-based until Phase 6).
+Edit Track criteria via natural language (compile + optional apply), chips (must-skills, no agencies), or More filters (work mode, location, region, salary, keywords, companies). **Run now** starts discovery and lists matched jobs. In deployed environments the run is queued and the page polls progress until it finishes; in local dev and tests it runs inline.
 
 ## User-facing knowledge
 

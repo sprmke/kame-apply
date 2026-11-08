@@ -80,6 +80,14 @@ async def _tick_all(app: Any, session_factory: Any, now: datetime) -> dict[str, 
     except Exception:
         log.exception("scheduler_reaper_failed")
 
+    # Fail queued discovery runs whose worker never started (API restart/crash).
+    try:
+        from app.sources.service import reap_stale_discovery_runs
+
+        totals["stale_discovery"] = await reap_stale_discovery_runs(session_factory, now=now)
+    except Exception:
+        log.exception("scheduler_stale_discovery_failed")
+
     # Hard-remove workspaces past the 30-day recovery window once a day.
     if now.hour == 3 and now.minute == 0:
         try:

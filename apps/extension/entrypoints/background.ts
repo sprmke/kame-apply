@@ -169,7 +169,7 @@ export default defineBackground(() => {
             type: "kame.fill",
             instructions: [
               {
-                field_id: "focused",
+                field_id: focused?.field_id || "focused",
                 action: "fill",
                 value: draft.draft,
                 badge: "Draft",

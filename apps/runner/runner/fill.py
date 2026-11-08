@@ -72,18 +72,36 @@ async def _control_label(loc) -> str:
 
 
 async def set_file_inputs(page: Page, path: str) -> int:
-    """Attach the accepted resume to visible file inputs."""
-    attached = 0
+    """Attach the accepted resume to the resume/CV input, else the first visible file input."""
     inputs = page.locator("input[type=file]")
+    fallback = None
     for i in range(await inputs.count()):
         el = inputs.nth(i)
         try:
-            if await el.is_visible():
+            if not await el.is_visible():
+                continue
+            label = str(
+                await el.evaluate(
+                    """el => (
+                        (el.labels && el.labels[0] && el.labels[0].innerText) ||
+                        el.getAttribute('aria-label') || el.name || ''
+                    ).toLowerCase()"""
+                )
+            )
+            if fallback is None:
+                fallback = el
+            if "resume" in label or "cv" in label:
                 await el.set_input_files(path)
-                attached += 1
+                return 1
         except Exception:  # noqa: S112 — try the next input
             continue
-    return attached
+    if fallback is not None:
+        try:
+            await fallback.set_input_files(path)
+            return 1
+        except Exception:
+            return 0
+    return 0
 
 
 async def click_first(page: Page, selectors: tuple[str, ...]) -> bool:

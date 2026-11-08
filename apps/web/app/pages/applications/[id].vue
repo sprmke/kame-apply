@@ -68,6 +68,7 @@ const notes = ref("");
 const noteForStatus = ref("");
 const savingNotes = ref(false);
 const startingRunner = ref(false);
+const runnerWarnings = ref<string[]>([]);
 const resolving = ref<string | null>(null);
 const typedValue = ref("");
 
@@ -218,11 +219,13 @@ async function startRunner() {
   if (!app.value) return;
   startingRunner.value = true;
   try {
-    await client.post({
+    const { data } = await client.post({
       url: "/api/v1/runs/runner/start",
       body: { application_id: app.value.id, allow_submit: true },
       throwOnError: true,
     });
+    runnerWarnings.value =
+      (data as { policy?: { warnings?: string[] } } | undefined)?.policy?.warnings ?? [];
     await qc.invalidateQueries({ queryKey: ["apply-runs", ws.currentId, appId.value] });
     await qc.invalidateQueries({ queryKey: ["application", ws.currentId, appId.value] });
   } catch (e) {
@@ -465,6 +468,9 @@ async function draftReferral(contactId: string) {
             >
           </div>
         </div>
+        <p v-if="runnerWarnings.length" class="text-sm text-saffron-600">
+          {{ runnerWarnings.join(" ") }}
+        </p>
         <div v-if="activeRun" class="flex flex-wrap items-center gap-2 text-sm">
           <FnChip>{{ activeRun.status }}</FnChip>
           <span class="font-mono text-[0.6875rem] text-ink-600">{{ activeRun.ats }}</span>
