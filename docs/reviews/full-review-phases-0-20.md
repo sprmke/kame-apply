@@ -95,11 +95,11 @@ The extension accepted any `apiBase` from a `kame.connect` message; a look-alike
 ## Follow-up pass (2026-11-04)
 
 - Tailoring: each proposal is a `resume_changes` row with Keep/Remove; the draft is rebuilt from the base resume and the Lens is recomputed.
-- Discovery: run-now is queued in deployed environments, the worker commits progress per board/source, the Track page polls until done, and Layer-2 feeds close missed jobs. Career pages check `robots.txt`.
+- Discovery: run-now is queued in deployed environments, the worker commits progress per board/source, the Track page polls until done, stale queued runs fail with `worker_lost`, and Layer-2 feeds close missed jobs. Career pages check `robots.txt`. Clips keep the posting's JSON-LD description for qualification extraction.
 - Runner: image and Compose service, `deploy:runner:*`, heartbeat reaper (requeue then fail), resume attachment from a signed URL, blurred screenshots stored in R2, and a deploy health check.
 - LLM: `resume_tailor_review.v1` adds advisory notes; the deterministic Lens stays authoritative.
 - Operations: the minute scheduler takes a Postgres advisory lock, reaps lost runs, and hard-deletes workspaces after 30 days. Track duplicate copies source choices and settings. Runner preflight warns on the company cap instead of blocking.
-- Extension: an Answer button inserts a drafted answer into the focused field; the clip risk banner reads `job_risk`.
+- Extension: an Answer button inserts a drafted answer into the focused field, remembering the last focused field when the side panel takes focus; the clip risk banner reads `job_risk`.
 
 ## Known gaps (not fixed in this pass)
 
@@ -118,7 +118,7 @@ These are real and documented in the phase files rather than silently claimed do
 
 ```bash
 pnpm run ci:quality      # passed: tooling, lint, format, types, build, 520 API tests, 12 runner tests, api-client drift, 13 web tests, 101 evals
-pnpm exec playwright test e2e/shell.spec.ts e2e/career-profile.spec.ts e2e/tracks.spec.ts   # 12 passed
+pnpm exec playwright test   # 39 passed, 1 skipped (capture-screens)
 ```
 
 The earlier e2e run failed only because a stale API process without `AUTH_RATE_LIMIT_ENABLED=false` was reused by Playwright; with a clean server all 12 core specs pass.

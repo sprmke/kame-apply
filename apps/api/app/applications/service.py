@@ -334,7 +334,7 @@ async def decide_tailor_change(
     run = await ctx.session.get(TailorRun, run_id)
     if run is None or run.workspace_id != ctx.workspace_id:
         raise AppError("not_found", "Tailor run not found", 404)
-    if run.status not in {"ready", "accepted"}:
+    if run.status != "ready":
         raise AppError("bad_request", "Tailor run is not ready", 422)
     change = await ctx.session.get(ResumeChange, change_id)
     if (

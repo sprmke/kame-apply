@@ -131,6 +131,35 @@ async def test_extension_token_clip_plan_and_policy(env):
     assert again.status_code == 201, again.text
     assert again.json()["risk_level"] == "yellow"
 
+    # JSON-LD is the posting's structured data; its description feeds qualification extraction.
+    structured = await c.post(
+        f"{E}/clip",
+        json={
+            "url": "https://boards.greenhouse.io/acme/jobs/structured",
+            "title": "Engineer",
+            "company": "Acme",
+            "track_id": tid,
+            "platform": "greenhouse",
+            "json_ld": {
+                "@type": "JobPosting",
+                "title": "Engineer",
+                "description": "<p>Requirements: Python and FastAPI.</p>",
+            },
+        },
+        headers=ext_h,
+    )
+    assert structured.status_code == 201, structured.text
+    engine = create_async_engine(TEST_OWNER_URL)
+    async with engine.begin() as conn:
+        stored = (
+            await conn.execute(
+                text("SELECT description_text FROM jobs WHERE id = CAST(:j AS uuid)"),
+                {"j": structured.json()["job_id"]},
+            )
+        ).scalar_one()
+    await engine.dispose()
+    assert "Python" in stored
+
     # Page prose sent by a client is ignored: a clip stores URL + title + company only.
     engine = create_async_engine(TEST_OWNER_URL)
     async with engine.begin() as conn:

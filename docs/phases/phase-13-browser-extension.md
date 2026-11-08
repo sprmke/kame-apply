@@ -9,7 +9,7 @@ In the user's own browser (where they're logged in to LinkedIn, JobStreet, Indee
 ## Acceptance scenarios
 
 1. Install → connect to the account (one click from Settings → Integrations) → side panel shows the active workspace/Track.
-2. On a LinkedIn job page → **Save to Track** → only URL + title + company are captured; the app resolves the same job on the employer's ATS and ingests it from there (falls back to the minimal record if not found). See [`review/plan-critique-and-risks.md`](../review/plan-critique-and-risks.md) §2.1.
+2. On a LinkedIn job page → **Save to Track** → URL, title, company, and the posting's own JSON-LD description are captured (arbitrary page prose is ignored); the app resolves the same job on the employer's ATS and ingests it from there (falls back to the minimal record if not found). See [`review/plan-critique-and-risks.md`](../review/plan-critique-and-risks.md) §2.1.
 3. On a Greenhouse application → **Autofill** → standard fields filled, the tailored resume (if one exists for this job) uploaded, custom questions filled from the answer bank or drafted (drafts highlighted for review), sensitive fields untouched and marked, AI-restricted questions left blank with a note. Each filled field shows a small source badge.
 4. **Per-platform policy table** (settings): LinkedIn Easy Apply / Indeed / JobStreet Quick Apply autofill is **off by default**. When the workspace owner opts in (explicit terms acknowledgment), the extension fills only on user click, one step at a time, and never clicks Next or Submit on those platforms. Applying on the employer ATS is suggested when the job exists there.
 5. After submission, the confirmation page is detected (or the user clicks "I applied") → application logged with resume version and answers.

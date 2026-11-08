@@ -23,7 +23,7 @@ Application dossier: status control, **Apply with runner** (queues a cloud/local
 
 ## User-facing knowledge
 
-Change status from the select. Use **Apply with runner** when the application is ready and a resume is attached. Resolve checkpoints (continue, skip, type a sensitive value once, approve submit) from this page or Needs you. **Continue in browser** hands the URL to you/the extension.
+Change status from the select. Use **Apply with runner** when the application is ready and a resume is attached; if the per-company cap is reached the page shows the preflight warning and still allows the run. Resolve checkpoints (continue, skip, type a sensitive value once, approve submit) from this page or Needs you. **Continue in browser** hands the URL to you/the extension.
 
 ## API reference
 

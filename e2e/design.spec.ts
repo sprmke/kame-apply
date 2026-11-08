@@ -32,7 +32,7 @@ test("overlays open, trap focus, and close on Escape", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Dialog", exact: true })).toBeFocused();
 
   await page.getByRole("button", { name: "Toast" }).click();
-  await expect(page.getByText("Your change is live")).toBeVisible();
+  await expect(page.getByText("Your change is live", { exact: true })).toBeVisible();
 });
 
 test("pencil text turns to ink when accepted", async ({ page }) => {
