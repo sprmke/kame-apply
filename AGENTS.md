@@ -93,11 +93,11 @@ When you implement or materially change behavior (features, routes, validation, 
 | Phase progress                                  | phase file checklist + `docs/phases/README.md` status table       |
 | Rules agents rely on                            | this file, if the old text would mislead                          |
 
-Trivial fixes (typos, behavior-neutral renames) need no doc change. Index: `.cursor/rules/README.md` · `.Codex/README.md` · `.opencode/README.md`.
+Trivial fixes (typos, behavior-neutral renames) need no doc change. Index: `.cursor/rules/README.md` · `.codex/README.md` · `.opencode/README.md`.
 
 ## Agent tooling
 
-Skills in `.agent/skills/` (canonical; symlinked into `.Codex/skills/` and `.cursor/skills/`; index in `.agent/skills/README.md`). Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`. Commands: `/ka-*` (start with `/ka-help`) and `/workflow-*`. MCP: `context7`, `markitdown`, `playwright`, `postgres` (local read-only role only; `.mcp.json`). Hooks: shell guard, shipped-migration guard, formatter, stack/evasion check, docs-sync reminders. Superpowers is **opt-in only** (`superpowers-opt-in.mdc`).
+Skills in `.agent/skills/` (canonical; symlinked into `.agents/skills/` and `.cursor/skills/`; index in `.agent/skills/README.md`). Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`. Commands: `/ka-*` (start with `/ka-help`) and `/workflow-*`. MCP: `context7`, `markitdown`, `playwright`, `postgres` (local read-only role only; `.mcp.json`). Hooks: shell guard, shipped-migration guard, formatter, stack/evasion check, docs-sync reminders. Superpowers is **opt-in only** (`superpowers-opt-in.mdc`).
 
 ## Don'ts
 
@@ -109,3 +109,19 @@ Skills in `.agent/skills/` (canonical; symlinked into `.Codex/skills/` and `.cur
 - Sensitive-class values in the profile, logs, prompts, or fixtures.
 - **Production deploys or migrations without unlock**: never run or recommend `deploy:*:prod`, `migrate:prod`, or any write against a hosted `DATABASE_URL` unless the user said **`applywave`** in the same message (`no-prod-deploy.mdc`; the shell hook enforces it).
 - AI attribution in commits or PR text (`git-commits.mdc`).
+
+## Codex compatibility
+
+Before working, read [.codex/README.md](.codex/README.md). It lists this project’s always-on Cursor rules and scoped rules to read for the affected files. Codex skills are discovered in `.agents/skills`; specialist definitions are in `.codex/agents`. Existing Cursor/Claude model aliases are not Codex model settings. Use available Codex tools and preserve project-specific architecture and authorization rules.
+
+Superpowers workflows and subagent delegation remain opt-in; do not start them automatically. Run `python3 .codex/sync.py` after changing project skills, commands or agent definitions. Review/trust hooks through Codex before relying on their enforcement. This repository setup is independent of the hourly job-search task in the personal chat.
+
+<!-- global-agent-skills -->
+
+## Global agent skills
+
+This machine has 159 shared skills in `~/.agents/skill-library` (Claude Code, Cursor,
+Codex and OpenCode all read them). Only five behaviour skills are always visible.
+For anything else, open `~/.agents/skill-library/agent-skills-index/SKILL.md`, find the
+skill that fits, then read `~/.agents/skill-library/<skill>/SKILL.md`.
+Manage with `~/.agents/bin/agent-stack.sh`. Repo skills and rules always win.

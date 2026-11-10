@@ -53,3 +53,6 @@ browser-profiles/
 .claude/worktrees/
 .claude/.superpowers-lean
 .fallow/
+
+# Nuxt 4 SPA output symlink
+apps/web/dist

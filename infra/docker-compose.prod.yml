@@ -6,6 +6,8 @@ services:
   caddy:
     image: caddy:2.10-alpine
     restart: unless-stopped
+    environment:
+      API_HOST: ${API_HOST:-api.kame.apply}
     ports:
       - "80:80"
       - "443:443"
@@ -24,8 +26,8 @@ services:
       - ${KAME_ENV_FILE:-/etc/kame-apply/api.env}
     # Trust only the Compose/Caddy network when reading X-Forwarded-*.
     environment:
-      ENVIRONMENT: prod
-      COOKIE_SECURE: "true"
+      ENVIRONMENT: ${KAME_ENVIRONMENT:-prod}
+      COOKIE_SECURE: ${KAME_COOKIE_SECURE:-true}
       TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
     depends_on:
       postgres:
@@ -68,7 +70,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-kame_apply}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
       - ./postgres/prod/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
     healthcheck:

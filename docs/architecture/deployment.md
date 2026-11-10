@@ -57,15 +57,16 @@ Oracle Always Free A1 (fallback Hetzner CAX11) running Docker Compose behind Cad
 | Nightly dump → R2 | `infra/backup/backup-loop.sh` (14 daily + 8 weekly). Requires `MIGRATION_DATABASE_URL` (owner role; the app role dumps empty under RLS), verifies the dump with `pg_restore --list`, prunes old objects, and exits after three consecutive failures so the supervisor alerts. |
 | Host harden | `infra/host/harden.sh` (ufw, fail2ban, unattended-upgrades, log rotate) |
 | API image | `apps/api/Dockerfile` |
-| Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` (set `KAME_REGISTRY` to push, otherwise the image is shipped over SSH; `DEPLOY_HEALTH_URL` adds a post-deploy check) |
+| Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` (set `KAME_REGISTRY` to push, otherwise the image is shipped over SSH; `DEPLOY_HEALTH_URL` adds a post-deploy check; dev sets `KAME_ENVIRONMENT=dev`, prod defaults to `prod`) |
 | Deploy runner | `pnpm run deploy:runner:dev\|prod` → `scripts/deploy/deploy-runner.sh`; secrets in `/etc/kame-apply/runner.env` (`KAME_RUNNER_TOKEN`, `KAME_RUNNER_WORKSPACE_ID`) |
-| Deploy web | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages) |
-| Migrate | `pnpm run migrate:dev\|prod` (prod runs `backup:db:prod` first) |
+| Deploy web | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages). Requires `NUXT_PUBLIC_API_BASE`; `CF_PAGES_PROJECT` publishes with wrangler. |
+| Database roles | `pnpm run db:roles:host:dev\|prod` creates the RLS-restricted `kame_apply_app` role on the host (the prod Compose no longer mounts the local init SQL). |
+| Migrate | `pnpm run migrate:dev\|prod` against a reachable database URL, or `pnpm run migrate:host:dev\|prod` to run Alembic inside the API container over SSH (the Compose database is not exposed). Prod needs `applywave`. |
 | Scheduler | `SCHEDULER_ENABLED` (default true). The API process runs the minute tick under a Postgres advisory lock (a second worker skips), reaps lost runs, and purges workspaces past the 30-day window at 03:00. |
 | Backup / restore | `backup:db:*`, `rollback:db:*`, `scripts/deploy/rollback-api.sh` |
 | Local restore drill | `pnpm run restore:drill:local` |
 
-Prod deploys and remote migrations require the unlock word in the same command (`APPLYWAVE=applywave`, see `no-prod-deploy.mdc`). Spike 2 ([`spikes/02-oracle-always-free.md`](./spikes/02-oracle-always-free.md)) is the gate for VM sizing.
+Prod deploys and remote migrations require the unlock word in the same command (`APPLYWAVE=applywave`, see `no-prod-deploy.mdc`). Spike 2 ([`spikes/02-oracle-always-free.md`](./spikes/02-oracle-always-free.md)) is the gate for VM sizing. The complete variable list and first-deploy runbook are in [`configuration.md`](./configuration.md).
 
 **Web headers:** Nuxt `routeRules` set CSP, HSTS-ready frame/options, nosniff. API middleware adds the same class of headers; HSTS when `X-Forwarded-Proto: https`.
 

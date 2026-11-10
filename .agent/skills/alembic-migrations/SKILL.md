@@ -1,6 +1,6 @@
 ---
 name: alembic-migrations
-description: Alembic migration habits for Kame Apply: new file only, RLS on tenant tables, indexes, extensions.
+description: "Alembic migration habits for Kame Apply: new file only, RLS on tenant tables, indexes, extensions."
 ---
 
 # Alembic migrations

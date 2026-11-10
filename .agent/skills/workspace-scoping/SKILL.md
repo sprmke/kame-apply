@@ -1,6 +1,6 @@
 ---
 name: workspace-scoping
-description: Multi-tenancy rules: workspace_id on every tenant row, RLS policies, WorkspaceContext, cross-tenant tests. Use for any new table, query, or endpoint.
+description: "Multi-tenancy rules: workspace_id on every tenant row, RLS policies, WorkspaceContext, cross-tenant tests. Use for any new table, query, or endpoint."
 ---
 
 # Workspace scoping

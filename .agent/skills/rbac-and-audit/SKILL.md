@@ -1,6 +1,6 @@
 ---
 name: rbac-and-audit
-description: RBAC and audit decision habit for every new capability: workspace roles (owner/admin/member/viewer) plus activity_log.
+description: "RBAC and audit decision habit for every new capability: workspace roles (owner/admin/member/viewer) plus activity_log."
 ---
 
 # RBAC and audit

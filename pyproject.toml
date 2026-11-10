@@ -20,7 +20,7 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-extend-exclude = ["apps/api/migrations/versions", "spikes"]
+extend-exclude = ["apps/api/migrations/versions", "spikes", ".codex", ".agents", ".opencode", ".claude", ".cursor", ".vscode"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "RUF"]

@@ -51,7 +51,11 @@
     "check:token-contrast": "node scripts/dev/check-token-contrast.mjs",
     "test:e2e": "playwright test",
     "check:design-slop": "bash scripts/dev/check-design-slop.sh",
-    "deploy:runner:dev": "bash scripts/deploy/deploy-runner.sh dev"
+    "deploy:runner:dev": "bash scripts/deploy/deploy-runner.sh dev",
+    "migrate:host:dev": "bash scripts/deploy/migrate-host.sh dev",
+    "migrate:host:prod": "bash scripts/deploy/migrate-host.sh prod",
+    "db:roles:host:dev": "bash scripts/deploy/ensure-host-db-roles.sh dev",
+    "db:roles:host:prod": "bash scripts/deploy/ensure-host-db-roles.sh prod"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

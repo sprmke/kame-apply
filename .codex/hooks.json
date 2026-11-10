@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/guard-shell.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/guard-shell.sh",
             "timeout": 5
           }
         ]
@@ -16,17 +16,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/guard-shipped-migrations.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/guard-shipped-migrations.sh",
             "timeout": 5
           }
         ]
       },
       {
-        "matcher": "Task",
+        "matcher": "Task|Agent|spawn_agent",
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/guard-superpowers-subagents.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/guard-superpowers-subagents.sh",
             "timeout": 5
           }
         ]
@@ -38,17 +38,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/format-edited-file.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/format-edited-file.sh",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/check-stack-terminology.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/check-stack-terminology.sh",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/remind-docs-on-code-edit.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/remind-docs-on-code-edit.sh",
             "timeout": 5
           }
         ]
@@ -59,22 +59,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/session-superpowers-opt-in.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/session-superpowers-opt-in.sh",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/session-ai-tooling-sync.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/session-ai-tooling-sync.sh",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/session-docs-sync-reminder.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/session-docs-sync-reminder.sh",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/session-workflow-in-progress.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/session-workflow-in-progress.sh",
             "timeout": 5
           }
         ]
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/superpowers-lean-mode.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/superpowers-lean-mode.sh",
             "timeout": 5
           }
         ]
@@ -96,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "'/Users/michaelmanlulu/Projects/personal-projects/kame-apply/.codex/hooks/superpowers-lean-cleanup.sh'",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/compat_hook.py\" .codex/hooks/superpowers-lean-cleanup.sh",
             "timeout": 5
           }
         ]

@@ -1,6 +1,6 @@
 ---
 name: ats-adapter
-description: How to add an ATS form adapter for the apply engine: detection, step model, field map, widgets, fixtures from saved HTML, checkpoint triggers. Phases 13/15.
+description: "How to add an ATS form adapter for the apply engine: detection, step model, field map, widgets, fixtures from saved HTML, checkpoint triggers. Phases 13/15."
 ---
 
 # ATS adapter

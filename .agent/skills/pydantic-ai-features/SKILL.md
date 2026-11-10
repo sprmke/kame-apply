@@ -1,6 +1,6 @@
 ---
 name: pydantic-ai-features
-description: Building AI features with PydanticAI: prompt registry, structured outputs, provider router, budgets, SSE streaming, eval hooks.
+description: "Building AI features with PydanticAI: prompt registry, structured outputs, provider router, budgets, SSE streaming, eval hooks."
 ---
 
 # PydanticAI features

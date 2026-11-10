@@ -1,0 +1,234 @@
+{
+  "skills": [
+    "accessibility",
+    "ai-evals",
+    "alembic-migrations",
+    "ats-adapter",
+    "audit-logging",
+    "dbos-workflows",
+    "design-review",
+    "docs-first",
+    "documentation-maintenance",
+    "fastapi-jwt-auth",
+    "fastapi-stack",
+    "field-notes-components",
+    "fix-migration-issues",
+    "git-commits",
+    "human-copy",
+    "karpathy-guidelines",
+    "live-view",
+    "minimal-ui-copy",
+    "pdf-generation",
+    "pgvector-search",
+    "pydantic-ai-features",
+    "rbac-and-audit",
+    "route-guides",
+    "self-review",
+    "source-adapter",
+    "source-command-ka-check-before-pr",
+    "source-command-ka-create-new-ticket",
+    "source-command-ka-design-review",
+    "source-command-ka-help",
+    "source-command-ka-pull-new-changes",
+    "source-command-ka-start-app",
+    "source-command-ka-start-work",
+    "source-command-ka-submit-for-review",
+    "source-command-workflow-done",
+    "source-command-workflow-start",
+    "source-command-workflow-wont-do",
+    "tanstack-table-vue",
+    "vee-validate-forms",
+    "vue-query-data",
+    "workflow",
+    "workspace-scoping",
+    "wxt-extension"
+  ],
+  "commands": {
+    "ka-check-before-pr": ".cursor/commands/ka-check-before-pr.md",
+    "ka-create-new-ticket": ".cursor/commands/ka-create-new-ticket.md",
+    "ka-design-review": ".cursor/commands/ka-design-review.md",
+    "ka-help": ".cursor/commands/ka-help.md",
+    "ka-pull-new-changes": ".cursor/commands/ka-pull-new-changes.md",
+    "ka-start-app": ".cursor/commands/ka-start-app.md",
+    "ka-start-work": ".cursor/commands/ka-start-work.md",
+    "ka-submit-for-review": ".cursor/commands/ka-submit-for-review.md",
+    "workflow-done": ".cursor/commands/workflow-done.md",
+    "workflow-start": ".cursor/commands/workflow-start.md",
+    "workflow-wont-do": ".cursor/commands/workflow-wont-do.md"
+  },
+  "agents": [
+    "verifier.toml",
+    "design-reviewer.toml",
+    "security-auditor.toml",
+    "debugger.toml",
+    "test-runner.toml"
+  ],
+  "rules": [
+    {
+      "path": ".cursor/rules/ai-usage.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/anti-slop-design.mdc",
+      "always": false,
+      "scope": "- apps/web/**/*.vue"
+    },
+    {
+      "path": ".cursor/rules/apply-engine.mdc",
+      "always": false,
+      "scope": "- apps/api/app/sources/**"
+    },
+    {
+      "path": ".cursor/rules/audit-logging.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/dbos-workflows.mdc",
+      "always": false,
+      "scope": "- apps/api/app/**/workflows.py"
+    },
+    {
+      "path": ".cursor/rules/documentation-maintenance.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/fastapi-conventions.mdc",
+      "always": false,
+      "scope": "- apps/api/**"
+    },
+    {
+      "path": ".cursor/rules/field-notes-design.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
+    },
+    {
+      "path": ".cursor/rules/git-commits.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/human-copy.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/in-app-notifications.mdc",
+      "always": false,
+      "scope": "- apps/api/app/notifications/**"
+    },
+    {
+      "path": ".cursor/rules/job-site-access.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/markitdown-mcp.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/migrations.mdc",
+      "always": false,
+      "scope": "- apps/api/migrations/**"
+    },
+    {
+      "path": ".cursor/rules/mobile-responsive.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
+    },
+    {
+      "path": ".cursor/rules/motion.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
+    },
+    {
+      "path": ".cursor/rules/naming-conventions.mdc",
+      "always": false,
+      "scope": "- apps/**"
+    },
+    {
+      "path": ".cursor/rules/no-prod-deploy.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/nuxt-conventions.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
+    },
+    {
+      "path": ".cursor/rules/pii-guard.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/plan-mode.mdc",
+      "always": false,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/project-context.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/pydantic-ai.mdc",
+      "always": false,
+      "scope": "- apps/api/app/ai/**"
+    },
+    {
+      "path": ".cursor/rules/route-guides.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/security.mdc",
+      "always": false,
+      "scope": "- apps/api/app/core/**"
+    },
+    {
+      "path": ".cursor/rules/self-review.mdc",
+      "always": false,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/superpowers-opt-in.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/truthful-content.mdc",
+      "always": false,
+      "scope": "- apps/api/app/resumes/**"
+    },
+    {
+      "path": ".cursor/rules/ui-minimal-copy.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/untrusted-content.mdc",
+      "always": false,
+      "scope": "- apps/api/app/jobs/**"
+    },
+    {
+      "path": ".cursor/rules/vue-components.mdc",
+      "always": false,
+      "scope": "- apps/web/**/*.vue"
+    },
+    {
+      "path": ".cursor/rules/workflow-docs.mdc",
+      "always": false,
+      "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/workspace-scoping.mdc",
+      "always": true,
+      "scope": "Task-specific; read when relevant"
+    }
+  ],
+  "adapted_hooks": 12
+}
