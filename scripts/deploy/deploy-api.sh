@@ -15,7 +15,11 @@ if [[ "$ENV_NAME" == "prod" ]]; then
 fi
 
 IMAGE="${KAME_API_IMAGE:-kame-apply-api:$(git -C "$ROOT" rev-parse --short HEAD)}"
-echo "Building $IMAGE"
+APP_ENV="prod"
+if [[ "$ENV_NAME" == "dev" ]]; then
+  APP_ENV="dev"
+fi
+echo "Building $IMAGE (ENVIRONMENT=$APP_ENV)"
 docker build -t "$IMAGE" -f "$ROOT/apps/api/Dockerfile" "$ROOT"
 
 if [[ -n "${DEPLOY_HOST:-}" ]]; then
@@ -26,13 +30,13 @@ if [[ -n "${DEPLOY_HOST:-}" ]]; then
     docker tag "$IMAGE" "$REMOTE_IMAGE"
     echo "Pushing $REMOTE_IMAGE"
     docker push "$REMOTE_IMAGE"
-    ssh "$DEPLOY_HOST" "cd /opt/kame-apply/infra && KAME_API_IMAGE=$REMOTE_IMAGE docker compose -f docker-compose.prod.yml pull api"
+    ssh "$DEPLOY_HOST" "cd /opt/kame-apply/infra && KAME_ENVIRONMENT=$APP_ENV KAME_API_IMAGE=$REMOTE_IMAGE docker compose -f docker-compose.prod.yml pull api"
   else
     # No registry configured: ship the image over SSH instead of pretending `pull` worked.
     echo "Transferring $IMAGE to $DEPLOY_HOST"
     docker save "$IMAGE" | ssh "$DEPLOY_HOST" "docker load"
   fi
-  ssh "$DEPLOY_HOST" "cd /opt/kame-apply/infra && KAME_API_IMAGE=$IMAGE docker compose -f docker-compose.prod.yml up -d api caddy"
+  ssh "$DEPLOY_HOST" "cd /opt/kame-apply/infra && API_HOST=${API_HOST:-api.kame.apply} KAME_ENVIRONMENT=$APP_ENV KAME_API_IMAGE=$IMAGE docker compose -f docker-compose.prod.yml up -d api caddy"
   if [[ -n "${DEPLOY_HEALTH_URL:-}" ]]; then
     for i in $(seq 1 30); do
       if curl -fsS "$DEPLOY_HEALTH_URL" >/dev/null; then

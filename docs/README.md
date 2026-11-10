@@ -16,6 +16,7 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 3 | [`research/02-job-discovery-and-site-access.md`](./research/02-job-discovery-and-site-access.md) | Where jobs come from, how we get global coverage, and the answer to "how do we bypass bot checks" (we don't; here is what works better). |
 | 4 | [`tech-stack.md`](./tech-stack.md) | Language and framework choice with reasoning, free hosting plan. **Authoritative stack.** |
 | 5 | [`architecture/overview.md`](./architecture/overview.md) | Services, data flow, multi-tenancy, data model, durable workflows. |
+| 5b | [`architecture/configuration.md`](./architecture/configuration.md) | Every environment variable, credential, and the first dev/prod deploy runbook. |
 | 6 | [`research/03-apply-engine-and-live-view.md`](./research/03-apply-engine-and-live-view.md) | How forms get filled (extension, cloud runner, agent fallback), pause/resume, live preview + takeover. |
 | 7 | [`research/04-trust-safety-and-scam-detection.md`](./research/04-trust-safety-and-scam-detection.md) | Scam/phishing scoring, PII guard, prompt-injection defense, AI-answer policy. |
 | 8 | [`research/05-resume-intelligence.md`](./research/05-resume-intelligence.md) | Parsing, critique rubric, market skill research, tailoring, rendering. |

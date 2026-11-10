@@ -14,6 +14,8 @@ if [[ "$ENV_NAME" == "prod" ]]; then
   require_prod_unlock "deploy:web:prod"
 fi
 
+: "${NUXT_PUBLIC_API_BASE:?Set NUXT_PUBLIC_API_BASE to the deployed API URL (e.g. https://api.dev.example.com)}"
+
 cd "$ROOT"
 pnpm --filter @kame/web run generate
 OUT="$ROOT/apps/web/.output/public"
