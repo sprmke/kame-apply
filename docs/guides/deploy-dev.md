@@ -215,6 +215,8 @@ API_HOST=api.dev.example.com
 
 ```bash
 sudo mkdir -p /opt/kame-apply/infra /etc/kame-apply
+# The deploy script rsyncs into /opt/kame-apply/infra as your SSH user.
+sudo chown -R $USER:$USER /opt/kame-apply
 sudo chmod 700 /etc/kame-apply
 sudo nano /opt/kame-apply/infra/.env
 sudo chmod 600 /opt/kame-apply/infra/.env
