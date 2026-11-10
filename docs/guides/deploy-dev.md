@@ -272,8 +272,8 @@ On your machine, from the repo root:
 export DEPLOY_HOST=kame-dev
 export API_HOST=api.dev.example.com
 
-# Leave this unset for the very first run if DNS has not propagated yet.
-# The script waits up to 60 seconds for this URL and exits 1 on failure.
+# Set this only after `dig +short api.dev.example.com` returns the VM IP.
+# If DNS is not ready, skip this export for the first run; the script then skips the check.
 export DEPLOY_HEALTH_URL=https://api.dev.example.com/healthz
 
 pnpm run deploy:api:dev
