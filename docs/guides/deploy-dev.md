@@ -184,6 +184,8 @@ R2 free tier includes 10 GB storage. The API checks the bucket on startup; the b
 
 The build needs `NUXT_PUBLIC_API_BASE=https://api.dev.example.com` so the static app points at the dev API.
 
+If your web domain is not under `*.kame.apply`, add it to `externally_connectable` in `apps/extension/wxt.config.ts` and rebuild the extension. Otherwise the extension handshake will not connect.
+
 ## 6. Resend (outbound email)
 
 1. Go to `resend.com` and sign up or sign in.
