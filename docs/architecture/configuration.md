@@ -4,6 +4,8 @@ Everything needed to run Kame Apply locally, on a dev host, or in production. Se
 
 Canonical deployment layout: [`deployment.md`](./deployment.md). Prod deploys and remote writes need `applywave` in the same message (`no-prod-deploy.mdc`).
 
+Step-by-step first deploy with exact sites, pages, and commands: [`docs/guides/deploy-dev.md`](../guides/deploy-dev.md).
+
 ## 0. Services used, and what is not needed
 
 | Service | Needed? | What for |
