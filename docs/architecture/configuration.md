@@ -4,6 +4,47 @@ Everything needed to run Kame Apply locally, on a dev host, or in production. Se
 
 Canonical deployment layout: [`deployment.md`](./deployment.md). Prod deploys and remote writes need `applywave` in the same message (`no-prod-deploy.mdc`).
 
+## 0. Services used, and what is not needed
+
+| Service | Needed? | What for |
+| --- | --- | --- |
+| **Cloudflare Pages** | Yes | Hosts the static Nuxt web app. |
+| **Cloudflare R2** | Yes | Resumes, rendered files, screenshots, backups (S3 API). |
+| **One Linux VM** (Oracle Always Free or Hetzner) | Yes | Runs the API, Postgres, Caddy, backup, and optionally the runner. |
+| **Domain + DNS** | Yes | `api.<domain>` for the API, `app.<domain>` for the web app. Cloudflare DNS is convenient but any DNS works. |
+| **Resend** | Yes for email | Verification, reset, notifications, digests. SMTP is the alternative. |
+| **Google OAuth** | Optional | "Continue with Google". |
+| **Cloudflare Email Routing + Worker** | Optional | Inbound job-alert emails. |
+| **Telegram Bot** | Optional | Needs-you alerts and digests on Telegram. |
+| **Sentry** | Optional | Error tracking for API and web. |
+| **GitHub token** | Optional | In-app feedback becomes a GitHub issue. |
+| **AI provider key** | Optional per workspace | Gemini, OpenAI, Anthropic, Groq, OpenRouter, or local Ollama. Added in the app, not env. |
+
+**Not needed:** Vercel, Supabase, Redis, AWS, Firebase, Heroku, Neon, a separate worker server, or a separate DB server. The API, database, durable workflows (DBOS is a Python library backed by Postgres), scheduler, and runner all live on the one VM. Cloudflare is only Pages + R2 (+ optional Email Routing). Neon is mentioned in the stack notes as an optional dev convenience, not a requirement.
+
+## 0b. Collect these before the first deploy
+
+| Item | How to get or generate it | Where it goes |
+| --- | --- | --- |
+| **VM with Docker** | Create an Ubuntu 24.04 VM (Oracle Always Free A1 or Hetzner CAX11), add your SSH public key, open ports 22, 80, 443. Install Docker Engine + Compose plugin. | `DEPLOY_HOST` in your shell |
+| **Domain + DNS** | Register a domain. In Cloudflare DNS (or any DNS): `api.<domain>` A record to the VM IP, **DNS only** (grey cloud) so Caddy can get a certificate. `app.<domain>` will be added as the Pages custom domain. | `API_HOST`, `WEB_BASE_URL`, `CORS_ORIGINS` |
+| **Postgres owner password** | `python -c "import secrets;print(secrets.token_urlsafe(24))"` | `/opt/kame-apply/infra/.env` (`POSTGRES_PASSWORD`) and `MIGRATION_DATABASE_URL` |
+| **Postgres app password** | Same command, a different value. | `DATABASE_URL` and `APP_DB_PASSWORD` for `db:roles:host:*` |
+| **JWT secret** | `openssl rand -base64 48` | `JWT_SECRET` in `api.env` |
+| **Master KEK** | `python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"` | `MASTER_KEK` in `api.env` |
+| **Cloudflare R2** | Dashboard → R2 → Create bucket (`kame-apply`). R2 → Manage API Tokens → Create token with Object Read & Write. Copy the access key, secret, and `https://<account-id>.r2.cloudflarestorage.com`. | `S3_ENDPOINT_URL`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET` |
+| **Cloudflare Pages** | Dashboard → Workers & Pages → Create → Pages. Create a project (e.g. `kame-apply-dev`). Install `wrangler` and run `wrangler login`, or create an API token with Pages edit. | `CF_PAGES_PROJECT`, `CLOUDFLARE_API_TOKEN` |
+| **Resend** | resend.com → API Keys → Create. Domains → add and verify your sender domain (SPF/DKIM records). | `RESEND_API_KEY`, `MAIL_FROM` |
+| **Google OAuth (optional)** | Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web application). Authorized redirect URI: `https://api.<domain>/api/v1/auth/google/callback`; authorized origin: `https://app.<domain>`. | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| **VAPID (optional)** | `uv run python scripts/dev/generate-vapid-keys.py --out-dir /etc/kame-apply` | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` |
+| **Telegram (optional)** | BotFather → `/newbot` → copy the token. Set the webhook to `https://api.<domain>/api/v1/webhooks/telegram` with a secret token. | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` |
+| **Inbound email (optional)** | Cloudflare Email Routing → Email Workers. The worker signs the raw body with HMAC-SHA256 using your secret and posts it to `/api/v1/webhooks/inbound-email?token=<workspace token>`. | `INBOUND_EMAIL_DOMAIN`, `INBOUND_WEBHOOK_SECRET` |
+| **Sentry (optional)** | sentry.io → Create project (FastAPI and Vue). Copy the DSNs. | `SENTRY_DSN`, `NUXT_PUBLIC_SENTRY_DSN` |
+| **GitHub feedback (optional)** | GitHub → Settings → Developer settings → Fine-grained token with Issues: write on the repo. | `GITHUB_FEEDBACK_TOKEN`, `GITHUB_FEEDBACK_REPO` |
+| **AI provider (optional)** | Gemini, Groq, OpenRouter, OpenAI, Anthropic, or local Ollama. Add the key in the app: Settings → AI. | Not an env var; stored encrypted per workspace |
+
+Use URL-safe passwords (`token_urlsafe`) for database URLs so `+`, `/`, or `=` do not break the connection string.
+
 ## 1. Environments
 
 | Environment | API | Web | Database | Purpose |
