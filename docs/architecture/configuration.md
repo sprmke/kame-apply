@@ -135,7 +135,8 @@ The extension handshake accepts `http://localhost:3100/*` and `https://*.kame.ap
 
 ```bash
 # 1. Host: install Docker, create /opt/kame-apply, copy infra/ (the deploy script rsyncs it).
-# 2. Write /etc/kame-apply/api.env from apps/api/.env.example with the values above.
+# 2. Write /opt/kame-apply/infra/.env with POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB,
+#    and API_HOST. Write /etc/kame-apply/api.env from infra/kame-apply/api.env.example.
 # 3. Point API_HOST and DNS at the host.
 export DEPLOY_HOST=user@dev-host
 export API_HOST=api.dev.example.com
@@ -144,7 +145,10 @@ export DEPLOY_HEALTH_URL=https://api.dev.example.com/healthz
 # 4. Build and start the API, Caddy, and Postgres.
 pnpm run deploy:api:dev
 
-# 5. Run migrations inside the API container (the DB is not exposed publicly).
+# 5. Create the RLS-restricted app role, then run migrations inside the API container.
+#    APP_DB_PASSWORD must match the password in DATABASE_URL.
+export APP_DB_PASSWORD=<same as api.env>
+pnpm run db:roles:host:dev
 pnpm run migrate:host:dev
 
 # 6. Build and publish the web app with the dev API URL.
