@@ -1,6 +1,6 @@
 ---
 name: source-adapter
-description: How to add a job source adapter (API, feed, board, career page): interface, normalization, terms note, rate limits, fixtures, health metrics, tests. Phase 5.
+description: "How to add a job source adapter (API, feed, board, career page): interface, normalization, terms note, rate limits, fixtures, health metrics, tests. Phase 5."
 ---
 
 # Source adapter

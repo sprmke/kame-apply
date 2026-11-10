@@ -111,6 +111,7 @@ Skills in `.agent/skills/` (canonical; symlinked into `.claude/skills/` and `.cu
 - AI attribution in commits or PR text (`git-commits.mdc`).
 
 <!-- global-agent-skills -->
+
 ## Global agent skills
 
 This machine has 159 shared skills in `~/.agents/skill-library` (Claude Code, Cursor,

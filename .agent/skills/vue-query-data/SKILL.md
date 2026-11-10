@@ -1,6 +1,6 @@
 ---
 name: vue-query-data
-description: Server state in the Nuxt app with Vue Query and the Hey API client: options, computed params, invalidation, optimistic updates.
+description: "Server state in the Nuxt app with Vue Query and the Hey API client: options, computed params, invalidation, optimistic updates."
 ---
 
 # Vue Query data

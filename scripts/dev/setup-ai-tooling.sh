@@ -70,5 +70,8 @@ command -v python3.13 >/dev/null 2>&1 && ok "python3.13" || warn "python 3.13 no
 info "Optional tools"
 command -v markitdown-mcp >/dev/null 2>&1 && ok "markitdown-mcp on PATH" || warn "markitdown-mcp not on PATH — uv tool install markitdown-mcp"
 
+# Codex skill, command, agent and hook compatibility
+python3 "$ROOT/.codex/sync.py"
+
 bash "$ROOT/scripts/dev/check-ai-tooling-sync.sh"
 ok "AI tooling setup complete — re-run: pnpm run setup:ai-tooling"

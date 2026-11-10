@@ -1,6 +1,6 @@
 ---
 name: pgvector-search
-description: pgvector + pg_trgm search in Postgres: embeddings with fastembed, hybrid ranking, workspace-scoped queries.
+description: "pgvector + pg_trgm search in Postgres: embeddings with fastembed, hybrid ranking, workspace-scoped queries."
 ---
 
 # pgvector search

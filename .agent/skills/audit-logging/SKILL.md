@@ -1,6 +1,6 @@
 ---
 name: audit-logging
-description: Append-only activity_log: when to emit, event naming, what never to store. Use for any mutation.
+description: "Append-only activity_log: when to emit, event naming, what never to store. Use for any mutation."
 ---
 
 # Audit logging

@@ -1,24 +1,8 @@
 ---
-name: "source-command-ka-submit-for-review"
-description: "Migrated source command `ka-submit-for-review`"
+name: source-command-ka-submit-for-review
+description: "Run the existing project command ka-submit-for-review when the user requests it."
 ---
-
-# source-command-ka-submit-for-review
-
-Use this skill when the user asks to run the migrated source command `ka-submit-for-review`.
-
-## Command Template
 
 # ka-submit-for-review
 
-After `/ka-check-before-pr` passes:
-
-1. Update `docs/phases/README.md` status and tick the phase file's exit criteria; move the scratchpad to `docs/workflow/done/` (`/workflow-done`).
-2. Push and open the PR:
-
-```bash
-git push -u origin HEAD
-gh pr create --fill
-```
-
-PR body: what changed and why, the exit-criteria checklist, screenshots for UI work, and notes on any deviation from the phase file. No AI attribution (`git-commits.mdc`). Target `main`.
+Read [.cursor/commands/ka-submit-for-review.md](../../../.cursor/commands/ka-submit-for-review.md) and follow that command using the user’s arguments. Resolve its relative references from the original command directory. Preserve project rules and authorization boundaries. Cursor/Claude-only tool names must map to actually available Codex tools; do not claim unavailable tools ran.
