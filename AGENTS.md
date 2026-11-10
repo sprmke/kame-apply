@@ -109,3 +109,12 @@ Skills in `.agent/skills/` (canonical; symlinked into `.Codex/skills/` and `.cur
 - Sensitive-class values in the profile, logs, prompts, or fixtures.
 - **Production deploys or migrations without unlock**: never run or recommend `deploy:*:prod`, `migrate:prod`, or any write against a hosted `DATABASE_URL` unless the user said **`applywave`** in the same message (`no-prod-deploy.mdc`; the shell hook enforces it).
 - AI attribution in commits or PR text (`git-commits.mdc`).
+
+<!-- global-agent-skills -->
+## Global agent skills
+
+This machine has 159 shared skills in `~/.agents/skill-library` (Claude Code, Cursor,
+Codex and OpenCode all read them). Only five behaviour skills are always visible.
+For anything else, open `~/.agents/skill-library/agent-skills-index/SKILL.md`, find the
+skill that fits, then read `~/.agents/skill-library/<skill>/SKILL.md`.
+Manage with `~/.agents/bin/agent-stack.sh`. Repo skills and rules always win.
