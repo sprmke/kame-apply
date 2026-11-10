@@ -42,6 +42,9 @@ END $$;
 GRANT CONNECT ON DATABASE {db} TO kame_apply_app;
 \\connect {db}
 GRANT USAGE ON SCHEMA public TO kame_apply_app;
+-- Re-runs must cover tables that already exist (for example when the role was added later).
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO kame_apply_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO kame_apply_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE {owner} IN SCHEMA public
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO kame_apply_app;
 ALTER DEFAULT PRIVILEGES FOR ROLE {owner} IN SCHEMA public
