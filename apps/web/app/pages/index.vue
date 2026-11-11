@@ -275,7 +275,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         <ul class="divide-y divide-rule border-y border-rule">
           <li v-for="job in top" :key="job.id">
             <NuxtLink
-              :to="`/jobs?track=${firstTrack?.id}`"
+              :to="`/jobs?track=${firstTrack?.id}&job=${job.id}`"
               class="flex items-start gap-3 py-4 hover:bg-paper-1"
             >
               <span class="mt-0.5 font-mono text-sm tabular-nums text-persimmon-700">{{
@@ -313,7 +313,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         <ul class="grid gap-3 md:grid-cols-2">
           <li v-for="track in data.tracks" :key="track.id">
             <NuxtLink
-              :to="`/tracks/${track.id}`"
+              :to="`/jobs?track=${track.id}`"
               class="flex h-full flex-col gap-2 rounded-lg border border-rule bg-paper-1 p-4 hover:bg-paper-2"
             >
               <FnFolderTab :hue="hue(track.color_hue)">{{ track.name }}</FnFolderTab>

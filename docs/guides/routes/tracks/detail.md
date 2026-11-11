@@ -12,7 +12,7 @@
 
 ## Overview
 
-Results first. **Run search** starts discovery; **View matches** opens the full Jobs list. **More tools** holds Be Found, Gap plan, and Settings. The search settings (natural language, chips, More filters) sit below the match list. In deployed environments the run is queued and the page polls progress until it finishes; in local dev and tests it runs inline.
+Results first. **Run search** starts discovery with a live elapsed timer and a last-search line. **View matches** opens the full Jobs list. Each top match can be Shortlisted or Skipped inline. **More tools** holds Be Found, Gap plan, and Settings. The search settings (natural language, chips, More filters) sit below the match list. In deployed environments the run is queued and the page polls progress until it finishes; in local dev and tests it runs inline.
 
 ## User-facing knowledge
 

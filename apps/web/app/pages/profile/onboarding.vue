@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import { useActiveProfile } from "~/composables/useActiveProfile";
-import { uploadDocumentApiV1ProfilesProfileIdDocumentsPost } from "@kame/api-client";
+import {
+  listCredentialsApiV1AiCredentialsGet,
+  uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
+} from "@kame/api-client";
 import { FnButton, FnTextarea, useToast } from "@kame/ui";
+import { useQuery } from "@tanstack/vue-query";
+import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const { ensureProfile } = useActiveProfile();
+const ws = useWorkspaceStore();
+const { data: creds, isPending: credsLoading } = useQuery({
+  queryKey: computed(() => ["onboarding-credentials", ws.currentId]),
+  queryFn: async () => (await listCredentialsApiV1AiCredentialsGet()).data ?? [],
+  enabled: computed(() => Boolean(ws.currentId)),
+});
+const hasKey = computed(() => (creds.value?.length ?? 0) > 0);
 const file = ref<File | null>(null);
 const paste = ref("");
 const busy = ref(false);
@@ -48,6 +60,15 @@ async function upload() {
   <div class="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-6">
     <PageHeader :title="t('career.onboardingTitle')" />
     <section class="flex flex-col gap-3">
+      <div
+        v-if="!credsLoading && !hasKey"
+        class="rounded-md border border-saffron-600 bg-paper-1 p-3 text-sm"
+      >
+        {{ t("career.aiKeyNeeded") }}
+        <NuxtLink to="/settings/ai" class="text-persimmon-700 underline">{{
+          t("settings.ai")
+        }}</NuxtLink>
+      </div>
       <input
         ref="input"
         type="file"
@@ -58,13 +79,13 @@ async function upload() {
       <FnButton tone="quiet" @click="input?.click()">{{
         file ? file.name : t("career.chooseFile")
       }}</FnButton>
-      <FnTextarea v-model="paste" :rows="8" :aria-label="t('career.pasteResume')" />
+      <label class="flex flex-col gap-1 text-sm">
+        <span class="text-ink-600">{{ t("career.pasteResume") }}</span>
+        <FnTextarea v-model="paste" :rows="8" :aria-label="t('career.pasteResume')" />
+      </label>
       <FnButton tone="primary" :loading="busy" @click="upload">{{
         t("career.continueParse")
       }}</FnButton>
-      <NuxtLink to="/profile" class="text-sm text-ink-600 underline-offset-2 hover:underline">{{
-        t("career.scratch")
-      }}</NuxtLink>
     </section>
   </div>
 </template>

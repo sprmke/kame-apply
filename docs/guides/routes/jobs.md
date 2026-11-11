@@ -15,7 +15,7 @@
 
 ## Overview
 
-Job research board: ranked matches, readable posting, fit requirements with evidence, keyboard triage. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **Mark applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one search.
+Job research board: ranked matches, readable posting, fit requirements with evidence, keyboard triage. On mobile the list is a full page; selecting a job opens a full-screen document with a back action and a sticky Shortlist / Tailor / Open / Skip bar. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **Mark applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one search.
 
 ## User-facing knowledge
 

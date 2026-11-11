@@ -30,6 +30,7 @@ const skipOpen = ref(false);
 const skipReason = ref("too junior");
 const riskConfirmOpen = ref(false);
 const showAllFit = ref(false);
+const mobileDetail = ref(false);
 
 function sealLevel(level: string | null | undefined): "clear" | "caution" | "danger" {
   if (level === "red") return "danger";
@@ -121,6 +122,7 @@ const board = useQuery({
 });
 
 const rows = computed(() => board.data.value ?? []);
+const initialJob = computed(() => (route.query.job as string) || null);
 const loading = computed(
   () => !ws.loaded || board.isPending.value || (board.isFetching.value && !board.data.value),
 );
@@ -154,10 +156,15 @@ const relax = useQuery({
 });
 
 watch(
-  rows,
-  (list) => {
+  [rows, initialJob],
+  ([list, wanted]) => {
     if (!list.length) {
       selectedId.value = null;
+      return;
+    }
+    if (wanted && list.some((r) => r.id === wanted)) {
+      selectedId.value = wanted;
+      mobileDetail.value = true;
       return;
     }
     if (!selectedId.value || !list.some((r) => r.id === selectedId.value)) {
@@ -220,6 +227,11 @@ async function continueDespiteRisk() {
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });
   }
+}
+
+function selectJob(id: string) {
+  selectedId.value = id;
+  mobileDetail.value = true;
 }
 
 function move(delta: number) {
@@ -318,7 +330,9 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 </script>
 
 <template>
-  <div class="flex h-[calc(100dvh-4rem)] flex-col gap-3 p-4 md:p-6">
+  <div
+    class="flex min-h-[calc(100dvh-4rem)] flex-col gap-3 p-4 pb-24 md:p-6 lg:h-[calc(100dvh-4rem)] lg:pb-6"
+  >
     <header class="flex flex-wrap items-center gap-2">
       <h1 class="font-display text-xl text-ink-900">{{ t("nav.jobs") }}</h1>
       <div class="ml-auto flex flex-wrap items-center gap-2">
@@ -361,14 +375,18 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       <ul v-if="relax.data.value?.length" class="space-y-1 text-sm">
         <li v-for="s in relax.data.value" :key="s.label">{{ s.label }}: +{{ s.gained }}</li>
       </ul>
-      <FnButton size="sm" @click="router.push('/tracks')">Tracks</FnButton>
+      <FnButton size="sm" @click="router.push('/tracks')">{{ t("nav.tracks") }}</FnButton>
     </div>
 
     <div
       v-else
       class="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,18rem)]"
     >
-      <ul class="min-h-0 overflow-y-auto border-r border-ink-100 pr-2" role="listbox">
+      <ul
+        :class="mobileDetail ? 'hidden lg:block' : 'block'"
+        class="border-r border-ink-100 pr-2 lg:min-h-0 lg:overflow-y-auto"
+        role="listbox"
+      >
         <li
           v-for="row in rows"
           :key="row.id"
@@ -376,7 +394,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           :aria-selected="row.id === selectedId"
           class="cursor-pointer border-b border-ink-100 px-2 py-2 text-sm hover:bg-paper-100"
           :class="row.id === selectedId ? 'bg-paper-100' : ''"
-          @click="selectedId = row.id"
+          @click="selectJob(row.id)"
         >
           <div class="flex items-baseline gap-2">
             <span class="font-mono text-xs tabular-nums text-persimmon-700">{{
@@ -399,7 +417,18 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
         </li>
       </ul>
 
-      <section v-if="selected" class="min-h-0 overflow-y-auto">
+      <section
+        v-if="selected"
+        :class="mobileDetail ? 'block' : 'hidden lg:block'"
+        class="min-h-0 lg:overflow-y-auto"
+      >
+        <button
+          type="button"
+          class="mb-3 flex min-h-11 items-center gap-2 text-sm text-ink-600 lg:hidden"
+          @click="mobileDetail = false"
+        >
+          <NavIcon name="ph:arrow-left" :size="16" /> Back to jobs
+        </button>
         <h2 class="font-display text-2xl text-ink-900">{{ selected.title }}</h2>
         <p class="mt-1 text-sm text-ink-600">
           {{ selected.company_name }}
@@ -421,7 +450,11 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       </section>
       <FnSkeleton v-else class="h-40" />
 
-      <aside v-if="selected" class="min-h-0 overflow-y-auto border-l border-ink-100 pl-3">
+      <aside
+        v-if="selected"
+        :class="mobileDetail ? 'block' : 'hidden lg:block'"
+        class="border-t border-ink-100 pt-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-3"
+      >
         <div class="mb-3">
           <div class="font-mono text-3xl tabular-nums text-persimmon-700">
             {{ selected.score != null ? Math.round(selected.score) : "-" }}
@@ -546,6 +579,20 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           </ul>
         </div>
       </aside>
+    </div>
+
+    <div
+      v-if="mobileDetail && selected"
+      class="fixed inset-x-0 bottom-16 z-20 flex gap-2 border-t border-rule bg-paper-1 p-3 lg:hidden"
+    >
+      <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
+      <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">
+        Tailor
+      </FnButton>
+      <FnButton size="sm" tone="ghost" :disabled="!selected.apply_url" @click="openOriginal">
+        Open
+      </FnButton>
+      <FnButton size="sm" tone="ghost" @click="skipOpen = true">Skip</FnButton>
     </div>
   </div>
 </template>

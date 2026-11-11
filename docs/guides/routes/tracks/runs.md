@@ -10,7 +10,7 @@
 
 ## Overview
 
-Per-Track discovery/automation run history: status, trigger, duration, stage counts, errors.
+Per-search discovery history. Status, trigger, and duration use plain labels (Completed, Running, Queued, Failed; Run now, Scheduled). The empty state links back to Run search.
 
 ## API reference
 

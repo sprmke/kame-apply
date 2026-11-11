@@ -3,6 +3,7 @@ import { useActiveProfile } from "~/composables/useActiveProfile";
 import {
   confirmDocumentApiV1ProfilesProfileIdDocumentsDocumentIdConfirmPost,
   getDocumentApiV1ProfilesProfileIdDocumentsDocumentIdGet,
+  listProfilesApiV1ProfilesGet,
   mergePreviewApiV1ProfilesProfileIdDocumentsDocumentIdMergeGet,
   parseDocumentApiV1ProfilesProfileIdDocumentsDocumentIdParsePost,
   type DocumentRead,
@@ -16,6 +17,8 @@ const toast = useToast();
 const apiError = useApiError();
 const { profileId, ensureProfile, refresh } = useActiveProfile();
 const doc = ref<DocumentRead | null>(null);
+const docProfileId = ref<string | null>(null);
+const loadError = ref<string | null>(null);
 const busy = ref(false);
 const mergeNeeded = ref(false);
 const parseError = ref<{ code?: string; message: string } | null>(null);
@@ -36,29 +39,43 @@ const parsed = computed(() => (doc.value?.parsed ?? null) as ParsedDraft | null)
 const documentId = computed(() => String(route.params.documentId));
 
 async function load() {
-  const pid = await ensureProfile();
-  const { data } = await getDocumentApiV1ProfilesProfileIdDocumentsDocumentIdGet({
-    path: { profile_id: pid, document_id: documentId.value },
-    throwOnError: true,
-  });
-  doc.value = data!;
+  loadError.value = null;
+  const active = await ensureProfile();
+  const profiles = (await listProfilesApiV1ProfilesGet({ throwOnError: true })).data ?? [];
+  const ids = [...new Set([active, ...profiles.map((p) => p.id)])].filter(Boolean) as string[];
+  for (const pid of ids) {
+    try {
+      const { data } = await getDocumentApiV1ProfilesProfileIdDocumentsDocumentIdGet({
+        path: { profile_id: pid, document_id: documentId.value },
+        throwOnError: true,
+      });
+      doc.value = data!;
+      docProfileId.value = pid;
+      return;
+    } catch (e) {
+      if (errorCode(e) === "document_not_found" || errorCode(e) === "not_found") continue;
+      throw e;
+    }
+  }
+  loadError.value = t("career.documentNotFound");
 }
 
 onMounted(async () => {
   try {
     await load();
   } catch (e) {
-    toast.push({ title: apiError(e), tone: "danger" });
+    loadError.value = apiError(e);
   }
 });
 
 async function runParse() {
-  if (!profileId.value || !doc.value) return;
+  const pid = docProfileId.value ?? profileId.value;
+  if (!pid || !doc.value) return;
   busy.value = true;
   parseError.value = null;
   try {
     const { data } = await parseDocumentApiV1ProfilesProfileIdDocumentsDocumentIdParsePost({
-      path: { profile_id: profileId.value, document_id: doc.value.id },
+      path: { profile_id: pid, document_id: doc.value.id },
       throwOnError: true,
     });
     doc.value = data!;
@@ -70,11 +87,12 @@ async function runParse() {
 }
 
 async function confirm() {
-  if (!profileId.value || !doc.value) return;
+  const pid = docProfileId.value ?? profileId.value;
+  if (!pid || !doc.value) return;
   busy.value = true;
   try {
     await confirmDocumentApiV1ProfilesProfileIdDocumentsDocumentIdConfirmPost({
-      path: { profile_id: profileId.value, document_id: doc.value.id },
+      path: { profile_id: pid, document_id: doc.value.id },
       body: { apply_header: true },
       throwOnError: true,
     });
@@ -87,7 +105,7 @@ async function confirm() {
       mergeNeeded.value = true;
       try {
         await mergePreviewApiV1ProfilesProfileIdDocumentsDocumentIdMergeGet({
-          path: { profile_id: profileId.value, document_id: doc.value.id },
+          path: { profile_id: pid, document_id: doc.value.id },
           throwOnError: true,
         });
       } catch {
@@ -110,7 +128,13 @@ function isLow(path: string) {
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 md:px-6">
     <PageHeader :title="t('career.reviewTitle')" />
-    <div v-if="!doc" class="flex flex-col gap-2">
+    <div v-if="loadError" class="rounded-md border border-saffron-600 bg-paper-1 p-3 text-sm">
+      {{ loadError }}
+      <NuxtLink to="/profile/documents" class="ml-1 text-persimmon-700 underline">{{
+        t("career.tabs.documents")
+      }}</NuxtLink>
+    </div>
+    <div v-else-if="!doc" class="flex flex-col gap-2">
       <FnSkeleton class="h-40 w-full" />
     </div>
     <template v-else>

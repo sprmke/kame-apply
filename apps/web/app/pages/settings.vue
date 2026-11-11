@@ -25,11 +25,8 @@ const tabs = computed(() =>
 
 <template>
   <div class="mx-auto flex max-w-[880px] flex-col gap-6">
-    <nav
-      :aria-label="t('settings.nav')"
-      class="-mx-4 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] md:mx-0 md:px-0 md:[mask-image:none]"
-    >
-      <ul class="flex gap-1 border-b border-rule">
+    <nav :aria-label="t('settings.nav')" class="-mx-4 px-4 md:mx-0 md:px-0">
+      <ul class="flex flex-wrap gap-1 border-b border-rule">
         <li v-for="tab in tabs" :key="tab.to">
           <NuxtLink
             :to="tab.to"

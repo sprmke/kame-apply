@@ -99,8 +99,8 @@
   "applications": {
     "export": "Export",
     "log": "Log application",
-    "track": "Track",
-    "allTracks": "All tracks",
+    "track": "Search",
+    "allTracks": "All searches",
     "status": "Status",
     "method": "Method",
     "any": "Any",
@@ -146,10 +146,11 @@
     "interviewPrep": "Interview prep",
     "generatePrep": "Generate",
     "referrals": "Referrals",
-    "draftReferral": "Draft"
+    "draftReferral": "Draft",
+    "browseJobs": "Browse jobs"
   },
   "responses": {
-    "title": "Responses",
+    "title": "Replies",
     "proposals": "Status proposals",
     "emptyProposals": "No pending proposals.",
     "accept": "Accept",
@@ -251,7 +252,9 @@
     "proposals": "Proposals",
     "accept": "Accept",
     "reject": "Reject",
-    "proposalAccepted": "Applied to profile"
+    "proposalAccepted": "Applied to profile",
+    "documentNotFound": "That resume could not be found. Open your documents to choose another.",
+    "aiKeyNeeded": "Resume parsing needs an AI key. Add one first."
   },
   "verify": {
     "banner": "Confirm {email} to secure your account.",
@@ -712,8 +715,8 @@
     "pause": "Pause",
     "resume": "Resume",
     "runHistory": "History",
-    "noRuns": "No runs yet",
-    "runStats": "{linked} linked \u00b7 {scored} scored \u00b7 {prepared} prepared \u00b7 {ms} ms",
+    "noRuns": "No runs yet.",
+    "runStats": "{linked} new \u00b7 {scored} scored \u00b7 {prepared} prepared \u00b7 {duration}",
     "caps": "Caps",
     "capsHint": "Set per-day and per-company caps in criteria when you need them.",
     "openStudio": "Open Studio",
@@ -750,7 +753,8 @@
     "lede": "A search is a role you want. We check company boards and bring back matches.",
     "viewMatches": "View matches",
     "moreTools": "More tools",
-    "criteriaHint": "Update this to refine your matches."
+    "criteriaHint": "Update this to refine your matches.",
+    "noNewJobs": "no new jobs"
   },
   "sources": {
     "title": "Source health",
@@ -777,7 +781,9 @@
     "casual": "More casual",
     "formal": "More formal",
     "saveBank": "Save to answer bank",
-    "savedBank": "Saved to answer bank"
+    "savedBank": "Saved to answer bank",
+    "lede": "Draft answers from your profile. Review and edit before you use them.",
+    "placeholder": "Paste the questions from an application."
   },
   "jobs": {
     "fit": "Why this job",

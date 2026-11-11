@@ -13,7 +13,7 @@
 
 ## Overview
 
-Answer Desk: paste one or many form questions, get grounded drafts (or write-yourself boxes when AI is forbidden). Copy, tone controls, save to answer bank. Optional `?application=` links the session to an application dossier.
+Answer help: paste one or many form questions, get grounded drafts (or write-yourself boxes when AI is forbidden). The page explains the purpose and the paste box has a placeholder. Copy, tone controls, save to answer bank. Optional `?application=` links the session to an application dossier.
 
 ## User-facing knowledge
 

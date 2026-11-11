@@ -14,7 +14,7 @@
 
 ## Overview
 
-Applications across Tracks: table or kanban board, filters, funnel strip, log from scratch, export. Status changes from the table select or by dragging on the board. Backward moves ask for a note.
+Applications across searches: table or kanban board, filters, funnel strip, log from scratch, export. The filter is labeled Search. The empty state links to Browse jobs. Status changes from the table select or by dragging on the board. Backward moves ask for a note.
 
 ## User-facing knowledge
 
