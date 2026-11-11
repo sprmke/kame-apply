@@ -429,7 +429,7 @@ async function saveMore() {
       </div>
       <div v-if="running" class="flex flex-col gap-1" role="status">
         <p class="flex items-center gap-2 text-sm text-ink-600">
-          <span class="size-2 animate-pulse rounded-full bg-persimmon-500" aria-hidden="true" />
+          <span class="size-2 animate-pulse rounded-full bg-ink-600" aria-hidden="true" />
           Searching company boards · {{ runSeconds }}s
         </p>
         <p v-if="runProgress" class="text-sm text-ink-600">
