@@ -131,7 +131,7 @@ function charCount(item: ItemRead) {
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6" @keydown="onKey">
-    <PageHeader :title="t('nav.answers')" />
+    <PageHeader :title="t('nav.answers')" :lede="t('answers.lede')" />
     <WaitingForClaude v-if="inboxWaiting > 0" :waiting="inboxWaiting" />
 
     <section class="flex flex-col gap-2">
@@ -143,12 +143,17 @@ function charCount(item: ItemRead) {
         v-model="paste"
         rows="8"
         class="min-h-32 w-full border border-rule bg-paper-0 p-3 text-sm"
+        :placeholder="t('answers.placeholder')"
         :disabled="!ws.currentId || busy"
       />
       <div class="flex justify-end gap-2">
-        <FnButton size="sm" :disabled="busy || !paste.trim() || !profileId" @click="runParse">{{
-          t("answers.draft")
-        }}</FnButton>
+        <FnButton
+          size="sm"
+          tone="primary"
+          :disabled="busy || !paste.trim() || !profileId"
+          @click="runParse"
+          >{{ t("answers.draft") }}</FnButton
+        >
       </div>
     </section>
 

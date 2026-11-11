@@ -32,6 +32,41 @@ function sealLabel(level: string): string {
   return "Clear";
 }
 
+const STOP_REASONS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "has",
+  "have",
+  "in",
+  "is",
+  "it",
+  "not",
+  "of",
+  "on",
+  "or",
+  "our",
+  "that",
+  "the",
+  "their",
+  "they",
+  "this",
+  "to",
+  "we",
+  "will",
+  "with",
+  "you",
+  "your",
+]);
+
 function reasonText(r: unknown): string {
   if (typeof r === "string") return r;
   if (r && typeof r === "object") {
@@ -39,6 +74,17 @@ function reasonText(r: unknown): string {
     return o.evidence || o.signal || "";
   }
   return "";
+}
+
+function visibleReasons(reasons: unknown[] | undefined): unknown[] {
+  return (reasons || []).filter((r) => {
+    const text = reasonText(r).toLowerCase();
+    const parts = text
+      .split(/[,·]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    return parts.length > 0 && !parts.every((part) => STOP_REASONS.has(part));
+  });
 }
 
 const flagged = useQuery({
@@ -119,11 +165,11 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <FnRiskSeal :level="sealLevel(row.level)" :label="sealLabel(row.level)" />
-              <span class="truncate font-medium text-ink-900">{{ row.title }}</span>
+              <span class="line-clamp-2 font-medium text-ink-900">{{ row.title }}</span>
             </div>
             <p class="mt-0.5 text-xs text-ink-500">{{ row.company_name }}</p>
             <ul class="mt-2 space-y-1 text-xs text-ink-700">
-              <li v-for="(r, i) in (row.reasons || []).slice(0, 4)" :key="i">
+              <li v-for="(r, i) in visibleReasons(row.reasons).slice(0, 4)" :key="i">
                 {{ reasonText(r) }}
               </li>
             </ul>
@@ -177,7 +223,7 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
       <div v-if="checkResult" class="space-y-2 rounded border border-ink-100 p-3">
         <FnRiskSeal :level="sealLevel(checkResult.level)" :label="sealLabel(checkResult.level)" />
         <ul class="space-y-1 text-sm text-ink-800">
-          <li v-for="(r, i) in checkResult.reasons || []" :key="i">
+          <li v-for="(r, i) in visibleReasons(checkResult.reasons).slice(0, 6)" :key="i">
             {{ reasonText(r) }}
           </li>
         </ul>

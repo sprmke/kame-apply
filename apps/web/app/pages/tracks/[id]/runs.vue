@@ -42,6 +42,26 @@ const runs = useQuery({
 
 const rows = computed(() => runs.data.value ?? []);
 const track = computed(() => detail.data.value ?? null);
+
+function statusLabel(status: string): string {
+  if (status === "succeeded") return "Completed";
+  if (status === "failed") return "Failed";
+  if (status === "running") return "Running";
+  if (status === "queued") return "Queued";
+  return status;
+}
+
+function triggerLabel(trigger: string): string {
+  if (trigger === "run_now") return "Run now";
+  if (trigger === "schedule") return "Scheduled";
+  if (trigger === "manual") return "Manual";
+  return trigger;
+}
+
+function durationLabel(ms: number | null | undefined): string {
+  if (ms == null) return "—";
+  return `${Math.max(1, Math.round(ms / 1000))}s`;
+}
 </script>
 
 <template>
@@ -71,7 +91,14 @@ const track = computed(() => detail.data.value ?? null);
         /></span>
       </nav>
 
-      <p v-if="!rows.length" class="text-sm text-ink-600">{{ t("tracks.noRuns") }}</p>
+      <div v-if="!rows.length" class="flex flex-col items-start gap-3">
+        <p class="text-sm text-ink-600">{{ t("tracks.noRuns") }}</p>
+        <NuxtLink
+          :to="`/tracks/${trackId}`"
+          class="text-sm font-medium text-persimmon-700 underline"
+          >{{ t("tracks.runNow") }}</NuxtLink
+        >
+      </div>
       <ul v-else class="divide-y divide-rule border-y border-rule">
         <li
           v-for="r in rows"
@@ -79,14 +106,16 @@ const track = computed(() => detail.data.value ?? null);
           class="grid gap-1 py-3 text-sm md:grid-cols-[1fr_auto] md:items-center"
         >
           <div class="flex flex-col gap-0.5">
-            <span class="font-medium text-ink-900">{{ r.status }} · {{ r.trigger }}</span>
+            <span class="font-medium text-ink-900"
+              >{{ statusLabel(r.status) }} · {{ triggerLabel(r.trigger) }}</span
+            >
             <span class="font-mono text-[0.6875rem] text-ink-600">
               {{
                 t("tracks.runStats", {
                   linked: r.progress?.linked ?? 0,
                   scored: r.progress?.scored ?? 0,
                   prepared: r.progress?.prepared ?? 0,
-                  ms: r.duration_ms ?? "—",
+                  duration: durationLabel(r.duration_ms),
                 })
               }}
             </span>

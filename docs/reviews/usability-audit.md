@@ -32,14 +32,14 @@ This is not a visual identity problem. Field Notes is readable. The failures are
 | 5 | High | Onboarding checklist hardcodes `done: false` for profile, Track, and extension. It never marks progress and includes a non-core extension step. | `OnboardingChecklist.vue` | Fixed in code: profile and Track are derived from data; extension step removed. The checklist hides once the workspace has data, so it is not visible in the audit account. |
 | 6 | High | Track page lists 50 jobs with the full apply URL as link text, no shortlist/skip, and no cap. | `tracks/[id]/index.vue` | Fixed and verified: top 10, "View all", "Open posting". Shortlist/skip still missing. |
 | 7 | Medium | New Track shows a flat grid of 44 role templates before the user's own description. | captured screenshot | Fixed and verified: templates are behind "Browse role templates". |
-| 8 | High | `Run now` shows only "Running" for about 80 seconds. The Track Runs tab says "No runs yet" during the run. | Run button and Runs tab screenshots | Open. Needs queued/running row, elapsed time, sources checked, and a run link. |
-| 9 | High | The review URL is not refresh-safe. `/profile/review/<documentId>` resolves the active profile, so a refresh or a second profile returns "Document not found." | API 404 after refresh | Open. Put the profile id in the route or resolve the document across the user's profiles. |
+| 8 | High | `Run now` shows only "Running" for about 80 seconds. The Track Runs tab says "No runs yet" during the run. | Run button and Runs tab screenshots | Partially fixed: Track shows a live elapsed timer and last search; Runs history uses plain status, trigger, and duration. Local inline runs still do not create a visible queued row until they finish. |
+| 9 | High | The review URL is not refresh-safe. `/profile/review/<documentId>` resolves the active profile, so a refresh or a second profile returns "Document not found." | API 404 after refresh | Fixed: the page searches every profile the user can access and keeps the matching profile id for parse and confirm. |
 | 10 | Medium | Today headline says "227 strong matches across 1 Tracks." It pluralizes Track incorrectly and calls every match strong. | `applications/home.py` | Fixed in code: "matches" and correct Track plural. |
-| 11 | Medium | Activity shows raw event names: `workspace.created`, `discovery.run_completed`, `matching.score_track`, repeated `safety.job_assessed`. | captured screenshot | Open. Map events to plain job-search language or hide the feed on empty Today. |
-| 12 | Medium | The rail has 11 icon-only items. Tooltips exist, but a new user cannot scan it. | `AppRail.vue`, `lib/nav.ts` | Partially fixed: Runs removed. Group advanced items under More or label the rail. |
-| 13 | Medium | Empty states do not explain the next action. "No Tracks yet", "No matched jobs yet", and "No runs yet" sit without a next step. | Tracks, Track, Runs | Open. Each needs one short next action. |
-| 14 | Medium | The fit ledger shows "not evidenced" for every must requirement when the profile is empty. That is technically true but reads as a broken product. | captured screenshot | Open. Show "Add resume facts to see fit evidence" with a profile link. |
-| 15 | Low | The Track heading repeats the folder tab and appends a period: "Customer Support Lead." | Track detail | Open. Use the name once, or a real summary. |
+| 11 | Medium | Activity shows raw event names: `workspace.created`, `discovery.run_completed`, `matching.score_track`, repeated `safety.job_assessed`. | captured screenshot | Fixed on Today: activity is no longer on the first screen. Settings activity remains the technical audit log. |
+| 12 | Medium | The rail has 11 icon-only items. Tooltips exist, but a new user cannot scan it. | `AppRail.vue`, `lib/nav.ts` | Fixed: labeled sidebar with five primary destinations and a More tools group. |
+| 13 | Medium | Empty states do not explain the next action. "No Tracks yet", "No matched jobs yet", and "No runs yet" sit without a next step. | Tracks, Track, Runs | Fixed: searches, matches, runs, applications, and resume studio now show a next action. |
+| 14 | Medium | The fit ledger shows "not evidenced" for every must requirement when the profile is empty. That is technically true but reads as a broken product. | captured screenshot | Fixed: the fit panel prompts for resume facts and limits the list to three requirements. |
+| 15 | Low | The Track heading repeats the folder tab and appends a period: "Customer Support Lead." | Track detail | Fixed: the repeated heading was removed. |
 
 ## Mobile findings (375px)
 
@@ -48,6 +48,35 @@ This is not a visual identity problem. Field Notes is readable. The failures are
 - **The bottom bar covers the context panel** in the captured viewport. The shell needs enough bottom padding and a mobile action bar for Shortlist, Skip, and Open.
 - **Today still shows raw activity names** (`discovery.run_completed`, `matching.score_track`, `safety.job_assessed`) and the activity list is cut by the bottom bar.
 - **Track is readable on mobile**, but the header actions wrap onto three lines and the Track name is repeated with a period.
+
+## Redesign applied (2026-11-11)
+
+The shell and first-run surfaces were rebuilt around the user's job-search loop:
+
+- **Desk sidebar** with labels replaces the 11-icon rail. Primary destinations are Today, Searches, Jobs, Applications, and Profile. Resume studio, Answer help, Practice, Replies, Contacts, and Safety live under **More tools**. Settings sits at the bottom.
+- **Mobile bottom bar** is Today, Searches, Jobs, Applications, More. The center hexagon is gone. More holds Profile, Settings, Needs-you, and the advanced tools.
+- **Today** is now a guided brief: one next step, three new matches, the user's searches, and Needs-you. Numbers and activity moved into a collapsed **This week** disclosure.
+- **Tracks are called Searches** in the UI. The page leads with the role question, hides the template wall behind **Browse examples**, and gives each search a **View matches** action.
+- **Search detail** leads with matches. **Run search** and **View matches** are the primary actions; Be Found, Gap plan, and Settings moved under **More tools**. The criteria editor is below the results.
+- **Jobs** lost the CSV and shortcut buttons from the header, titles wrap instead of truncating, clear-risk seals are removed from list rows, fit requirements are limited to three with **Show all**, and the empty-profile fit panel points to adding a resume.
+- **Copy** is plainer: "Searches", "Run search", "View matches", "Posted recently", "Required", "No evidence yet", "Mark applied". Raw event names and stopword keyword chips are filtered.
+- The design system and UX blueprint now describe the labeled sidebar, mobile bar, and guided Today brief.
+
+## Second UX slice (2026-11-12)
+
+The remaining first-run and mobile issues were addressed:
+
+- **Run progress:** Track shows a live elapsed timer while discovery runs, then a last-search line with a History link. The run history uses plain status, trigger, and duration.
+- **Mobile Jobs:** the list is a full page; selecting a job opens a full-screen document with a back action and a sticky Shortlist / Tailor / Open / Skip bar above the mobile navigation. Titles wrap instead of truncating.
+- **Refresh-safe review:** the review page searches all profiles the user can access, so refreshing or opening it later no longer returns "Document not found".
+- **AI key callout:** resume onboarding states that parsing needs an AI key and links to AI providers before upload.
+- **Search actions:** the top matches on a search can be Shortlisted or Skipped inline.
+- **Deep links:** Today's top matches open the exact job in Jobs, not just the search.
+- **Empty states:** applications, runs, and resume studio have a next action.
+- **Copy and labels:** Replies, Searches, Search settings, and humanized run status replace internal names.
+- **Settings:** the tab bar wraps instead of hiding tabs behind a horizontal mask.
+- **Answer help:** a one-line purpose and a textarea placeholder make the empty page understandable.
+- **Safety:** stopword reason chips are filtered and job titles wrap.
 
 ## Root causes
 
@@ -106,6 +135,7 @@ This is not a visual identity problem. Field Notes is readable. The failures are
 
 ## Verification
 
+- Full local Playwright suite: **39 passed, 1 skipped** (2026-11-12), including 375, 820, and 1440 shell checks.
 - `uv run pytest apps/api/tests/test_matching_unit.py apps/api/tests/test_textutil.py apps/api/tests/evals/test_ranking_eval.py` passes.
 - `pnpm run type-check` passes.
 - `pnpm run lint` passes with pre-existing Vue warnings only.

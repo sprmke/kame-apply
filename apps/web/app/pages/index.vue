@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { homeApiV1HomeGet } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton } from "@kame/ui";
+import { homeApiV1HomeGet, listJobsApiV1JobsGet, type BoardJobRead } from "@kame/api-client";
+import { FnButton, FnFolderTab, FnRiskSeal, FnSkeleton } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
+import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -20,31 +21,22 @@ type HomeBrief = {
   tracks?: {
     id: string;
     name: string;
+    color_hue?: number;
     autonomy?: string;
     pipeline?: Record<string, number>;
   }[];
-  reminders?: {
-    id: string;
-    application_id: string;
-    job_title?: string;
-    company_name?: string;
-    due_at?: string;
-  }[];
-  upcoming_runs?: { track_name?: string; next_run_at?: string; preview?: string }[];
-  activity?: { id: string; action?: string; at?: string }[];
 };
 
 const { t } = useI18n();
 const auth = useAuthStore();
 const ws = useWorkspaceStore();
-const fmt = useFormat();
-const period = ref<"today" | "week" | "total">("week");
+const { profileId } = useActiveProfile();
 
 const home = useQuery({
-  queryKey: computed(() => ["home", ws.currentId, period.value]),
+  queryKey: computed(() => ["home", ws.currentId]),
   queryFn: async () => {
     const { data } = await homeApiV1HomeGet({
-      query: { period: period.value },
+      query: { period: "week" },
       throwOnError: true,
     });
     return data as HomeBrief;
@@ -58,32 +50,196 @@ const greeting = computed(() => {
   const name = auth.user?.name?.split(" ")[0];
   return name ? t("today.hello", { name }) : t("today.helloNoName");
 });
+const firstTrack = computed(() => data.value?.tracks?.[0] ?? null);
+const hasProfile = computed(() => Boolean(profileId.value));
+const hasTracks = computed(() => Boolean(data.value?.tracks?.length));
+
+const topJobs = useQuery({
+  queryKey: computed(() => ["home-top-jobs", ws.currentId, firstTrack.value?.id]),
+  queryFn: async () => {
+    const { data: jobs } = await listJobsApiV1JobsGet({
+      query: {
+        track_id: firstTrack.value!.id,
+        include_not_eligible: false,
+        sort: "score",
+        limit: 3,
+      },
+      throwOnError: true,
+    });
+    return (jobs ?? []) as BoardJobRead[];
+  },
+  enabled: computed(() => Boolean(ws.currentId && firstTrack.value?.id)),
+});
+const top = computed(() => topJobs.data.value ?? []);
+
+const primary = computed(() => {
+  if (!hasProfile.value) {
+    return {
+      title: t("today.addResumeTitle"),
+      body: t("today.addResumeBody"),
+      label: t("today.addResume"),
+      to: "/profile/onboarding",
+    };
+  }
+  if (!hasTracks.value) {
+    return {
+      title: t("today.startSearchTitle"),
+      body: t("today.startSearchBody"),
+      label: t("today.startSearch"),
+      to: "/tracks",
+    };
+  }
+  const track = firstTrack.value!;
+  const matched = track.pipeline?.found ?? data.value?.kpis?.kpis?.matched ?? 0;
+  if (matched === 0) {
+    return {
+      title: t("today.runFirstSearchTitle"),
+      body: t("today.runFirstSearchBody", { track: track.name }),
+      label: t("today.runSearch"),
+      to: `/tracks/${track.id}`,
+    };
+  }
+  return {
+    title: t("today.reviewMatchesTitle"),
+    body: t("today.reviewMatchesBody", { n: matched, track: track.name }),
+    label: t("today.reviewMatches"),
+    to: `/jobs?track=${track.id}`,
+  };
+});
+
+const needs = computed(() => data.value?.needs_you);
+const week = computed(() => data.value?.kpis?.kpis ?? {});
+
+function hue(n: number | undefined): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
+  return Math.min(8, Math.max(1, n || 1)) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+}
+
+function sealLevel(level: string | null | undefined): "clear" | "caution" | "danger" {
+  if (level === "red") return "danger";
+  if (level === "yellow") return "caution";
+  return "clear";
+}
+
+function sealLabel(level: string | null | undefined): string {
+  if (level === "red") return "High risk";
+  if (level === "yellow") return "Caution";
+  return "Clear";
+}
+
+const STOP_REASONS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "has",
+  "have",
+  "in",
+  "is",
+  "it",
+  "not",
+  "of",
+  "on",
+  "or",
+  "our",
+  "that",
+  "the",
+  "their",
+  "they",
+  "this",
+  "to",
+  "we",
+  "will",
+  "with",
+  "you",
+  "your",
+]);
+const REASON_COPY: Record<string, string> = {
+  "Posted < 72h": "Posted recently",
+  "Posted < 7d": "Posted this week",
+};
+
+function reasonText(reason: unknown): string {
+  const text =
+    typeof reason === "string"
+      ? reason
+      : reason && typeof reason === "object"
+        ? String(
+            (reason as { evidence?: string; signal?: string }).evidence ||
+              (reason as { signal?: string }).signal ||
+              "",
+          )
+        : "";
+  const clean = text.trim();
+  return STOP_REASONS.has(clean.toLowerCase()) ? "" : (REASON_COPY[clean] ?? clean);
+}
+
+function workModeLabel(mode: string | null | undefined): string {
+  if (!mode) return "";
+  return t(`tracks.mode_${mode}`);
+}
+
+function topReason(job: BoardJobRead): string {
+  return (job.reasons || []).map(reasonText).find(Boolean) ?? "";
+}
+
+function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
+  const found = track.pipeline?.found ?? 0;
+  const shortlisted = track.pipeline?.shortlisted ?? 0;
+  return `${found} matches · ${shortlisted} shortlisted`;
+}
 </script>
 
 <template>
-  <section class="mx-auto flex max-w-[960px] flex-col gap-8">
+  <section class="mx-auto flex w-full max-w-[1040px] flex-col gap-8">
     <VerifyEmailBanner />
-    <header class="relative overflow-hidden rounded-md border border-rule bg-paper-1 px-6 py-8">
-      <ContourBackdrop />
-      <p class="relative text-sm text-ink-600">{{ ws.current?.name }}</p>
-      <h1
-        class="relative mt-1 font-serif text-[length:var(--text-display)] leading-tight font-semibold"
-      >
+
+    <header class="flex flex-col gap-2">
+      <p class="text-xs font-medium tracking-[0.14em] text-ink-400 uppercase">
+        {{ ws.current?.name }}
+      </p>
+      <h1 class="font-serif text-[length:var(--text-display)] leading-tight font-semibold">
         {{ greeting }}
       </h1>
-      <p v-if="data?.headline" class="relative mt-2 max-w-prose font-serif text-lg text-ink-600">
-        {{ data.headline }}
-      </p>
-      <p v-else class="relative mt-2 max-w-prose font-serif text-lg text-ink-600">
-        {{ t("today.lede") }}
+      <p class="max-w-2xl font-serif text-lg text-ink-600">
+        {{ data?.headline || t("today.lede") }}
       </p>
     </header>
 
-    <div v-if="home.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
-    <template v-else-if="data">
-      <OnboardingChecklist v-if="data.empty" />
+    <div v-if="home.isPending.value" class="flex flex-col gap-4">
+      <FnSkeleton class="h-40 w-full" />
+      <FnSkeleton class="h-24 w-full" />
+    </div>
 
-      <section v-if="data.needs_you?.count" class="flex flex-col gap-2">
+    <template v-else-if="data">
+      <section
+        class="relative overflow-hidden rounded-lg border border-rule bg-paper-1 p-6 md:p-8"
+        aria-labelledby="next-step-title"
+      >
+        <ContourBackdrop />
+        <div class="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div class="max-w-xl">
+            <p class="text-xs font-medium tracking-[0.14em] text-ink-400 uppercase">
+              {{ t("today.nextStep") }}
+            </p>
+            <h2 id="next-step-title" class="mt-2 font-serif text-2xl font-semibold md:text-3xl">
+              {{ primary.title }}
+            </h2>
+            <p class="mt-2 text-ink-600">{{ primary.body }}</p>
+          </div>
+          <FnButton tone="primary" class="shrink-0" @click="navigateTo(primary.to)">{{
+            primary.label
+          }}</FnButton>
+        </div>
+      </section>
+
+      <section v-if="needs?.count" class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
             {{ t("shell.needsYou") }}
@@ -93,7 +249,7 @@ const greeting = computed(() => {
           }}</NuxtLink>
         </div>
         <ul class="divide-y divide-rule border-y border-rule">
-          <li v-for="(item, i) in data.needs_you.items.slice(0, 5)" :key="i">
+          <li v-for="(item, i) in needs.items.slice(0, 4)" :key="i">
             <NuxtLink
               :to="item.href"
               class="flex min-h-11 flex-col gap-0.5 py-3 text-sm hover:bg-paper-1"
@@ -105,128 +261,82 @@ const greeting = computed(() => {
         </ul>
       </section>
 
-      <section class="flex flex-col gap-3">
-        <div class="flex flex-wrap items-center gap-2">
+      <section v-if="top.length" class="flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-            {{ t("today.numbers") }}
+            {{ t("today.topMatches") }}
           </h2>
-          <select
-            v-model="period"
-            class="min-h-11 border border-rule bg-paper-0 px-2 text-sm"
-            :aria-label="t('today.period')"
-          >
-            <option value="today">{{ t("today.periodToday") }}</option>
-            <option value="week">{{ t("today.periodWeek") }}</option>
-            <option value="total">{{ t("today.periodTotal") }}</option>
-          </select>
-        </div>
-        <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm">
-          <NuxtLink to="/applications" class="text-ink-900"
-            >{{ data.kpis?.kpis?.submitted ?? 0 }}
-            <span class="text-ink-600">{{ t("today.submitted") }}</span></NuxtLink
-          >
-          <span
-            >{{ Math.round((data.kpis?.kpis?.response_rate ?? 0) * 100) }}%
-            <span class="text-ink-600">{{ t("today.responseRate") }}</span></span
-          >
-          <span
-            >{{ data.kpis?.kpis?.interviews ?? 0 }}
-            <span class="text-ink-600">{{ t("today.interviews") }}</span></span
-          >
-          <NuxtLink to="/jobs" class="text-ink-900"
-            >{{ data.kpis?.kpis?.matched ?? 0 }}
-            <span class="text-ink-600">{{ t("today.matched") }}</span></NuxtLink
+          <NuxtLink
+            :to="`/jobs?track=${firstTrack?.id}`"
+            class="text-sm text-persimmon-700 underline"
+            >{{ t("today.viewAll") }}</NuxtLink
           >
         </div>
-      </section>
-
-      <section v-if="data.tracks?.length" class="flex flex-col gap-2">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("nav.tracks") }}
-        </h2>
         <ul class="divide-y divide-rule border-y border-rule">
-          <li
-            v-for="tr in data.tracks"
-            :key="tr.id"
-            class="flex flex-col gap-2 py-3 md:flex-row md:items-center md:justify-between"
-          >
-            <div class="min-w-0">
-              <NuxtLink
-                :to="`/tracks/${tr.id}`"
-                class="font-medium text-ink-900 underline-offset-2 hover:underline"
-                >{{ tr.name }}</NuxtLink
-              >
-              <p class="mt-1 font-mono text-[0.6875rem] text-ink-600">
-                {{ tr.pipeline?.found ?? 0 }} → {{ tr.pipeline?.shortlisted ?? 0 }} →
-                {{ tr.pipeline?.tailored ?? 0 }} → {{ tr.pipeline?.applied ?? 0 }} →
-                {{ tr.pipeline?.responded ?? 0 }} → {{ tr.pipeline?.interview ?? 0 }}
-              </p>
-            </div>
-            <div class="flex items-center gap-2">
-              <FnChip>{{ tr.autonomy }}</FnChip>
-              <FnButton
-                tone="quiet"
-                size="sm"
-                :to="`/tracks/${tr.id}`"
-                @click="navigateTo(`/tracks/${tr.id}`)"
-                >{{ t("tracks.runNow") }}</FnButton
-              >
-            </div>
+          <li v-for="job in top" :key="job.id">
+            <NuxtLink
+              :to="`/jobs?track=${firstTrack?.id}&job=${job.id}`"
+              class="flex items-start gap-3 py-4 hover:bg-paper-1"
+            >
+              <span class="mt-0.5 font-mono text-sm tabular-nums text-persimmon-700">{{
+                job.score != null ? Math.round(job.score) : "-"
+              }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-medium text-ink-900">{{ job.title }}</span>
+                <span class="block text-sm text-ink-600">
+                  {{ job.company_name }}
+                  <template v-if="job.work_mode"> · {{ workModeLabel(job.work_mode) }}</template>
+                </span>
+                <span v-if="topReason(job)" class="mt-1 block text-sm text-ink-500">{{
+                  topReason(job)
+                }}</span>
+              </span>
+              <FnRiskSeal
+                v-if="job.risk_level === 'yellow' || job.risk_level === 'red'"
+                :level="sealLevel(job.risk_level)"
+                :label="sealLabel(job.risk_level)"
+              />
+            </NuxtLink>
           </li>
         </ul>
       </section>
 
-      <section
-        v-if="data.reminders?.length || data.upcoming_runs?.length"
-        class="grid gap-6 md:grid-cols-2"
-      >
-        <div v-if="data.reminders?.length" class="flex flex-col gap-2">
+      <section v-if="data.tracks?.length" class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-            {{ t("today.reminders") }}
+            {{ t("today.yourSearches") }}
           </h2>
-          <ul class="divide-y divide-rule border-y border-rule text-sm">
-            <li v-for="r in data.reminders" :key="r.id" class="py-2">
-              <NuxtLink :to="`/applications/${r.application_id}`" class="font-medium text-ink-900"
-                >{{ r.job_title }} · {{ r.company_name }}</NuxtLink
-              >
-              <p class="font-mono text-[0.6875rem] text-ink-600">
-                {{ r.due_at ? fmt.dateTime(r.due_at) : "" }}
-              </p>
-            </li>
-          </ul>
+          <NuxtLink to="/tracks" class="text-sm text-persimmon-700 underline">{{
+            t("today.viewAllSearches")
+          }}</NuxtLink>
         </div>
-        <div v-if="data.upcoming_runs?.length" class="flex flex-col gap-2">
-          <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-            {{ t("today.upcomingRuns") }}
-          </h2>
-          <ul class="divide-y divide-rule border-y border-rule text-sm">
-            <li v-for="(u, i) in data.upcoming_runs" :key="i" class="py-2">
-              <span class="font-medium text-ink-900">{{ u.track_name }}</span>
-              <p class="font-mono text-[0.6875rem] text-ink-600">
-                {{ u.next_run_at ? fmt.dateTime(u.next_run_at) : "" }} · {{ u.preview }}
-              </p>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <section v-if="data.activity?.length" class="flex flex-col gap-2">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("today.activity") }}
-        </h2>
-        <ul class="divide-y divide-rule border-y border-rule text-sm">
-          <li
-            v-for="a in data.activity.slice(0, 8)"
-            :key="a.id"
-            class="flex justify-between gap-3 py-2"
-          >
-            <span class="text-ink-900">{{ a.action }}</span>
-            <span class="shrink-0 font-mono text-[0.6875rem] text-ink-600">{{
-              a.at ? fmt.dateTime(a.at) : ""
-            }}</span>
+        <ul class="grid gap-3 md:grid-cols-2">
+          <li v-for="track in data.tracks" :key="track.id">
+            <NuxtLink
+              :to="`/jobs?track=${track.id}`"
+              class="flex h-full flex-col gap-2 rounded-lg border border-rule bg-paper-1 p-4 hover:bg-paper-2"
+            >
+              <FnFolderTab :hue="hue(track.color_hue)">{{ track.name }}</FnFolderTab>
+              <p class="text-sm text-ink-600">{{ trackLine(track) }}</p>
+              <span class="mt-auto text-sm font-medium text-persimmon-700">{{
+                t("tracks.viewMatches")
+              }}</span>
+            </NuxtLink>
           </li>
         </ul>
       </section>
+
+      <OnboardingChecklist v-if="data.empty" />
+
+      <details class="border-t border-rule pt-4">
+        <summary class="cursor-pointer text-sm text-ink-600">{{ t("today.thisWeek") }}</summary>
+        <p class="mt-2 text-sm text-ink-600">
+          {{ week.submitted ?? 0 }} {{ t("today.submitted") }} ·
+          {{ Math.round((week.response_rate ?? 0) * 100) }}% {{ t("today.responseRate") }} ·
+          {{ week.interviews ?? 0 }} {{ t("today.interviews") }} · {{ week.matched ?? 0 }}
+          {{ t("today.matched") }}
+        </p>
+      </details>
     </template>
   </section>
 </template>

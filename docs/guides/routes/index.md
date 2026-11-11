@@ -6,21 +6,21 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| Brief header | acceptance.spec.ts | n/a | Done | Greeting + optional headline from `/home` |
-| Needs-you | — | — | Documented | Phase 10/11 |
-| KPI tiles | — | period | Documented | Phase 11 |
-| Track cards | — | — | Documented | pipeline mini-bar |
-| Reminders / runs / activity | — | — | Documented | Phase 10/11 |
+| Guided next step | acceptance.spec.ts | n/a | Done | Resume, search, run, or review matches |
+| New matches | — | — | Documented | Top three with score, reason, risk |
+| Your searches | — | — | Documented | Match and shortlist counts |
+| Needs-you | — | — | Documented | Only when a decision is waiting |
+| This week | — | — | Documented | Collapsed numbers, not a dashboard |
 | Onboarding checklist | acceptance.spec.ts | n/a | Done | When home empty |
 | Verify banner | acceptance.spec.ts | n/a | Done | |
 
 ## Overview
 
-Daily command center: needs-you strip, period KPIs, Track pipeline cards, follow-up reminders, upcoming runs, recent activity. Empty workspaces still show the setup checklist.
+Guided daily brief: one next step (add resume, start a search, run the first search, or review matches), then the top three new matches, the user's searches, and Needs-you. Numbers and activity live under **This week**. Empty workspaces show the setup checklist.
 
 ## User-facing knowledge
 
-Pick Today / This week / All time for the numbers. Open a reminder to jump to that application.
+The primary button always names the next action. Open a search to see its matches, or use **View all** to open the full Jobs list.
 
 ## API reference
 

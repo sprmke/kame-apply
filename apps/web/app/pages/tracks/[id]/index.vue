@@ -6,8 +6,11 @@ import {
   getTrackApiV1TracksTrackIdGet,
   listJobsApiV1JobsGet,
   putCriteriaApiV1TracksTrackIdCriteriaPut,
+  runHistoryApiV1TracksTrackIdRunsGet,
+  triageJobApiV1TrackJobsTrackJobIdTriagePost,
   type BoardJobRead,
   type CriteriaV1,
+  type DiscoveryRunHistoryRead,
   type DiscoveryRunRead,
   type TrackDetail,
 } from "@kame/api-client";
@@ -21,6 +24,7 @@ const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
+const fmt = useFormat();
 
 const trackId = computed(() => String(route.params.id));
 const nl = ref("");
@@ -31,6 +35,8 @@ const diff = ref<{ label?: string; op?: string }[]>([]);
 const preview = ref<CriteriaV1 | null>(null);
 const running = ref(false);
 const runProgress = ref<DiscoveryRunRead["progress"] | null>(null);
+const runSeconds = ref(0);
+let runTimer: ReturnType<typeof setInterval> | null = null;
 
 const place = ref("");
 const radiusKm = ref(25);
@@ -113,6 +119,101 @@ const matched = useQuery({
 });
 const matchedJobs = computed(() => matched.data.value ?? []);
 
+const runs = useQuery({
+  queryKey: computed(() => ["track-runs", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await runHistoryApiV1TracksTrackIdRunsGet({
+      path: { track_id: trackId.value },
+      throwOnError: true,
+    });
+    return (data ?? []) as DiscoveryRunHistoryRead[];
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+  refetchInterval: computed(() => (running.value ? 5000 : 30000)),
+});
+const lastRun = computed(() => runs.data.value?.[0] ?? null);
+
+watch(running, (value) => {
+  if (runTimer) clearInterval(runTimer);
+  runTimer = null;
+  if (!value) return;
+  runSeconds.value = 0;
+  runTimer = setInterval(() => {
+    runSeconds.value += 1;
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (runTimer) clearInterval(runTimer);
+});
+
+const STOP_REASONS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "has",
+  "have",
+  "in",
+  "is",
+  "it",
+  "not",
+  "of",
+  "on",
+  "or",
+  "our",
+  "that",
+  "the",
+  "their",
+  "they",
+  "this",
+  "to",
+  "we",
+  "will",
+  "with",
+  "you",
+  "your",
+]);
+const REASON_COPY: Record<string, string> = {
+  "Posted < 72h": "Posted recently",
+  "Posted < 7d": "Posted this week",
+};
+function reasonText(reason: unknown): string {
+  const text =
+    typeof reason === "string"
+      ? reason
+      : reason && typeof reason === "object"
+        ? String(
+            (reason as { evidence?: string; signal?: string }).evidence ||
+              (reason as { signal?: string }).signal ||
+              "",
+          )
+        : "";
+  const clean = text.trim();
+  return STOP_REASONS.has(clean.toLowerCase()) ? "" : (REASON_COPY[clean] ?? clean);
+}
+
+async function triageMatch(id: string, action: "shortlist" | "skip") {
+  try {
+    await triageJobApiV1TrackJobsTrackJobIdTriagePost({
+      path: { track_job_id: id },
+      body: { action, skip_reason: action === "skip" ? "not a fit" : undefined },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries({ queryKey: ["track-jobs", ws.currentId, trackId.value] });
+    await qc.invalidateQueries({ queryKey: ["home", ws.currentId] });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  }
+}
+
 async function runNow() {
   running.value = true;
   runProgress.value = null;
@@ -139,6 +240,7 @@ async function runNow() {
       }
     }
     await qc.invalidateQueries({ queryKey: ["track-jobs", ws.currentId, trackId.value] });
+    await qc.invalidateQueries({ queryKey: ["track-runs", ws.currentId, trackId.value] });
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });
   } finally {
@@ -287,39 +389,69 @@ async function saveMore() {
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="min-w-0 flex-1">
           <FnFolderTab :hue="hue(track.color_hue)" active>{{ track.name }}</FnFolderTab>
-          <p class="mt-2 font-serif text-lg text-ink-900">{{ track.summary }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <FnButton tone="primary" :disabled="running" @click="runNow">{{
             running ? t("tracks.running") : t("tracks.runNow")
           }}</FnButton>
           <NuxtLink
-            :to="`/tracks/${trackId}/be-found`"
-            class="min-h-11 px-3 text-sm text-ink-600 hover:text-ink-900"
-            >{{ t("beFound.title") }}</NuxtLink
+            :to="`/jobs?track=${trackId}`"
+            class="min-h-11 px-3 text-sm font-medium text-persimmon-700 underline-offset-2 hover:underline"
+            >{{ t("tracks.viewMatches") }}</NuxtLink
           >
-          <NuxtLink
-            :to="`/tracks/${trackId}/gaps`"
-            class="min-h-11 px-3 text-sm text-ink-600 hover:text-ink-900"
-            >{{ t("gaps.title") }}</NuxtLink
-          >
-          <NuxtLink
-            :to="`/tracks/${trackId}/settings`"
-            class="min-h-11 px-3 text-sm text-ink-600 hover:text-ink-900"
-            >{{ t("tracks.settings") }}</NuxtLink
-          >
+          <details class="relative text-sm">
+            <summary
+              class="flex min-h-11 cursor-pointer list-none items-center px-3 text-ink-600 hover:text-ink-900"
+            >
+              {{ t("tracks.moreTools") }}
+            </summary>
+            <div
+              class="absolute right-0 z-10 mt-1 flex min-w-40 flex-col rounded-md border border-rule bg-paper-1 p-1 shadow-[var(--shadow-float)]"
+            >
+              <NuxtLink
+                :to="`/tracks/${trackId}/be-found`"
+                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
+                >{{ t("beFound.title") }}</NuxtLink
+              >
+              <NuxtLink
+                :to="`/tracks/${trackId}/gaps`"
+                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
+                >{{ t("gaps.title") }}</NuxtLink
+              >
+              <NuxtLink
+                :to="`/tracks/${trackId}/settings`"
+                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
+                >{{ t("tracks.settings") }}</NuxtLink
+              >
+            </div>
+          </details>
         </div>
       </div>
-      <p v-if="runProgress" class="text-sm text-ink-600">
-        {{
-          t("tracks.runProgress", {
-            boards: runProgress.boards_checked ?? 0,
-            found: runProgress.jobs_found ?? 0,
-            new: runProgress.jobs_new ?? 0,
-            linked: runProgress.linked ?? 0,
-          })
-        }}
-      </p>
+      <div v-if="running" class="flex flex-col gap-1" role="status">
+        <p class="flex items-center gap-2 text-sm text-ink-600">
+          <span class="size-2 animate-pulse rounded-full bg-ink-600" aria-hidden="true" />
+          Searching company boards · {{ runSeconds }}s
+        </p>
+        <p v-if="runProgress" class="text-sm text-ink-600">
+          {{
+            t("tracks.runProgress", {
+              boards: runProgress.boards_checked ?? 0,
+              found: runProgress.jobs_found ?? 0,
+              new: runProgress.jobs_new ?? 0,
+              linked: runProgress.linked ?? 0,
+            })
+          }}
+        </p>
+      </div>
+      <div v-else-if="lastRun" class="flex flex-wrap items-center gap-2 text-sm text-ink-600">
+        <span>
+          Last search {{ fmt.dateTime(lastRun.started_at || lastRun.created_at) }} ·
+          {{ lastRun.progress?.linked ? `${lastRun.progress.linked} new` : t("tracks.noNewJobs") }}
+        </span>
+        <NuxtLink :to="`/tracks/${trackId}/runs`" class="text-persimmon-700 underline">{{
+          t("tracks.runHistory")
+        }}</NuxtLink>
+      </div>
       <section class="flex flex-col gap-2" :aria-label="t('tracks.matchedJobs')">
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
@@ -349,18 +481,24 @@ async function saveMore() {
                   v-for="r in (j.reasons || []).slice(0, 2)"
                   :key="String(r)"
                   class="ml-1 text-ink-500"
-                  >· {{ r }}</span
+                  >· {{ reasonText(r) }}</span
                 >
               </p>
             </div>
-            <a
-              v-if="j.apply_url"
-              :href="j.apply_url"
-              class="text-ink-900 underline-offset-2 hover:underline"
-              rel="noopener noreferrer"
-              target="_blank"
-              >{{ t("applications.openPosting") }}</a
-            >
+            <div class="flex items-center gap-1">
+              <FnButton size="sm" tone="ghost" @click="triageMatch(j.id, 'shortlist')"
+                >Shortlist</FnButton
+              >
+              <FnButton size="sm" tone="ghost" @click="triageMatch(j.id, 'skip')">Skip</FnButton>
+              <a
+                v-if="j.apply_url"
+                :href="j.apply_url"
+                class="min-h-11 px-2 text-sm text-ink-900 underline-offset-2 hover:underline"
+                rel="noopener noreferrer"
+                target="_blank"
+                >{{ t("applications.openPosting") }}</a
+              >
+            </div>
           </li>
         </ul>
       </section>
@@ -443,7 +581,7 @@ async function saveMore() {
             {{ t("tracks.noAgencies") }}
           </button>
         </div>
-        <p class="text-sm text-ink-600">{{ track.preview_message }}</p>
+        <p class="text-sm text-ink-600">{{ t("tracks.criteriaHint") }}</p>
       </section>
 
       <section class="flex flex-col gap-3 border-t border-rule pt-4">

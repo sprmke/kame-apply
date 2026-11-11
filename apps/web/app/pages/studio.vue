@@ -340,21 +340,26 @@ const contentPreview = computed(() => {
   <div class="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:p-6">
     <header class="flex flex-wrap items-center gap-2">
       <h1 class="font-display text-xl text-ink-900">{{ t("nav.studio") }}</h1>
-      <label class="sr-only" for="studio-track">Track</label>
+      <label class="sr-only" for="studio-track">Search</label>
       <select
         id="studio-track"
         class="border border-ink-200 bg-paper px-2 py-1 text-sm text-ink-900"
         :value="trackId"
         @change="setTrack(($event.target as HTMLSelectElement).value)"
       >
-        <option value="">All Tracks</option>
+        <option value="">All searches</option>
         <option v-for="tr in tracks.data.value || []" :key="String(tr.id)" :value="String(tr.id)">
           {{ tr.name }}
         </option>
       </select>
       <div class="ml-auto flex flex-wrap gap-1">
-        <FnButton size="sm" :disabled="createMut.isPending.value" @click="createMut.mutate()">
-          New base
+        <FnButton
+          size="sm"
+          :tone="(resumes.data.value || []).length ? 'ghost' : 'primary'"
+          :disabled="createMut.isPending.value"
+          @click="createMut.mutate()"
+        >
+          New resume
         </FnButton>
         <FnButton
           size="sm"
@@ -382,6 +387,7 @@ const contentPreview = computed(() => {
         </FnButton>
         <FnButton
           size="sm"
+          :tone="selectedId ? 'primary' : 'ghost'"
           :disabled="!selectedId || renderMut.isPending.value"
           @click="renderMut.mutate()"
         >
@@ -414,9 +420,17 @@ const contentPreview = computed(() => {
           <FnSkeleton class="h-10" />
           <FnSkeleton class="h-10" />
         </div>
-        <p v-else-if="!(resumes.data.value || []).length" class="text-sm text-ink-600">
-          No resumes
-        </p>
+        <div v-else-if="!(resumes.data.value || []).length" class="flex flex-col items-start gap-2">
+          <p class="text-sm text-ink-600">No resumes yet.</p>
+          <FnButton
+            size="sm"
+            tone="primary"
+            :disabled="createMut.isPending.value"
+            @click="createMut.mutate()"
+          >
+            Create a resume
+          </FnButton>
+        </div>
         <ul v-else class="divide-y divide-ink-100 border border-ink-100">
           <li v-for="row in resumes.data.value" :key="String(row.id)">
             <button

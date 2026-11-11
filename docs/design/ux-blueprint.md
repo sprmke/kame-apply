@@ -16,37 +16,37 @@
 ## 2. Information architecture and navigation
 
 ```
-Rail (64px, desktop/tablet)          Top of content area
-───────────────────────────          ─────────────────────────────────────────────────────
-◉ Today            (badge: Needs you) Workspace switcher · Track switcher (folder tabs) · ⌘K · profile
-▤ Tracks
-⌕ Jobs              (Reader)
-▣ Applications      (Reader + board)
-▶ Runs              [R2]
-✎ Studio            (Workbench)
-❝ Answer Desk
-⛨ Safety
+Desk sidebar (208px)                 Top of content area
+──────────────────────               ─────────────────────────────────────────────────────
+◉ Today              (badge)         Workspace switcher · Search · profile
+▤ Searches
+⌕ Jobs                (Reader)
+▣ Applications        (Reader + board)
+◯ Profile
+  More tools (collapsed)
+    Resume studio · Answer help · Practice · Replies · Contacts · Safety
 ⚙ Settings
 ```
 
-- **Today:** editorial brief (see §3.1).
-- **Tracks:** list of Tracks; inside a Track: Overview · Jobs · Applications · Studio · Insights · Settings (criteria, sources, schedule, autonomy, caps). The **Track switcher** (folder tabs in Track colors) scopes Jobs/Applications/Studio to one Track or "All".
+- **Today:** guided brief (see §3.1). One next step, then new matches, then searches.
+- **Searches (Tracks internally):** saved role searches. Inside a search: matches, history, and search settings. The top-level label is plain language; the API and database keep `Track`.
 - **Jobs / Applications / Studio** use the **Reader** layout (list · document · context panel).
-- **Profile** (from the profile menu): Career Profile · Answer bank · Voice · Documents · Links · Be Found [R2].
+- **Profile:** Career Profile · Answer bank · Voice · Documents · Links · Be Found [R2]. Resume Studio is linked here.
 - **Settings:** workspace · members · AI providers & routing (incl. "My Claude") · notifications · integrations (extension, email alerts, Telegram, Claude) · data export/delete.
-- **Mobile:** bottom bar **Today · Jobs · Needs you (center) · Applications · More**; Reader panes become stacked screens with a bottom action bar; sheets replace dialogs; swipe right = shortlist, left = skip on job cards.
+- **More tools:** Replies, Resume studio, Answer help, Practice, Contacts, Safety. These are not primary navigation.
+- **Mobile:** bottom bar **Today · Searches · Jobs · Applications · More**; Reader panes become stacked screens with a sticky action bar; sheets replace dialogs; swipe right = shortlist, left = skip on job cards.
 
 ## 3. Key screens
 
-### 3.1 Today (editorial brief, replaces a KPI dashboard)
+### 3.1 Today (guided brief, not a dashboard)
 
-- **Headline sentence** in Newsreader, generated from data (not AI-hype): "6 strong new matches across 2 Tracks. 2 things need you."
-- **Needs you** stack: checkpoints, answer approvals, tailoring drafts ready, risk decisions, failed runs, budget alerts, each resolvable inline.
-- **Route summary per Track:** a compact route line with counts at each waypoint (found → shortlisted → tailored → applied → responded → interview), last/next run, autonomy chip, "Run now".
-- **Numbers that matter** (one row, inline figures, not tiles): submitted this week, response rate, interviews, flagged; each links to its filtered list; period selector.
-- **Live runs** [R2]: small live windows.
-- **Log:** recent discoveries, submissions, status changes, flags (filterable).
-- **Empty state (new user):** contour motif + three setup steps (Profile → Track → Extension/Claude).
+- **One next step** in a paper card: add a resume, start a search, run the first search, or review matches. The card names the action and why.
+- **Headline sentence** in Newsreader: "227 matches across 1 search. Nothing needs you." Use "matches", not "strong matches", until relevance earns it.
+- **New matches:** the top three with title, company, score, one reason, and risk seal. "View all" goes to the search's Jobs view.
+- **Your searches:** one card per search with match and shortlist counts, and **View matches**.
+- **Needs you** stack: checkpoints, answer approvals, tailoring drafts ready, risk decisions, failed runs, budget alerts. Shown only when something needs a decision.
+- **This week:** submitted, response rate, interviews, and matched, collapsed under a disclosure. Not the first screen.
+- **Empty state (new user):** contour motif + three setup steps (AI key → resume → search). The first action is the resume, not a dashboard tour.
 
 ### 3.2 Jobs (Reader)
 

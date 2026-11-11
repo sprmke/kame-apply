@@ -404,7 +404,12 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     <div v-if="loading"><FnSkeleton class="h-40 w-full" /></div>
 
     <template v-else-if="view === 'table'">
-      <p v-if="!items.length" class="text-sm text-ink-600">{{ t("applications.empty") }}</p>
+      <div v-if="!items.length" class="flex flex-col items-start gap-3">
+        <p class="text-sm text-ink-600">{{ t("applications.empty") }}</p>
+        <NuxtLink to="/jobs" class="text-sm font-medium text-persimmon-700 underline">{{
+          t("applications.browseJobs")
+        }}</NuxtLink>
+      </div>
       <div v-else class="overflow-x-auto border-y border-rule">
         <table class="w-full min-w-[640px] text-left text-sm">
           <thead class="border-b border-rule text-xs tracking-wide text-ink-600 uppercase">

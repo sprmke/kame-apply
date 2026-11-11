@@ -4,7 +4,7 @@
 
 ## Behavior
 
-Resume Studio for the active workspace. Pick a Track, create a base resume from the Career Profile, run Critique / Improve / Insights, accept or reject diffs, render PDF/DOCX/text (parse gate), and inspect Skim and Parse views.
+Resume Studio for the active workspace. Pick a search, create a base resume from the Career Profile, run Critique / Improve / Insights, accept or reject diffs, render PDF/DOCX/text (parse gate), and inspect Skim and Parse views. **New resume** is the primary action when there are no resumes; the empty state also has a Create a resume button.
 
 ## Save paths
 

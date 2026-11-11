@@ -11,14 +11,12 @@ import {
 } from "@kame/api-client";
 import { FnButton, FnChip, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
-import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
-const auth = useAuthStore();
 const qc = useQueryClient();
 const route = useRoute();
 const router = useRouter();
@@ -31,6 +29,8 @@ const helpOpen = ref(false);
 const skipOpen = ref(false);
 const skipReason = ref("too junior");
 const riskConfirmOpen = ref(false);
+const showAllFit = ref(false);
+const mobileDetail = ref(false);
 
 function sealLevel(level: string | null | undefined): "clear" | "caution" | "danger" {
   if (level === "red") return "danger";
@@ -44,13 +44,58 @@ function sealLabel(level: string | null | undefined): string {
   return "Clear";
 }
 
+const STOP_REASONS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "has",
+  "have",
+  "in",
+  "is",
+  "it",
+  "not",
+  "of",
+  "on",
+  "or",
+  "our",
+  "that",
+  "the",
+  "their",
+  "they",
+  "this",
+  "to",
+  "we",
+  "will",
+  "with",
+  "you",
+  "your",
+]);
+const REASON_COPY: Record<string, string> = {
+  "Posted < 72h": "Posted recently",
+  "Posted < 7d": "Posted this week",
+};
+
 function reasonText(r: unknown): string {
-  if (typeof r === "string") return r;
-  if (r && typeof r === "object") {
-    const o = r as { evidence?: string; signal?: string };
-    return o.evidence || o.signal || "";
-  }
-  return "";
+  const text =
+    typeof r === "string"
+      ? r
+      : r && typeof r === "object"
+        ? String(
+            (r as { evidence?: string; signal?: string }).evidence ||
+              (r as { signal?: string }).signal ||
+              "",
+          )
+        : "";
+  const clean = text.trim();
+  return STOP_REASONS.has(clean.toLowerCase()) ? "" : (REASON_COPY[clean] ?? clean);
 }
 
 const board = useQuery({
@@ -77,6 +122,7 @@ const board = useQuery({
 });
 
 const rows = computed(() => board.data.value ?? []);
+const initialJob = computed(() => (route.query.job as string) || null);
 const loading = computed(
   () => !ws.loaded || board.isPending.value || (board.isFetching.value && !board.data.value),
 );
@@ -110,10 +156,15 @@ const relax = useQuery({
 });
 
 watch(
-  rows,
-  (list) => {
+  [rows, initialJob],
+  ([list, wanted]) => {
     if (!list.length) {
       selectedId.value = null;
+      return;
+    }
+    if (wanted && list.some((r) => r.id === wanted)) {
+      selectedId.value = wanted;
+      mobileDetail.value = true;
       return;
     }
     if (!selectedId.value || !list.some((r) => r.id === selectedId.value)) {
@@ -178,33 +229,9 @@ async function continueDespiteRisk() {
   }
 }
 
-async function exportCsv() {
-  try {
-    const token = await auth.ensureFresh();
-    const qs = new URLSearchParams({
-      include_not_eligible: String(includeIneligible.value),
-    });
-    if (trackFilter.value) qs.set("track_id", trackFilter.value);
-    const base = useRuntimeConfig().public.apiBase as string;
-    const res = await fetch(`${base}/api/v1/jobs/export.csv?${qs}`, {
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(ws.currentId ? { "X-Workspace-Id": ws.currentId } : {}),
-      },
-    });
-    if (!res.ok) {
-      throw new Error(`export failed (${res.status})`);
-    }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "jobs.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    toast.push({ title: apiError(err), tone: "danger" });
-  }
+function selectJob(id: string) {
+  selectedId.value = id;
+  mobileDetail.value = true;
 }
 
 function move(delta: number) {
@@ -249,10 +276,50 @@ function onKey(e: KeyboardEvent) {
 onMounted(() => window.addEventListener("keydown", onKey));
 onUnmounted(() => window.removeEventListener("keydown", onKey));
 
+function workModeLabel(mode: string | null | undefined): string {
+  if (!mode) return "";
+  return t(`tracks.mode_${mode}`);
+}
+
 function salaryLabel(s: Record<string, unknown> | undefined): string {
   if (!s) return "";
   if (s.min != null) return String(s.min);
   return "";
+}
+
+function visibleReasons(reasons: unknown[] | undefined): unknown[] {
+  return (reasons || []).filter((r) => {
+    const text = reasonText(r).toLowerCase();
+    if (!text) return false;
+    const parts = text
+      .split(/[,·]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    return parts.length > 0 && !parts.every((part) => STOP_REASONS.has(part));
+  });
+}
+
+const visibleQualifications = computed(() => {
+  const rows = selected.value?.qualifications ?? [];
+  return showAllFit.value ? rows : rows.slice(0, 3);
+});
+const allUnproven = computed(() => {
+  const rows = selected.value?.qualifications ?? [];
+  return rows.length > 0 && rows.every((q) => String(q.verdict || "").includes("not"));
+});
+
+function kindLabel(kind?: string | null): string {
+  if (kind === "must") return t("jobs.required");
+  if (kind === "nice") return t("jobs.preferred");
+  return kind || "";
+}
+
+function verdictLabel(verdict?: string | null): string {
+  if (!verdict) return "";
+  if (verdict.includes("not")) return t("jobs.noEvidence");
+  if (verdict === "met") return "Met";
+  if (verdict === "partial") return "Partial";
+  return verdict;
 }
 
 function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
@@ -263,13 +330,20 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 </script>
 
 <template>
-  <div class="flex h-[calc(100dvh-4rem)] flex-col gap-3 p-4 md:p-6">
+  <div
+    class="flex min-h-[calc(100dvh-4rem)] flex-col gap-3 p-4 pb-24 md:p-6 lg:h-[calc(100dvh-4rem)] lg:pb-6"
+  >
     <header class="flex flex-wrap items-center gap-2">
       <h1 class="font-display text-xl text-ink-900">{{ t("nav.jobs") }}</h1>
       <div class="ml-auto flex flex-wrap items-center gap-2">
         <label class="flex items-center gap-1 text-sm text-ink-600">
-          <input v-model="includeIneligible" type="checkbox" class="accent-persimmon-600" />
-          Ineligible
+          <input
+            v-model="includeIneligible"
+            type="checkbox"
+            class="accent-persimmon-600"
+            title="Include jobs you may not qualify for"
+          />
+          {{ t("jobs.showAllJobs") }}
         </label>
         <select
           v-model="sort"
@@ -280,10 +354,6 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           <option value="newest">Newest</option>
           <option value="salary">Salary</option>
         </select>
-        <FnButton size="sm" tone="ghost" @click="exportCsv">CSV</FnButton>
-        <FnButton size="sm" tone="ghost" aria-label="Shortcuts" @click="helpOpen = !helpOpen"
-          >?</FnButton
-        >
       </div>
     </header>
 
@@ -305,14 +375,18 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       <ul v-if="relax.data.value?.length" class="space-y-1 text-sm">
         <li v-for="s in relax.data.value" :key="s.label">{{ s.label }}: +{{ s.gained }}</li>
       </ul>
-      <FnButton size="sm" @click="router.push('/tracks')">Tracks</FnButton>
+      <FnButton size="sm" @click="router.push('/tracks')">{{ t("nav.tracks") }}</FnButton>
     </div>
 
     <div
       v-else
       class="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,18rem)]"
     >
-      <ul class="min-h-0 overflow-y-auto border-r border-ink-100 pr-2" role="listbox">
+      <ul
+        :class="mobileDetail ? 'hidden lg:block' : 'block'"
+        class="border-r border-ink-100 pr-2 lg:min-h-0 lg:overflow-y-auto"
+        role="listbox"
+      >
         <li
           v-for="row in rows"
           :key="row.id"
@@ -320,32 +394,45 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           :aria-selected="row.id === selectedId"
           class="cursor-pointer border-b border-ink-100 px-2 py-2 text-sm hover:bg-paper-100"
           :class="row.id === selectedId ? 'bg-paper-100' : ''"
-          @click="selectedId = row.id"
+          @click="selectJob(row.id)"
         >
           <div class="flex items-baseline gap-2">
             <span class="font-mono text-xs tabular-nums text-persimmon-700">{{
               row.score != null ? Math.round(row.score) : "-"
             }}</span>
-            <span class="truncate font-medium text-ink-900">{{ row.title }}</span>
+            <span class="line-clamp-2 font-medium text-ink-900">{{ row.title }}</span>
           </div>
           <div class="mt-0.5 flex flex-wrap gap-1 text-xs text-ink-500">
             <span>{{ row.company_name }}</span>
             <FnRiskSeal
-              v-if="row.risk_level"
+              v-if="row.risk_level === 'yellow' || row.risk_level === 'red'"
               :level="sealLevel(row.risk_level)"
               :label="sealLabel(row.risk_level)"
             />
             <FnChip v-if="row.eligibility === 'not_eligible'">Ineligible</FnChip>
-            <FnChip v-for="r in (row.reasons || []).slice(0, 2)" :key="String(r)">{{ r }}</FnChip>
+            <FnChip v-for="r in visibleReasons(row.reasons).slice(0, 2)" :key="String(r)">{{
+              reasonText(r)
+            }}</FnChip>
           </div>
         </li>
       </ul>
 
-      <section v-if="selected" class="min-h-0 overflow-y-auto">
+      <section
+        v-if="selected"
+        :class="mobileDetail ? 'block' : 'hidden lg:block'"
+        class="min-h-0 lg:overflow-y-auto"
+      >
+        <button
+          type="button"
+          class="mb-3 flex min-h-11 items-center gap-2 text-sm text-ink-600 lg:hidden"
+          @click="mobileDetail = false"
+        >
+          <NavIcon name="ph:arrow-left" :size="16" /> Back to jobs
+        </button>
         <h2 class="font-display text-2xl text-ink-900">{{ selected.title }}</h2>
         <p class="mt-1 text-sm text-ink-600">
           {{ selected.company_name }}
-          <span v-if="selected.work_mode"> · {{ selected.work_mode }}</span>
+          <span v-if="selected.work_mode"> · {{ workModeLabel(selected.work_mode) }}</span>
           <span v-if="salaryLabel(selected.salary)"> · {{ salaryLabel(selected.salary) }}</span>
         </p>
         <p
@@ -363,19 +450,25 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       </section>
       <FnSkeleton v-else class="h-40" />
 
-      <aside v-if="selected" class="min-h-0 overflow-y-auto border-l border-ink-100 pl-3">
+      <aside
+        v-if="selected"
+        :class="mobileDetail ? 'block' : 'hidden lg:block'"
+        class="border-t border-ink-100 pt-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-3"
+      >
         <div class="mb-3">
           <div class="font-mono text-3xl tabular-nums text-persimmon-700">
             {{ selected.score != null ? Math.round(selected.score) : "-" }}
           </div>
+          <p class="text-xs text-ink-500">{{ t("jobs.matchScore") }}</p>
           <div class="mt-1 flex flex-wrap gap-1">
             <FnRiskSeal
               v-if="selected.risk_level"
               :level="sealLevel(selected.risk_level)"
               :label="sealLabel(selected.risk_level)"
             />
-            <FnChip v-for="r in selected.reasons || []" :key="String(r)">{{ r }}</FnChip>
-            <FnChip v-if="selected.ai_review_paused" tone="pencil">AI review paused</FnChip>
+            <FnChip v-for="r in selected.reasons || []" :key="String(r)">{{
+              reasonText(r)
+            }}</FnChip>
           </div>
           <ul
             v-if="selected.risk_reasons?.length"
@@ -386,22 +479,41 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             </li>
           </ul>
         </div>
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">Fit</h3>
+        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
+          {{ t("jobs.fit") }}
+        </h3>
+        <p v-if="allUnproven" class="mb-3 text-sm text-ink-600">
+          {{ t("jobs.addResumeFacts") }}
+          <NuxtLink to="/profile/onboarding" class="text-persimmon-700 underline">{{
+            t("jobs.addResume")
+          }}</NuxtLink>
+        </p>
         <ul class="mb-4 space-y-2 text-sm">
           <li
-            v-for="q in selected.qualifications || []"
+            v-for="q in visibleQualifications"
             :key="String(q.id)"
             class="border-b border-ink-50 pb-2"
           >
             <div class="flex items-start gap-2">
-              <FnChip :tone="chipTone(String(q.verdict || ''))">{{ q.kind }}</FnChip>
+              <FnChip :tone="chipTone(String(q.verdict || ''))">{{
+                kindLabel(String(q.kind || ""))
+              }}</FnChip>
               <span class="text-ink-800">{{ q.text }}</span>
             </div>
             <p v-if="q.verdict" class="mt-1 text-xs text-ink-500">
-              {{ q.verdict }}<span v-if="q.evidence_quote"> · {{ q.evidence_quote }}</span>
+              {{ verdictLabel(String(q.verdict || ""))
+              }}<span v-if="q.evidence_quote"> · {{ q.evidence_quote }}</span>
             </p>
           </li>
         </ul>
+        <FnButton
+          v-if="(selected.qualifications?.length ?? 0) > 3"
+          size="sm"
+          tone="ghost"
+          class="mb-3"
+          @click="showAllFit = !showAllFit"
+          >{{ showAllFit ? t("jobs.showLess") : t("jobs.showAll") }}</FnButton
+        >
         <div class="flex flex-wrap gap-2">
           <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
           <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">
@@ -467,6 +579,20 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           </ul>
         </div>
       </aside>
+    </div>
+
+    <div
+      v-if="mobileDetail && selected"
+      class="fixed inset-x-0 bottom-16 z-20 flex gap-2 border-t border-rule bg-paper-1 p-3 lg:hidden"
+    >
+      <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
+      <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">
+        Tailor
+      </FnButton>
+      <FnButton size="sm" tone="ghost" :disabled="!selected.apply_url" @click="openOriginal">
+        Open
+      </FnButton>
+      <FnButton size="sm" tone="ghost" @click="skipOpen = true">Skip</FnButton>
     </div>
   </div>
 </template>

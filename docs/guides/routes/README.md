@@ -10,7 +10,7 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/forgot-password` | [forgot-password.md](./forgot-password.md) | Documented (Phase 2) |
 | `/reset-password?token=` | [reset-password.md](./reset-password.md) | Documented (Phase 2) |
 | `/invite?token=` | [invite.md](./invite.md) | Documented (Phase 2) |
-| `/ (Today)` | [index.md](./index.md) | Documented (Phase 11 command center) |
+| `/ (Today)` | [index.md](./index.md) | Documented (guided brief, 2026-11-11) |
 | `/applications` | [applications.md](./applications.md) | Documented (Phase 11) |
 | `/applications/:id` | [applications/detail.md](./applications/detail.md) | Documented (Phase 11 + 15–16 + 20) |
 | `/responses` | [responses.md](./responses.md) | Documented (Phase 20) |
@@ -39,8 +39,8 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/profile/onboarding` | [profile/onboarding.md](./profile/onboarding.md) | Documented (Phase 3) |
 | `/profile/review/:documentId` | [profile/review.md](./profile/review.md) | Documented (Phase 3) |
 | `/profile/merge/:documentId` | [profile/merge.md](./profile/merge.md) | Documented (Phase 3) |
-| `/tracks` | [tracks/index.md](./tracks/index.md) | Documented (Phase 4) |
-| `/tracks/:id` | [tracks/detail.md](./tracks/detail.md) | Documented (Phase 4; Run now Phase 5) |
+| `/tracks` | [tracks/index.md](./tracks/index.md) | Documented (Searches label, 2026-11-11) |
+| `/tracks/:id` | [tracks/detail.md](./tracks/detail.md) | Documented (results-first, Run search, 2026-11-11) |
 | `/tracks/:id/be-found` | [tracks/be-found.md](./tracks/be-found.md) | Documented (Phase 18) |
 | `/tracks/:id/gaps` | [tracks/gaps.md](./tracks/gaps.md) | Documented (Phase 20) |
 | `/tracks/:id/settings` | [tracks/settings.md](./tracks/settings.md) | Documented (Phase 10 schedules) |
@@ -54,4 +54,4 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/studio` | [studio.md](./studio.md) | Documented (Phase 8) |
 | `/tailor/:trackJobId` | [tailor.md](./tailor.md) | Documented (Phase 9) |
 
-Placeholder screens (`/runs`) show "Not built yet" and the phase that builds them; each gets a guide when its phase lands. Answer Desk landed in Phase 12; applications in Phase 11; Phase 9 still creates application rows via Tailor Accept.
+Advanced tools live under **More tools**. `/runs` redirects to `/tracks`; per-search history is `/tracks/:id/runs`. Answer Desk landed in Phase 12; applications in Phase 11; Phase 9 still creates application rows via Tailor Accept.
