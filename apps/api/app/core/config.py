@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     mail_from: str = "Kame Apply <no-reply@kame-apply.local>"
     smtp_host: str = "127.0.0.1"
     smtp_port: int = 1125
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_starttls: bool = False
+    smtp_ssl: bool = False
     resend_api_key: str | None = None
     sentry_dsn: str | None = None
 
@@ -64,6 +68,8 @@ class Settings(BaseSettings):
 
     # Object storage (Cloudflare R2; MinIO locally). Tests use an in-memory store.
     s3_endpoint_url: str | None = "http://127.0.0.1:9100"
+    # Browser-facing endpoint for presigned URLs. Defaults to s3_endpoint_url.
+    s3_public_endpoint_url: str | None = None
     s3_access_key: str = "kame_apply"
     s3_secret_key: str = "kame_apply_local_only"  # noqa: S105
     s3_bucket: str = "kame-apply"

@@ -103,9 +103,7 @@ def link_relative(link: Path, target: str) -> bool:
 def skill_dirs(base: Path) -> list[Path]:
     if not base.is_dir():
         return []
-    return sorted(
-        p for p in base.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()
-    )
+    return sorted(p for p in base.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
 
 
 def frontmatter(text: str) -> tuple[str, str]:
@@ -132,13 +130,10 @@ def yaml_list(header: str, field: str) -> list[str]:
     flow = re.search(r"^" + re.escape(field) + r":\s*\[(.*)\]\s*$", header, re.M)
     if flow:
         return [x.strip().strip("\"'") for x in flow.group(1).split(",") if x.strip()]
-    block = re.search(
-        r"^" + re.escape(field) + r":\s*\n((?:[ \t]*-[ \t]*.+\n?)+)", header, re.M
-    )
+    block = re.search(r"^" + re.escape(field) + r":\s*\n((?:[ \t]*-[ \t]*.+\n?)+)", header, re.M)
     if block:
         return [
-            m.group(1).strip().strip("\"'")
-            for m in re.finditer(r"-[ \t]*(.+)", block.group(1))
+            m.group(1).strip().strip("\"'") for m in re.finditer(r"-[ \t]*(.+)", block.group(1))
         ]
     single = scalar(header, field)
     return [single] if single else []
@@ -230,17 +225,13 @@ def wire_agents() -> None:
         info("no .claude/agents; skipping agent links")
         return
     for file in sorted(canonical.glob("*.md")):
-        link_relative(
-            ROOT / ".cursor/agents" / file.name, f"../../.claude/agents/{file.name}"
-        )
+        link_relative(ROOT / ".cursor/agents" / file.name, f"../../.claude/agents/{file.name}")
 
         target = ROOT / ".opencode/agents" / file.name
         if target.exists():
             continue
         header, body = frontmatter(file.read_text())
-        description = scalar(
-            header, "description", f"{file.stem} specialist for this repo."
-        )
+        description = scalar(header, "description", f"{file.stem} specialist for this repo.")
         tools = yaml_list(header, "tools")
         can_edit = not tools or any(
             t.lower() in {"edit", "write", "apply_patch", "*"} for t in tools
@@ -248,9 +239,7 @@ def wire_agents() -> None:
         template = OPENCODE_AGENT_ALL_TOOLS if can_edit else OPENCODE_AGENT_DENY_EDIT
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            template.format(
-                description=json.dumps(description), body=body.rstrip() + "\n"
-            )
+            template.format(description=json.dumps(description), body=body.rstrip() + "\n")
         )
         ok(f"generated {rel(target)}")
 
@@ -299,7 +288,7 @@ def wire_codex() -> None:
     if not sync.is_file():
         warn(".codex/sync.py missing; Codex compatibility layer not generated")
         return
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603 - trusted local sync script
         [sys.executable, str(sync)], cwd=ROOT, capture_output=True, text=True
     )
     if result.returncode == 0:
@@ -336,9 +325,7 @@ def check_instructions(c: Checker) -> None:
     c.require(agents.is_file(), "AGENTS.md missing (canonical instructions)")
     if claude.is_file():
         text = claude.read_text()
-        c.require(
-            "@AGENTS.md" in text, "CLAUDE.md must import AGENTS.md with @AGENTS.md"
-        )
+        c.require("@AGENTS.md" in text, "CLAUDE.md must import AGENTS.md with @AGENTS.md")
 
 
 def check_skills(c: Checker, cfg: dict) -> None:
@@ -476,14 +463,10 @@ def check_opencode(c: Checker, cfg: dict) -> None:
 
     servers = set((data.get("mcp", {}).get("servers") or {}).keys())
     for required in cfg["opencode"].get("requiredMcp", []):
-        c.require(
-            required in servers, f"opencode.json mcp.servers missing '{required}'"
-        )
+        c.require(required in servers, f"opencode.json mcp.servers missing '{required}'")
 
     if (ROOT / ".mcp.json").is_file():
-        declared = set(
-            json.loads((ROOT / ".mcp.json").read_text()).get("mcpServers", {}).keys()
-        )
+        declared = set(json.loads((ROOT / ".mcp.json").read_text()).get("mcpServers", {}).keys())
         for name in sorted(declared - servers):
             c.require(
                 False,
@@ -492,9 +475,7 @@ def check_opencode(c: Checker, cfg: dict) -> None:
 
     # Migration guard must be enforced by config, not only by a hook.
     rules = data.get("permissions") or []
-    denied_edit = [
-        r for r in rules if r.get("action") == "edit" and r.get("effect") == "deny"
-    ]
+    denied_edit = [r for r in rules if r.get("action") == "edit" and r.get("effect") == "deny"]
     for migration in cfg.get("migrations", []):
         c.require(
             any(migration in str(r.get("resource", "")) for r in denied_edit),
@@ -540,9 +521,7 @@ def check_stack_terms(c: Checker, cfg: dict) -> None:
     if "BANNED" in text and "_repo.sh" in text:
         return
     for term in banned:
-        c.require(
-            term in text, f"check-stack-terminology.sh missing banned term: {term}"
-        )
+        c.require(term in text, f"check-stack-terminology.sh missing banned term: {term}")
 
 
 def cmd_check(cfg: dict) -> int:

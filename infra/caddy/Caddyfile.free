@@ -1,0 +1,48 @@
+# Free single-host profile: web and API on one DuckDNS name.
+# No Cloudflare Pages, no separate web domain.
+{$API_HOST:kame.duckdns.org} {
+	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		X-Frame-Options DENY
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:8100
+	}
+	handle /healthz {
+		reverse_proxy api:8100
+	}
+	handle /readyz {
+		reverse_proxy api:8100
+	}
+	handle /mcp* {
+		reverse_proxy api:8100
+	}
+	handle /docs* {
+		reverse_proxy api:8100
+	}
+	handle /openapi.json {
+		reverse_proxy api:8100
+	}
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Browser-facing MinIO endpoint for presigned uploads and downloads.
+{$S3_HOST:kame-s3.duckdns.org} {
+	reverse_proxy minio:9000 {
+		header_up Host {host}
+	}
+	header {
+		X-Content-Type-Options nosniff
+		-Server
+	}
+}

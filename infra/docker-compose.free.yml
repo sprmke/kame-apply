@@ -1,0 +1,108 @@
+# Free single-VM profile: Caddy serves the web build and proxies the API,
+# MinIO replaces Cloudflare R2, and SMTP replaces Resend.
+# No domain, Cloudflare, or Resend account is required.
+name: kame-apply-free
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      API_HOST: ${API_HOST:-kame.duckdns.org}
+      S3_HOST: ${S3_HOST:-kame-s3.duckdns.org}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile.free:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    image: ${KAME_API_IMAGE:-kame-apply-api:latest}
+    restart: unless-stopped
+    env_file:
+      - ${KAME_ENV_FILE:-/etc/kame-apply/api.env}
+    environment:
+      ENVIRONMENT: ${KAME_ENVIRONMENT:-dev}
+      COOKIE_SECURE: "true"
+      TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8100/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-kame_apply}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/prod/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in the shell or infra/.env}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?Set S3_SECRET_KEY in the shell or infra/.env}
+      MINIO_API_CORS_ALLOW_ORIGIN: https://${API_HOST:-kame.duckdns.org}
+    ports:
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file:
+      - ${KAME_ENV_FILE:-/etc/kame-apply/api.env}
+    volumes:
+      - ./backup/backup-loop.sh:/backup-loop.sh:ro
+      - backup_scratch:/tmp/backups
+    entrypoint: ["/bin/sh", "/backup-loop.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+  minio_data:
+  backup_scratch:

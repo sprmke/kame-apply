@@ -86,14 +86,21 @@ class MemoryStorage:
 class S3Storage:
     def __init__(self, settings: Settings) -> None:
         self._bucket = settings.s3_bucket
-        self._client = boto3.client(
-            "s3",
-            endpoint_url=settings.s3_endpoint_url,
-            aws_access_key_id=settings.s3_access_key,
-            aws_secret_access_key=settings.s3_secret_key,
-            region_name=settings.s3_region,
-            config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
-        )
+
+        def client(endpoint: str | None):
+            return boto3.client(
+                "s3",
+                endpoint_url=endpoint,
+                aws_access_key_id=settings.s3_access_key,
+                aws_secret_access_key=settings.s3_secret_key,
+                region_name=settings.s3_region,
+                config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+            )
+
+        self._client = client(settings.s3_endpoint_url)
+        # Presigned URLs go to the browser, so they must use a public host. Server-side
+        # reads and writes stay on the internal endpoint (MinIO on the Compose network).
+        self._public_client = client(settings.s3_public_endpoint_url or settings.s3_endpoint_url)
 
     def _run(self, fn, *args, **kwargs):
         return asyncio.to_thread(fn, *args, **kwargs)
@@ -156,7 +163,7 @@ class S3Storage:
 
     async def presign_put(self, key: str, content_type: str) -> str:
         return await self._run(
-            self._client.generate_presigned_url,
+            self._public_client.generate_presigned_url,
             "put_object",
             Params={
                 "Bucket": self._bucket,
@@ -168,7 +175,7 @@ class S3Storage:
 
     async def presign_get(self, key: str) -> str:
         return await self._run(
-            self._client.generate_presigned_url,
+            self._public_client.generate_presigned_url,
             "get_object",
             Params={"Bucket": self._bucket, "Key": key},
             ExpiresIn=PRESIGN_GET_SECONDS,
