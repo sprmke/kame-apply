@@ -185,17 +185,18 @@ const letter = computed(
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:p-6">
-    <header class="flex flex-wrap items-center gap-2">
-      <h1 class="font-display text-xl text-ink-900">Tailor</h1>
-      <div class="font-mono text-sm text-ink-700">{{ beforeGrade }} → {{ afterGrade }}</div>
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 py-8 md:p-6">
+    <header class="flex flex-wrap items-center gap-3">
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">Tailor</h1>
+      <div class="text-sm tabular-nums text-ink-600">{{ beforeGrade }} → {{ afterGrade }}</div>
       <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')" tone="neutral">
         {{ run.status }}
       </FnChip>
-      <div class="ml-auto flex flex-wrap gap-1">
-        <FnButton size="sm" tone="ghost" @click="router.push('/jobs')">Back</FnButton>
+      <div class="ml-auto flex flex-wrap gap-2">
+        <FnButton size="sm" tone="quiet" @click="router.push('/jobs')">Back</FnButton>
         <FnButton
           size="sm"
+          tone="primary"
           :disabled="!run || acceptMut.isPending.value || run.status !== 'ready'"
           @click="acceptMut.mutate()"
         >
@@ -211,8 +212,8 @@ const letter = computed(
     </div>
 
     <template v-else-if="run">
-      <div class="flex flex-wrap gap-1 border-b border-ink-100 pb-2 lg:hidden">
-        <FnButton
+      <div class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1 lg:hidden">
+        <button
           v-for="item in [
             ['ledger', 'Ledger'],
             ['changes', 'Changes'],
@@ -220,32 +221,45 @@ const letter = computed(
             ['letter', 'Letter'],
           ] as const"
           :key="item[0]"
-          size="sm"
-          :tone="tab === item[0] ? 'primary' : 'ghost'"
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            tab === item[0]
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
           @click="tab = item[0]"
         >
           {{ item[1] }}
-        </FnButton>
+        </button>
       </div>
 
-      <div class="grid gap-4 lg:grid-cols-3">
-        <section v-show="tab === 'ledger'" class="min-w-0 lg:!block">
-          <div v-if="knockouts.length" class="mb-3 border border-oxblood-600 p-2 text-sm">
+      <div
+        class="grid items-start gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)]"
+      >
+        <section
+          v-show="tab === 'ledger'"
+          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
+        >
+          <div
+            v-if="knockouts.length"
+            class="mb-3 rounded-lg border border-oxblood-600 bg-paper-0 p-3 text-sm"
+          >
             <p class="font-medium text-ink-900">Knockouts</p>
-            <ul class="mt-1 space-y-1 text-ink-700">
+            <ul class="mt-1 space-y-1 text-ink-600">
               <li v-for="(k, i) in knockouts" :key="i">{{ k.reason }} · {{ k.quote }}</li>
             </ul>
           </div>
-          <ul class="divide-y divide-ink-100 border border-ink-100 text-sm">
-            <li v-for="(row, i) in ledgerRows" :key="i" class="px-3 py-2">
+          <ul class="divide-y divide-rule text-sm">
+            <li v-for="(row, i) in ledgerRows" :key="i" class="px-1 py-3">
               <div class="flex gap-2">
                 <span class="font-mono text-xs">{{ verdictGlyph(String(row.verdict)) }}</span>
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap gap-1">
                     <FnChip>{{ row.kind }}</FnChip>
-                    <span class="text-ink-800">{{ row.text }}</span>
+                    <span class="text-ink-900">{{ row.text }}</span>
                   </div>
-                  <p class="mt-1 text-xs text-ink-500">
+                  <p class="mt-1 text-xs text-ink-400">
                     {{ row.before || "-" }} → {{ row.verdict }}
                     <span v-if="row.evidence_quote"> · {{ row.evidence_quote }}</span>
                   </p>
@@ -254,25 +268,32 @@ const letter = computed(
             </li>
           </ul>
           <ul v-if="gaps.length" class="mt-3 space-y-2 text-sm">
-            <li v-for="(g, i) in gaps" :key="i" class="border border-ink-100 p-2">
+            <li
+              v-for="(g, i) in gaps"
+              :key="i"
+              class="rounded-lg border border-rule bg-paper-0 p-3"
+            >
               <p class="font-medium">{{ g.text }}</p>
               <p class="text-ink-600">{{ g.message }}</p>
             </li>
           </ul>
         </section>
 
-        <section v-show="tab === 'changes'" class="min-w-0 lg:!block">
+        <section
+          v-show="tab === 'changes'"
+          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
+        >
           <p v-if="!changes.length" class="text-sm text-ink-600">No text changes</p>
-          <ul v-else class="divide-y divide-ink-100 border border-ink-100 text-sm">
-            <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="p-3">
+          <ul v-else class="divide-y divide-rule text-sm">
+            <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="py-3">
               <p class="font-medium">{{ ch.op }}</p>
               <p class="text-ink-600">{{ ch.reason }}</p>
-              <p v-if="ch.before" class="mt-1 text-ink-500 line-through">{{ ch.before }}</p>
+              <p v-if="ch.before" class="mt-1 text-ink-400 line-through">{{ ch.before }}</p>
               <p v-if="ch.after" class="text-ink-900">{{ ch.after }}</p>
               <div v-if="ch.change_id" class="mt-2 flex gap-1">
                 <FnButton
                   size="sm"
-                  :tone="ch.status === 'accepted' ? 'primary' : 'ghost'"
+                  :tone="ch.status === 'accepted' ? 'quiet' : 'ghost'"
                   :disabled="ch.status === 'accepted' || changeMut.isPending.value"
                   @click="decideChange(ch.change_id, 'accepted')"
                 >
@@ -280,7 +301,7 @@ const letter = computed(
                 </FnButton>
                 <FnButton
                   size="sm"
-                  :tone="ch.status === 'rejected' ? 'primary' : 'ghost'"
+                  :tone="ch.status === 'rejected' ? 'quiet' : 'ghost'"
                   :disabled="ch.status === 'rejected' || changeMut.isPending.value"
                   @click="decideChange(ch.change_id, 'rejected')"
                 >
@@ -291,31 +312,44 @@ const letter = computed(
           </ul>
         </section>
 
-        <section v-show="tab === 'preview' || tab === 'letter'" class="min-w-0 lg:!block">
-          <div class="mb-2 hidden gap-1 lg:flex">
-            <FnButton
-              size="sm"
-              :tone="tab !== 'letter' ? 'primary' : 'ghost'"
+        <section
+          v-show="tab === 'preview' || tab === 'letter'"
+          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
+        >
+          <div class="mb-3 hidden gap-1 rounded-lg bg-paper-2 p-1 lg:flex">
+            <button
+              type="button"
+              class="min-h-11 rounded-md px-4 text-sm font-semibold"
+              :class="
+                tab !== 'letter'
+                  ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+                  : 'text-ink-600 hover:text-ink-900'
+              "
               @click="tab = 'preview'"
             >
               Preview
-            </FnButton>
-            <FnButton
-              size="sm"
-              :tone="tab === 'letter' ? 'primary' : 'ghost'"
+            </button>
+            <button
+              type="button"
+              class="min-h-11 rounded-md px-4 text-sm font-semibold"
+              :class="
+                tab === 'letter'
+                  ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+                  : 'text-ink-600 hover:text-ink-900'
+              "
               @click="tab = 'letter'"
             >
               Letter
-            </FnButton>
+            </button>
           </div>
           <pre
             v-if="tab !== 'letter'"
-            class="whitespace-pre-wrap border border-ink-100 p-3 font-mono text-xs text-ink-800"
+            class="whitespace-pre-wrap rounded-lg bg-paper-0 p-4 text-sm text-ink-900"
             >{{ previewText }}</pre>
-          <div v-else class="border border-ink-100 p-3 text-sm text-ink-800">
+          <div v-else class="rounded-lg bg-paper-0 p-4 text-sm text-ink-900">
             <p v-if="!letter" class="text-ink-600">No cover letter</p>
             <template v-else>
-              <p class="mb-2 text-xs text-ink-500">{{ letter.word_count }} words</p>
+              <p class="mb-2 text-xs text-ink-400">{{ letter.word_count }} words</p>
               <pre class="whitespace-pre-wrap font-sans">{{ letter.content }}</pre>
             </template>
           </div>

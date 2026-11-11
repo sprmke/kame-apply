@@ -22,21 +22,21 @@ function active(to: string) {
 <template>
   <nav
     :aria-label="t('shell.primaryNav')"
-    class="fixed inset-x-0 bottom-0 z-30 grid h-16 grid-cols-5 items-center border-t border-rule bg-paper-1 pb-[env(safe-area-inset-bottom)] md:hidden"
+    class="fixed inset-x-0 bottom-0 z-30 grid h-16 grid-cols-5 items-center border-t border-rule bg-paper-1 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-20px_rgba(16,24,40,0.35)] md:hidden"
   >
     <NuxtLink
       v-for="item in primary"
       :key="item.key"
       :to="item.to"
       class="relative flex min-h-11 flex-col items-center justify-center gap-0.5 text-[0.6875rem]"
-      :class="active(item.to) ? 'font-medium text-ink-900' : 'text-ink-600'"
+      :class="active(item.to) ? 'font-semibold text-brand-700' : 'text-ink-600'"
       :aria-current="active(item.to) ? 'page' : undefined"
     >
       <NavIcon :name="item.icon" :size="18" />
       {{ t(`nav.${item.key}`) }}
       <span
         v-if="item.key === 'today' && needsYou > 0"
-        class="absolute top-1 right-1/2 mr-2 grid min-w-4 place-items-center rounded-full bg-persimmon-500 px-1 text-[0.5625rem] leading-4 font-semibold text-on-brand"
+        class="absolute top-1 right-1/2 mr-2 grid min-w-4 place-items-center rounded-full bg-brand-500 px-1 text-[0.5625rem] leading-4 font-semibold text-on-brand"
         >{{ needsYou }}</span
       >
     </NuxtLink>
@@ -66,7 +66,7 @@ function active(to: string) {
         <span class="flex-1">{{ t("shell.needsYou") }}</span>
         <span
           v-if="needsYou > 0"
-          class="grid min-w-5 place-items-center rounded-full bg-persimmon-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
+          class="grid min-w-5 place-items-center rounded-full bg-brand-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
           >{{ needsYou }}</span
         >
       </NuxtLink>

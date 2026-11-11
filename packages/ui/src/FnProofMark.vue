@@ -8,7 +8,7 @@ defineProps<{ index: number; source: string; quote?: string; label?: string }>()
 <template>
   <PopoverRoot>
     <PopoverTrigger
-      class="cursor-help rounded-sm underline decoration-ink-600 decoration-dotted underline-offset-4 focus-visible:outline-2 focus-visible:outline-persimmon-700"
+      class="cursor-help rounded-sm underline decoration-ink-600 decoration-dotted underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-700"
       :aria-label="label ?? `Evidence ${index}`"
     >
       <slot /><sup class="ml-0.5 font-mono text-[0.625rem] text-ink-600">{{ index }}</sup>

@@ -157,6 +157,7 @@ const STOP_REASONS = new Set([
   "be",
   "but",
   "by",
+  "can",
   "for",
   "from",
   "has",
@@ -379,14 +380,16 @@ async function saveMore() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
     <div v-if="loading" class="flex flex-col gap-3">
       <FnSkeleton class="h-10 w-64" />
       <FnSkeleton class="h-40 w-full" />
     </div>
     <p v-else-if="loadError" class="text-sm text-ink-600">{{ apiError(loadError) }}</p>
     <template v-else-if="track">
-      <div class="flex flex-wrap items-start justify-between gap-3">
+      <div
+        class="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
+      >
         <div class="min-w-0 flex-1">
           <FnFolderTab :hue="hue(track.color_hue)" active>{{ track.name }}</FnFolderTab>
         </div>
@@ -396,7 +399,7 @@ async function saveMore() {
           }}</FnButton>
           <NuxtLink
             :to="`/jobs?track=${trackId}`"
-            class="min-h-11 px-3 text-sm font-medium text-persimmon-700 underline-offset-2 hover:underline"
+            class="inline-flex min-h-11 items-center rounded-md border border-rule bg-paper-1 px-4 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)] transition-colors hover:border-brand-200 hover:bg-brand-50"
             >{{ t("tracks.viewMatches") }}</NuxtLink
           >
           <details class="relative text-sm">
@@ -448,11 +451,14 @@ async function saveMore() {
           Last search {{ fmt.dateTime(lastRun.started_at || lastRun.created_at) }} ·
           {{ lastRun.progress?.linked ? `${lastRun.progress.linked} new` : t("tracks.noNewJobs") }}
         </span>
-        <NuxtLink :to="`/tracks/${trackId}/runs`" class="text-persimmon-700 underline">{{
+        <NuxtLink :to="`/tracks/${trackId}/runs`" class="text-brand-700 underline">{{
           t("tracks.runHistory")
         }}</NuxtLink>
       </div>
-      <section class="flex flex-col gap-2" :aria-label="t('tracks.matchedJobs')">
+      <section
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+        :aria-label="t('tracks.matchedJobs')"
+      >
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
             {{ t("tracks.matchedJobs") }}
@@ -470,7 +476,7 @@ async function saveMore() {
             :key="j.id"
             class="flex flex-wrap items-center gap-2 py-3 text-sm"
           >
-            <span class="font-mono text-xs tabular-nums text-persimmon-700">{{
+            <span class="font-mono text-xs tabular-nums text-brand-700">{{
               j.score != null ? Math.round(j.score) : "-"
             }}</span>
             <div class="min-w-0 flex-1">
@@ -480,13 +486,13 @@ async function saveMore() {
                 <span
                   v-for="r in (j.reasons || []).slice(0, 2)"
                   :key="String(r)"
-                  class="ml-1 text-ink-500"
+                  class="ml-1 text-ink-400"
                   >· {{ reasonText(r) }}</span
                 >
               </p>
             </div>
             <div class="flex items-center gap-1">
-              <FnButton size="sm" tone="ghost" @click="triageMatch(j.id, 'shortlist')"
+              <FnButton size="sm" tone="quiet" @click="triageMatch(j.id, 'shortlist')"
                 >Shortlist</FnButton
               >
               <FnButton size="sm" tone="ghost" @click="triageMatch(j.id, 'skip')">Skip</FnButton>
@@ -503,24 +509,29 @@ async function saveMore() {
         </ul>
       </section>
 
-      <nav class="flex flex-wrap gap-1 border-b border-rule" :aria-label="t('tracks.sections')">
-        <span class="relative px-3 py-2 text-sm font-medium text-ink-900"
-          >{{ t("tracks.criteria")
-          }}<span class="absolute inset-x-2 bottom-0 h-0.5 bg-ink-900" aria-hidden="true"
-        /></span>
+      <nav
+        class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1"
+        :aria-label="t('tracks.sections')"
+      >
+        <span
+          class="rounded-md bg-paper-1 px-4 py-2 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)]"
+          >{{ t("tracks.criteria") }}</span
+        >
         <NuxtLink
           :to="`/tracks/${trackId}/runs`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.runHistory") }}</NuxtLink
         >
         <NuxtLink
           :to="`/tracks/${trackId}/settings`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.settings") }}</NuxtLink
         >
       </nav>
 
-      <section class="flex flex-col gap-3">
+      <section
+        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+      >
         <label class="flex flex-col gap-1 text-sm">
           <span class="text-ink-600">{{ t("tracks.describe") }}</span>
           <textarea
@@ -572,31 +583,30 @@ async function saveMore() {
             @remove="toggleAgencies"
             >{{ t("tracks.noAgencies") }}</FnChip
           >
-          <button
-            v-else
-            type="button"
-            class="min-h-11 text-sm text-ink-600 underline-offset-2 hover:underline"
-            @click="toggleAgencies"
-          >
-            {{ t("tracks.noAgencies") }}
-          </button>
+          <FnButton v-else size="sm" tone="quiet" @click="toggleAgencies">{{
+            t("tracks.noAgencies")
+          }}</FnButton>
         </div>
         <p class="text-sm text-ink-600">{{ t("tracks.criteriaHint") }}</p>
       </section>
 
       <section class="flex flex-col gap-3 border-t border-rule pt-4">
-        <button
-          type="button"
-          class="min-h-11 self-start text-sm font-medium text-ink-900"
+        <FnButton
+          size="sm"
+          tone="quiet"
+          class="self-start"
           :aria-expanded="moreOpen"
           @click="moreOpen = !moreOpen"
+          >{{ moreOpen ? t("tracks.hideFilters") : t("tracks.moreFilters") }}</FnButton
         >
-          {{ moreOpen ? t("tracks.hideFilters") : t("tracks.moreFilters") }}
-        </button>
         <div v-if="moreOpen" class="grid gap-4 md:grid-cols-2">
           <fieldset class="flex flex-col gap-2">
             <legend class="text-sm text-ink-600">{{ t("tracks.workModes") }}</legend>
-            <label v-for="m in ['remote', 'hybrid', 'on_site']" :key="m" class="flex gap-2 text-sm">
+            <label
+              v-for="m in ['remote', 'hybrid', 'on_site']"
+              :key="m"
+              class="flex min-h-11 items-center gap-2 text-sm"
+            >
               <input type="checkbox" :checked="workModes.includes(m)" @change="toggleMode(m)" />
               {{ t(`tracks.mode_${m}`) }}
             </label>
@@ -606,7 +616,7 @@ async function saveMore() {
             <input
               v-model="place"
               type="text"
-              class="min-h-11 border border-rule bg-paper-0 px-3"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               maxlength="200"
             />
           </label>
@@ -617,12 +627,15 @@ async function saveMore() {
               type="number"
               min="1"
               max="500"
-              class="min-h-11 border border-rule bg-paper-0 px-3"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
             />
           </label>
           <label class="flex flex-col gap-1 text-sm">
             <span class="text-ink-600">{{ t("tracks.region") }}</span>
-            <select v-model="regionPreset" class="min-h-11 border border-rule bg-paper-0 px-3">
+            <select
+              v-model="regionPreset"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+            >
               <option value="">{{ t("tracks.regionAny") }}</option>
               <option
                 v-for="r in ['APAC', 'EU', 'LATAM', 'MENA', 'NA', 'AFRICA']"
@@ -635,11 +648,21 @@ async function saveMore() {
           </label>
           <label class="flex flex-col gap-1 text-sm">
             <span class="text-ink-600">{{ t("tracks.tzOverlap") }}</span>
-            <input v-model.number="tzOverlap" type="range" min="0" max="12" class="min-h-11" />
-            <span class="font-mono text-xs text-ink-600">{{ tzOverlap }}h</span>
+            <input
+              v-model.number="tzOverlap"
+              type="range"
+              min="0"
+              max="12"
+              class="min-h-11 w-full accent-brand-600"
+            />
+            <span class="text-xs tabular-nums text-ink-600">{{ tzOverlap }}h</span>
           </label>
-          <label class="flex items-center gap-2 text-sm">
-            <input v-model="visa" type="checkbox" />
+          <label class="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              v-model="visa"
+              type="checkbox"
+              class="size-5 rounded border-rule accent-brand-600"
+            />
             {{ t("tracks.visa") }}
           </label>
           <label class="flex flex-col gap-1 text-sm">
@@ -648,7 +671,7 @@ async function saveMore() {
               v-model.number="salaryMin"
               type="number"
               min="0"
-              class="min-h-11 border border-rule bg-paper-0 px-3"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
             />
           </label>
           <div class="flex gap-2">
@@ -658,12 +681,15 @@ async function saveMore() {
                 v-model="salaryCurrency"
                 type="text"
                 maxlength="3"
-                class="min-h-11 border border-rule bg-paper-0 px-3 uppercase"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm uppercase text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               />
             </label>
             <label class="flex flex-1 flex-col gap-1 text-sm">
               <span class="text-ink-600">{{ t("tracks.period") }}</span>
-              <select v-model="salaryPeriod" class="min-h-11 border border-rule bg-paper-0 px-3">
+              <select
+                v-model="salaryPeriod"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              >
                 <option value="hour">hour</option>
                 <option value="day">day</option>
                 <option value="month">month</option>
@@ -676,7 +702,7 @@ async function saveMore() {
             <input
               v-model="includeExpr"
               type="text"
-              class="min-h-11 border border-rule bg-paper-0 px-3 font-mono text-sm"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               maxlength="2000"
             />
           </label>
@@ -685,7 +711,7 @@ async function saveMore() {
             <input
               v-model="excludeExpr"
               type="text"
-              class="min-h-11 border border-rule bg-paper-0 px-3 font-mono text-sm"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               maxlength="2000"
             />
           </label>
@@ -694,7 +720,7 @@ async function saveMore() {
             <input
               v-model="companiesInclude"
               type="text"
-              class="min-h-11 border border-rule bg-paper-0 px-3 text-sm"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               maxlength="2000"
             />
           </label>
@@ -703,7 +729,7 @@ async function saveMore() {
             <input
               v-model="companiesExclude"
               type="text"
-              class="min-h-11 border border-rule bg-paper-0 px-3 text-sm"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               maxlength="2000"
             />
           </label>

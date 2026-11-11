@@ -10,7 +10,7 @@
 
 ## Overview
 
-Living style guide: every component and state in the current theme.
+Living style guide for Signal: every component and state in the current theme. The visual audit harness (`e2e/visual-audit.spec.ts`, `pnpm run audit:ui`) captures real routes at 375/820/1440 and fails on horizontal overflow.
 
 ## User-facing knowledge
 

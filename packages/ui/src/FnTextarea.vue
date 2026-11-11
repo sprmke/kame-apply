@@ -17,7 +17,7 @@ defineProps<{
     :placeholder="placeholder"
     :aria-invalid="invalid || undefined"
     :aria-describedby="describedby"
-    class="w-full rounded-sm border bg-paper-0 px-3 py-2 text-base text-ink-900 placeholder:text-ink-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-persimmon-700"
-    :class="invalid ? 'border-oxblood-600' : 'border-edge'"
+    class="w-full rounded-md border bg-paper-1 px-4 py-3 text-base text-ink-900 shadow-[var(--shadow-card)] transition-colors duration-[var(--dur-steady)] placeholder:text-ink-400 hover:border-edge focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+    :class="invalid ? 'border-oxblood-600' : 'border-rule'"
   />
 </template>

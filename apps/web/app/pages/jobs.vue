@@ -54,6 +54,7 @@ const STOP_REASONS = new Set([
   "be",
   "but",
   "by",
+  "can",
   "for",
   "from",
   "has",
@@ -292,7 +293,7 @@ function visibleReasons(reasons: unknown[] | undefined): unknown[] {
     const text = reasonText(r).toLowerCase();
     if (!text) return false;
     const parts = text
-      .split(/[,·]/)
+      .split(/[,·|]/)
       .map((part) => part.trim())
       .filter(Boolean);
     return parts.length > 0 && !parts.every((part) => STOP_REASONS.has(part));
@@ -331,23 +332,25 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 
 <template>
   <div
-    class="flex min-h-[calc(100dvh-4rem)] flex-col gap-3 p-4 pb-24 md:p-6 lg:h-[calc(100dvh-4rem)] lg:pb-6"
+    class="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[1600px] flex-col gap-4 p-4 pb-24 md:p-6 lg:h-[calc(100dvh-4rem)] lg:pb-6"
   >
     <header class="flex flex-wrap items-center gap-2">
-      <h1 class="font-display text-xl text-ink-900">{{ t("nav.jobs") }}</h1>
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.jobs") }}</h1>
       <div class="ml-auto flex flex-wrap items-center gap-2">
-        <label class="flex items-center gap-1 text-sm text-ink-600">
+        <label
+          class="flex min-h-11 items-center gap-2 rounded-md border border-rule bg-paper-1 px-3 text-sm font-medium text-ink-600 shadow-[var(--shadow-card)]"
+        >
           <input
             v-model="includeIneligible"
             type="checkbox"
-            class="accent-persimmon-600"
+            class="size-5 rounded border-rule accent-brand-600"
             title="Include jobs you may not qualify for"
           />
           {{ t("jobs.showAllJobs") }}
         </label>
         <select
           v-model="sort"
-          class="rounded border border-ink-200 bg-paper-50 px-2 py-1 text-sm"
+          class="rounded border border-rule bg-paper-2 px-2 py-1 text-sm"
           aria-label="Sort"
         >
           <option value="score">Match</option>
@@ -359,7 +362,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 
     <div
       v-if="helpOpen"
-      class="rounded border border-ink-200 bg-paper-100 px-3 py-2 text-sm text-ink-700"
+      class="rounded border border-rule bg-paper-2 px-3 py-2 text-sm text-ink-600"
     >
       j/k move · s shortlist · x skip · t tailor · o open · ?
     </div>
@@ -370,21 +373,29 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       <FnSkeleton class="h-10" />
     </div>
 
-    <div v-else-if="!rows.length" class="flex flex-1 flex-col items-start gap-3 text-ink-600">
-      <p>No jobs</p>
+    <div
+      v-else-if="!rows.length"
+      class="flex w-full flex-col items-start gap-4 rounded-xl border border-dashed border-rule bg-paper-1 p-6 text-ink-600"
+    >
+      <div class="flex flex-col gap-1">
+        <p class="text-lg font-semibold text-ink-900">No jobs</p>
+        <p class="text-sm text-ink-600">Run a search to start.</p>
+      </div>
       <ul v-if="relax.data.value?.length" class="space-y-1 text-sm">
         <li v-for="s in relax.data.value" :key="s.label">{{ s.label }}: +{{ s.gained }}</li>
       </ul>
-      <FnButton size="sm" @click="router.push('/tracks')">{{ t("nav.tracks") }}</FnButton>
+      <FnButton tone="primary" size="sm" @click="router.push('/tracks')">{{
+        t("nav.tracks")
+      }}</FnButton>
     </div>
 
     <div
       v-else
-      class="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,18rem)]"
+      class="grid min-h-0 flex-1 gap-4 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,18rem)]"
     >
       <ul
         :class="mobileDetail ? 'hidden lg:block' : 'block'"
-        class="border-r border-ink-100 pr-2 lg:min-h-0 lg:overflow-y-auto"
+        class="border-r border-rule pr-2 lg:min-h-0 lg:overflow-y-auto"
         role="listbox"
       >
         <li
@@ -392,17 +403,17 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           :key="row.id"
           role="option"
           :aria-selected="row.id === selectedId"
-          class="cursor-pointer border-b border-ink-100 px-2 py-2 text-sm hover:bg-paper-100"
-          :class="row.id === selectedId ? 'bg-paper-100' : ''"
+          class="cursor-pointer rounded-lg border-b border-rule px-3 py-3 text-sm transition-colors hover:bg-paper-2"
+          :class="row.id === selectedId ? 'bg-brand-50' : ''"
           @click="selectJob(row.id)"
         >
           <div class="flex items-baseline gap-2">
-            <span class="font-mono text-xs tabular-nums text-persimmon-700">{{
+            <span class="font-mono text-xs tabular-nums text-brand-700">{{
               row.score != null ? Math.round(row.score) : "-"
             }}</span>
             <span class="line-clamp-2 font-medium text-ink-900">{{ row.title }}</span>
           </div>
-          <div class="mt-0.5 flex flex-wrap gap-1 text-xs text-ink-500">
+          <div class="mt-0.5 flex flex-wrap gap-1 text-xs text-ink-400">
             <span>{{ row.company_name }}</span>
             <FnRiskSeal
               v-if="row.risk_level === 'yellow' || row.risk_level === 'red'"
@@ -424,12 +435,12 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       >
         <button
           type="button"
-          class="mb-3 flex min-h-11 items-center gap-2 text-sm text-ink-600 lg:hidden"
+          class="mb-3 flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold text-ink-600 hover:bg-paper-2 lg:hidden"
           @click="mobileDetail = false"
         >
           <NavIcon name="ph:arrow-left" :size="16" /> Back to jobs
         </button>
-        <h2 class="font-display text-2xl text-ink-900">{{ selected.title }}</h2>
+        <h2 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ selected.title }}</h2>
         <p class="mt-1 text-sm text-ink-600">
           {{ selected.company_name }}
           <span v-if="selected.work_mode"> · {{ workModeLabel(selected.work_mode) }}</span>
@@ -437,14 +448,14 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
         </p>
         <p
           v-if="selected.eligibility_quote"
-          class="mt-2 border-l-2 border-persimmon-700 pl-3 text-sm italic text-ink-700"
+          class="mt-2 border-l-2 border-brand-700 pl-3 text-sm italic text-ink-600"
         >
           {{ selected.eligibility_quote }}
         </p>
-        <p v-if="selected.few_stated_requirements" class="mt-2 text-xs text-ink-500">
+        <p v-if="selected.few_stated_requirements" class="mt-2 text-xs text-ink-400">
           Few stated requirements
         </p>
-        <div class="mt-4 whitespace-pre-wrap text-sm text-ink-800">
+        <div class="mt-4 whitespace-pre-wrap text-sm text-ink-900">
           {{ selected.description_text }}
         </div>
       </section>
@@ -453,38 +464,38 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       <aside
         v-if="selected"
         :class="mobileDetail ? 'block' : 'hidden lg:block'"
-        class="border-t border-ink-100 pt-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-3"
+        class="rounded-lg border-t border-rule bg-paper-0 p-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-4"
       >
         <div class="mb-3">
-          <div class="font-mono text-3xl tabular-nums text-persimmon-700">
+          <div class="font-mono text-3xl tabular-nums text-brand-700">
             {{ selected.score != null ? Math.round(selected.score) : "-" }}
           </div>
-          <p class="text-xs text-ink-500">{{ t("jobs.matchScore") }}</p>
+          <p class="text-xs text-ink-400">{{ t("jobs.matchScore") }}</p>
           <div class="mt-1 flex flex-wrap gap-1">
             <FnRiskSeal
               v-if="selected.risk_level"
               :level="sealLevel(selected.risk_level)"
               :label="sealLabel(selected.risk_level)"
             />
-            <FnChip v-for="r in selected.reasons || []" :key="String(r)">{{
+            <FnChip v-for="r in visibleReasons(selected.reasons).slice(0, 5)" :key="String(r)">{{
               reasonText(r)
             }}</FnChip>
           </div>
           <ul
             v-if="selected.risk_reasons?.length"
-            class="mt-2 space-y-1 border-l-2 border-oxblood-600 pl-2 text-xs text-ink-700"
+            class="mt-2 space-y-1 border-l-2 border-oxblood-600 pl-2 text-xs text-ink-600"
           >
             <li v-for="(r, i) in selected.risk_reasons.slice(0, 5)" :key="i">
               {{ reasonText(r) }}
             </li>
           </ul>
         </div>
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
+        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
           {{ t("jobs.fit") }}
         </h3>
         <p v-if="allUnproven" class="mb-3 text-sm text-ink-600">
           {{ t("jobs.addResumeFacts") }}
-          <NuxtLink to="/profile/onboarding" class="text-persimmon-700 underline">{{
+          <NuxtLink to="/profile/onboarding" class="text-brand-700 underline">{{
             t("jobs.addResume")
           }}</NuxtLink>
         </p>
@@ -492,15 +503,15 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           <li
             v-for="q in visibleQualifications"
             :key="String(q.id)"
-            class="border-b border-ink-50 pb-2"
+            class="border-b border-rule pb-2"
           >
             <div class="flex items-start gap-2">
               <FnChip :tone="chipTone(String(q.verdict || ''))">{{
                 kindLabel(String(q.kind || ""))
               }}</FnChip>
-              <span class="text-ink-800">{{ q.text }}</span>
+              <span class="text-ink-900">{{ q.text }}</span>
             </div>
-            <p v-if="q.verdict" class="mt-1 text-xs text-ink-500">
+            <p v-if="q.verdict" class="mt-1 text-xs text-ink-400">
               {{ verdictLabel(String(q.verdict || ""))
               }}<span v-if="q.evidence_quote"> · {{ q.evidence_quote }}</span>
             </p>
@@ -547,11 +558,8 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             <FnButton size="sm" tone="ghost" @click="riskConfirmOpen = false">Cancel</FnButton>
           </div>
         </div>
-        <div v-if="skipOpen" class="mt-3 space-y-2 rounded border border-ink-200 p-2">
-          <select
-            v-model="skipReason"
-            class="w-full rounded border border-ink-200 px-2 py-1 text-sm"
-          >
+        <div v-if="skipOpen" class="mt-3 space-y-2 rounded border border-rule p-2">
+          <select v-model="skipReason" class="w-full rounded border border-rule px-2 py-1 text-sm">
             <option>too junior</option>
             <option>too senior</option>
             <option>salary</option>
@@ -563,14 +571,14 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           <FnButton size="sm" @click="triage('skip', skipReason)">Confirm</FnButton>
         </div>
         <div v-if="selected.other_roles?.length" class="mt-6">
-          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
             Other roles
           </h3>
           <ul class="space-y-1 text-sm">
             <li v-for="r in selected.other_roles" :key="r.id">
               <a
                 :href="r.apply_url"
-                class="text-persimmon-700 underline"
+                class="text-brand-700 underline"
                 target="_blank"
                 rel="noopener"
                 >{{ r.title }}</a
@@ -583,7 +591,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 
     <div
       v-if="mobileDetail && selected"
-      class="fixed inset-x-0 bottom-16 z-20 flex gap-2 border-t border-rule bg-paper-1 p-3 lg:hidden"
+      class="fixed inset-x-0 bottom-16 z-20 flex gap-2 border-t border-rule bg-paper-1 p-3 shadow-[0_-8px_24px_-20px_rgba(16,24,40,0.35)] lg:hidden"
     >
       <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
       <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">

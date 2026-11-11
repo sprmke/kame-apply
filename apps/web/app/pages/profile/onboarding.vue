@@ -65,7 +65,7 @@ async function upload() {
         class="rounded-md border border-saffron-600 bg-paper-1 p-3 text-sm"
       >
         {{ t("career.aiKeyNeeded") }}
-        <NuxtLink to="/settings/ai" class="text-persimmon-700 underline">{{
+        <NuxtLink to="/settings/ai" class="text-brand-700 underline">{{
           t("settings.ai")
         }}</NuxtLink>
       </div>

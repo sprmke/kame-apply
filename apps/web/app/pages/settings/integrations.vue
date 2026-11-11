@@ -271,7 +271,7 @@ async function connectExtension() {
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.claude") }}</h2>
       <div class="flex flex-col gap-2">
-        <label class="text-sm text-ink-700">{{ t("integrations.mcpUrl") }}</label>
+        <label class="text-sm text-ink-600">{{ t("integrations.mcpUrl") }}</label>
         <div class="flex flex-wrap items-center gap-2">
           <code class="rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{ mcpUrl }}</code>
           <FnButton size="sm" variant="ghost" @click="copy(mcpUrl)">{{
@@ -280,7 +280,7 @@ async function connectExtension() {
         </div>
       </div>
       <div class="flex flex-col gap-2">
-        <label class="text-sm text-ink-700">Claude Code</label>
+        <label class="text-sm text-ink-600">Claude Code</label>
         <div class="flex flex-wrap items-center gap-2">
           <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             setupCmd
@@ -291,7 +291,7 @@ async function connectExtension() {
         </div>
       </div>
       <div class="flex flex-col gap-2">
-        <label class="text-sm text-ink-700">Plugin</label>
+        <label class="text-sm text-ink-600">Plugin</label>
         <div class="flex flex-wrap items-center gap-2">
           <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             pluginCmd
@@ -306,7 +306,7 @@ async function connectExtension() {
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.inbox") }}</h2>
       <FnSkeleton v-if="inbox.isPending.value" class="h-10 w-64" />
-      <p v-else class="text-sm text-ink-700">
+      <p v-else class="text-sm text-ink-600">
         {{
           t("integrations.inboxStatus", {
             waiting: inbox.data.value?.waiting ?? 0,
@@ -358,7 +358,7 @@ async function connectExtension() {
           :key="row.feature"
           class="flex flex-wrap items-center gap-3"
         >
-          <span class="min-w-40 text-sm text-ink-800">{{ row.feature }}</span>
+          <span class="min-w-40 text-sm text-ink-900">{{ row.feature }}</span>
           <FnSelect
             :model-value="row.route"
             :options="routeOptions"
@@ -387,7 +387,10 @@ async function connectExtension() {
     <section v-if="ws.canManage" class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.runner") }}</h2>
       <div class="flex flex-wrap items-center gap-2">
-        <select v-model="runnerMode" class="min-h-11 border border-rule bg-paper-0 px-2 text-sm">
+        <select
+          v-model="runnerMode"
+          class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        >
           <option value="local">{{ t("integrations.runnerLocal") }}</option>
           <option value="cloud">{{ t("integrations.runnerCloud") }}</option>
         </select>

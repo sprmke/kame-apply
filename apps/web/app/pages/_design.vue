@@ -50,8 +50,8 @@ const swatches = [
   ["ink-900", "bg-ink-900"],
   ["ink-600", "bg-ink-600"],
   ["ink-400", "bg-ink-400"],
-  ["persimmon-500", "bg-persimmon-500"],
-  ["persimmon-700", "bg-persimmon-700"],
+  ["brand-500", "bg-brand-500"],
+  ["brand-700", "bg-brand-700"],
   ["pencil", "bg-pencil"],
   ["fern-600", "bg-fern-600"],
   ["saffron-600", "bg-saffron-600"],
@@ -102,10 +102,12 @@ const opts = [
       <header class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <BrandMark wordmark />
-          <h1 class="mt-3 font-serif text-[length:var(--text-display)] leading-tight font-semibold">
-            Field Notes
+          <h1
+            class="mt-3 text-[length:var(--text-display)] leading-tight font-bold tracking-[-0.04em]"
+          >
+            Signal
           </h1>
-          <p class="max-w-prose font-serif text-lg text-ink-600">
+          <p class="max-w-prose text-lg text-ink-600">
             Living style guide. Every component and state, in the current theme.
           </p>
         </div>
@@ -122,7 +124,7 @@ const opts = [
       </header>
 
       <section aria-labelledby="d-color" class="flex flex-col gap-3">
-        <h2 id="d-color" class="font-serif text-xl font-semibold">Color</h2>
+        <h2 id="d-color" class="text-xl font-bold">Color</h2>
         <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-6">
           <li v-for="[name, cls] in swatches" :key="name" class="flex flex-col gap-1">
             <span class="h-12 rounded-sm border border-rule" :class="cls" />
@@ -132,15 +134,17 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-type" class="flex flex-col gap-2">
-        <h2 id="d-type" class="font-serif text-xl font-semibold">Type</h2>
-        <p class="font-serif text-[length:var(--text-display)] leading-tight">Newsreader display</p>
-        <p class="font-serif text-xl">Documents and briefs set in Newsreader</p>
-        <p class="text-base">Instrument Sans carries the interface at 14px.</p>
-        <p class="font-mono text-xs">Martian Mono 0123456789 for data and logs</p>
+        <h2 id="d-type" class="text-xl font-bold">Type</h2>
+        <p class="text-[length:var(--text-display)] leading-tight font-bold tracking-[-0.04em]">
+          Manrope display
+        </p>
+        <p class="text-xl font-bold">Documents and briefs set in Manrope</p>
+        <p class="text-base">Manrope carries the interface at 16px.</p>
+        <p class="text-sm tabular-nums">Tabular numerals 0123456789 for data and logs</p>
       </section>
 
       <section aria-labelledby="d-buttons" class="flex flex-col gap-3">
-        <h2 id="d-buttons" class="font-serif text-xl font-semibold">Buttons</h2>
+        <h2 id="d-buttons" class="text-xl font-bold">Buttons</h2>
         <div class="flex flex-wrap items-center gap-3">
           <FnButton tone="primary">Primary</FnButton>
           <FnButton>Quiet</FnButton>
@@ -153,7 +157,7 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-forms" class="flex flex-col gap-4">
-        <h2 id="d-forms" class="font-serif text-xl font-semibold">Forms</h2>
+        <h2 id="d-forms" class="text-xl font-bold">Forms</h2>
         <div class="grid gap-4 md:grid-cols-2">
           <FnField v-slot="{ id, describedby, invalid }" label="Text" hint="A short hint">
             <FnInput
@@ -187,7 +191,7 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-chips" class="flex flex-col gap-3">
-        <h2 id="d-chips" class="font-serif text-xl font-semibold">Chips and tabs</h2>
+        <h2 id="d-chips" class="text-xl font-bold">Chips and tabs</h2>
         <div class="flex flex-wrap gap-2">
           <FnChip>Neutral</FnChip><FnChip tone="accent">Accent</FnChip
           ><FnChip tone="pencil">Pencil</FnChip
@@ -201,7 +205,7 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-overlays" class="flex flex-col gap-3">
-        <h2 id="d-overlays" class="font-serif text-xl font-semibold">Overlays</h2>
+        <h2 id="d-overlays" class="text-xl font-bold">Overlays</h2>
         <div class="flex flex-wrap gap-3">
           <FnButton @click="dialogOpen = true">Dialog</FnButton>
           <FnButton @click="sheetOpen = true">Sheet</FnButton>
@@ -250,7 +254,7 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-data" class="flex flex-col gap-3">
-        <h2 id="d-data" class="font-serif text-xl font-semibold">Table and loading</h2>
+        <h2 id="d-data" class="text-xl font-bold">Table and loading</h2>
         <FnTable :columns="cols" :rows="rows" row-key="id" caption="Example table" />
         <FnTable
           :columns="cols"
@@ -263,7 +267,7 @@ const opts = [
       </section>
 
       <section aria-labelledby="d-signature" class="flex flex-col gap-5">
-        <h2 id="d-signature" class="font-serif text-xl font-semibold">Signature components</h2>
+        <h2 id="d-signature" class="text-xl font-bold">Signature components</h2>
         <p class="max-w-prose font-serif text-lg leading-relaxed">
           Led the migration of
           <FnProofMark

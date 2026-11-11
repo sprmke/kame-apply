@@ -96,23 +96,23 @@ async function approve() {
     <PageHeader :title="t('integrations.consentTitle')" />
     <FnSkeleton v-if="pending.isPending.value" class="h-40 w-full" />
     <template v-else-if="pending.data.value">
-      <p class="text-sm text-ink-700">
+      <p class="text-sm text-ink-600">
         {{ t("integrations.consentClient", { name: pending.data.value.client_name }) }}
       </p>
       <p class="font-mono text-xs text-ink-600 break-all">
         {{ pending.data.value.redirect_uri }}
       </p>
-      <label class="text-sm text-ink-800">{{ t("integrations.profile") }}</label>
+      <label class="text-sm text-ink-900">{{ t("integrations.profile") }}</label>
       <select
         v-model="profileId"
-        class="min-h-11 rounded-sm border border-rule bg-paper px-3 text-sm"
+        class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
       >
         <option v-for="p in profiles.data.value ?? []" :key="p.id" :value="p.id">
           {{ p.display_name }}
         </option>
       </select>
       <fieldset class="flex flex-col gap-2">
-        <legend class="text-sm text-ink-800">{{ t("integrations.scopes") }}</legend>
+        <legend class="text-sm text-ink-900">{{ t("integrations.scopes") }}</legend>
         <label
           v-for="scope in pending.data.value.scopes"
           :key="scope"

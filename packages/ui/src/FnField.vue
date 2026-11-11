@@ -15,17 +15,17 @@ const describedby = computed(
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5">
-    <label :for="inputId" class="text-sm font-medium text-ink-900">{{ label }}</label>
+  <div class="flex flex-col gap-2">
+    <label :for="inputId" class="text-sm font-semibold text-ink-900">{{ label }}</label>
     <slot :id="inputId" :describedby="describedby" :invalid="!!error" />
-    <p v-if="hint" :id="hintId" class="text-xs text-ink-600">{{ hint }}</p>
+    <p v-if="hint" :id="hintId" class="text-sm text-ink-600">{{ hint }}</p>
     <p
       v-if="error"
       :id="errorId"
       role="alert"
-      class="flex items-start gap-1.5 text-xs text-oxblood-600"
+      class="flex items-start gap-2 text-sm text-oxblood-600"
     >
-      <span aria-hidden="true">✕</span><span class="text-ink-900">{{ error }}</span>
+      <span aria-hidden="true">✕</span><span>{{ error }}</span>
     </p>
   </div>
 </template>

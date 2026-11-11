@@ -389,7 +389,7 @@ async function draftReferral(contactId: string) {
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div>
-      <NuxtLink to="/applications" class="text-sm text-persimmon-700 underline">{{
+      <NuxtLink to="/applications" class="text-sm text-brand-700 underline">{{
         t("nav.applications")
       }}</NuxtLink>
     </div>
@@ -415,7 +415,7 @@ async function draftReferral(contactId: string) {
             :href="app.apply_url"
             target="_blank"
             rel="noopener"
-            class="text-persimmon-700 underline"
+            class="text-brand-700 underline"
             >{{ t("applications.openPosting") }}</a
           >
           <span class="font-mono text-[0.6875rem] text-ink-600">{{ app.method }}</span>
@@ -562,11 +562,9 @@ async function draftReferral(contactId: string) {
             <span v-if="st.value_redacted" class="ml-2 font-mono text-[0.6875rem] text-ink-600">{{
               st.value_redacted
             }}</span>
-            <span
-              v-if="st.screenshot_r2"
-              class="ml-2 font-mono text-[0.6875rem] text-persimmon-700"
-              >{{ t("applications.replay") }}</span
-            >
+            <span v-if="st.screenshot_r2" class="ml-2 font-mono text-[0.6875rem] text-brand-700">{{
+              t("applications.replay")
+            }}</span>
           </li>
         </ol>
       </section>
@@ -574,11 +572,11 @@ async function draftReferral(contactId: string) {
       <section v-if="strategy.data.value" class="flex flex-col gap-2 text-sm">
         <p
           v-if="strategy.data.value.cap.warn || strategy.data.value.cap.exceeds"
-          class="text-persimmon-800"
+          class="text-brand-800"
         >
           {{ strategy.data.value.cap.message }}
         </p>
-        <p v-if="strategy.data.value.salary.suggested_min != null" class="text-ink-700">
+        <p v-if="strategy.data.value.salary.suggested_min != null" class="text-ink-600">
           {{ strategy.data.value.salary.suggested_min }}–{{
             strategy.data.value.salary.suggested_max
           }}
@@ -596,7 +594,7 @@ async function draftReferral(contactId: string) {
           }}</FnButton>
         </div>
         <template v-if="interviewPrep.data.value">
-          <p class="text-sm text-ink-700">{{ interviewPrep.data.value.company_brief }}</p>
+          <p class="text-sm text-ink-600">{{ interviewPrep.data.value.company_brief }}</p>
           <ul class="flex flex-col gap-2 text-sm">
             <li v-for="(q, i) in interviewPrep.data.value.likely_questions.slice(0, 5)" :key="i">
               <span class="font-medium text-ink-900">{{ q.q }}</span>
@@ -712,7 +710,7 @@ async function draftReferral(contactId: string) {
           </h2>
           <NuxtLink
             :to="`/answers?application=${app.id}`"
-            class="text-sm text-persimmon-700 underline"
+            class="text-sm text-brand-700 underline"
             >{{ t("answers.draft") }}</NuxtLink
           >
         </div>

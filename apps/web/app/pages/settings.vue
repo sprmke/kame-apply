@@ -24,17 +24,17 @@ const tabs = computed(() =>
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-[880px] flex-col gap-6">
-    <nav :aria-label="t('settings.nav')" class="-mx-4 px-4 md:mx-0 md:px-0">
-      <ul class="flex flex-wrap gap-1 border-b border-rule">
+  <div class="mx-auto flex max-w-[920px] flex-col gap-8">
+    <nav :aria-label="t('settings.nav')">
+      <ul class="flex gap-1 overflow-x-auto rounded-lg bg-paper-2 p-1 md:flex-wrap">
         <li v-for="tab in tabs" :key="tab.to">
           <NuxtLink
             :to="tab.to"
-            class="-mb-px flex min-h-11 items-center border-b-2 px-3 text-sm whitespace-nowrap"
+            class="flex min-h-11 shrink-0 items-center rounded-md px-4 text-sm font-semibold whitespace-nowrap"
             :class="
               route.path === tab.to
-                ? 'border-ink-900 font-medium text-ink-900'
-                : 'border-transparent text-ink-600 hover:text-ink-900'
+                ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+                : 'text-ink-600 hover:text-ink-900'
             "
             :aria-current="route.path === tab.to ? 'page' : undefined"
             >{{ tab.label }}</NuxtLink
@@ -42,6 +42,8 @@ const tabs = computed(() =>
         </li>
       </ul>
     </nav>
-    <NuxtPage />
+    <div class="rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]">
+      <NuxtPage />
+    </div>
   </div>
 </template>

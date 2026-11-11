@@ -18,7 +18,7 @@ defineProps<{ text: string; side?: "top" | "right" | "bottom" | "left" }>();
         <TooltipContent
           :side="side ?? 'right'"
           :side-offset="8"
-          class="z-50 rounded-sm bg-ink-900 px-2 py-1 text-xs text-paper-0"
+          class="z-50 rounded-md bg-ink-900 px-3 py-1.5 text-sm text-paper-0 shadow-[var(--shadow-float)]"
         >
           {{ text }}
         </TooltipContent>

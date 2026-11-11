@@ -32,10 +32,10 @@ const needsYou = computed(() => needsQuery.data.value ?? 0);
     <AppRail :needs-you="needsYou" />
     <div class="flex min-w-0 flex-1 flex-col">
       <header
-        class="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-rule bg-paper-0 px-3 md:px-5"
+        class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-rule bg-paper-1/95 px-4 md:px-6"
       >
         <NuxtLink to="/" class="md:hidden" :aria-label="t('app.name')"
-          ><BrandMark :size="28"
+          ><BrandMark :size="32"
         /></NuxtLink>
         <WorkspaceSwitcher @create="createOpen = true" />
         <div class="ml-auto flex items-center gap-1">
@@ -48,7 +48,8 @@ const needsYou = computed(() => needsQuery.data.value ?? 0);
             >
               <NavIcon name="ph:magnifying-glass" :size="16" />
               <span class="text-ink-600">{{ t("command.search") }}</span>
-              <kbd class="rounded-sm border border-rule px-1 font-mono text-[0.625rem] text-ink-600"
+              <kbd
+                class="rounded border border-rule px-1.5 py-0.5 font-mono text-[0.6875rem] text-ink-600"
                 >⌘K</kbd
               >
             </FnButton>
@@ -69,7 +70,7 @@ const needsYou = computed(() => needsQuery.data.value ?? 0);
       <main
         id="main"
         tabindex="-1"
-        class="flex-1 px-4 pt-6 pb-24 focus:outline-none md:px-10 md:pb-12"
+        class="flex-1 px-4 pt-8 pb-28 focus:outline-none md:px-10 md:pb-12"
       >
         <slot />
       </main>

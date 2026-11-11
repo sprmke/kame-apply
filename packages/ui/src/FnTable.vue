@@ -8,24 +8,28 @@ defineProps<{
   caption: string;
   density?: "comfortable" | "compact";
   empty?: string;
+  flat?: boolean;
 }>();
 </script>
 
 <template>
-  <div class="overflow-x-auto rounded-md border border-rule">
+  <div
+    class="overflow-x-auto"
+    :class="flat ? '' : 'rounded-lg border border-rule bg-paper-1 shadow-[var(--shadow-card)]'"
+  >
     <table class="w-full border-collapse text-left text-sm">
       <caption class="sr-only">
         {{
           caption
         }}
       </caption>
-      <thead class="bg-paper-2 text-xs text-ink-600">
+      <thead class="bg-paper-2 text-xs font-semibold tracking-wide text-ink-600 uppercase">
         <tr>
           <th
             v-for="c in columns"
             :key="c.key"
             scope="col"
-            class="px-3 py-2 font-medium"
+            class="px-4 py-3 font-semibold"
             :class="c.align === 'right' ? 'text-right' : ''"
           >
             {{ c.label }}
@@ -34,15 +38,19 @@ defineProps<{
       </thead>
       <tbody>
         <tr v-if="!rows.length">
-          <td :colspan="columns.length" class="px-3 py-8 text-center text-ink-600">{{ empty }}</td>
+          <td :colspan="columns.length" class="px-4 py-10 text-center text-ink-600">{{ empty }}</td>
         </tr>
-        <tr v-for="r in rows" :key="String(r[rowKey])" class="border-t border-rule">
+        <tr
+          v-for="r in rows"
+          :key="String(r[rowKey])"
+          class="border-t border-rule transition-colors hover:bg-paper-2/50"
+        >
           <td
             v-for="c in columns"
             :key="c.key"
-            class="px-3 align-middle"
+            class="px-4 align-middle"
             :class="[
-              density === 'compact' ? 'h-8' : 'h-12',
+              density === 'compact' ? 'h-10' : 'h-14',
               c.align === 'right' ? 'text-right tabular-nums' : '',
               c.mono ? 'font-mono text-xs' : '',
             ]"

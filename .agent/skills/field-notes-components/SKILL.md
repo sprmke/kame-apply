@@ -1,9 +1,9 @@
 ---
 name: field-notes-components
-description: How to build or extend Field Notes signature components (proof mark, pencil text, fit ledger, route line, risk seal, grade ring, dossier, Needs-you stack, live window, command bar).
+description: How to build or extend Signal signature components (proof mark, pencil text, fit ledger, route line, risk seal, grade ring, dossier, Needs-you stack, live window, command bar).
 ---
 
-# Field Notes components
+# Signal components
 
 Spec: `docs/design/design-system.md` §7 and `docs/design/ux-blueprint.md`. Rules: `vue-components.mdc`, `anti-slop-design.mdc`.
 

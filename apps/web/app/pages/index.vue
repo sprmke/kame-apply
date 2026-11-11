@@ -136,6 +136,7 @@ const STOP_REASONS = new Set([
   "be",
   "but",
   "by",
+  "can",
   "for",
   "from",
   "has",
@@ -204,10 +205,10 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
       <p class="text-xs font-medium tracking-[0.14em] text-ink-400 uppercase">
         {{ ws.current?.name }}
       </p>
-      <h1 class="font-serif text-[length:var(--text-display)] leading-tight font-semibold">
+      <h1 class="text-[length:var(--text-display)] leading-tight font-bold tracking-[-0.04em]">
         {{ greeting }}
       </h1>
-      <p class="max-w-2xl font-serif text-lg text-ink-600">
+      <p class="max-w-2xl text-lg text-ink-600">
         {{ data?.headline || t("today.lede") }}
       </p>
     </header>
@@ -219,16 +220,15 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
 
     <template v-else-if="data">
       <section
-        class="relative overflow-hidden rounded-lg border border-rule bg-paper-1 p-6 md:p-8"
+        class="rounded-2xl border border-brand-100 bg-brand-50 p-7 md:p-9"
         aria-labelledby="next-step-title"
       >
-        <ContourBackdrop />
-        <div class="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div class="max-w-xl">
-            <p class="text-xs font-medium tracking-[0.14em] text-ink-400 uppercase">
+            <p class="text-xs font-bold tracking-[0.14em] text-brand-700 uppercase">
               {{ t("today.nextStep") }}
             </p>
-            <h2 id="next-step-title" class="mt-2 font-serif text-2xl font-semibold md:text-3xl">
+            <h2 id="next-step-title" class="mt-2 text-2xl font-bold tracking-[-0.03em] md:text-3xl">
               {{ primary.title }}
             </h2>
             <p class="mt-2 text-ink-600">{{ primary.body }}</p>
@@ -244,7 +244,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
             {{ t("shell.needsYou") }}
           </h2>
-          <NuxtLink to="/notifications" class="text-sm text-persimmon-700 underline">{{
+          <NuxtLink to="/notifications" class="text-sm text-brand-700 underline">{{
             t("today.viewAll")
           }}</NuxtLink>
         </div>
@@ -261,14 +261,17 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         </ul>
       </section>
 
-      <section v-if="top.length" class="flex flex-col gap-2">
+      <section
+        v-if="top.length"
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+      >
         <div class="flex items-center justify-between gap-2">
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
             {{ t("today.topMatches") }}
           </h2>
           <NuxtLink
             :to="`/jobs?track=${firstTrack?.id}`"
-            class="text-sm text-persimmon-700 underline"
+            class="text-sm text-brand-700 underline"
             >{{ t("today.viewAll") }}</NuxtLink
           >
         </div>
@@ -278,7 +281,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
               :to="`/jobs?track=${firstTrack?.id}&job=${job.id}`"
               class="flex items-start gap-3 py-4 hover:bg-paper-1"
             >
-              <span class="mt-0.5 font-mono text-sm tabular-nums text-persimmon-700">{{
+              <span class="mt-0.5 font-mono text-sm tabular-nums text-brand-700">{{
                 job.score != null ? Math.round(job.score) : "-"
               }}</span>
               <span class="min-w-0 flex-1">
@@ -287,7 +290,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
                   {{ job.company_name }}
                   <template v-if="job.work_mode"> · {{ workModeLabel(job.work_mode) }}</template>
                 </span>
-                <span v-if="topReason(job)" class="mt-1 block text-sm text-ink-500">{{
+                <span v-if="topReason(job)" class="mt-1 block text-sm text-ink-400">{{
                   topReason(job)
                 }}</span>
               </span>
@@ -306,7 +309,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
           <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
             {{ t("today.yourSearches") }}
           </h2>
-          <NuxtLink to="/tracks" class="text-sm text-persimmon-700 underline">{{
+          <NuxtLink to="/tracks" class="text-sm text-brand-700 underline">{{
             t("today.viewAllSearches")
           }}</NuxtLink>
         </div>
@@ -314,11 +317,11 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
           <li v-for="track in data.tracks" :key="track.id">
             <NuxtLink
               :to="`/jobs?track=${track.id}`"
-              class="flex h-full flex-col gap-2 rounded-lg border border-rule bg-paper-1 p-4 hover:bg-paper-2"
+              class="flex h-full flex-col gap-2 rounded-xl border border-rule bg-paper-0 p-4 transition-colors hover:border-brand-200 hover:bg-brand-50"
             >
               <FnFolderTab :hue="hue(track.color_hue)">{{ track.name }}</FnFolderTab>
               <p class="text-sm text-ink-600">{{ trackLine(track) }}</p>
-              <span class="mt-auto text-sm font-medium text-persimmon-700">{{
+              <span class="mt-auto text-sm font-medium text-brand-700">{{
                 t("tracks.viewMatches")
               }}</span>
             </NuxtLink>

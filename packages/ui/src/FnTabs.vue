@@ -8,17 +8,17 @@ defineProps<{ items: TabItem[]; label: string }>();
 
 <template>
   <TabsRoot v-model="model">
-    <TabsList :aria-label="label" class="flex gap-1 overflow-x-auto border-b border-rule">
+    <TabsList :aria-label="label" class="flex gap-1 overflow-x-auto rounded-lg bg-paper-2 p-1">
       <TabsTrigger
         v-for="t in items"
         :key="t.value"
         :value="t.value"
-        class="-mb-px min-h-11 border-b-2 border-transparent px-3 text-sm text-ink-600 hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-persimmon-700 data-[state=active]:border-ink-900 data-[state=active]:text-ink-900"
+        class="min-h-11 rounded-md px-4 text-sm font-semibold text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-2 focus-visible:outline-brand-500 data-[state=active]:bg-paper-1 data-[state=active]:text-brand-700 data-[state=active]:shadow-[var(--shadow-card)]"
       >
         {{ t.label }}
       </TabsTrigger>
     </TabsList>
-    <TabsContent v-for="t in items" :key="t.value" :value="t.value" class="pt-4">
+    <TabsContent v-for="t in items" :key="t.value" :value="t.value" class="pt-5">
       <slot :name="t.value" />
     </TabsContent>
   </TabsRoot>

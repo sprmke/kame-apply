@@ -122,14 +122,14 @@ async function copy(text: string) {
 
       <section class="flex flex-col gap-2">
         <h2 class="font-display text-lg text-ink-900">{{ t("beFound.openToWork") }}</h2>
-        <ol class="list-decimal pl-5 text-sm text-ink-700">
+        <ol class="list-decimal pl-5 text-sm text-ink-600">
           <li v-for="(step, i) in opt.data.value.open_to_work" :key="i">{{ step }}</li>
         </ol>
       </section>
 
       <section class="flex flex-col gap-2">
         <h2 class="font-display text-lg text-ink-900">{{ t("beFound.github") }}</h2>
-        <ul class="list-disc pl-5 text-sm text-ink-700">
+        <ul class="list-disc pl-5 text-sm text-ink-600">
           <li v-for="(step, i) in opt.data.value.github_checklist" :key="i">{{ step }}</li>
         </ul>
       </section>
@@ -152,7 +152,7 @@ async function copy(text: string) {
       <div v-if="report" class="flex flex-col gap-2 text-sm">
         <p class="font-medium text-ink-900">{{ t("beFound.score") }} {{ report.score }}</p>
         <ul class="flex flex-col gap-1">
-          <li v-for="(iss, i) in report.issues" :key="i" class="text-ink-700">
+          <li v-for="(iss, i) in report.issues" :key="i" class="text-ink-600">
             {{ iss.message }} · {{ iss.fix }}
           </li>
         </ul>

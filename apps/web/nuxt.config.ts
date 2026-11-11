@@ -33,16 +33,7 @@ export default defineNuxtConfig({
   typescript: { strict: true, typeCheck: false },
   icon: { serverBundle: "local", clientBundle: { scan: true } },
   fonts: {
-    families: [
-      { name: "Instrument Sans", provider: "google", weights: ["400 700"] },
-      {
-        name: "Newsreader",
-        provider: "google",
-        weights: ["400 700"],
-        styles: ["normal", "italic"],
-      },
-      { name: "Martian Mono", provider: "google", weights: ["400 600"] },
-    ],
+    families: [{ name: "Manrope", provider: "google", weights: ["400 800"] }],
   },
   i18n: {
     defaultLocale: "en",

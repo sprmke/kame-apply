@@ -8,7 +8,7 @@ import {
   type TrackRead,
   type TrackTemplateRead,
 } from "@kame/api-client";
-import { FnButton, FnFolderTab, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnFolderTab, FnInput, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -129,35 +129,32 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
     <PageHeader :title="t('tracks.title')" :lede="t('tracks.lede')">
       <template #actions>
-        <FnButton tone="primary" @click="showNew = !showNew">{{ t("tracks.new") }}</FnButton>
+        <FnButton :tone="trackRows.length ? 'primary' : 'quiet'" @click="showNew = !showNew">{{
+          t("tracks.new")
+        }}</FnButton>
       </template>
     </PageHeader>
 
     <section
       v-if="showNew"
-      class="flex flex-col gap-4 border border-rule bg-paper-1 p-4"
+      class="flex flex-col gap-5 rounded-2xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
       :aria-label="t('tracks.new')"
     >
-      <label class="flex flex-col gap-1 text-sm">
-        <span class="text-ink-600">{{ t("tracks.describe") }}</span>
-        <textarea
+      <label class="flex flex-col gap-2 text-sm">
+        <span class="font-semibold text-ink-900">{{ t("tracks.describe") }}</span>
+        <FnTextarea
           v-model="nlDraft"
-          class="min-h-24 border border-rule bg-paper-0 px-3 py-2 text-ink-900"
+          :rows="4"
           maxlength="8000"
           :placeholder="t('tracks.describePlaceholder')"
         />
       </label>
-      <label class="flex flex-col gap-1 text-sm">
-        <span class="text-ink-600">{{ t("tracks.name") }}</span>
-        <input
-          v-model="nameDraft"
-          class="min-h-11 border border-rule bg-paper-0 px-3 text-ink-900"
-          type="text"
-          maxlength="200"
-        />
+      <label class="flex flex-col gap-2 text-sm">
+        <span class="font-semibold text-ink-900">{{ t("tracks.name") }}</span>
+        <FnInput v-model="nameDraft" maxlength="200" />
       </label>
       <div class="flex flex-wrap gap-2">
         <FnButton tone="primary" :disabled="creating" @click="createFromText">{{
@@ -180,7 +177,7 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
           <li v-for="tmpl in templateRows" :key="tmpl.slug">
             <button
               type="button"
-              class="flex min-h-11 w-full items-center gap-2 border border-rule px-3 text-left text-sm hover:bg-paper-2"
+              class="flex min-h-11 w-full items-center gap-2 rounded-lg border border-rule bg-paper-0 px-3 text-left text-sm transition-colors hover:border-brand-200 hover:bg-brand-50"
               :disabled="creating"
               @click="createFromTemplate(tmpl.slug)"
             >
@@ -197,11 +194,19 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       <FnSkeleton class="h-14 w-full" />
       <FnSkeleton class="h-14 w-full" />
     </div>
-    <p v-else-if="!trackRows.length" class="text-sm text-ink-600">
-      {{ t("tracks.empty") }}
-    </p>
-    <ul v-else class="flex flex-col divide-y divide-rule border-y border-rule">
-      <li v-for="tr in trackRows" :key="tr.id" class="flex flex-wrap items-center gap-3 py-3">
+    <div
+      v-else-if="!trackRows.length"
+      class="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-rule bg-paper-1 p-10 text-center"
+    >
+      <p class="text-ink-600">{{ t("tracks.empty") }}</p>
+      <FnButton tone="primary" @click="showNew = true">{{ t("tracks.start") }}</FnButton>
+    </div>
+    <ul v-else class="flex flex-col gap-3">
+      <li
+        v-for="tr in trackRows"
+        :key="tr.id"
+        class="flex flex-wrap items-center gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] transition-colors hover:border-brand-200"
+      >
         <NuxtLink :to="`/tracks/${tr.id}`" class="min-w-0 flex-1">
           <FnFolderTab :hue="hue(tr.color_hue)" active>{{ tr.name }}</FnFolderTab>
           <p
@@ -214,7 +219,7 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
         <div class="flex flex-wrap items-center gap-2">
           <NuxtLink
             :to="`/jobs?track=${tr.id}`"
-            class="min-h-11 px-3 text-sm font-medium text-persimmon-700 underline-offset-2 hover:underline"
+            class="inline-flex min-h-11 items-center rounded-md bg-brand-50 px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
             >{{ t("tracks.viewMatches") }}</NuxtLink
           >
           <FnButton tone="ghost" @click="duplicate(tr.id)">{{ t("tracks.duplicate") }}</FnButton>

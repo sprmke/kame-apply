@@ -175,7 +175,7 @@ const tgDeepLink = computed(() => {
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("alerts.telegram") }}</h2>
-      <p v-if="telegram.data.value?.linked" class="text-sm text-ink-700">
+      <p v-if="telegram.data.value?.linked" class="text-sm text-ink-600">
         {{ t("alerts.telegramLinked") }}
       </p>
       <div class="flex flex-wrap items-center gap-2">
@@ -199,7 +199,7 @@ const tgDeepLink = computed(() => {
           :href="tgDeepLink"
           target="_blank"
           rel="noopener"
-          class="text-sm text-persimmon-700 underline"
+          class="text-sm text-brand-700 underline"
           >{{ t("alerts.openBot") }}</a
         >
       </div>

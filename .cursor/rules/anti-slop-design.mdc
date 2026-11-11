@@ -1,5 +1,5 @@
 ---
-description: Pass/fail anti-slop assertions for Kame Apply UI (Field Notes). Slop is the absence of decisions.
+description: Pass/fail anti-slop assertions for Kame Apply UI (Signal). Slop is the absence of decisions.
 globs:
   - apps/web/**/*.vue
   - apps/web/**/*.ts
@@ -9,29 +9,29 @@ globs:
 alwaysApply: false
 ---
 
-# Anti-slop design (Field Notes)
+# Anti-slop design (Signal)
 
-Procedure: `.agent/skills/design-review/SKILL.md`. Spec: `docs/design/design-system.md` (§13 is the do/don't summary) and `docs/design/ux-blueprint.md`. Principles for design agents: `DESIGN.md` / `PRODUCT.md`.
+Procedure: `.agent/skills/design-review/SKILL.md`. Spec: `docs/design/design-system.md` (Signal) and `docs/design/ux-blueprint.md`. Principles for design agents: `DESIGN.md` / `PRODUCT.md`.
 
-Every rule is pass/fail. "Make it clean" is not a rule. Slop is the absence of decisions: if nobody can name the decision behind an element and the alternative rejected, it is slop. Swapping one default look for another (banning indigo, shipping sage-on-cream) is still a default.
+Every rule is pass/fail. "Make it clean" is not a rule. Slop is the absence of decisions: if nobody can name the decision behind an element and the alternative rejected, it is slop. Swapping one default look for another (banning blue, shipping sage-on-cream) is still a default.
 
 ## Tokens (T)
 
 | # | Pass when |
 | --- | --- |
 | T1 | Every color comes from `packages/ui/src/tokens.css`; no hex, no Tailwind default palette, no shadcn/Nuxt UI default theme. |
-| T2 | Persimmon appears only as: one primary action per view, the active route segment, focus. Never a large background. |
+| T2 | Brand indigo (`brand-500`) appears as one primary action per view, the active route segment, and focus. One brand fill per view; never a large decorative background. |
 | T3 | Fern/saffron/oxblood mean verdict, risk, or status only. Never decoration. |
-| T4 | Light and dark both use the token set; dark is warm, not blue-black. |
+| T4 | Light and dark both use the token set; dark is cool, not pure black. |
 | T5 | Body text contrast ≥ 7:1, secondary ≥ 4.5:1, UI boundaries ≥ 3:1 (token-pair script in CI). |
-| T6 | Fonts are Instrument Sans (UI), Newsreader (documents/display), Martian Mono (data, small). No fourth family. |
-| T7 | Elevation is rules and paper steps; one soft shadow token only for floating layers. |
+| T6 | One family: Manrope for UI, display, documents, and data. No second typeface; data uses tabular numerals. |
+| T7 | Cards and floating layers use the soft elevation tokens; no ad hoc shadows, glows, or heavy borders. |
 
 ## Banned patterns (B), hard fail
 
 | # | Pattern |
 | --- | --- |
-| B1 | Teal or indigo accents; gradients, glassmorphism, glows, confetti. |
+| B1 | Teal or green accents as brand; gradients, glassmorphism, glows, confetti. |
 | B2 | Lucide icons or any second icon set. Phosphor only (Regular; Duotone in empty states/onboarding). |
 | B3 | KPI tile grids with icon chips; card-in-card; pastel icon chips. |
 | B4 | Sparkle/magic-wand icons to mean "AI". AI is shown by pencil text and proof marks. |
@@ -47,7 +47,7 @@ Every rule is pass/fail. "Make it clean" is not a rule. Slop is the absence of d
 | H1 | Documents get the widest column (measure 64–72ch); chrome recedes. |
 | H2 | Exactly one primary action per view; it sits in the consistent context panel or bottom bar. |
 | H3 | The screen reads in grayscale. |
-| H4 | Uses the named layouts: Rail, Reader (list · document · context), Brief, Workbench. No ad-hoc shells. |
+| H4 | Uses the named layouts: Desk sidebar, Reader (list · document · context), Brief, Workbench. No ad-hoc shells. |
 | H5 | Usable at 375/820/1440; no horizontal scroll at 375; touch targets ≥ 44px; decisions (triage, approvals, checkpoints) fully possible on phone. |
 | H6 | Job titles, company names, errors, and primary labels never truncate; other truncation has a focus-reachable full value. |
 | H7 | Loading, empty (with a next step), and error states exist for every data surface. |
@@ -61,7 +61,7 @@ Every rule is pass/fail. "Make it clean" is not a rule. Slop is the absence of d
 | D3 | Progress uses the route line, not a generic bar or kanban-only status. |
 | D4 | Risk uses the risk seal (Clear / Caution / Danger) with reasons; "Needs you" and danger are the only loud states. |
 | D5 | Dossiers and Tracks use the folder-tab shape in the Track color; Track hues never encode status. |
-| D6 | IDs, timestamps, and run logs use Martian Mono and tabular numerals. |
+| D6 | IDs, timestamps, and run logs use tabular numerals in Manrope. No second mono typeface. |
 
 ## Copy (C)
 

@@ -296,36 +296,49 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
+  <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-8">
     <PageHeader :title="t('nav.applications')">
       <template #actions>
         <FnButton tone="quiet" size="sm" @click="exportCsv">{{
           t("applications.export")
         }}</FnButton>
-        <FnButton size="sm" @click="manualOpen = true">{{ t("applications.log") }}</FnButton>
+        <FnButton size="sm" :tone="items.length ? 'primary' : 'quiet'" @click="manualOpen = true">{{
+          t("applications.log")
+        }}</FnButton>
       </template>
     </PageHeader>
 
-    <section class="flex flex-wrap items-end gap-3 border-b border-rule pb-4">
-      <label class="flex flex-col gap-1 text-xs text-ink-600">
+    <section
+      class="flex flex-wrap items-end gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+    >
+      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
         {{ t("applications.track") }}
-        <select v-model="trackId" class="min-h-11 min-w-[10rem] border border-rule bg-paper-0 px-2">
+        <select
+          v-model="trackId"
+          class="min-h-12 min-w-[10rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        >
           <option value="">{{ t("applications.allTracks") }}</option>
           <option v-for="tr in tracks.data.value ?? []" :key="tr.id" :value="tr.id">
             {{ tr.name }}
           </option>
         </select>
       </label>
-      <label class="flex flex-col gap-1 text-xs text-ink-600">
+      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
         {{ t("applications.status") }}
-        <select v-model="status" class="min-h-11 min-w-[8rem] border border-rule bg-paper-0 px-2">
+        <select
+          v-model="status"
+          class="min-h-12 min-w-[8rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        >
           <option value="">{{ t("applications.any") }}</option>
           <option v-for="s in STATUSES" :key="s" :value="s">{{ s }}</option>
         </select>
       </label>
-      <label class="flex flex-col gap-1 text-xs text-ink-600">
+      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
         {{ t("applications.method") }}
-        <select v-model="method" class="min-h-11 min-w-[8rem] border border-rule bg-paper-0 px-2">
+        <select
+          v-model="method"
+          class="min-h-12 min-w-[8rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        >
           <option value="">{{ t("applications.any") }}</option>
           <option value="manual">manual</option>
           <option value="extension">extension</option>
@@ -333,27 +346,40 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           <option value="answer_desk">answer_desk</option>
         </select>
       </label>
-      <label class="flex flex-col gap-1 text-xs text-ink-600">
-        {{ t("applications.search") }}
+      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
+        {{ t("applications.find") }}
         <input
           v-model="q"
           type="search"
-          class="min-h-11 min-w-[10rem] border border-rule bg-paper-0 px-2"
+          class="min-h-12 min-w-[10rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+          :placeholder="t('applications.findPlaceholder')"
         />
       </label>
-      <div class="flex gap-1">
-        <FnButton
-          size="sm"
-          :tone="view === 'table' ? 'primary' : 'quiet'"
+      <div class="flex gap-1 rounded-lg bg-paper-2 p-1">
+        <button
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            view === 'table'
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
           @click="view = 'table'"
-          >{{ t("applications.table") }}</FnButton
         >
-        <FnButton
-          size="sm"
-          :tone="view === 'board' ? 'primary' : 'quiet'"
+          {{ t("applications.table") }}
+        </button>
+        <button
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            view === 'board'
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
           @click="view = 'board'"
-          >{{ t("applications.board") }}</FnButton
         >
+          {{ t("applications.board") }}
+        </button>
       </div>
       <FnButton tone="quiet" size="sm" :disabled="savingView" @click="saveCurrentView">{{
         t("applications.saveView")
@@ -370,14 +396,16 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
       >
     </div>
 
-    <section class="flex flex-col gap-2">
+    <section
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+    >
       <div class="flex flex-wrap items-center gap-2">
         <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
           {{ t("applications.funnel") }}
         </h2>
         <select
           v-model="period"
-          class="min-h-11 border border-rule bg-paper-0 px-2 text-sm"
+          class="min-h-11 rounded-md border border-rule bg-paper-0 px-3 text-sm font-medium text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
           :aria-label="t('today.period')"
         >
           <option value="today">{{ t("today.periodToday") }}</option>
@@ -385,15 +413,12 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           <option value="total">{{ t("today.periodTotal") }}</option>
         </select>
       </div>
-      <p class="font-mono text-sm text-ink-900">
+      <p class="text-sm tabular-nums text-ink-900">
         <span v-for="([label, n], i) in funnel" :key="label">
           <span v-if="i"> → </span>{{ n }} {{ label }}
         </span>
       </p>
-      <ul
-        v-if="outcomes.length"
-        class="flex flex-wrap gap-3 font-mono text-[0.6875rem] text-ink-600"
-      >
+      <ul v-if="outcomes.length" class="flex flex-wrap gap-3 text-xs tabular-nums text-ink-600">
         <li v-for="[m, stats] in outcomes" :key="m">
           {{ m }}: {{ stats.submitted ?? 0 }} / {{ stats.responded ?? 0 }} /
           {{ stats.interview ?? 0 }}
@@ -404,34 +429,40 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     <div v-if="loading"><FnSkeleton class="h-40 w-full" /></div>
 
     <template v-else-if="view === 'table'">
-      <div v-if="!items.length" class="flex flex-col items-start gap-3">
+      <div
+        v-if="!items.length"
+        class="flex flex-col items-start gap-3 rounded-xl border border-dashed border-rule bg-paper-1 p-6"
+      >
         <p class="text-sm text-ink-600">{{ t("applications.empty") }}</p>
-        <NuxtLink to="/jobs" class="text-sm font-medium text-persimmon-700 underline">{{
-          t("applications.browseJobs")
-        }}</NuxtLink>
+        <FnButton as-child tone="primary">
+          <NuxtLink to="/jobs">{{ t("applications.browseJobs") }}</NuxtLink>
+        </FnButton>
       </div>
-      <div v-else class="overflow-x-auto border-y border-rule">
+      <div
+        v-else
+        class="overflow-x-auto rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
         <table class="w-full min-w-[640px] text-left text-sm">
-          <thead class="border-b border-rule text-xs tracking-wide text-ink-600 uppercase">
+          <thead class="bg-paper-2 text-xs font-semibold tracking-wide text-ink-600 uppercase">
             <tr>
-              <th class="py-2 pr-3 font-medium">{{ t("applications.role") }}</th>
-              <th class="py-2 pr-3 font-medium">{{ t("applications.status") }}</th>
-              <th class="py-2 pr-3 font-medium">{{ t("applications.method") }}</th>
-              <th class="py-2 pr-3 font-medium">{{ t("applications.submitted") }}</th>
+              <th class="px-4 py-3 font-semibold">{{ t("applications.role") }}</th>
+              <th class="px-4 py-3 font-semibold">{{ t("applications.status") }}</th>
+              <th class="px-4 py-3 font-semibold">{{ t("applications.method") }}</th>
+              <th class="px-4 py-3 font-semibold">{{ t("applications.submitted") }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-rule">
             <tr
               v-for="a in items"
               :key="a.id"
-              class="cursor-pointer hover:bg-paper-1"
+              class="cursor-pointer transition-colors hover:bg-paper-2/60"
               @click="navigateTo(`/applications/${a.id}`)"
             >
-              <td class="py-3 pr-3">
+              <td class="px-4 py-4">
                 <div class="font-medium text-ink-900">{{ a.job_title || "—" }}</div>
                 <div class="text-ink-600">{{ a.company_name }}</div>
               </td>
-              <td class="py-3 pr-3">
+              <td class="px-4 py-4">
                 <select
                   class="min-h-11 border border-rule bg-paper-0 px-2"
                   :value="a.status"
@@ -486,7 +517,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     >
       <div class="w-full max-w-md space-y-3 border border-rule bg-paper-0 p-4">
         <h2 class="font-medium">{{ t("applications.log") }}</h2>
-        <label class="flex flex-col gap-1 text-xs text-ink-600">
+        <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.track") }}
           <select
             v-model="manualTrack"
@@ -497,21 +528,21 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
             </option>
           </select>
         </label>
-        <label class="flex flex-col gap-1 text-xs text-ink-600">
+        <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.company") }}
           <input
             v-model="manualCompany"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm text-ink-900"
           />
         </label>
-        <label class="flex flex-col gap-1 text-xs text-ink-600">
+        <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.title") }}
           <input
             v-model="manualTitle"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm text-ink-900"
           />
         </label>
-        <label class="flex flex-col gap-1 text-xs text-ink-600">
+        <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.url") }}
           <input
             v-model="manualUrl"

@@ -4,20 +4,23 @@ import { tv, type VariantProps } from "tailwind-variants";
 
 const button = tv({
   base:
-    "inline-flex items-center justify-center gap-2 rounded-sm font-medium whitespace-nowrap " +
-    "transition-colors duration-[var(--dur-steady)] ease-[var(--ease-steady)] " +
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-persimmon-700 " +
+    "inline-flex items-center justify-center gap-2 rounded-md font-semibold whitespace-nowrap " +
+    "tracking-[-0.01em] transition-all duration-[var(--dur-steady)] ease-[var(--ease-steady)] " +
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 " +
     "disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none",
   variants: {
     tone: {
-      primary: "bg-persimmon-500 text-on-brand hover:brightness-95",
-      quiet: "border border-edge bg-paper-1 text-ink-900 hover:bg-paper-2",
-      ghost: "text-ink-900 hover:bg-paper-2",
+      primary:
+        "bg-brand-500 text-on-brand shadow-[var(--shadow-button)] hover:bg-brand-600 active:translate-y-px",
+      quiet:
+        "border border-rule bg-paper-1 text-ink-900 shadow-[var(--shadow-card)] hover:border-edge hover:bg-paper-2",
+      ghost: "text-ink-600 hover:bg-paper-2 hover:text-ink-900",
       danger: "border border-oxblood-600 bg-paper-1 text-oxblood-600 hover:bg-paper-2",
     },
     size: {
-      md: "min-h-11 px-4 text-sm",
-      sm: "min-h-11 px-3 text-xs md:min-h-8",
+      sm: "min-h-11 px-4 text-sm",
+      md: "min-h-12 px-5 text-base",
+      lg: "min-h-14 px-6 text-md",
     },
   },
   defaultVariants: { tone: "quiet", size: "md" },
@@ -43,7 +46,7 @@ const props = withDefaults(defineProps<Props>(), { as: "button", type: "button" 
   >
     <span
       v-if="props.loading"
-      class="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none"
+      class="size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none"
       aria-hidden="true"
     />
     <slot />

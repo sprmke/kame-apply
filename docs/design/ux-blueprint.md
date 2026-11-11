@@ -1,6 +1,6 @@
 # UX blueprint
 
-**Status:** Planned · **Last updated:** 2026-10-28 · Implemented across Phases 2–16. Visual language: [`design-system.md`](./design-system.md) ("Field Notes"). Kame Apply has its own identity and doesn't reuse other Kame apps' layouts or components.
+**Status:** Planned · **Last updated:** 2026-10-28 · Implemented across Phases 2–16. Visual language: [`design-system.md`](./design-system.md) ("Signal"). Kame Apply has its own identity and doesn't reuse other Kame apps' layouts or components.
 
 ## 1. UX principles
 
@@ -41,17 +41,17 @@ Desk sidebar (208px)                 Top of content area
 ### 3.1 Today (guided brief, not a dashboard)
 
 - **One next step** in a paper card: add a resume, start a search, run the first search, or review matches. The card names the action and why.
-- **Headline sentence** in Newsreader: "227 matches across 1 search. Nothing needs you." Use "matches", not "strong matches", until relevance earns it.
+- **Headline sentence** in Manrope: "227 matches across 1 search. Nothing needs you." Use "matches", not "strong matches", until relevance earns it.
 - **New matches:** the top three with title, company, score, one reason, and risk seal. "View all" goes to the search's Jobs view.
 - **Your searches:** one card per search with match and shortlist counts, and **View matches**.
 - **Needs you** stack: checkpoints, answer approvals, tailoring drafts ready, risk decisions, failed runs, budget alerts. Shown only when something needs a decision.
 - **This week:** submitted, response rate, interviews, and matched, collapsed under a disclosure. Not the first screen.
-- **Empty state (new user):** contour motif + three setup steps (AI key → resume → search). The first action is the resume, not a dashboard tour.
+- **Empty state (new user):** three setup steps (AI key → resume → search). The first action is the resume, not a dashboard tour.
 
 ### 3.2 Jobs (Reader)
 
 - **List pane:** compact rows: score, title, company, eligibility, salary, posted, risk seal; grouped "New since your last visit"; sort (best match / newest / salary); quick filters; saved views; bulk select.
-- **Document pane:** the posting typeset in Newsreader, qualifications highlighted inline with proof marks, sanitized; header with company, location/eligibility, salary, sources, original link.
+- **Document pane:** the posting typeset in Manrope, qualifications highlighted inline with proof marks, sanitized; header with company, location/eligibility, salary, sources, original link.
 - **Context panel:** match score + reasons, **fit ledger** (must / preferred / knockout with verdicts), risk seal + reasons, company (other open roles), actions: **Tailor resume** · **Apply with extension** · **Apply with runner** [R2] · **Answer Desk** · **Mark applied** · Shortlist / Skip (reason) / Hide company.
 - Keyboard: `j/k` move, `s` shortlist, `x` skip, `t` tailor, `o` open original, `?` help.
 
@@ -78,7 +78,7 @@ Paste area (multi-question detection) or captured questions from the extension �
 
 ### 3.8 Live window [R2]
 
-Canvas + Martian Mono step log + control pill **AGENT ⇄ YOU** + Pause / Cancel / Open in my browser; checkpoint banners over the canvas. Mobile: full-width canvas, step log in a bottom sheet.
+Canvas + tabular-numerals step log + control pill **AGENT ⇄ YOU** + Pause / Cancel / Open in my browser; checkpoint banners over the canvas. Mobile: full-width canvas, step log in a bottom sheet.
 
 ### 3.9 Safety
 
@@ -128,4 +128,4 @@ Tested at 375 (phone), 820 (tablet), 1440 (desktop) × light/dark. Reader: 3 pan
 
 ## 8. Visual direction
 
-See [`design-system.md`](./design-system.md): warm paper and ink, persimmon accent, Instrument Sans / Newsreader / Martian Mono, Phosphor icons, contour motif, proof marks, pencil→ink drafts, route lines, risk seals, dossiers.
+See [`design-system.md`](./design-system.md): cool canvas, white surfaces, indigo brand, Manrope, Phosphor icons, proof marks, pencil→ink drafts, route lines, risk seals, dossiers.

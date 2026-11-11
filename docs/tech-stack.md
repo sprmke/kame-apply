@@ -22,7 +22,7 @@
 | Resume rendering | **RenderCV (Typst)** for PDF, python-docx for DOCX | ATS-safe, real text layer, fast, Python-native. |
 | Scam ML | scikit-learn (TF-IDF + logistic regression / gradient boosting on EMSCAD) | Tiny, explainable, runs on CPU. |
 | Frontend | **Vue 3.5 + Nuxt 4 + TypeScript** (app routes as SPA `ssr: false`; marketing/legal pages prerendered) | New for the Kame portfolio (others are React or Svelte); first-class in WXT so web and extension share one component library; strong fit for form- and data-heavy UI. UI only, no business logic. See §2a. |
-| UI | **Tailwind CSS v4** + **Reka UI** headless primitives + `tailwind-variants`, custom components in `packages/ui`; **Phosphor** icons via `@nuxt/icon`; **Motion for Vue** (`motion-v`) scoped | New "Field Notes" design system ([`design/design-system.md`](./design/design-system.md)), deliberately unlike the other Kame apps (no shadcn look, no Lucide, no teal). |
+| UI | **Tailwind CSS v4** + **Reka UI** headless primitives + `tailwind-variants`, custom components in `packages/ui`; **Phosphor** icons via `@nuxt/icon`; **Motion for Vue** (`motion-v`) scoped | New "Signal" design system ([`design/design-system.md`](./design/design-system.md)), deliberately unlike the other Kame apps (no shadcn look, no Lucide, no teal). |
 | Server state / client state | **TanStack Query for Vue** (`@tanstack/vue-query`), **Pinia** (UI state only), **VueUse** | Same caching model as before, idiomatic Vue. |
 | Forms / validation | **VeeValidate + Zod** (schemas generated from OpenAPI) | Typed forms; same Zod schemas in the extension. |
 | Tables / lists / charts | TanStack Table (Vue) + TanStack Virtual; **ECharts** via `vue-echarts` | Large virtualized job lists; themed charts. |
@@ -111,7 +111,7 @@ kame-apply/
 │  ├─ runner/       Playwright apply runner + live-view relay (separate container; can run on the user's machine)
 │  └─ extension/    WXT browser extension (side panel, autofill, clipper)
 ├─ packages/
-│  ├─ ui/           "Field Notes" design tokens + Vue components on Reka UI (web + extension)
+│  ├─ ui/           "Signal" design tokens + Vue components on Reka UI (web + extension)
 │  ├─ api-client/   Hey API–generated TS client + TanStack Vue Query options
 │  └─ py-core/      shared Python: models, schemas, source adapters, ATS adapters, AI prompts
 ├─ infra/           docker-compose (dev + prod), Caddy, backups

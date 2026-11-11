@@ -66,7 +66,7 @@ Use `uv run` for all Python (`uv run pytest apps/api -q`, `uv run alembic ...` f
 - **Migrations**: Alembic only; never edit a shipped one. `migrations.mdc`
 - **Time**: timestamps UTC in the DB; display in the user's timezone.
 - **Copy**: minimal UI text (`ui-minimal-copy.mdc`); short, plain, no AI tells, no em dashes (`human-copy.mdc`).
-- **Design**: Field Notes only (paper/ink + persimmon, Instrument Sans / Newsreader / Martian Mono, Phosphor, Reka UI). Never reuse another Kame app's tokens, components, or look. `anti-slop-design.mdc`
+- **Design**: Signal only (cool canvas, white surfaces, indigo brand, Manrope, Phosphor, Reka UI). Never reuse another Kame app's tokens, components, or look. `anti-slop-design.mdc`
 - **Testing**: pytest + httpx (API), Vitest (web), Playwright E2E, evals for AI; tests ship with the phase that introduces the surface, including a cross-tenant test for every new tenant table.
 
 ## AI session hygiene

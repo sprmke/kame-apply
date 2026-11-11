@@ -18,7 +18,7 @@ check "default-palette or off-brand accent classes" '\b(bg|text|border|ring|fill
 check "em dashes in UI source" '\xe2\x80\x94'
 # One persimmon per view: fills are allowed only in the primary button, route line, rail, brand mark,
 # Needs-you plate, checkbox state, the single emphasis series in charts, and the style guide.
-check "persimmon-500 outside its allowlist" 'persimmon-500' '(FnButton|FnRouteLine|FnCheckbox|BrandMark|AppRail|MobileBar|UsageChart|_design|tokens)'
+check "brand fill outside its allowlist" '(bg|fill)-brand-500' '(FnButton|FnRouteLine|FnCheckbox|BrandMark|AppRail|MobileBar|UsageChart|_design|tokens)'
 # Touch targets: interactive controls must be 44px (min-h-11). Smaller only behind a breakpoint.
 check "touch target under 44px" 'min-h-(8|9|10)\b' 'md:min-h-'
 if [[ $fail -ne 0 ]]; then echo; echo "design-slop check failed"; exit 1; fi

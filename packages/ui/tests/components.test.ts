@@ -36,7 +36,7 @@ describe("FnButton", () => {
   });
 
   it("keeps a 44px touch target at the default size", () => {
-    expect(mount(FnButton).classes()).toContain("min-h-11");
+    expect(mount(FnButton).classes()).toContain("min-h-12");
   });
 });
 
@@ -180,7 +180,7 @@ describe("FnTable", () => {
       slots: { "cell-name": `<template #cell-name="{ row }"><b>{{ row.name }}!</b></template>` },
     });
     expect(w.find("b").text()).toBe("A!");
-    expect(w.find("td").classes()).toContain("h-8");
+    expect(w.find("td").classes()).toContain("h-10");
   });
 });
 
