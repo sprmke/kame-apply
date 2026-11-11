@@ -54,4 +54,4 @@ Do not review in adjectives. State the rule, the surface, and the intended outco
 
 ## Design system
 
-The Field Notes system is ratified in `docs/design/design-system.md` (persimmon accent, paper/ink, Instrument Sans / Newsreader / Martian Mono). Do not recommend swapping the hue or borrowing another Kame app's look. The living style guide is the `/_design` route; review there and on real routes.
+The Signal system is ratified in `docs/design/design-system.md` (indigo brand, cool canvas, white surfaces, Manrope). Do not recommend swapping the hue or borrowing another Kame app's look. The living style guide is the `/_design` route; review there and on real routes.

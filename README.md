@@ -135,7 +135,7 @@ More captures and regenerate notes: [`docs/screenshots/README.md`](./docs/screen
 | Extension        | [WXT](https://wxt.dev/) + Vue, shared `@kame/ui`                                                                                                                                                |
 | Files            | Cloudflare R2 (MinIO locally), short-lived signed URLs                                                                                                                                          |
 | Auth             | FastAPI JWT + refresh, Google OAuth, argon2; roles `owner \| admin \| member \| viewer`                                                                                                         |
-| Design           | **Field Notes**: paper/ink + persimmon, Instrument Sans / Newsreader / Martian Mono                                                                                                             |
+| Design           | **Signal**: cool canvas, white surfaces, indigo brand, Manrope                                                                                                                                  |
 
 Full rationale: [`docs/tech-stack.md`](./docs/tech-stack.md). Product principles (truthful content, no evasion, human owns Submit): [`docs/prd.md`](./docs/prd.md).
 
@@ -185,17 +185,18 @@ Quality gate before a PR: `pnpm run ci:quality`.
 
 ## Scripts
 
-| Command                                              | Description                                        |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| `pnpm run dev`                                       | Migrate + API + web (`./dev.sh`)                   |
-| `pnpm run dev:docker` / `stop:docker`                | Local Postgres, MinIO, Mailpit                     |
-| `pnpm run dev:api` / `dev:web`                       | One side only                                      |
-| `pnpm run lint` / `format` / `type-check` / `build`  | Quality                                            |
-| `pnpm run test`                                      | pytest (API, runner) + Vitest (web, ui, extension) |
-| `pnpm run ci:quality`                                | Full CI gate                                       |
-| `pnpm run db:migrate` / `db:reset:local` / `db:seed` | Database                                           |
-| `pnpm run gen:api-client`                            | OpenAPI → `packages/api-client`                    |
-| `pnpm run check:ai-tooling-sync`                     | Keep Cursor/Claude/OpenCode tooling aligned        |
+| Command                                              | Description                                              |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| `pnpm run dev`                                       | Migrate + API + web (`./dev.sh`)                         |
+| `pnpm run dev:docker` / `stop:docker`                | Local Postgres, MinIO, Mailpit                           |
+| `pnpm run dev:api` / `dev:web`                       | One side only                                            |
+| `pnpm run lint` / `format` / `type-check` / `build`  | Quality                                                  |
+| `pnpm run test`                                      | pytest (API, runner) + Vitest (web, ui, extension)       |
+| `pnpm run audit:ui`                                  | Screenshot real routes at 375/820/1440; fail on overflow |
+| `pnpm run ci:quality`                                | Full CI gate                                             |
+| `pnpm run db:migrate` / `db:reset:local` / `db:seed` | Database                                                 |
+| `pnpm run gen:api-client`                            | OpenAPI → `packages/api-client`                          |
+| `pnpm run check:ai-tooling-sync`                     | Keep Cursor/Claude/OpenCode tooling aligned              |
 
 Deploy and migrate scripts are documented in [`docs/architecture/deployment.md`](./docs/architecture/deployment.md). Production writes need an explicit unlock word in-session.
 
@@ -210,7 +211,7 @@ apps/
   runner/              # Playwright cloud apply worker
   extension/           # WXT + Vue side panel
 packages/
-  ui/                  # Field Notes components + tokens
+  ui/                  # Signal components + tokens
   api-client/          # Generated OpenAPI TypeScript client
   py-core/             # Shared Python (adapters, utils)
 docs/
@@ -255,7 +256,7 @@ Full guides: [`docs/guides/routes/README.md`](./docs/guides/routes/README.md).
 | [`docs/tech-stack.md`](./docs/tech-stack.md)                       | Technology choices and hosting                   |
 | [`docs/architecture/overview.md`](./docs/architecture/overview.md) | System diagram, invariants, modules              |
 | [`docs/phases/README.md`](./docs/phases/README.md)                 | Build plan and phase status                      |
-| [`docs/design/design-system.md`](./docs/design/design-system.md)   | Field Notes visual identity                      |
+| [`docs/design/design-system.md`](./docs/design/design-system.md)   | Signal visual identity                           |
 | [`docs/README.md`](./docs/README.md)                               | Full documentation index                         |
 | [`CLAUDE.md`](./CLAUDE.md)                                         | Always-loaded agent context                      |
 
@@ -265,7 +266,7 @@ Full guides: [`docs/guides/routes/README.md`](./docs/guides/routes/README.md).
 
 ## Design
 
-**Field Notes**: paper and ink neutrals, persimmon accent, Instrument Sans / Newsreader / Martian Mono, Phosphor icons. Deliberately unlike the other Kame apps (no shadcn look, no Lucide, no teal). See [`docs/design/design-system.md`](./docs/design/design-system.md).
+**Signal**: cool gray canvas, white surfaces, indigo brand, Manrope, Phosphor icons, soft elevation. Deliberately unlike the other Kame apps (no shadcn look, no Lucide, no teal). See [`docs/design/design-system.md`](./docs/design/design-system.md).
 
 ---
 

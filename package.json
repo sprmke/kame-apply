@@ -57,7 +57,8 @@
     "migrate:host:dev": "bash scripts/deploy/migrate-host.sh dev",
     "migrate:host:prod": "bash scripts/deploy/migrate-host.sh prod",
     "db:roles:host:dev": "bash scripts/deploy/ensure-host-db-roles.sh dev",
-    "db:roles:host:prod": "bash scripts/deploy/ensure-host-db-roles.sh prod"
+    "db:roles:host:prod": "bash scripts/deploy/ensure-host-db-roles.sh prod",
+    "audit:ui": "playwright test e2e/visual-audit.spec.ts --reporter=list"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

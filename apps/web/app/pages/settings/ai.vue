@@ -238,6 +238,7 @@ const statusGlyph = { valid: "✓", invalid: "✕", untested: "•" } as const;
           row-key="id"
           :caption="t('ai.keysTitle')"
           :empty="t('ai.noKeys')"
+          flat
         >
           <template #cell-provider="{ row }"
             ><span class="font-medium">{{ providerLabel(row.provider) }}</span

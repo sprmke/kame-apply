@@ -65,7 +65,7 @@ function durationLabel(ms: number | null | undefined): string {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
     <div v-if="detail.isPending.value || runs.isPending.value">
       <FnSkeleton class="h-10 w-48" />
     </div>
@@ -74,36 +74,43 @@ function durationLabel(ms: number | null | undefined): string {
     </p>
     <template v-else-if="track">
       <PageHeader :title="track.name" />
-      <nav class="flex flex-wrap gap-1 border-b border-rule" :aria-label="t('tracks.sections')">
+      <nav
+        class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1"
+        :aria-label="t('tracks.sections')"
+      >
         <NuxtLink
           :to="`/tracks/${trackId}`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.criteria") }}</NuxtLink
         >
         <NuxtLink
           :to="`/tracks/${trackId}/settings`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.settings") }}</NuxtLink
         >
-        <span class="relative px-3 py-2 text-sm font-medium text-ink-900"
-          >{{ t("tracks.runHistory")
-          }}<span class="absolute inset-x-2 bottom-0 h-0.5 bg-ink-900" aria-hidden="true"
-        /></span>
+        <span
+          class="rounded-md bg-paper-1 px-4 py-2 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)]"
+          >{{ t("tracks.runHistory") }}</span
+        >
       </nav>
 
-      <div v-if="!rows.length" class="flex flex-col items-start gap-3">
+      <div
+        v-if="!rows.length"
+        class="flex flex-col items-start gap-3 rounded-xl border border-dashed border-rule bg-paper-1 p-6"
+      >
         <p class="text-sm text-ink-600">{{ t("tracks.noRuns") }}</p>
-        <NuxtLink
-          :to="`/tracks/${trackId}`"
-          class="text-sm font-medium text-persimmon-700 underline"
-          >{{ t("tracks.runNow") }}</NuxtLink
-        >
+        <NuxtLink :to="`/tracks/${trackId}`" class="text-sm font-medium text-brand-700 underline">{{
+          t("tracks.runNow")
+        }}</NuxtLink>
       </div>
-      <ul v-else class="divide-y divide-rule border-y border-rule">
+      <ul
+        v-else
+        class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
         <li
           v-for="r in rows"
           :key="r.id"
-          class="grid gap-1 py-3 text-sm md:grid-cols-[1fr_auto] md:items-center"
+          class="grid gap-1 px-5 py-4 text-sm md:grid-cols-[1fr_auto] md:items-center"
         >
           <div class="flex flex-col gap-0.5">
             <span class="font-medium text-ink-900"
@@ -119,7 +126,7 @@ function durationLabel(ms: number | null | undefined): string {
                 })
               }}
             </span>
-            <span v-if="r.error" class="text-persimmon-700">{{ r.error }}</span>
+            <span v-if="r.error" class="text-brand-700">{{ r.error }}</span>
           </div>
           <span class="font-mono text-[0.6875rem] text-ink-600">{{
             r.started_at ? fmt.dateTime(r.started_at) : fmt.dateTime(r.created_at)

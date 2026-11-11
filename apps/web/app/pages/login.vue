@@ -76,14 +76,14 @@ const submit = form.handleSubmit(async (v) => {
     </form>
     <GoogleButton />
     <div class="flex flex-col gap-2 text-sm text-ink-600">
-      <NuxtLink to="/forgot-password" class="text-persimmon-700 underline underline-offset-2">{{
+      <NuxtLink to="/forgot-password" class="text-brand-700 underline underline-offset-2">{{
         t("auth.forgot")
       }}</NuxtLink>
       <span
         >{{ t("auth.noAccount") }}
         <NuxtLink
           :to="{ path: '/register', query: route.query.next ? { next: route.query.next } : {} }"
-          class="text-persimmon-700 underline underline-offset-2"
+          class="text-brand-700 underline underline-offset-2"
           >{{ t("auth.createAccount") }}</NuxtLink
         ></span
       >

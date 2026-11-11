@@ -71,7 +71,7 @@ async function addCareers() {
         <input
           v-model="careersUrl"
           type="url"
-          class="min-h-11 border border-rule bg-paper-0 px-3"
+          class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
           required
         />
       </label>
@@ -86,7 +86,7 @@ async function addCareers() {
           <p class="font-medium text-ink-900">{{ s.name }}</p>
           <p class="font-mono text-xs text-ink-600">{{ s.key }} · {{ s.kind }}</p>
         </div>
-        <span v-if="s.circuit_open" class="text-persimmon-700">{{ t("sources.circuit") }}</span>
+        <span v-if="s.circuit_open" class="text-brand-700">{{ t("sources.circuit") }}</span>
         <span class="text-ink-600">{{ t("sources.jobs") }} {{ s.jobs_ingested }}</span>
         <span class="text-ink-600">{{ t("sources.errors") }} {{ s.error_count }}</span>
         <span class="text-ink-600"

@@ -221,28 +221,31 @@ async function togglePause() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
     <div v-if="loading">
       <FnSkeleton class="h-10 w-48" />
     </div>
     <p v-else-if="loadError" class="text-sm text-ink-600">{{ apiError(loadError) }}</p>
     <template v-else-if="track">
       <PageHeader :title="track.name" />
-      <nav class="flex flex-wrap gap-1 border-b border-rule" :aria-label="t('tracks.sections')">
+      <nav
+        class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1"
+        :aria-label="t('tracks.sections')"
+      >
         <NuxtLink
           :to="`/tracks/${trackId}`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.criteria") }}</NuxtLink
         >
         <NuxtLink
           :to="`/tracks/${trackId}/runs`"
-          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
           >{{ t("tracks.runHistory") }}</NuxtLink
         >
-        <span class="relative px-3 py-2 text-sm font-medium text-ink-900"
-          >{{ t("tracks.settings")
-          }}<span class="absolute inset-x-2 bottom-0 h-0.5 bg-ink-900" aria-hidden="true"
-        /></span>
+        <span
+          class="rounded-md bg-paper-1 px-4 py-2 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)]"
+          >{{ t("tracks.settings") }}</span
+        >
       </nav>
 
       <section class="flex flex-col gap-3">
@@ -251,7 +254,7 @@ async function togglePause() {
         </h2>
         <select
           v-model="autonomy"
-          class="min-h-11 max-w-xs border border-rule bg-paper-0 px-3 text-sm"
+          class="min-h-12 max-w-xs rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
         >
           <option value="discover">{{ t("tracks.autonomyDiscover") }}</option>
           <option value="prepare">{{ t("tracks.autonomyPrepare") }}</option>
@@ -275,10 +278,10 @@ async function togglePause() {
         <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
           {{ t("autoSubmit.title") }}
         </h2>
-        <p class="text-sm text-ink-700">
+        <p class="text-sm text-ink-600">
           {{ t("autoSubmit.dryLeft") }} {{ autoCfg.data.value.dry_run_remaining }}
         </p>
-        <p class="text-sm text-ink-700">
+        <p class="text-sm text-ink-600">
           {{ t("autoSubmit.threshold") }} {{ autoCfg.data.value.score_threshold }}
         </p>
         <div class="flex flex-wrap gap-2">
@@ -317,7 +320,12 @@ async function togglePause() {
           >
             <span class="font-mono text-ink-900">{{ row.source_key }}</span>
             <label class="flex items-center gap-2">
-              <input type="checkbox" :checked="row.enabled" @change="toggleSource(row)" />
+              <input
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+                :checked="row.enabled"
+                @change="toggleSource(row)"
+              />
             </label>
           </li>
         </ul>
@@ -335,7 +343,7 @@ async function togglePause() {
           >
             <div class="flex min-w-0 flex-col">
               <span class="text-ink-900">{{ s.preview }}</span>
-              <span class="font-mono text-[0.6875rem] text-ink-600"
+              <span class="text-xs tabular-nums text-ink-600"
                 >{{ s.scope }} · cap {{ s.daily_cap }} ·
                 {{ s.enabled ? t("tracks.scheduleOn") : t("tracks.scheduleOff") }}</span
               >
@@ -346,7 +354,10 @@ async function togglePause() {
           </li>
         </ul>
         <div class="grid max-w-md gap-2">
-          <select v-model="preset" class="min-h-11 border border-rule bg-paper-0 px-3 text-sm">
+          <select
+            v-model="preset"
+            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+          >
             <option value="hourly">{{ t("tracks.presetHourly") }}</option>
             <option value="every_2_hours">{{ t("tracks.presetEvery2h") }}</option>
             <option value="every_4_hours">{{ t("tracks.presetEvery4h") }}</option>
@@ -355,18 +366,18 @@ async function togglePause() {
           </select>
           <input
             v-model="timezone"
-            class="min-h-11 border border-rule bg-paper-0 px-3 text-sm"
+            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
             :aria-label="t('profile.timezone')"
           />
           <div class="flex gap-2">
             <input
               v-model="quietStart"
-              class="min-h-11 w-full border border-rule bg-paper-0 px-3 text-sm"
+              class="min-h-12 w-full rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               :aria-label="t('tracks.quietStart')"
             />
             <input
               v-model="quietEnd"
-              class="min-h-11 w-full border border-rule bg-paper-0 px-3 text-sm"
+              class="min-h-12 w-full rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
               :aria-label="t('tracks.quietEnd')"
             />
           </div>
@@ -375,7 +386,7 @@ async function togglePause() {
             type="number"
             min="0"
             max="48"
-            class="min-h-11 border border-rule bg-paper-0 px-3 text-sm"
+            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
             :aria-label="t('tracks.dailyCap')"
           />
           <FnButton tone="primary" class="self-start" :disabled="adding" @click="addSchedule">{{
@@ -388,7 +399,7 @@ async function togglePause() {
         <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
           {{ t("tracks.resume") }}
         </h2>
-        <NuxtLink :to="`/studio?track=${trackId}`" class="text-sm text-persimmon-700 underline">
+        <NuxtLink :to="`/studio?track=${trackId}`" class="text-sm text-brand-700 underline">
           {{ t("tracks.openStudio") }}
         </NuxtLink>
       </section>

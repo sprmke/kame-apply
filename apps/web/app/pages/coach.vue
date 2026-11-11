@@ -59,43 +59,53 @@ async function addProfile() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
-    <h1 class="font-serif text-2xl font-semibold text-ink-900">{{ t("coach.title") }}</h1>
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
+    <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("coach.title") }}</h1>
 
     <div v-if="coach.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
-    <ul v-else class="divide-y divide-rule border-y border-rule">
+    <ul
+      v-else
+      class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+    >
       <li
         v-for="row in coach.data.value ?? []"
         :key="row.id"
-        class="flex flex-wrap items-center justify-between gap-3 py-3"
+        class="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
       >
-        <button type="button" class="min-w-0 flex-1 text-left" @click="openProfile(row.id)">
+        <button
+          type="button"
+          class="min-w-0 flex-1 rounded-md px-2 py-1 text-left hover:bg-paper-2"
+          @click="openProfile(row.id)"
+        >
           <span class="font-medium text-ink-900">{{ row.display_name }}</span>
           <span v-if="row.headline" class="mt-0.5 block text-sm text-ink-600">{{
             row.headline
           }}</span>
         </button>
-        <span class="font-mono text-xs text-ink-600"
+        <span class="text-sm tabular-nums text-ink-600"
           >{{ row.application_count }} {{ t("coach.apps") }}</span
         >
         <FnButton size="sm" tone="quiet" @click="openProfile(row.id)">{{
           t("coach.open")
         }}</FnButton>
       </li>
-      <li v-if="!(coach.data.value ?? []).length" class="py-6 text-sm text-ink-600">
+      <li v-if="!(coach.data.value ?? []).length" class="px-5 py-8 text-sm text-ink-600">
         {{ t("coach.empty") }}
       </li>
     </ul>
 
-    <form class="flex flex-wrap gap-2" @submit.prevent="addProfile">
+    <form
+      class="flex flex-wrap gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+      @submit.prevent="addProfile"
+    >
       <input
         v-model="newName"
         type="text"
-        class="min-h-11 min-w-[12rem] flex-1 border border-rule bg-paper-0 px-2 text-sm"
+        class="min-h-12 min-w-[12rem] flex-1 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
         :placeholder="t('coach.namePlaceholder')"
         :aria-label="t('coach.namePlaceholder')"
       />
-      <FnButton type="submit" :disabled="creating || !newName.trim()">{{
+      <FnButton type="submit" tone="primary" :disabled="creating || !newName.trim()">{{
         t("coach.add")
       }}</FnButton>
     </form>

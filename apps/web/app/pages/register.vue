@@ -90,7 +90,7 @@ const submit = form.handleSubmit(async (v) => {
       {{ t("auth.haveAccount") }}
       <NuxtLink
         :to="{ path: '/login', query: route.query.next ? { next: route.query.next } : {} }"
-        class="text-persimmon-700 underline underline-offset-2"
+        class="text-brand-700 underline underline-offset-2"
         >{{ t("auth.signIn") }}</NuxtLink
       >
     </p>

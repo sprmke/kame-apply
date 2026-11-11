@@ -70,7 +70,7 @@ async function setStatus(id: string, status: string) {
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <NuxtLink :to="`/tracks/${trackId}`" class="text-sm text-persimmon-700 underline">{{
+        <NuxtLink :to="`/tracks/${trackId}`" class="text-sm text-brand-700 underline">{{
           t("nav.tracks")
         }}</NuxtLink>
         <h1 class="mt-2 font-serif text-2xl font-semibold text-ink-900">
@@ -87,13 +87,13 @@ async function setStatus(id: string, status: string) {
           <h2 class="font-medium text-ink-900">{{ g.skill }}</h2>
           <span class="font-mono text-xs text-ink-600">{{ g.status }}</span>
         </div>
-        <p class="text-sm text-ink-700">{{ g.suggestion }}</p>
+        <p class="text-sm text-ink-600">{{ g.suggestion }}</p>
         <a
           v-if="g.resource_url"
           :href="g.resource_url"
           target="_blank"
           rel="noopener"
-          class="text-sm text-persimmon-700 underline"
+          class="text-sm text-brand-700 underline"
           >{{ t("gaps.resource") }}</a
         >
         <div class="flex flex-wrap gap-2">

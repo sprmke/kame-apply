@@ -9,8 +9,8 @@ describe("FnButton", () => {
     expect(w.classes()).toContain("bg-paper-1");
   });
 
-  it("uses the persimmon fill for the primary tone", () => {
+  it("uses the brand fill for the primary tone", () => {
     const w = mount(FnButton, { props: { tone: "primary" }, slots: { default: "Apply" } });
-    expect(w.classes()).toContain("bg-persimmon-500");
+    expect(w.classes()).toContain("bg-brand-500");
   });
 });

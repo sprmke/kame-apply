@@ -14,7 +14,7 @@ const max = computed(() => Math.max(1, ...props.days.map((d) => d.cost_micros)))
       <span>{{ caption }}</span>
       <button
         type="button"
-        class="min-h-11 text-persimmon-700 underline underline-offset-2"
+        class="min-h-11 text-brand-700 underline underline-offset-2"
         :aria-pressed="showTable"
         @click="showTable = !showTable"
       >
@@ -47,7 +47,7 @@ const max = computed(() => Math.max(1, ...props.days.map((d) => d.cost_micros)))
       <div
         v-for="d in days"
         :key="d.day"
-        class="flex-1 rounded-t-sm bg-persimmon-500"
+        class="flex-1 rounded-t-sm bg-brand-500"
         :style="{ height: `${Math.max(4, (d.cost_micros / max) * 100)}%` }"
         :title="`${fmt.date(d.day)}: ${fmt.usd(d.cost_micros)}`"
       />

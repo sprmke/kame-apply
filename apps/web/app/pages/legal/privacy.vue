@@ -5,8 +5,8 @@ definePageMeta({ layout: false });
 <template>
   <main class="mx-auto max-w-2xl px-4 py-12 text-ink-900">
     <h1 class="font-serif text-3xl font-semibold">Privacy</h1>
-    <p class="mt-4 text-sm text-ink-700">Last updated: 2026-11-01</p>
-    <section class="mt-8 flex flex-col gap-3 text-sm leading-relaxed text-ink-800">
+    <p class="mt-4 text-sm text-ink-600">Last updated: 2026-11-01</p>
+    <section class="mt-8 flex flex-col gap-3 text-sm leading-relaxed text-ink-900">
       <p>
         Kame Apply stores your Career Profile, tracks, job matches, applications, and settings in
         your workspace so you can search and apply for jobs.

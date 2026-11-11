@@ -14,7 +14,7 @@ async function copy() {
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-2 rounded-sm border border-rule bg-paper-2 px-3 py-2 text-sm text-ink-800"
+    class="flex flex-wrap items-center gap-2 rounded-sm border border-rule bg-paper-2 px-3 py-2 text-sm text-ink-900"
   >
     <span>{{ t("integrations.waitingClaude") }}</span>
     <code class="font-mono text-xs">{{ cmd }}</code>

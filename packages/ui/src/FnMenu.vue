@@ -27,14 +27,14 @@ defineProps<{
         :align="align ?? 'end'"
         :side="side ?? 'bottom'"
         :side-offset="6"
-        class="z-50 min-w-48 rounded-md border border-rule bg-paper-1 p-1 shadow-float"
+        class="z-50 min-w-48 rounded-lg border border-rule bg-paper-1 p-1.5 shadow-[var(--shadow-float)]"
       >
         <template v-for="(it, i) in items" :key="i">
           <DropdownMenuSeparator v-if="it.type === 'separator'" class="my-1 h-px bg-rule" />
           <DropdownMenuItem
             v-else
             :disabled="it.disabled"
-            class="flex min-h-11 cursor-pointer items-center rounded-sm px-3 text-sm outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-paper-2"
+            class="flex min-h-11 cursor-pointer items-center rounded-md px-3 text-sm font-medium outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-paper-2"
             :class="it.tone === 'danger' ? 'text-oxblood-600' : 'text-ink-900'"
             @select="it.onSelect()"
           >

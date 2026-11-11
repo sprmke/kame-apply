@@ -15,7 +15,7 @@ Codex does not automatically activate Cursor .mdc rules. Before work, read the a
 | `.cursor/rules/dbos-workflows.mdc` | - apps/api/app/**/workflows.py |
 | `.cursor/rules/documentation-maintenance.mdc` | Always |
 | `.cursor/rules/fastapi-conventions.mdc` | - apps/api/** |
-| `.cursor/rules/field-notes-design.mdc` | - apps/web/** |
+| `.cursor/rules/signal-design.mdc` | - apps/web/** |
 | `.cursor/rules/git-commits.mdc` | Always |
 | `.cursor/rules/human-copy.mdc` | Always |
 | `.cursor/rules/in-app-notifications.mdc` | - apps/api/app/notifications/** |

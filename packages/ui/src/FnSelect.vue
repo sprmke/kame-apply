@@ -28,17 +28,17 @@ defineProps<{
     <SelectTrigger
       :id="id"
       :aria-invalid="invalid || undefined"
-      class="flex min-h-11 w-full items-center justify-between gap-2 rounded-sm border bg-paper-0 px-3 text-left text-base text-ink-900 data-[placeholder]:text-ink-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-persimmon-700 disabled:opacity-50"
-      :class="invalid ? 'border-oxblood-600' : 'border-edge'"
+      class="flex min-h-12 w-full items-center justify-between gap-2 rounded-md border bg-paper-1 px-4 text-left text-base text-ink-900 shadow-[var(--shadow-card)] transition-colors hover:border-edge focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none disabled:opacity-50 data-[placeholder]:text-ink-400"
+      :class="invalid ? 'border-oxblood-600' : 'border-rule'"
     >
       <SelectValue :placeholder="placeholder" />
-      <span aria-hidden="true" class="text-ink-600">▾</span>
+      <span aria-hidden="true" class="text-ink-400">▾</span>
     </SelectTrigger>
     <SelectPortal>
       <SelectContent
         position="popper"
-        :side-offset="4"
-        class="z-50 min-w-[var(--reka-select-trigger-width)] rounded-md border border-rule bg-paper-1 p-1 shadow-float"
+        :side-offset="6"
+        class="z-50 min-w-[var(--reka-select-trigger-width)] rounded-lg border border-rule bg-paper-1 p-1.5 shadow-[var(--shadow-float)]"
       >
         <SelectViewport>
           <SelectItem
@@ -46,7 +46,7 @@ defineProps<{
             :key="o.value"
             :value="o.value"
             :disabled="o.disabled"
-            class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-sm px-3 text-sm text-ink-900 outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-paper-2"
+            class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-md px-3 text-sm text-ink-900 outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-brand-50 data-[highlighted]:text-brand-700"
           >
             <SelectItemText>{{ o.label }}</SelectItemText>
             <SelectItemIndicator aria-hidden="true">✓</SelectItemIndicator>

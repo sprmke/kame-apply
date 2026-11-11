@@ -23,7 +23,7 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 8 | [`research/05-resume-intelligence.md`](./research/05-resume-intelligence.md) | Parsing, critique rubric, market skill research, tailoring, rendering. |
 | 8b | [`research/07-how-recruiters-find-and-screen.md`](./research/07-how-recruiters-find-and-screen.md) | How recruiters and their AI (Workday HiredScore, Greenhouse, LinkedIn Recruiter) find and screen candidates, and how every Kame output is built to pass both AI and human review. |
 | 8c | [`research/08-bring-your-own-claude.md`](./research/08-bring-your-own-claude.md) | Using your own Claude Code / Claude subscription on Kame Apply data (MCP server, plugin, agent inbox, Claude in Chrome) within Anthropic's terms. |
-| 9a | [`design/design-system.md`](./design/design-system.md) | The new "Field Notes" visual identity (color, type, icons, signature components, layouts, motion), deliberately distinct from other Kame apps. |
+| 9a | [`design/design-system.md`](./design/design-system.md) | The new "Signal" visual identity (color, type, icons, signature components, layouts, motion), deliberately distinct from other Kame apps. |
 | 9 | [`design/ux-blueprint.md`](./design/ux-blueprint.md) | Information architecture, screens, key flows, the criteria-builder decision, responsive rules. |
 | 10 | [`research/06-agentic-workflow.md`](./research/06-agentic-workflow.md) | How we build it with AI agents: what we port from kame-desk / kame-homes / kame-hunt, external skills to install. |
 | 11 | [`phases/README.md`](./phases/README.md) | **The build plan.** Ordered phases, one at a time, each with exit criteria. |

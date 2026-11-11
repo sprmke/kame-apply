@@ -147,7 +147,9 @@
     "generatePrep": "Generate",
     "referrals": "Referrals",
     "draftReferral": "Draft",
-    "browseJobs": "Browse jobs"
+    "browseJobs": "Browse jobs",
+    "find": "Find",
+    "findPlaceholder": "Title, company, or note"
   },
   "responses": {
     "title": "Replies",
@@ -754,7 +756,8 @@
     "viewMatches": "View matches",
     "moreTools": "More tools",
     "criteriaHint": "Update this to refine your matches.",
-    "noNewJobs": "no new jobs"
+    "noNewJobs": "no new jobs",
+    "start": "Start a search"
   },
   "sources": {
     "title": "Source health",

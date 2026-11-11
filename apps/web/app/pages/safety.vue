@@ -42,6 +42,7 @@ const STOP_REASONS = new Set([
   "be",
   "but",
   "by",
+  "can",
   "for",
   "from",
   "has",
@@ -80,7 +81,7 @@ function visibleReasons(reasons: unknown[] | undefined): unknown[] {
   return (reasons || []).filter((r) => {
     const text = reasonText(r).toLowerCase();
     const parts = text
-      .split(/[,·]/)
+      .split(/[,·|]/)
       .map((part) => part.trim())
       .filter(Boolean);
     return parts.length > 0 && !parts.every((part) => STOP_REASONS.has(part));
@@ -131,20 +132,34 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-3xl flex-col gap-4 p-4 md:p-6">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-6">
     <header class="flex flex-wrap items-center gap-2">
-      <h1 class="font-display text-xl text-ink-900">{{ $t("nav.safety") }}</h1>
-      <div class="ml-auto flex gap-1">
-        <FnButton
-          size="sm"
-          :tone="tab === 'flagged' ? 'primary' : 'ghost'"
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ $t("nav.safety") }}</h1>
+      <div class="ml-auto flex gap-1 rounded-lg bg-paper-2 p-1">
+        <button
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            tab === 'flagged'
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
           @click="tab = 'flagged'"
         >
           Flagged
-        </FnButton>
-        <FnButton size="sm" :tone="tab === 'check' ? 'primary' : 'ghost'" @click="tab = 'check'">
+        </button>
+        <button
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            tab === 'check'
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
+          @click="tab = 'check'"
+        >
           Check this
-        </FnButton>
+        </button>
       </div>
     </header>
 
@@ -153,58 +168,66 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
         <FnSkeleton class="h-12" />
         <FnSkeleton class="h-12" />
       </div>
-      <p v-else-if="!(flagged.data.value || []).length" class="text-sm text-ink-600">
+      <p
+        v-else-if="!(flagged.data.value || []).length"
+        class="rounded-xl border border-dashed border-rule bg-paper-1 p-6 text-sm text-ink-600"
+      >
         No flagged jobs
       </p>
-      <ul v-else class="divide-y divide-ink-100 border border-ink-100">
+      <ul
+        v-else
+        class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
         <li
           v-for="row in flagged.data.value"
           :key="String(row.job_id)"
-          class="flex flex-col gap-2 p-3 sm:flex-row sm:items-start"
+          class="flex flex-col gap-3 p-5 sm:flex-row sm:items-start"
         >
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <FnRiskSeal :level="sealLevel(row.level)" :label="sealLabel(row.level)" />
               <span class="line-clamp-2 font-medium text-ink-900">{{ row.title }}</span>
             </div>
-            <p class="mt-0.5 text-xs text-ink-500">{{ row.company_name }}</p>
-            <ul class="mt-2 space-y-1 text-xs text-ink-700">
+            <p class="mt-0.5 text-sm text-ink-400">{{ row.company_name }}</p>
+            <ul class="mt-2 space-y-1 text-sm text-ink-600">
               <li v-for="(r, i) in visibleReasons(row.reasons).slice(0, 4)" :key="i">
                 {{ reasonText(r) }}
               </li>
             </ul>
-            <p v-if="row.override" class="mt-1 text-xs text-ink-500">
+            <p v-if="row.override" class="mt-1 text-xs text-ink-400">
               Decision: {{ row.override }}
             </p>
           </div>
           <div class="flex flex-wrap gap-1">
-            <FnButton size="sm" tone="ghost" @click="decide(String(row.job_id), 'skip')"
+            <FnButton size="sm" tone="quiet" @click="decide(String(row.job_id), 'skip')"
               >Skip</FnButton
             >
-            <FnButton size="sm" tone="ghost" @click="decide(String(row.job_id), 'reported')"
+            <FnButton size="sm" tone="quiet" @click="decide(String(row.job_id), 'reported')"
               >Report</FnButton
             >
-            <FnButton size="sm" tone="ghost" @click="decide(String(row.job_id), 'not_scam')"
+            <FnButton size="sm" tone="quiet" @click="decide(String(row.job_id), 'not_scam')"
               >Not a scam</FnButton
             >
             <FnButton
               v-if="row.level === 'red'"
               size="sm"
-              tone="ghost"
+              tone="quiet"
               @click="confirmJobId = String(row.job_id)"
               >Continue</FnButton
             >
-            <FnButton v-else size="sm" tone="ghost" @click="decide(String(row.job_id), 'continue')"
+            <FnButton v-else size="sm" tone="quiet" @click="decide(String(row.job_id), 'continue')"
               >Continue</FnButton
             >
           </div>
           <div
             v-if="confirmJobId === String(row.job_id)"
-            class="w-full rounded border border-oxblood-600 bg-paper-50 p-2 text-sm text-ink-800"
+            class="w-full rounded-xl border border-oxblood-600 bg-paper-2 p-4 text-sm text-ink-900"
           >
             <p>This job is marked high risk. Continue anyway?</p>
             <div class="mt-2 flex gap-2">
-              <FnButton size="sm" @click="decide(String(row.job_id), 'continue')">Confirm</FnButton>
+              <FnButton size="sm" tone="danger" @click="decide(String(row.job_id), 'continue')"
+                >Confirm</FnButton
+              >
               <FnButton size="sm" tone="ghost" @click="confirmJobId = null">Cancel</FnButton>
             </div>
           </div>
@@ -212,17 +235,21 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
       </ul>
     </section>
 
-    <section v-else class="space-y-3">
+    <section
+      v-else
+      class="space-y-4 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
+    >
       <FnTextarea v-model="checkInput" :rows="6" class="w-full" aria-label="Message or URL" />
       <FnButton
         size="sm"
+        tone="primary"
         :disabled="!checkInput.trim() || checkMut.isPending.value"
         @click="checkMut.mutate()"
         >Check</FnButton
       >
-      <div v-if="checkResult" class="space-y-2 rounded border border-ink-100 p-3">
+      <div v-if="checkResult" class="space-y-3 rounded-xl border border-rule bg-paper-0 p-5">
         <FnRiskSeal :level="sealLevel(checkResult.level)" :label="sealLabel(checkResult.level)" />
-        <ul class="space-y-1 text-sm text-ink-800">
+        <ul class="space-y-1 text-sm text-ink-900">
           <li v-for="(r, i) in visibleReasons(checkResult.reasons).slice(0, 6)" :key="i">
             {{ reasonText(r) }}
           </li>

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Verifies WCAG contrast for the Field Notes token pairs in packages/ui/src/tokens.css.
+// Verifies WCAG contrast for the Signal token pairs in packages/ui/src/tokens.css.
 // Themes are read from the CSS itself, so editing a token can never silently break contrast.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -76,9 +76,9 @@ const pairs = [
     ["pencil", bg, 4.5, "AI draft text"],
   ]),
   ["ink-400", "paper-0", 3, "placeholders (never essential info)"],
-  ["persimmon-700", "paper-0", 4.5, "accent text and links"],
-  ["persimmon-700", "paper-1", 4.5, "accent text on panels"],
-  ["on-brand", "persimmon-500", 4.5, "text on brand fills"],
+  ["brand-700", "paper-0", 4.5, "accent text and links"],
+  ["brand-700", "paper-1", 4.5, "accent text on panels"],
+  ["on-brand", "brand-500", 4.5, "text on brand fills"],
   ["edge", "paper-0", 3, "control borders"],
   ["edge", "paper-1", 3, "control borders on panels"],
   ...["fern-600", "saffron-600", "oxblood-600"].flatMap((c) => [

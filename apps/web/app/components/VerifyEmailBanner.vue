@@ -26,10 +26,14 @@ async function resend() {
   <div
     v-if="auth.user && !auth.user.email_verified"
     role="status"
-    class="flex flex-wrap items-center gap-3 rounded-md border border-saffron-600 bg-paper-1 px-4 py-3 text-sm"
+    class="flex flex-col gap-3 rounded-xl border border-saffron-600 bg-paper-1 px-4 py-4 text-sm sm:flex-row sm:items-center"
   >
-    <span aria-hidden="true" class="text-saffron-600">!</span>
-    <span class="flex-1">{{ t("verify.banner", { email: auth.user.email }) }}</span>
-    <FnButton size="sm" :loading="busy" @click="resend">{{ t("verify.resend") }}</FnButton>
+    <span class="flex flex-1 items-start gap-3">
+      <span aria-hidden="true" class="mt-0.5 font-bold text-saffron-600">!</span>
+      <span class="break-words">{{ t("verify.banner", { email: auth.user.email }) }}</span>
+    </span>
+    <FnButton class="self-start sm:self-auto" size="sm" :loading="busy" @click="resend">{{
+      t("verify.resend")
+    }}</FnButton>
   </div>
 </template>

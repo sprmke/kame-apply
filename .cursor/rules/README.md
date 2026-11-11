@@ -31,7 +31,7 @@ After clone: `pnpm run setup:ai-tooling`. Claude Code and OpenCode read the same
 | `pydantic-ai.mdc` | `app/ai/**`, prompts |
 | `fastapi-conventions.mdc` · `migrations.mdc` · `security.mdc` | `apps/api/**` |
 | `nuxt-conventions.mdc` · `vue-components.mdc` | `apps/web`, `apps/extension`, `packages/ui` |
-| `field-notes-design.mdc` · `anti-slop-design.mdc` · `mobile-responsive.mdc` · `motion.mdc` | UI |
+| `signal-design.mdc` · `anti-slop-design.mdc` · `mobile-responsive.mdc` · `motion.mdc` | UI |
 | `naming-conventions.mdc` · `in-app-notifications.mdc` | as globbed |
 | `plan-mode.mdc` · `workflow-docs.mdc` · `self-review.mdc` | process (opt-in) |
 

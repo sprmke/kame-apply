@@ -13,7 +13,7 @@ function active(to: string) {
 <template>
   <nav
     :aria-label="t('shell.primaryNav')"
-    class="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-rule bg-paper-1 md:flex"
+    class="hidden w-60 shrink-0 flex-col overflow-y-auto border-r border-rule bg-paper-1 md:flex"
   >
     <NuxtLink to="/" class="flex items-center gap-2 px-5 py-5" :aria-label="t('app.name')">
       <BrandMark :size="28" wordmark />
@@ -30,21 +30,16 @@ function active(to: string) {
         class="relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors duration-150"
         :class="
           active(item.to)
-            ? 'bg-paper-0 font-medium text-ink-900'
+            ? 'bg-brand-50 font-semibold text-brand-700'
             : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
         "
         :aria-current="active(item.to) ? 'page' : undefined"
       >
-        <span
-          v-if="active(item.to)"
-          class="absolute inset-y-2 left-0 w-0.5 rounded-full bg-persimmon-500"
-          aria-hidden="true"
-        />
         <NavIcon :name="item.icon" :size="18" />
         <span class="flex-1">{{ t(`nav.${item.key}`) }}</span>
         <span
           v-if="item.key === 'today' && needsYou > 0"
-          class="grid min-w-5 place-items-center rounded-full bg-persimmon-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
+          class="grid min-w-5 place-items-center rounded-full bg-brand-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
           >{{ needsYou }}</span
         >
       </NuxtLink>
@@ -66,7 +61,7 @@ function active(to: string) {
           class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
           :class="
             active(item.to)
-              ? 'bg-paper-0 font-medium text-ink-900'
+              ? 'bg-brand-50 font-semibold text-brand-700'
               : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
           "
         >
@@ -85,7 +80,7 @@ function active(to: string) {
         <span class="flex-1">{{ t("shell.needsYou") }}</span>
         <span
           v-if="needsYou > 0"
-          class="grid min-w-5 place-items-center rounded-full bg-persimmon-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
+          class="grid min-w-5 place-items-center rounded-full bg-brand-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
           >{{ needsYou }}</span
         >
       </NuxtLink>
@@ -94,7 +89,7 @@ function active(to: string) {
         class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
         :class="
           active(SETTINGS_NAV.to)
-            ? 'bg-paper-0 font-medium text-ink-900'
+            ? 'bg-brand-50 font-semibold text-brand-700'
             : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
         "
       >

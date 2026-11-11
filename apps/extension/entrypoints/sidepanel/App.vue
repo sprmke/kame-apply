@@ -132,7 +132,7 @@ onMounted(refresh);
       </button>
     </header>
 
-    <p v-if="!session" class="text-sm text-ink-700">
+    <p v-if="!session" class="text-sm text-ink-600">
       Connect from Settings → Integrations in the web app.
     </p>
 
@@ -144,7 +144,7 @@ onMounted(refresh);
 
       <div
         v-if="lastJob?.risk_level === 'red' || lastJob?.risk_level === 'high'"
-        class="border border-persimmon-700 bg-paper-2 px-3 py-2 text-sm"
+        class="border border-brand-700 bg-paper-2 px-3 py-2 text-sm"
         role="status"
       >
         Risk flagged for this job
@@ -157,7 +157,7 @@ onMounted(refresh);
         <FnButton tone="ghost" :disabled="busy" @click="run('logApplied')">I applied</FnButton>
       </div>
 
-      <p v-if="status" class="text-sm text-ink-700">{{ status }}</p>
+      <p v-if="status" class="text-sm text-ink-600">{{ status }}</p>
       <p v-if="lastJob?.title" class="text-xs text-ink-600">{{ lastJob.title }}</p>
       <p v-if="lastPlan?.notes?.length" class="text-xs text-ink-600">
         {{ lastPlan.notes.join(" ") }}
@@ -166,7 +166,7 @@ onMounted(refresh);
         filled {{ lastPlan.result.filled }} · review {{ lastPlan.result.checkpoints }} · skip
         {{ lastPlan.result.skipped }}
       </p>
-      <p v-if="lastPlan?.page_ai_restricted" class="text-xs text-ink-700">
+      <p v-if="lastPlan?.page_ai_restricted" class="text-xs text-ink-600">
         AI drafts blocked on this page
       </p>
     </template>

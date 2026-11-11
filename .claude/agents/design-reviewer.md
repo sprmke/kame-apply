@@ -1,7 +1,7 @@
 ---
 name: design-reviewer
 description: >-
-  Anti-slop design reviewer for Kame Apply UI (Field Notes). Runs the rubric
+  Anti-slop design reviewer for Kame Apply UI (Signal). Runs the rubric
   against a route or a diff and returns a pass/fail report with file:line
   violations. Use for design reviews, /ka-design-review, or before marking a
   UI phase screen done.

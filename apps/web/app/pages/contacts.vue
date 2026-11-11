@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -86,31 +86,39 @@ async function importCsv() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
-    <h1 class="font-serif text-2xl font-semibold text-ink-900">{{ t("contacts.title") }}</h1>
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
+    <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("contacts.title") }}</h1>
 
-    <section class="flex flex-col gap-2">
-      <textarea
+    <section
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
+    >
+      <FnTextarea
         v-model="csv"
-        rows="5"
-        class="border border-rule bg-paper-0 p-2 font-mono text-sm"
+        :rows="5"
         :placeholder="t('contacts.csvPlaceholder')"
         :aria-label="t('contacts.csvPlaceholder')"
       />
-      <FnButton :disabled="importing || !csv.trim()" @click="importCsv">{{
-        t("contacts.import")
-      }}</FnButton>
+      <FnButton
+        class="self-start"
+        tone="primary"
+        :disabled="importing || !csv.trim()"
+        @click="importCsv"
+        >{{ t("contacts.import") }}</FnButton
+      >
     </section>
 
     <div v-if="contacts.isPending.value"><FnSkeleton class="h-24 w-full" /></div>
-    <ul v-else class="divide-y divide-rule border-y border-rule">
-      <li v-for="c in contacts.data.value ?? []" :key="c.id" class="py-3">
+    <ul
+      v-else
+      class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+    >
+      <li v-for="c in contacts.data.value ?? []" :key="c.id" class="px-5 py-4">
         <p class="font-medium text-ink-900">{{ c.name }}</p>
         <p class="text-sm text-ink-600">
           {{ [c.title, c.company, c.email].filter(Boolean).join(" · ") }}
         </p>
       </li>
-      <li v-if="!(contacts.data.value ?? []).length" class="py-6 text-sm text-ink-600">
+      <li v-if="!(contacts.data.value ?? []).length" class="px-5 py-8 text-sm text-ink-600">
         {{ t("contacts.empty") }}
       </li>
     </ul>

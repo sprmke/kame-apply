@@ -34,10 +34,13 @@ const steps = computed(() =>
 </script>
 
 <template>
-  <section :aria-label="t('onboarding.title')" class="flex flex-col gap-3">
-    <h2 class="font-serif text-lg font-semibold">{{ t("onboarding.title") }}</h2>
-    <ol class="flex flex-col divide-y divide-rule border-y border-rule">
-      <li v-for="(s, i) in steps" :key="s.key" class="flex min-h-14 items-center gap-3">
+  <section
+    :aria-label="t('onboarding.title')"
+    class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+  >
+    <h2 class="text-lg font-bold">{{ t("onboarding.title") }}</h2>
+    <ol class="flex flex-col divide-y divide-rule">
+      <li v-for="(s, i) in steps" :key="s.key" class="flex min-h-14 items-center gap-3 px-1">
         <span
           class="grid size-6 shrink-0 place-items-center rounded-full border text-xs"
           :class="s.done ? 'border-fern-600 text-fern-600' : 'border-edge text-ink-600'"

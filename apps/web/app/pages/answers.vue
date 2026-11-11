@@ -130,19 +130,21 @@ function charCount(item: ItemRead) {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6" @keydown="onKey">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-8" @keydown="onKey">
     <PageHeader :title="t('nav.answers')" :lede="t('answers.lede')" />
     <WaitingForClaude v-if="inboxWaiting > 0" :waiting="inboxWaiting" />
 
-    <section class="flex flex-col gap-2">
-      <label class="text-xs tracking-wide text-ink-600 uppercase" for="desk-paste">{{
+    <section
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
+    >
+      <label class="text-sm font-semibold text-ink-900" for="desk-paste">{{
         t("answers.paste")
       }}</label>
       <textarea
         id="desk-paste"
         v-model="paste"
         rows="8"
-        class="min-h-32 w-full border border-rule bg-paper-0 p-3 text-sm"
+        class="min-h-40 w-full rounded-md border border-rule bg-paper-0 p-4 text-base text-ink-900 shadow-[var(--shadow-card)] placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
         :placeholder="t('answers.placeholder')"
         :disabled="!ws.currentId || busy"
       />
@@ -164,7 +166,7 @@ function charCount(item: ItemRead) {
         v-for="(item, idx) in items"
         :key="item.id"
         class="border border-rule p-3"
-        :class="idx === focused ? 'border-persimmon-700' : ''"
+        :class="idx === focused ? 'border-brand-700' : ''"
         tabindex="0"
         @focus="focused = idx"
         @click="focused = idx"
@@ -181,7 +183,7 @@ function charCount(item: ItemRead) {
 
         <ul
           v-if="item.ai_restricted && (item.fact_notes ?? []).length"
-          class="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-700"
+          class="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-600"
         >
           <li v-for="(n, ni) in item.fact_notes" :key="ni">
             {{ typeof n === "object" && n && "text" in n ? String(n.text) : String(n) }}

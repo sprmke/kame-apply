@@ -337,25 +337,25 @@ const contentPreview = computed(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:p-6">
-    <header class="flex flex-wrap items-center gap-2">
-      <h1 class="font-display text-xl text-ink-900">{{ t("nav.studio") }}</h1>
-      <label class="sr-only" for="studio-track">Search</label>
-      <select
-        id="studio-track"
-        class="border border-ink-200 bg-paper px-2 py-1 text-sm text-ink-900"
-        :value="trackId"
-        @change="setTrack(($event.target as HTMLSelectElement).value)"
-      >
-        <option value="">All searches</option>
-        <option v-for="tr in tracks.data.value || []" :key="String(tr.id)" :value="String(tr.id)">
-          {{ tr.name }}
-        </option>
-      </select>
-      <div class="ml-auto flex flex-wrap gap-1">
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 py-8 md:p-6">
+    <header class="flex flex-wrap items-end justify-between gap-4">
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.studio") }}</h1>
+      <div class="flex flex-wrap items-center gap-2">
+        <label class="sr-only" for="studio-track">Search</label>
+        <select
+          id="studio-track"
+          class="min-h-11 rounded-md border border-rule bg-paper-1 px-3 text-sm font-medium text-ink-900 shadow-[var(--shadow-card)] focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+          :value="trackId"
+          @change="setTrack(($event.target as HTMLSelectElement).value)"
+        >
+          <option value="">All searches</option>
+          <option v-for="tr in tracks.data.value || []" :key="String(tr.id)" :value="String(tr.id)">
+            {{ tr.name }}
+          </option>
+        </select>
         <FnButton
           size="sm"
-          :tone="(resumes.data.value || []).length ? 'ghost' : 'primary'"
+          tone="quiet"
           :disabled="createMut.isPending.value"
           @click="createMut.mutate()"
         >
@@ -367,7 +367,7 @@ const contentPreview = computed(() => {
           :disabled="!selectedId || critiqueMut.isPending.value"
           @click="critiqueMut.mutate()"
         >
-          Critique
+          Run critique
         </FnButton>
         <FnButton
           size="sm"
@@ -383,7 +383,7 @@ const contentPreview = computed(() => {
           :disabled="!trackId || insightsMut.isPending.value"
           @click="insightsMut.mutate()"
         >
-          Insights
+          Run insights
         </FnButton>
         <FnButton
           size="sm"
@@ -396,8 +396,8 @@ const contentPreview = computed(() => {
       </div>
     </header>
 
-    <div class="flex flex-wrap gap-1 border-b border-ink-100 pb-2">
-      <FnButton
+    <div class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1">
+      <button
         v-for="item in [
           ['critique', 'Critique'],
           ['diff', 'Diff'],
@@ -406,12 +406,17 @@ const contentPreview = computed(() => {
           ['parse', 'Parse'],
         ] as const"
         :key="item[0]"
-        size="sm"
-        :tone="tab === item[0] ? 'primary' : 'ghost'"
+        type="button"
+        class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+        :class="
+          tab === item[0]
+            ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+            : 'text-ink-600 hover:text-ink-900'
+        "
         @click="tab = item[0]"
       >
         {{ item[1] }}
-      </FnButton>
+      </button>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-[220px_1fr]">
@@ -431,27 +436,35 @@ const contentPreview = computed(() => {
             Create a resume
           </FnButton>
         </div>
-        <ul v-else class="divide-y divide-ink-100 border border-ink-100">
+        <ul
+          v-else
+          class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+        >
           <li v-for="row in resumes.data.value" :key="String(row.id)">
             <button
               type="button"
-              class="w-full px-3 py-2 text-left text-sm"
+              class="w-full px-4 py-3 text-left text-sm transition-colors"
               :class="
                 String(row.id) === selectedId
-                  ? 'bg-persimmon-50 text-ink-900'
-                  : 'text-ink-700 hover:bg-ink-50'
+                  ? 'bg-brand-50 font-semibold text-brand-700'
+                  : 'text-ink-600 hover:bg-paper-2'
               "
               @click="selectedId = String(row.id)"
             >
               <span class="block truncate font-medium">{{ row.label || "Resume" }}</span>
-              <span class="text-xs text-ink-500">{{ row.template }} · {{ row.page_size }}</span>
+              <span class="text-xs text-ink-400">{{ row.template }} · {{ row.page_size }}</span>
             </button>
           </li>
         </ul>
-        <div class="flex flex-col gap-2 border border-ink-100 p-2 text-sm">
+        <div
+          class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 text-sm shadow-[var(--shadow-card)]"
+        >
           <label class="flex flex-col gap-1">
             Template
-            <select v-model="template" class="border border-ink-200 bg-paper px-2 py-1">
+            <select
+              v-model="template"
+              class="min-h-11 rounded-md border border-rule bg-paper-0 px-3"
+            >
               <option value="classic">Classic</option>
               <option value="compact">Compact</option>
               <option value="modern">Modern</option>
@@ -460,7 +473,10 @@ const contentPreview = computed(() => {
           </label>
           <label class="flex flex-col gap-1">
             Page
-            <select v-model="pageSize" class="border border-ink-200 bg-paper px-2 py-1">
+            <select
+              v-model="pageSize"
+              class="min-h-11 rounded-md border border-rule bg-paper-0 px-3"
+            >
               <option value="letter">Letter</option>
               <option value="a4">A4</option>
             </select>
@@ -471,7 +487,7 @@ const contentPreview = computed(() => {
           <div v-if="renderUrls.pdf || renderUrls.docx" class="flex flex-col gap-1">
             <a
               v-if="renderUrls.pdf"
-              class="text-persimmon-700 underline"
+              class="text-brand-700 underline"
               :href="renderUrls.pdf"
               target="_blank"
               rel="noopener"
@@ -479,7 +495,7 @@ const contentPreview = computed(() => {
             >
             <a
               v-if="renderUrls.docx"
-              class="text-persimmon-700 underline"
+              class="text-brand-700 underline"
               :href="renderUrls.docx"
               target="_blank"
               rel="noopener"
@@ -487,7 +503,7 @@ const contentPreview = computed(() => {
             >
             <a
               v-if="renderUrls.txt"
-              class="text-persimmon-700 underline"
+              class="text-brand-700 underline"
               :href="renderUrls.txt"
               target="_blank"
               rel="noopener"
@@ -498,7 +514,12 @@ const contentPreview = computed(() => {
       </aside>
 
       <section class="min-w-0">
-        <div v-if="!selected" class="text-sm text-ink-600">Select or create a base resume</div>
+        <div
+          v-if="!selected"
+          class="rounded-xl border border-dashed border-rule bg-paper-1 p-6 text-sm text-ink-600"
+        >
+          Select or create a base resume
+        </div>
 
         <div v-else-if="tab === 'critique'" class="flex flex-col gap-3">
           <div
@@ -512,7 +533,7 @@ const contentPreview = computed(() => {
               <li
                 v-for="(cat, key) in critique.categories"
                 :key="String(key)"
-                class="border border-ink-100 px-3 py-2 text-sm"
+                class="rounded-lg border border-rule bg-paper-0 p-3 text-sm"
               >
                 <span class="font-medium capitalize">{{ key }}</span>
                 <span class="ml-2 text-ink-600"
@@ -538,7 +559,10 @@ const contentPreview = computed(() => {
           <p v-else-if="!(changesQ.data.value || []).length" class="text-sm text-ink-600">
             No proposed changes
           </p>
-          <ul v-else class="divide-y divide-ink-100 border border-ink-100">
+          <ul
+            v-else
+            class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+          >
             <li
               v-for="ch in changesQ.data.value"
               :key="String(ch.id)"
@@ -547,9 +571,9 @@ const contentPreview = computed(() => {
               <div class="min-w-0 flex-1">
                 <div class="font-medium">{{ ch.op }} · {{ ch.status }}</div>
                 <p class="text-ink-600">{{ ch.reason }}</p>
-                <p v-if="ch.before" class="mt-1 text-ink-500 line-through">{{ ch.before }}</p>
+                <p v-if="ch.before" class="mt-1 text-ink-400 line-through">{{ ch.before }}</p>
                 <p v-if="ch.after" class="text-ink-900">{{ ch.after }}</p>
-                <p v-if="ch.ask" class="mt-1 text-persimmon-800">{{ ch.ask }}</p>
+                <p v-if="ch.ask" class="mt-1 text-brand-800">{{ ch.ask }}</p>
               </div>
               <div v-if="ch.status === 'proposed'" class="flex shrink-0 gap-1">
                 <FnButton size="sm" @click="decide(String(ch.id), 'accepted')">Accept</FnButton>
@@ -574,14 +598,14 @@ const contentPreview = computed(() => {
             <div class="overflow-x-auto">
               <table class="w-full min-w-[28rem] border-collapse text-left text-sm">
                 <thead>
-                  <tr class="border-b border-ink-100 text-ink-600">
+                  <tr class="border-b border-rule text-ink-600">
                     <th class="py-1 pr-2 font-medium">Skill</th>
                     <th class="py-1 pr-2 font-medium">Freq</th>
                     <th class="py-1 font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(sk, i) in insightSkills" :key="i" class="border-b border-ink-50">
+                  <tr v-for="(sk, i) in insightSkills" :key="i" class="border-b border-rule">
                     <td class="py-1 pr-2">{{ sk.name }}</td>
                     <td class="py-1 pr-2">{{ sk.frequency }}</td>
                     <td class="py-1">
@@ -591,7 +615,7 @@ const contentPreview = computed(() => {
                 </tbody>
               </table>
             </div>
-            <ul v-if="insightTitles.length" class="text-sm text-ink-700">
+            <ul v-if="insightTitles.length" class="text-sm text-ink-600">
               <li v-for="(ti, i) in insightTitles" :key="i">{{ ti.title }} ({{ ti.count }})</li>
             </ul>
           </div>
@@ -599,16 +623,16 @@ const contentPreview = computed(() => {
         </div>
 
         <div v-else-if="tab === 'skim'" class="flex flex-col gap-3">
-          <div class="border border-persimmon-200 bg-persimmon-50/40 p-3 text-sm">
+          <div class="border border-brand-200 bg-brand-50/40 p-3 text-sm">
             <p class="font-medium text-ink-900">7-second zone</p>
-            <p class="mt-2 whitespace-pre-wrap text-ink-800">
+            <p class="mt-2 whitespace-pre-wrap text-ink-900">
               {{ skim?.summary || contentPreview.slice(0, 280) }}
             </p>
-            <p v-if="skim?.first_role" class="mt-2 text-ink-700">{{ skim.first_role }}</p>
+            <p v-if="skim?.first_role" class="mt-2 text-ink-600">{{ skim.first_role }}</p>
           </div>
-          <pre
-            class="whitespace-pre-wrap border border-ink-100 p-3 font-mono text-xs text-ink-800"
-            >{{ contentPreview }}</pre>
+          <pre class="whitespace-pre-wrap border border-rule p-3 font-mono text-xs text-ink-900">{{
+            contentPreview
+          }}</pre>
         </div>
 
         <div v-else-if="tab === 'parse'" class="flex flex-col gap-2 text-sm">

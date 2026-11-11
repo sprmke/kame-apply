@@ -43,7 +43,7 @@ const submit = form.handleSubmit(async (v) => {
         t("auth.sendLink")
       }}</FnButton>
     </form>
-    <NuxtLink to="/login" class="text-sm text-persimmon-700 underline underline-offset-2">{{
+    <NuxtLink to="/login" class="text-sm text-brand-700 underline underline-offset-2">{{
       t("auth.backToSignIn")
     }}</NuxtLink>
   </div>

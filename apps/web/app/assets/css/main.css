@@ -7,10 +7,32 @@
     background: var(--color-paper-0);
     color: var(--color-ink-900);
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.025em;
   }
   :focus-visible {
-    outline: 2px solid var(--color-persimmon-700);
+    outline: 2px solid var(--color-brand-500);
     outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-ink-900);
+  }
+}
+
+@layer utilities {
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 }

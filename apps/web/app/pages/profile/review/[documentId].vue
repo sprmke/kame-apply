@@ -130,7 +130,7 @@ function isLow(path: string) {
     <PageHeader :title="t('career.reviewTitle')" />
     <div v-if="loadError" class="rounded-md border border-saffron-600 bg-paper-1 p-3 text-sm">
       {{ loadError }}
-      <NuxtLink to="/profile/documents" class="ml-1 text-persimmon-700 underline">{{
+      <NuxtLink to="/profile/documents" class="ml-1 text-brand-700 underline">{{
         t("career.tabs.documents")
       }}</NuxtLink>
     </div>
@@ -165,7 +165,7 @@ function isLow(path: string) {
         <NuxtLink
           v-if="parseError.code === 'ai_not_configured'"
           to="/settings/ai"
-          class="text-persimmon-700 underline"
+          class="text-brand-700 underline"
           >{{ t("settings.ai") }}</NuxtLink
         >
       </div>

@@ -11,7 +11,7 @@ defineProps<{ side?: "top" | "right" | "bottom" | "left" }>();
       <PopoverContent
         :side="side ?? 'bottom'"
         :side-offset="6"
-        class="z-50 max-w-xs rounded-md border border-rule bg-paper-1 p-3 text-sm text-ink-900 shadow-float focus:outline-none"
+        class="z-50 max-w-xs rounded-xl border border-rule bg-paper-1 p-4 text-sm text-ink-900 shadow-[var(--shadow-float)] focus:outline-none"
       >
         <slot />
       </PopoverContent>

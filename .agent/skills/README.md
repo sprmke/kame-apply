@@ -10,7 +10,7 @@ Canonical skills live here and are symlinked into `.claude/skills/` and `.cursor
 
 `source-adapter` (P5) · `ats-adapter` (P13/15) · `dbos-workflows` · `pydantic-ai-features` · `ai-evals` · `wxt-extension` (P13) · `live-view` (P16)
 
-## Frontend (Vue / Nuxt / Field Notes, written fresh)
+## Frontend (Vue / Nuxt / Signal, written fresh)
 
 `vue-query-data` · `vee-validate-forms` · `tanstack-table-vue` · `field-notes-components`
 
