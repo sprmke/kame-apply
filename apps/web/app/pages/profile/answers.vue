@@ -70,6 +70,10 @@ function labelFor(key: string, catalog: CanonicalKeyRead[]) {
   return catalog.find((k) => k.key === key)?.label ?? key;
 }
 
+function groupLabel(group: string): string {
+  return group.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 async function runSetup() {
   if (!profileId.value) return;
   busy.value = true;
@@ -105,27 +109,38 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-1">
+      <h2 class="text-xl font-bold text-ink-900">{{ t("career.tabs.answers") }}</h2>
+      <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.answersLede") }}</p>
+    </div>
     <div class="flex flex-wrap items-center gap-2">
       <FnInput
         v-model="q"
-        class="max-w-xs"
+        class="max-w-sm"
         :aria-label="t('career.search')"
-        :placeholder="t('career.search')"
+        :placeholder="t('career.searchAnswers')"
       />
       <FnButton tone="primary" :loading="busy" @click="runSetup">{{
         t("career.quickSetup")
       }}</FnButton>
     </div>
+    <p class="-mt-3 text-sm text-ink-600">{{ t("career.quickSetupHint") }}</p>
     <div v-if="answersLoading" class="flex flex-col gap-2">
       <FnSkeleton class="h-16 w-full" />
       <FnSkeleton class="h-16 w-full" />
     </div>
-    <p v-else-if="!answerRows.length" class="text-sm text-ink-600">
-      {{ t("career.emptyAnswers") }}
-    </p>
+    <div
+      v-else-if="!answerRows.length"
+      class="flex flex-col items-start gap-2 rounded-xl border border-dashed border-rule bg-paper-0 p-6"
+    >
+      <p class="font-semibold text-ink-900">{{ t("career.emptyAnswersTitle") }}</p>
+      <p class="max-w-lg text-sm leading-6 text-ink-600">{{ t("career.answersEmptyHint") }}</p>
+    </div>
     <section v-for="[group, rows] in byGroup" :key="group" class="flex flex-col gap-3">
-      <h3 class="text-sm font-medium tracking-wide text-ink-600 uppercase">{{ group }}</h3>
+      <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
+        {{ groupLabel(group) }}
+      </h3>
       <article
         v-for="row in rows"
         :key="row.id"

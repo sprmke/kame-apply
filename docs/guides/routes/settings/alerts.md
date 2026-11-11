@@ -13,7 +13,7 @@
 
 ## Overview
 
-Private forwarding address for job-alert emails, provider setup steps, Telegram bot link, recent inbound parse results.
+Private forwarding address for job-alert emails, provider setup steps, Telegram bot link, recent inbound parse results. The page lede explains that this is where run alerts and reminders arrive.
 
 ## API reference
 

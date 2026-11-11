@@ -133,9 +133,12 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-6">
-    <header class="flex flex-wrap items-center gap-2">
-      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ $t("nav.safety") }}</h1>
-      <div class="ml-auto flex gap-1 rounded-lg bg-paper-2 p-1">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ $t("nav.safety") }}</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-600">{{ $t("safety.lede") }}</p>
+      </div>
+      <div class="flex gap-1 rounded-lg bg-paper-2 p-1">
         <button
           type="button"
           class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"

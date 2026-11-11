@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSelect, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -55,6 +55,13 @@ const profiles = useQuery({
   enabled: computed(() => Boolean(ws.currentId)),
 });
 
+const profileOptions = computed(() =>
+  (profiles.data.value ?? []).map((profile) => ({
+    value: profile.id,
+    label: profile.display_name,
+  })),
+);
+
 watch(
   () => profiles.data.value,
   (list) => {
@@ -103,14 +110,11 @@ async function approve() {
         {{ pending.data.value.redirect_uri }}
       </p>
       <label class="text-sm text-ink-900">{{ t("integrations.profile") }}</label>
-      <select
+      <FnSelect
         v-model="profileId"
-        class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-      >
-        <option v-for="p in profiles.data.value ?? []" :key="p.id" :value="p.id">
-          {{ p.display_name }}
-        </option>
-      </select>
+        :options="profileOptions"
+        :ariaLabel="t('integrations.profile')"
+      />
       <fieldset class="flex flex-col gap-2">
         <legend class="text-sm text-ink-900">{{ t("integrations.scopes") }}</legend>
         <label

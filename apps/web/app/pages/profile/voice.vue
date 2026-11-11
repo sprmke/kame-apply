@@ -102,26 +102,45 @@ async function saveMeta() {
 </script>
 
 <template>
-  <div class="flex max-w-2xl flex-col gap-6">
-    <section class="flex flex-col gap-2">
-      <h3 class="text-sm font-medium text-ink-900">{{ t("career.samples") }}</h3>
+  <div class="flex max-w-2xl flex-col gap-8">
+    <div class="flex flex-col gap-1">
+      <h2 class="text-xl font-bold text-ink-900">{{ t("career.tabs.voice") }}</h2>
+      <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.voiceLede") }}</p>
+    </div>
+
+    <section class="flex flex-col gap-3">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-sm font-semibold text-ink-900">{{ t("career.samples") }}</h3>
+        <p class="text-sm leading-6 text-ink-600">{{ t("career.samplesHint") }}</p>
+      </div>
       <FnSkeleton v-if="voiceLoading" class="h-24 w-full" />
       <template v-else>
-        <FnTextarea
-          v-for="(_, i) in sampleDraft"
-          :key="i"
-          v-model="sampleDraft[i]"
-          :rows="4"
-          :aria-label="t('career.sampleN', { n: i + 1 })"
-        />
-        <FnButton tone="primary" :loading="busy" @click="saveSamples">{{
-          t("career.analyze")
-        }}</FnButton>
+        <div v-for="(_, i) in sampleDraft" :key="i" class="flex flex-col gap-1.5">
+          <label :for="`voice-sample-${i}`" class="text-xs font-semibold text-ink-600">
+            {{ t("career.sampleN", { n: i + 1 }) }}
+          </label>
+          <FnTextarea
+            :id="`voice-sample-${i}`"
+            v-model="sampleDraft[i]"
+            :rows="4"
+            :aria-label="t('career.sampleN', { n: i + 1 })"
+            :placeholder="t('career.samplePlaceholder', { n: i + 1 })"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <FnButton class="self-start" tone="primary" :loading="busy" @click="saveSamples">{{
+            t("career.analyze")
+          }}</FnButton>
+          <p class="text-sm leading-6 text-ink-600">{{ t("career.analyzeHint") }}</p>
+        </div>
       </template>
     </section>
 
-    <section v-if="voiceData?.style?.summary" class="flex flex-col gap-2">
-      <h3 class="text-sm font-medium text-ink-900">{{ t("career.voiceSummary") }}</h3>
+    <section v-if="voiceData?.style?.summary" class="flex flex-col gap-2 border-t border-rule pt-6">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-sm font-semibold text-ink-900">{{ t("career.voiceSummary") }}</h3>
+        <p class="text-sm leading-6 text-ink-600">{{ t("career.voiceSummaryHint") }}</p>
+      </div>
       <FnTextarea v-model="summaryDraft" :rows="2" :aria-label="t('career.voiceSummary')" />
       <div class="flex flex-wrap gap-2 text-xs text-ink-600">
         <FnChip>{{ voiceData.style.vocabulary_level }}</FnChip>
@@ -131,10 +150,20 @@ async function saveMeta() {
       </div>
     </section>
 
-    <section class="flex flex-col gap-2">
-      <h3 class="text-sm font-medium text-ink-900">{{ t("career.banned") }}</h3>
-      <FnTextarea v-model="bannedDraft" :rows="8" :aria-label="t('career.banned')" />
-      <FnButton tone="quiet" :loading="busy" @click="saveMeta">{{ t("common.save") }}</FnButton>
+    <section class="flex flex-col gap-2 border-t border-rule pt-6">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-sm font-semibold text-ink-900">{{ t("career.banned") }}</h3>
+        <p class="text-sm leading-6 text-ink-600">{{ t("career.bannedHint") }}</p>
+      </div>
+      <FnTextarea
+        v-model="bannedDraft"
+        :rows="8"
+        :aria-label="t('career.banned')"
+        :placeholder="t('career.bannedPlaceholder')"
+      />
+      <FnButton class="self-start" tone="quiet" :loading="busy" @click="saveMeta">{{
+        t("common.save")
+      }}</FnButton>
     </section>
   </div>
 </template>

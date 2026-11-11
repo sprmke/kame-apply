@@ -11,7 +11,7 @@
 
 ## Overview
 
-Coach/agency view of candidate profiles in the workspace. Selecting a profile sets the active profile for Career Profile and related screens.
+Coach/agency view of candidate profiles in the workspace. A short lede explains that opening a profile shows that candidate's applications. Selecting a profile sets the active profile for Career Profile and related screens.
 
 ## API reference
 

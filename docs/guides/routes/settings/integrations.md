@@ -5,6 +5,7 @@
 
 ## Behavior
 
+- Each section has a one-line explanation.
 - Shows MCP URL, Claude Code connect command, plugin install command (copy buttons).
 - Agent inbox status (waiting / leased) and `/kame:work` command.
 - Connected agents list (owner/admin): client name, scopes, revoke.

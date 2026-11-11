@@ -10,7 +10,7 @@
 
 ## Overview
 
-Workspace name and type.
+Workspace name and type. The page lede states that only owners and admins can rename it.
 
 ## User-facing knowledge
 

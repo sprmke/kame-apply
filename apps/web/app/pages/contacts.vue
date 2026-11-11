@@ -87,7 +87,10 @@ async function importCsv() {
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
-    <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("contacts.title") }}</h1>
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("contacts.title") }}</h1>
+      <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("contacts.lede") }}</p>
+    </div>
 
     <section
       class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"

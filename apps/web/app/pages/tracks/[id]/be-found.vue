@@ -76,7 +76,7 @@ async function copy(text: string) {
       <section class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
           <h2 class="font-display text-lg text-ink-900">{{ t("beFound.headline") }}</h2>
-          <FnButton size="sm" variant="ghost" @click="copy(opt.data.value.headline.text)">{{
+          <FnButton size="sm" tone="ghost" @click="copy(opt.data.value.headline.text)">{{
             t("common.copy")
           }}</FnButton>
         </div>
@@ -87,7 +87,7 @@ async function copy(text: string) {
       <section class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
           <h2 class="font-display text-lg text-ink-900">{{ t("beFound.about") }}</h2>
-          <FnButton size="sm" variant="ghost" @click="copy(opt.data.value.about.text)">{{
+          <FnButton size="sm" tone="ghost" @click="copy(opt.data.value.about.text)">{{
             t("common.copy")
           }}</FnButton>
         </div>
@@ -111,7 +111,7 @@ async function copy(text: string) {
           class="flex flex-col gap-1 border-b border-rule pb-3"
         >
           <div class="flex justify-end">
-            <FnButton size="sm" variant="ghost" @click="copy(ex.text)">{{
+            <FnButton size="sm" tone="ghost" @click="copy(ex.text)">{{
               t("common.copy")
             }}</FnButton>
           </div>

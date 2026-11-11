@@ -16,9 +16,14 @@ watch(
 
 <template>
   <div class="flex flex-col gap-2">
-    <FnTextarea v-model="text" :rows="2" :aria-label="t('career.answer')" />
+    <FnTextarea
+      v-model="text"
+      :rows="2"
+      :aria-label="t('career.answer')"
+      :placeholder="t('career.answerPlaceholder')"
+    />
     <div>
-      <FnButton size="sm" tone="primary" @click="emit('save', row, text, true)">{{
+      <FnButton size="sm" tone="quiet" @click="emit('save', row, text, true)">{{
         t("common.save")
       }}</FnButton>
     </div>

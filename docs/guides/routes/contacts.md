@@ -11,7 +11,7 @@
 
 ## Overview
 
-Import contacts (CSV-shaped text) used for referral matching on applications. The app never sends outreach; it only drafts text.
+Import contacts (CSV-shaped text) used for referral matching on applications. A short lede explains the purpose and the CSV shape. The app never sends outreach; it only drafts text.
 
 ## API reference
 

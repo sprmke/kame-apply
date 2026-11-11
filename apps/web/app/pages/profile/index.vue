@@ -58,9 +58,12 @@ function expLabel(e: ExperienceRead) {
       </section>
 
       <section class="flex flex-col gap-3">
-        <h3 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("career.experiences") }}
-        </h3>
+        <div class="flex flex-col gap-1">
+          <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
+            {{ t("career.experiences") }}
+          </h3>
+          <p class="text-sm leading-6 text-ink-600">{{ t("career.evidenceHint") }}</p>
+        </div>
         <p v-if="!profile.experiences?.length" class="text-sm text-ink-600">
           {{ t("career.emptyExperiences") }}
         </p>
@@ -75,9 +78,11 @@ function expLabel(e: ExperienceRead) {
               :key="b.id"
               class="flex items-start gap-2 text-sm"
             >
-              <FnChip :tone="chipTone(b.evidence_strength ?? 'weak')" class="mt-0.5 shrink-0">{{
-                b.evidence_strength
-              }}</FnChip>
+              <FnChip
+                :tone="chipTone(b.evidence_strength ?? 'weak')"
+                class="mt-0.5 shrink-0 capitalize"
+                >{{ b.evidence_strength }}</FnChip
+              >
               <span :class="b.do_not_use ? 'text-ink-600 line-through' : 'text-ink-900'">{{
                 b.text
               }}</span>
@@ -87,7 +92,7 @@ function expLabel(e: ExperienceRead) {
       </section>
 
       <section class="flex flex-col gap-2">
-        <h3 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
+        <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
           {{ t("career.skills") }}
         </h3>
         <div v-if="profile.skills?.length" class="flex flex-wrap gap-2">

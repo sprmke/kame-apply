@@ -11,7 +11,7 @@
 
 ## Overview
 
-Inbox for recruiter reply classification and proposed status changes. Paste a message (optionally tied to an application id). Accept moves the application; dismiss keeps it.
+Inbox for recruiter reply classification and proposed status changes. A short lede explains that the user approves every suggested status change. Paste a message (optionally tied to an application id). Accept moves the application; dismiss keeps it.
 
 ## API reference
 

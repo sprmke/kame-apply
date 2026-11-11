@@ -10,6 +10,7 @@ import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
 import { useMutation } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
+const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
@@ -187,7 +188,10 @@ const letter = computed(
 <template>
   <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 py-8 md:p-6">
     <header class="flex flex-wrap items-center gap-3">
-      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">Tailor</h1>
+      <div class="min-w-0">
+        <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">Tailor</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-600">{{ t("tailor.lede") }}</p>
+      </div>
       <div class="text-sm tabular-nums text-ink-600">{{ beforeGrade }} → {{ afterGrade }}</div>
       <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')" tone="neutral">
         {{ run.status }}
@@ -241,6 +245,12 @@ const letter = computed(
           v-show="tab === 'ledger'"
           class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
         >
+          <div class="mb-3 flex flex-col gap-1">
+            <h2 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tailor.ledger") }}
+            </h2>
+            <p class="text-sm leading-6 text-ink-600">{{ t("tailor.ledgerHint") }}</p>
+          </div>
           <div
             v-if="knockouts.length"
             class="mb-3 rounded-lg border border-oxblood-600 bg-paper-0 p-3 text-sm"
@@ -283,6 +293,12 @@ const letter = computed(
           v-show="tab === 'changes'"
           class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
         >
+          <div class="mb-3 flex flex-col gap-1">
+            <h2 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tailor.changes") }}
+            </h2>
+            <p class="text-sm leading-6 text-ink-600">{{ t("tailor.changesHint") }}</p>
+          </div>
           <p v-if="!changes.length" class="text-sm text-ink-600">No text changes</p>
           <ul v-else class="divide-y divide-rule text-sm">
             <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="py-3">
@@ -316,6 +332,7 @@ const letter = computed(
           v-show="tab === 'preview' || tab === 'letter'"
           class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
         >
+          <p class="mb-3 text-sm leading-6 text-ink-600">{{ t("tailor.previewHint") }}</p>
           <div class="mb-3 hidden gap-1 rounded-lg bg-paper-2 p-1 lg:flex">
             <button
               type="button"

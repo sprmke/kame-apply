@@ -149,7 +149,9 @@
     "draftReferral": "Draft",
     "browseJobs": "Browse jobs",
     "find": "Find",
-    "findPlaceholder": "Title, company, or note"
+    "findPlaceholder": "Title, company, or note",
+    "funnelHint": "How applications move from discovered to interview.",
+    "lede": "Every application you sent, with its status, source, and next step."
   },
   "responses": {
     "title": "Replies",
@@ -161,7 +163,8 @@
     "appId": "Application id",
     "subject": "Subject",
     "body": "Message body",
-    "classify": "Classify"
+    "classify": "Classify",
+    "lede": "Paste an employer reply. We suggest the next application status for you to approve."
   },
   "coach": {
     "title": "Candidates",
@@ -169,13 +172,15 @@
     "open": "Open",
     "empty": "No profiles yet.",
     "add": "Add",
-    "namePlaceholder": "Display name"
+    "namePlaceholder": "Display name",
+    "lede": "Other people you are helping apply. Open a profile to see their applications."
   },
   "contacts": {
     "title": "Contacts",
     "import": "Import",
     "csvPlaceholder": "name,email,company,title",
-    "empty": "No contacts yet."
+    "empty": "No contacts yet.",
+    "lede": "People you met while applying. Import a CSV or keep them for follow-ups."
   },
   "gaps": {
     "title": "Gap plan",
@@ -205,7 +210,7 @@
       "voice": "Voice",
       "documents": "Documents"
     },
-    "interview": "Interview",
+    "interview": "Interview prep",
     "upload": "Upload resume",
     "present": "present",
     "experiences": "Experience",
@@ -256,7 +261,24 @@
     "reject": "Reject",
     "proposalAccepted": "Applied to profile",
     "documentNotFound": "That resume could not be found. Open your documents to choose another.",
-    "aiKeyNeeded": "Resume parsing needs an AI key. Add one first."
+    "aiKeyNeeded": "Resume parsing needs an AI key. Add one first.",
+    "lede": "The facts, answers, and writing style behind every match and draft.",
+    "answersLede": "Reusable answers to common application questions. Quick setup adds editable defaults.",
+    "searchAnswers": "Search answers, for example salary",
+    "quickSetupHint": "Quick setup adds common answers you can edit.",
+    "emptyAnswersTitle": "No answers yet",
+    "answersEmptyHint": "Run quick setup above to add common questions, then edit each answer.",
+    "answerPlaceholder": "Write the answer you would use",
+    "voiceLede": "Paste 2 or 3 samples of your writing. We match tone, not facts.",
+    "samplesHint": "Emails, cover letters, or posts you wrote.",
+    "samplePlaceholder": "Paste sample {n} here",
+    "analyzeHint": "We summarize your style from these samples. Facts still come from your profile.",
+    "voiceSummaryHint": "Edit this if it does not sound like you.",
+    "bannedHint": "Words and phrases generated drafts should avoid, one per line.",
+    "bannedPlaceholder": "seamless\\nrobust\\nleverage",
+    "documentsLede": "Resume files you uploaded. Review parsed text before it becomes profile facts.",
+    "emptyDocsHint": "Upload a resume to review it and add facts to your profile.",
+    "evidenceHint": "Strong evidence is backed by your resume. Weak evidence is inferred."
   },
   "verify": {
     "banner": "Confirm {email} to secure your account.",
@@ -324,7 +346,12 @@
     "notifications": "Notifications",
     "alerts": "Alerts",
     "integrations": "Integrations",
-    "ops": "Ops"
+    "ops": "Ops",
+    "generalLede": "Workspace name and type. Only owners and admins can rename it.",
+    "integrationsLede": "Connect Claude, the extension, and the runner. Each connection uses your own account.",
+    "alertsLede": "Where run alerts and reminders reach you.",
+    "sourcesLede": "Health of job boards and career pages used by your searches.",
+    "notificationsLede": "Choose what we send and where."
   },
   "alerts": {
     "address": "Forwarding address",
@@ -367,7 +394,14 @@
     "runnerLocal": "Local",
     "runnerCloud": "Cloud",
     "runnerEmpty": "No runner tokens",
-    "runnerTokenOnce": "Copy now. It will not show again."
+    "runnerTokenOnce": "Copy now. It will not show again.",
+    "claudeHint": "Copy a command to connect Claude to this workspace.",
+    "inboxHint": "Requests waiting for Claude to pick up.",
+    "agentsHint": "Apps allowed to use this workspace.",
+    "routingHint": "Choose where each AI feature runs.",
+    "extensionHint": "Connect the extension to fill forms in your own browser.",
+    "runnerHint": "Create a token for the local runner.",
+    "platformsHint": "Opt in per site and accept its terms."
   },
   "notifications": {
     "title": "Notifications",
@@ -757,7 +791,9 @@
     "moreTools": "More tools",
     "criteriaHint": "Update this to refine your matches.",
     "noNewJobs": "no new jobs",
-    "start": "Start a search"
+    "start": "Start a search",
+    "namePlaceholder": "For example, Customer Support Lead",
+    "nameHint": "Optional. We use the role description if this is empty."
   },
   "sources": {
     "title": "Source health",
@@ -789,7 +825,7 @@
     "placeholder": "Paste the questions from an application."
   },
   "jobs": {
-    "fit": "Why this job",
+    "fit": "Fit",
     "matchScore": "Match score",
     "required": "Required",
     "preferred": "Preferred",
@@ -798,6 +834,30 @@
     "addResume": "Add resume",
     "showAll": "Show all",
     "showLess": "Show less",
-    "showAllJobs": "Show all"
+    "showAllJobs": "Show all",
+    "includeIneligible": "Include ineligible",
+    "showAllChecks": "Show all checks",
+    "showFewerChecks": "Show fewer checks"
+  },
+  "safety": {
+    "lede": "Check a message or posting for scam signals. Flagged jobs wait here for your decision."
+  },
+  "studio": {
+    "lede": "Create, review, and render resumes. Pick a base resume to begin.",
+    "help": {
+      "critique": "Checks your resume against the selected search.",
+      "diff": "Review suggested edits before applying them.",
+      "insights": "Skills that appear most often in this search.",
+      "skim": "A quick read of the resume.",
+      "parse": "Checks that the exported file can be read by applicant tracking systems."
+    }
+  },
+  "tailor": {
+    "lede": "Review the fit checks and suggested edits before you accept.",
+    "ledger": "Fit ledger",
+    "ledgerHint": "Each line checked against your profile.",
+    "changes": "Suggested edits",
+    "changesHint": "Keep or remove each change before you accept.",
+    "previewHint": "Check the rendered resume and cover letter."
   }
 }
