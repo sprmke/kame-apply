@@ -1,1 +1,31 @@
-../../.claude/agents/test-runner.md
+---
+description: "Run lint, type-check, tests, and build after code changes. Use proactively when verifying implementations."
+mode: subagent
+permissions:
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+---
+
+# Test runner (Kame Apply)
+
+Use the repo's documented scripts (`CLAUDE.md` § Commands; the set grows each phase, check `package.json` first):
+
+```bash
+pnpm run lint
+pnpm run type-check
+pnpm run test            # pytest (uv) + Vitest
+pnpm run check:filenames
+pnpm run check:ai-tooling-sync
+pnpm run ci:quality      # everything CI runs
+```
+
+Python directly: `cd apps/api && uv run pytest -x -q path/to/test_file.py`. Evals (when present): `pnpm run test:evals`.
+
+Never run prod scripts (`*:prod`) or point tests at a hosted `DATABASE_URL`.
+
+Report: pass/fail per command, first error line with `file:line`, suggested fix.
+

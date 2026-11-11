@@ -1,24 +1,17 @@
+# Project Codex layer. MCP servers below mirror .mcp.json.
+
 [mcp_servers.context7]
 command = "npx"
-args = [
-    "-y",
-    "@upstash/context7-mcp",
-]
+args = ["-y", "@upstash/context7-mcp"]
 
 [mcp_servers.markitdown]
 command = "markitdown-mcp"
+args = []
 
 [mcp_servers.playwright]
 command = "npx"
-args = [
-    "-y",
-    "@playwright/mcp@latest",
-]
+args = ["-y", "@playwright/mcp@latest"]
 
 [mcp_servers.postgres]
 command = "npx"
-args = [
-    "-y",
-    "@modelcontextprotocol/server-postgres",
-    "postgresql://kame_apply_ro:kame_apply_ro_local_only@127.0.0.1:5442/kame_apply",
-]
+args = ["-y", "@modelcontextprotocol/server-postgres", "postgresql://kame_apply_ro:kame_apply_ro_local_only@127.0.0.1:5442/kame_apply"]
