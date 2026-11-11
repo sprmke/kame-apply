@@ -41,6 +41,7 @@
     "backup:db:prod": "bash scripts/deploy/backup-db.sh prod",
     "rollback:db:dev": "bash scripts/deploy/restore-db.sh dev",
     "rollback:db:prod": "bash scripts/deploy/restore-db.sh prod",
+    "deploy:free": "bash scripts/deploy/deploy-free.sh",
     "deploy:api:dev": "bash scripts/deploy/deploy-api.sh dev",
     "deploy:api:prod": "bash scripts/deploy/deploy-api.sh prod",
     "deploy:web:dev": "bash scripts/deploy/deploy-web.sh dev",

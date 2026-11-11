@@ -1,0 +1,22 @@
+{
+  "name": "kame-apply",
+  "unlockWord": "applywave",
+  "migrations": ["apps/api/migrations/versions"],
+  "codePaths": ["apps/web", "apps/api", "apps/runner", "apps/extension", "packages"],
+  "docsPath": "docs",
+  "banned": ["from react", "next/", "@supabase/", "drizzle-orm", "@prisma/client", "tRPC"],
+  "prodPatterns": [
+    "deploy:api:prod",
+    "deploy:web:prod",
+    "deploy:runner:prod",
+    "migrate:prod",
+    "rollback:db:prod"
+  ],
+  "opencode": {
+    "skillRoots": [".agent/skills", ".agents/skills"],
+    "requiredMcp": ["context7", "markitdown", "playwright"],
+    "denyMigrations": true,
+    "askOnForcePush": true,
+    "allowExternalLibrary": true
+  }
+}

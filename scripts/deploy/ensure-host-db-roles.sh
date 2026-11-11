@@ -19,6 +19,7 @@ fi
 : "${APP_DB_PASSWORD:?Set APP_DB_PASSWORD to the kame_apply_app password used in DATABASE_URL}"
 POSTGRES_USER="${POSTGRES_USER:-kame_apply}"
 POSTGRES_DB="${POSTGRES_DB:-kame_apply}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 
 tmp="$(mktemp)"
 chmod 600 "$tmp"
@@ -55,7 +56,7 @@ PY
 
 echo "Ensuring kame_apply_app on $DEPLOY_HOST"
 ssh "$DEPLOY_HOST" \
-  "cd /opt/kame-apply/infra && docker compose -f docker-compose.prod.yml exec -T postgres psql -U $POSTGRES_USER -d postgres -v ON_ERROR_STOP=1" \
+  "cd /opt/kame-apply/infra && docker compose -f $COMPOSE_FILE exec -T postgres psql -U $POSTGRES_USER -d postgres -v ON_ERROR_STOP=1" \
   <"$tmp"
 rm -f "$tmp"
 echo "OK ensure-host-db-roles $ENV_NAME"

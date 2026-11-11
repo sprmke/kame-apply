@@ -2,6 +2,8 @@
 
 This is the detailed version of the required checklist. Follow it in order. Every secret stays on the host; never paste a secret into chat or commit it.
 
+For a 100% free path with no purchased domain, Cloudflare Pages/R2, or Resend, use [`run-free.md`](./run-free.md). This guide is the hosted path that uses those services.
+
 Prod uses the same steps plus `applywave` in the same message for deploy/migrate.
 
 ## 0. Accounts you need

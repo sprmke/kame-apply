@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from email.message import EmailMessage
+from typing import Any
 
 import aiosmtplib
 import httpx
@@ -42,8 +43,20 @@ class Mailer:
                 msg = EmailMessage()
                 msg["From"], msg["To"], msg["Subject"] = self._s.mail_from, mail.to, mail.subject
                 msg.set_content(mail.text)
+                auth: dict[str, Any] = {}
+                if self._s.smtp_user and self._s.smtp_password:
+                    auth["username"] = self._s.smtp_user
+                    auth["password"] = self._s.smtp_password
+                if self._s.smtp_ssl:
+                    auth["use_tls"] = True
+                elif self._s.smtp_starttls:
+                    auth["start_tls"] = True
                 await aiosmtplib.send(
-                    msg, hostname=self._s.smtp_host, port=self._s.smtp_port, timeout=10
+                    msg,
+                    hostname=self._s.smtp_host,
+                    port=self._s.smtp_port,
+                    timeout=10,
+                    **auth,
                 )
         except Exception:
             # A mail outage must not fail sign-up or leak whether an address exists.

@@ -15,8 +15,9 @@ if [[ "$ENV_NAME" == "prod" ]]; then
   require_prod_unlock "migrate:host:prod"
 fi
 : "${DEPLOY_HOST:?Set DEPLOY_HOST to the SSH host running Compose}"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 
 echo "Running migrations in the API container on $DEPLOY_HOST"
 ssh "$DEPLOY_HOST" \
-  "cd /opt/kame-apply/infra && docker compose -f docker-compose.prod.yml exec -T api uv run alembic upgrade head"
+  "cd /opt/kame-apply/infra && docker compose -f $COMPOSE_FILE exec -T api uv run alembic upgrade head"
 echo "OK migrate-host $ENV_NAME"

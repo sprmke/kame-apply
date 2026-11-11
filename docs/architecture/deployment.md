@@ -47,19 +47,22 @@ The init SQL runs only on a **fresh volume**. If the volume predates a change to
 
 **Blocked without unlock:** any `deploy:*:prod`, `migrate:prod`, or write against a hosted `DATABASE_URL` needs the user to type **`applywave`** in the same message (`no-prod-deploy.mdc`). Dogfood / uptime / PRD baselines need that first bring-up plus two weeks of real use (`docs/workflow/in-progress/phase-14-dogfood-log.md`).
 
-Oracle Always Free A1 (fallback Hetzner CAX11) running Docker Compose behind Caddy:
+Oracle Always Free A1 (2 OCPU / 12 GB; fallback Hetzner CAX11) running Docker Compose behind Caddy:
 
 | Piece | Path / command |
 | --- | --- |
-| Compose | `infra/docker-compose.prod.yml` (`caddy`, `api`, `runner`, `postgres`, `clamav`, `backup`) |
-| Caddy TLS + headers | `infra/caddy/Caddyfile` (HSTS, CSP for API) |
+| Compose (hosted) | `infra/docker-compose.prod.yml` (`caddy`, `api`, `runner`, `postgres`, `clamav`, `backup`) |
+| Compose (free VM) | `infra/docker-compose.free.yml` (`caddy`, `api`, `postgres`, `minio`, `backup`); no domain, Cloudflare, or Resend |
+| Caddy TLS + headers | `infra/caddy/Caddyfile` (API only) or `infra/caddy/Caddyfile.free` (web + API on one DuckDNS name) |
 | Postgres tune | `infra/postgres/prod/postgresql.conf` |
-| Nightly dump → R2 | `infra/backup/backup-loop.sh` (14 daily + 8 weekly). Requires `MIGRATION_DATABASE_URL` (owner role; the app role dumps empty under RLS), verifies the dump with `pg_restore --list`, prunes old objects, and exits after three consecutive failures so the supervisor alerts. |
+| Nightly dump → R2 or MinIO | `infra/backup/backup-loop.sh` (14 daily + 8 weekly). Requires `MIGRATION_DATABASE_URL` (owner role; the app role dumps empty under RLS), verifies the dump with `pg_restore --list`, prunes old objects, and exits after three consecutive failures so the supervisor alerts. |
 | Host harden | `infra/host/harden.sh` (ufw, fail2ban, unattended-upgrades, log rotate) |
 | API image | `apps/api/Dockerfile` |
 | Deploy API | `pnpm run deploy:api:dev\|prod` → `scripts/deploy/deploy-api.sh` (set `KAME_REGISTRY` to push, otherwise the image is shipped over SSH; `DEPLOY_HEALTH_URL` adds a post-deploy check; dev sets `KAME_ENVIRONMENT=dev`, prod defaults to `prod`) |
+| Deploy free VM | `pnpm run deploy:free` → `scripts/deploy/deploy-free.sh`; builds the API and web, ships both, and starts `docker-compose.free.yml`. No Cloudflare or Resend. |
 | Deploy runner | `pnpm run deploy:runner:dev\|prod` → `scripts/deploy/deploy-runner.sh`; secrets in `/etc/kame-apply/runner.env` (`KAME_RUNNER_TOKEN`, `KAME_RUNNER_WORKSPACE_ID`) |
-| Deploy web | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages). Requires `NUXT_PUBLIC_API_BASE`; `CF_PAGES_PROJECT` publishes with wrangler. |
+| Deploy web (hosted) | `pnpm run deploy:web:dev\|prod` (Nuxt generate → Cloudflare Pages). Requires `NUXT_PUBLIC_API_BASE`; `CF_PAGES_PROJECT` publishes with wrangler. |
+| Deploy web (free VM) | `pnpm run deploy:free` builds the web and copies it to `/opt/kame-apply/infra/web`; Caddy serves it. |
 | Database roles | `pnpm run db:roles:host:dev\|prod` creates the RLS-restricted `kame_apply_app` role on the host (the prod Compose no longer mounts the local init SQL). |
 | Migrate | `pnpm run migrate:dev\|prod` against a reachable database URL, or `pnpm run migrate:host:dev\|prod` to run Alembic inside the API container over SSH (the Compose database is not exposed). Prod needs `applywave`. |
 | Scheduler | `SCHEDULER_ENABLED` (default true). The API process runs the minute tick under a Postgres advisory lock (a second worker skips), reaps lost runs, and purges workspaces past the 30-day window at 03:00. |
@@ -82,11 +85,11 @@ Prod deploys and remote migrations require the unlock word in the same command (
 | `COOKIE_SECURE` | `Secure` flag on cookies | Must be true in prod |
 | `MASTER_KEK` | Base64 32-byte key wrapping per-workspace data keys | Prod refuses the public dev key; rotate with `python -m app.ops.rewrap_keks` |
 | `WEB_BASE_URL`, `API_BASE_URL` | Links in emails; OAuth redirect URI | |
-| `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM` | Mail via Mailpit locally (UI on 8125) | |
-| `RESEND_API_KEY` | Mail in prod (Resend) | Overrides SMTP when set |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_STARTTLS`, `SMTP_SSL`, `MAIL_FROM` | Mail via Mailpit locally (UI on 8125), Gmail/Brevo on the free VM | Empty `SMTP_USER` keeps Mailpit auth-free; `SMTP_STARTTLS=true` for port 587 |
+| `RESEND_API_KEY` | Optional hosted mail (Resend) | Overrides SMTP when set |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google sign-in | Optional; endpoints 404 without them |
 | `AUTH_RATE_LIMIT_ENABLED` | In-process auth rate limits | Off only for e2e runs |
-| `S3_ENDPOINT_URL`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_REGION` | Object storage (MinIO locally, R2 in prod) | Tests use in-memory storage; API creates the bucket on startup when missing |
+| `S3_ENDPOINT_URL`, `S3_PUBLIC_ENDPOINT_URL`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_REGION` | Object storage (MinIO locally and on the free VM; R2 optional) | `S3_PUBLIC_ENDPOINT_URL` is the browser-facing host for presigned URLs; tests use in-memory storage; API creates the bucket on startup when missing |
 | `TRUSTED_PROXIES` | CIDRs allowed to set `X-Forwarded-For` / `X-Real-IP` | Compose defaults to RFC1918 ranges |
 | `GITHUB_FEEDBACK_TOKEN`, `GITHUB_FEEDBACK_REPO` | In-app feedback → GitHub issue | Optional; without token, feedback is audit-logged only |
 | `NUXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` | Browser / API Sentry | `send_default_pii=False`; no request bodies |
@@ -98,6 +101,6 @@ Migrations 0003 to 0006 add auth tables, invitations, AI tables, workspace limit
 | Action | Endpoint / behavior |
 | --- | --- |
 | Export | `GET /api/v1/workspace/export` (owner). JSON without secrets/tokens/encrypted keys. |
-| Delete team workspace | `DELETE /api/v1/workspace`. Soft-deletes; purges `ws/<id>/` in R2 immediately; hard purge of rows after 30 days. |
+| Delete team workspace | `DELETE /api/v1/workspace`. Soft-deletes; purges `ws/<id>/` in object storage (R2 or MinIO) immediately; hard purge of rows after 30 days. |
 | Feedback | `POST /api/v1/feedback` (no email/long digit runs). Optional GitHub issue. |
 | Ops dashboard | `GET /api/v1/ops/dashboard` (admin): sources, recent runs, AI cost. |
