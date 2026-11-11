@@ -7,7 +7,6 @@ export const NAV: NavItem[] = [
   { key: "jobs", to: "/jobs", icon: "ph:briefcase", phase: 6 },
   { key: "applications", to: "/applications", icon: "ph:folder-simple", phase: 11 },
   { key: "responses", to: "/responses", icon: "ph:envelope-simple", phase: 20 },
-  { key: "runs", to: "/runs", icon: "ph:play-circle", phase: 15 },
   { key: "studio", to: "/studio", icon: "ph:file-text", phase: 8 },
   { key: "answers", to: "/answers", icon: "ph:chat-text", phase: 12 },
   { key: "coach", to: "/coach", icon: "ph:users", phase: 20 },

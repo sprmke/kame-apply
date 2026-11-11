@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { listCredentialsApiV1AiCredentialsGet } from "@kame/api-client";
+import { listCredentialsApiV1AiCredentialsGet, listTracksApiV1TracksGet } from "@kame/api-client";
 import { FnChip } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
+import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
 const ws = useWorkspaceStore();
+const { profileId } = useActiveProfile();
 const canSeeKeys = computed(() => ws.canManage);
 const { data: creds } = useQuery({
   queryKey: computed(() => ["onboarding-credentials", ws.currentId]),
@@ -13,14 +15,20 @@ const { data: creds } = useQuery({
   enabled: canSeeKeys,
 });
 const hasKey = computed(() => (creds.value?.length ?? 0) > 0);
+const tracks = useQuery({
+  queryKey: computed(() => ["tracks", ws.currentId]),
+  queryFn: async () => (await listTracksApiV1TracksGet()).data ?? [],
+  enabled: computed(() => Boolean(ws.currentId)),
+});
+const hasTrack = computed(() => (tracks.data.value?.length ?? 0) > 0);
+const hasProfile = computed(() => Boolean(profileId.value));
 
-// Profile, Track and Extension light up as their phases ship.
+// The checklist ends at the first Track. Running discovery is the Track's primary action.
 const steps = computed(() =>
   [
     { key: "ai", done: hasKey.value, to: "/settings/ai", soon: false, show: canSeeKeys.value },
-    { key: "profile", done: false, to: "/profile/onboarding", soon: false, show: true },
-    { key: "track", done: false, to: "/tracks", soon: false, show: true },
-    { key: "extension", done: false, to: "/settings/integrations", soon: false, show: true },
+    { key: "profile", done: hasProfile.value, to: "/profile/onboarding", soon: false, show: true },
+    { key: "track", done: hasTrack.value, to: "/tracks", soon: false, show: true },
   ].filter((s) => s.show),
 );
 </script>

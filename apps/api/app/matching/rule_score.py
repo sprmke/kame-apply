@@ -8,6 +8,39 @@ from typing import Any
 from app.jobs.normalize import normalize_title
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
 
+# A single shared word like "lead" or "engineer" is not evidence that two roles are the same.
+# Keep those words out of the overlap test; require two meaningful tokens for a title match.
+_GENERIC_TITLE_WORDS = frozenset(
+    {
+        "associate",
+        "assistant",
+        "consultant",
+        "coordinator",
+        "developer",
+        "director",
+        "engineer",
+        "executive",
+        "head",
+        "intern",
+        "junior",
+        "lead",
+        "manager",
+        "mid",
+        "officer",
+        "principal",
+        "representative",
+        "senior",
+        "specialist",
+        "staff",
+        "trainee",
+    }
+)
+
+
+def title_tokens(value: str) -> set[str]:
+    return {w for w in value.split() if len(w) > 2 and w not in _GENERIC_TITLE_WORDS}
+
+
 DEFAULT_WEIGHTS: dict[str, float] = {
     "title": 0.22,
     "skills": 0.28,
@@ -55,10 +88,11 @@ def rule_components(
             elif nt in norm or t.title.lower() in title_blob:
                 best = max(best, 85.0)
             else:
-                tokens = {w for w in norm.split() if len(w) > 2}
-                want = {w for w in nt.split() if len(w) > 2}
-                if tokens & want:
+                shared = title_tokens(norm) & title_tokens(nt)
+                if len(shared) >= 2:
                     best = max(best, 65.0)
+                elif shared:
+                    best = max(best, 35.0)
         title_score = best or 25.0
         if title_score >= 85:
             reasons.append("Title match")

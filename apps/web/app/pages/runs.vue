@@ -1,7 +1,8 @@
 <script setup lang="ts">
-const { t } = useI18n();
+// Runs are scoped to a Track. The old global placeholder was a dead end.
+await navigateTo("/tracks", { replace: true });
 </script>
 
 <template>
-  <PagePlaceholder :name="t('nav.runs')" :phase="15" />
+  <div />
 </template>

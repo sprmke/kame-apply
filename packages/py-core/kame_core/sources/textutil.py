@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
+from html import unescape
 
 import nh3
 
 _TAG_RE = re.compile(r"<[^>]+>")
+_BLOCK_RE = re.compile(r"</?(?:p|div|br|li|ul|ol|h[1-6]|section|article|tr|td|th)\b[^>]*>", re.I)
 _WS_RE = re.compile(r"\s+")
 _SAL_RE = re.compile(
     r"(?P<cur>\$|USD|EUR|GBP|PHP|AUD|CAD)?\s*(?P<a>\d{2,3}(?:,\d{3})?(?:\.\d+)?|\d+)k?"
@@ -26,9 +28,16 @@ def sanitize_html(html: str) -> str:
 def html_to_text(html: str) -> str:
     if not html:
         return ""
-    cleaned = sanitize_html(html)
-    text = _TAG_RE.sub(" ", cleaned)
-    return _WS_RE.sub(" ", text).strip()
+    # Some feeds return escaped HTML (`&lt;p&gt;`) and some return real HTML. Unescape first so
+    # both become visible text, then sanitize and strip tags. A final unescape handles entities
+    # such as `&amp;` that nh3 leaves in the cleaned output.
+    cleaned = sanitize_html(unescape(html))
+    text = _BLOCK_RE.sub("\n", cleaned)
+    text = _TAG_RE.sub(" ", text)
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r" *\n *", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return unescape(text).strip()
 
 
 def parse_salary_fragment(text: str) -> dict[str, float | str | None]:

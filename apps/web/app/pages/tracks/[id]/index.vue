@@ -103,7 +103,7 @@ const matched = useQuery({
         track_id: trackId.value,
         include_not_eligible: false,
         sort: "score",
-        limit: 50,
+        limit: 10,
       },
       throwOnError: true,
     });
@@ -328,7 +328,7 @@ async function saveMore() {
           <NuxtLink
             :to="`/jobs?track=${trackId}`"
             class="text-sm text-ink-600 underline-offset-2 hover:underline"
-            >Board</NuxtLink
+            >{{ t("today.viewAll") }}</NuxtLink
           >
         </div>
         <p v-if="!matchedJobs.length" class="text-sm text-ink-600">{{ t("tracks.noJobs") }}</p>
@@ -359,7 +359,7 @@ async function saveMore() {
               class="text-ink-900 underline-offset-2 hover:underline"
               rel="noopener noreferrer"
               target="_blank"
-              >{{ j.apply_url }}</a
+              >{{ t("applications.openPosting") }}</a
             >
           </li>
         </ul>
@@ -370,6 +370,11 @@ async function saveMore() {
           >{{ t("tracks.criteria")
           }}<span class="absolute inset-x-2 bottom-0 h-0.5 bg-ink-900" aria-hidden="true"
         /></span>
+        <NuxtLink
+          :to="`/tracks/${trackId}/runs`"
+          class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"
+          >{{ t("tracks.runHistory") }}</NuxtLink
+        >
         <NuxtLink
           :to="`/tracks/${trackId}/settings`"
           class="px-3 py-2 text-sm text-ink-600 hover:text-ink-900"

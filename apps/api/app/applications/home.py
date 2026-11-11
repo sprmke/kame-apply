@@ -189,33 +189,24 @@ async def home_brief(
         for r, app in reminders
     ]
 
-    strong = int(kpis["kpis"].get("matched") or 0)
+    matched = int(kpis["kpis"].get("matched") or 0)
     needs_n = needs["count"]
-    headline = (
-        f"{strong} strong matches across {len(track_cards)} Tracks. "
-        f"{needs_n} thing{'s' if needs_n != 1 else ''} need{'s' if needs_n == 1 else ''} you."
-        if track_cards
-        else "Set up a Track to start finding roles."
-    )
-    # Fix grammar for needs
-    if needs_n == 0:
-        headline = (
-            f"{strong} strong matches across {len(track_cards)} Tracks. Nothing needs you."
-            if track_cards
-            else "Set up a Track to start finding roles."
-        )
+    if track_cards:
+        track_word = "Track" if len(track_cards) == 1 else "Tracks"
+        match_word = "match" if matched == 1 else "matches"
+        lead = f"{matched} {match_word} across {len(track_cards)} {track_word}."
+        if needs_n == 0:
+            headline = f"{lead} Nothing needs you."
+        elif needs_n == 1:
+            headline = f"{lead} 1 thing needs you."
+        else:
+            headline = f"{lead} {needs_n} things need you."
+    elif needs_n == 0:
+        headline = "Set up a Track to start finding roles."
     elif needs_n == 1:
-        headline = (
-            f"{strong} strong matches across {len(track_cards)} Tracks. 1 thing needs you."
-            if track_cards
-            else "1 thing needs you."
-        )
+        headline = "1 thing needs you."
     else:
-        headline = (
-            f"{strong} strong matches across {len(track_cards)} Tracks. {needs_n} things need you."
-            if track_cards
-            else f"{needs_n} things need you."
-        )
+        headline = f"{needs_n} things need you."
 
     empty = len(tracks) == 0
 

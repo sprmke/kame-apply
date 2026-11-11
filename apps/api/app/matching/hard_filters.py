@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from app.jobs.normalize import normalize_title
+from app.matching.rule_score import title_tokens
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
 
 
@@ -46,9 +47,9 @@ def hard_filter(
             elif nt in norm or t.title.lower() in title_blob:
                 ok = True
             else:
-                tokens = {w for w in norm.split() if len(w) > 2}
-                want = {w for w in nt.split() if len(w) > 2}
-                if tokens & want:
+                # Ignore generic words such as "lead" and "engineer"; a marketing lead is not a
+                # support role just because both titles contain "lead".
+                if title_tokens(norm) & title_tokens(nt):
                     ok = True
         if not ok and any(not t.exclude for t in c.titles):
             detail["failed"].append("title")

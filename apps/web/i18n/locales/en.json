@@ -656,6 +656,7 @@
     "new": "New Track",
     "name": "Name",
     "describe": "Describe the role",
+    "browseTemplates": "Browse role templates",
     "empty": "No Tracks yet.",
     "duplicate": "Duplicate",
     "archive": "Archive",

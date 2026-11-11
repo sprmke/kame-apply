@@ -30,6 +30,7 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 12 | [`review/requirements-traceability.md`](./review/requirements-traceability.md) | Every request from the original brief mapped to a feature, doc, and phase, so nothing gets missed. |
 | 13 | [`review/plan-critique-and-risks.md`](./review/plan-critique-and-risks.md) | Critical review of the whole plan: failure modes, edge cases, risks, and how each is handled. |
 | 14 | [`reviews/full-review-phases-0-20.md`](./reviews/full-review-phases-0-20.md) | Full code review of phases 0–20: defects found and fixed, test coverage, and the gaps that remain open. |
+| 15 | [`reviews/usability-audit.md`](./reviews/usability-audit.md) | First-run usability audit: the core job-search flow, the blocking defects found in the running app, and the repair slices. |
 
 ## How to use these docs in a session
 

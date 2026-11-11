@@ -22,6 +22,7 @@ const { ensureProfile, profileId } = useActiveProfile();
 
 const creating = ref(false);
 const showNew = ref(false);
+const showTemplates = ref(false);
 const nlDraft = ref("");
 const nameDraft = ref("");
 
@@ -162,25 +163,33 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
           t("common.create")
         }}</FnButton>
         <FnButton tone="ghost" @click="showNew = false">{{ t("common.cancel") }}</FnButton>
+        <FnButton
+          tone="ghost"
+          :aria-expanded="showTemplates"
+          @click="showTemplates = !showTemplates"
+          >{{ t("tracks.browseTemplates") }}</FnButton
+        >
       </div>
-      <div v-if="templatesLoading" class="flex flex-col gap-2">
-        <FnSkeleton class="h-10 w-full" />
-        <FnSkeleton class="h-10 w-full" />
+      <div v-if="showTemplates" class="flex flex-col gap-2">
+        <div v-if="templatesLoading" class="flex flex-col gap-2">
+          <FnSkeleton class="h-10 w-full" />
+          <FnSkeleton class="h-10 w-full" />
+        </div>
+        <ul v-else class="grid gap-2 sm:grid-cols-2">
+          <li v-for="tmpl in templateRows" :key="tmpl.slug">
+            <button
+              type="button"
+              class="flex min-h-11 w-full items-center gap-2 border border-rule px-3 text-left text-sm hover:bg-paper-2"
+              :disabled="creating"
+              @click="createFromTemplate(tmpl.slug)"
+            >
+              <FnFolderTab :hue="hue(tmpl.color_hue)" class="pointer-events-none">{{
+                tmpl.name
+              }}</FnFolderTab>
+            </button>
+          </li>
+        </ul>
       </div>
-      <ul v-else class="grid gap-2 sm:grid-cols-2">
-        <li v-for="tmpl in templateRows" :key="tmpl.slug">
-          <button
-            type="button"
-            class="flex min-h-11 w-full items-center gap-2 border border-rule px-3 text-left text-sm hover:bg-paper-2"
-            :disabled="creating"
-            @click="createFromTemplate(tmpl.slug)"
-          >
-            <FnFolderTab :hue="hue(tmpl.color_hue)" class="pointer-events-none">{{
-              tmpl.name
-            }}</FnFolderTab>
-          </button>
-        </li>
-      </ul>
     </section>
 
     <div v-if="tracksLoading" class="flex flex-col gap-3">

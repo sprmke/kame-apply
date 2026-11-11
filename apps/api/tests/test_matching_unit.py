@@ -61,6 +61,34 @@ def test_hard_filter_title_and_exclude_skill():
     assert any("exclude_skill" in x for x in detail["failed"])
 
 
+def test_hard_filter_ignores_generic_title_words():
+    crit = {
+        "schema_version": 1,
+        "titles": [{"title": "Customer Support Lead", "synonyms": [], "exclude": False}],
+        "skills": {"must": [], "nice": [], "exclude": []},
+        "work_modes": [],
+    }
+    base = {
+        "description_text": "",
+        "work_mode": "remote",
+        "skills": [],
+        "salary": {},
+        "company_name": "Acme",
+    }
+
+    marketing, _ = hard_filter(
+        {**base, "title": "Growth Marketing Lead", "normalized_title": "growth marketing lead"},
+        crit,
+    )
+    support, _ = hard_filter(
+        {**base, "title": "IT Support Lead", "normalized_title": "it support lead"},
+        crit,
+    )
+
+    assert marketing == "not_eligible"
+    assert support == "eligible"
+
+
 def test_knockout_us_auth():
     hits = predict_knockouts(
         [
@@ -104,6 +132,38 @@ def test_rule_score_and_blend():
     score = blend_score(comps, semantic=80.0)
     assert 40 <= score <= 100
     assert reasons
+
+
+def test_single_generic_title_word_is_not_a_strong_match():
+    crit = {
+        "schema_version": 1,
+        "titles": [{"title": "Customer Support Lead", "synonyms": [], "exclude": False}],
+        "skills": {"must": [], "nice": [], "exclude": []},
+        "work_modes": ["remote"],
+        "remote_eligibility": {"anywhere": True, "regions": [], "countries": []},
+    }
+    unrelated = {
+        "title": "Growth Marketing Lead",
+        "normalized_title": "growth marketing lead",
+        "description_text": "",
+        "skills": [],
+        "seniority": "staff",
+        "work_mode": "remote",
+        "salary": {},
+        "remote_eligibility": {"anywhere": True},
+        "posted_at": None,
+    }
+    related = {
+        **unrelated,
+        "title": "Customer Support Manager",
+        "normalized_title": "customer support manager",
+    }
+
+    unrelated_score, _ = rule_components(unrelated, crit)
+    related_score, _ = rule_components(related, crit)
+
+    assert unrelated_score["title"] <= 35
+    assert related_score["title"] >= 65
 
 
 def test_feedback_bounds():

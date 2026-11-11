@@ -22,6 +22,7 @@
     "db:migrate:new": "cd apps/api && uv run alembic revision --autogenerate -m",
     "db:reset:local": "bash scripts/dev/db-reset-local.sh",
     "db:seed": "uv run python scripts/taxonomy/refresh.py --seed --fx",
+    "db:backfill:job-text": "cd apps/api && uv run python ../../scripts/dev/backfill-job-text.py",
     "gen:api-client": "bash scripts/dev/gen-api-client.sh",
     "check:api-client": "bash scripts/dev/gen-api-client.sh --check",
     "lint": "uv run ruff check . && uv run ruff format --check . && pnpm -r --if-present run lint",

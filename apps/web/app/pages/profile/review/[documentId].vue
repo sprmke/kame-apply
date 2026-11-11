@@ -8,6 +8,7 @@ import {
   type DocumentRead,
 } from "@kame/api-client";
 import { FnButton, FnChip, FnSkeleton, FnPencilText, useToast } from "@kame/ui";
+import { errorCode } from "~/lib/errors";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -17,6 +18,7 @@ const { profileId, ensureProfile, refresh } = useActiveProfile();
 const doc = ref<DocumentRead | null>(null);
 const busy = ref(false);
 const mergeNeeded = ref(false);
+const parseError = ref<{ code?: string; message: string } | null>(null);
 const lowPaths = computed(
   () => (doc.value?.parse_quality?.low_confidence_paths as string[] | undefined) ?? [],
 );
@@ -53,6 +55,7 @@ onMounted(async () => {
 async function runParse() {
   if (!profileId.value || !doc.value) return;
   busy.value = true;
+  parseError.value = null;
   try {
     const { data } = await parseDocumentApiV1ProfilesProfileIdDocumentsDocumentIdParsePost({
       path: { profile_id: profileId.value, document_id: doc.value.id },
@@ -60,7 +63,7 @@ async function runParse() {
     });
     doc.value = data!;
   } catch (e) {
-    toast.push({ title: apiError(e), tone: "danger" });
+    parseError.value = { code: errorCode(e), message: apiError(e) };
   } finally {
     busy.value = false;
   }
@@ -79,11 +82,7 @@ async function confirm() {
     toast.push({ title: t("career.confirmed"), tone: "success" });
     await navigateTo("/profile");
   } catch (e: unknown) {
-    const code =
-      (e as { response?: { data?: { error?: { code?: string } } } })?.response?.data?.error?.code ||
-      (typeof e === "object" && e && "code" in e
-        ? String((e as { code: string }).code)
-        : undefined);
+    const code = errorCode(e);
     if (code === "merge_required" || apiError(e).includes("merge")) {
       mergeNeeded.value = true;
       try {
@@ -131,6 +130,19 @@ function isLow(path: string) {
           tone="primary"
           @click="navigateTo(`/profile/merge/${doc.id}`)"
           >{{ t("career.openMerge") }}</FnButton
+        >
+      </div>
+      <div
+        v-if="parseError"
+        role="alert"
+        class="flex flex-wrap items-center gap-2 border border-saffron-600 bg-paper-1 p-3 text-sm"
+      >
+        <span class="text-ink-900">{{ parseError.message }}</span>
+        <NuxtLink
+          v-if="parseError.code === 'ai_not_configured'"
+          to="/settings/ai"
+          class="text-persimmon-700 underline"
+          >{{ t("settings.ai") }}</NuxtLink
         >
       </div>
       <div class="grid gap-6 lg:grid-cols-2">
