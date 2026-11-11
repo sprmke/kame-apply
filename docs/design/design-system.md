@@ -106,11 +106,11 @@ Scale (rem, 1.2 ratio for UI; documents use their own reading scale): `xs .75 ·
 
 ## 8. Layout system
 
-- **Rail** (desktop/tablet): a 64px vertical rail with icons for Today, Tracks, Jobs, Applications, Runs, Studio, Answer Desk, Safety, Settings, plus the Needs-you badge. Tracks open as a second-level **Track switcher** (folder tabs across the top of the content area), not a long sidebar list.
-- **Reader** (three panes) for Jobs, Applications, and Studio: list (360px) · document (fluid, max 72ch) · context panel (360px: fit ledger, risk seal, actions). On tablet the context panel becomes a toggled overlay; on phone, list → document → context are a stacked navigation with a bottom action bar.
-- **Brief** (Today): an editorial single column (max 880px) with a Newsreader headline summary ("6 strong new matches, 2 things need you"), the Needs-you stack, the route summary per Track, then the activity log.
+- **Desk sidebar** (desktop/tablet): a 208px paper column with labels, not an icon-only rail. Primary destinations: **Today · Searches · Jobs · Applications · Profile**. A collapsed **More tools** group holds Resume studio, Answer help, Practice, Replies, Contacts, and Safety. Settings sits at the bottom. The Needs-you count is a small badge on Today and on the Needs-you item.
+- **Reader** (three panes) for Jobs, Applications, and Studio: list (360px) · document (fluid, max 72ch) · context panel (360px: fit ledger, risk seal, actions). On tablet the context panel becomes a toggled overlay; on phone, list → document → context are a stacked navigation with a sticky action bar.
+- **Brief** (Today): an editorial single column (max 1040px). Lead with **one next step**, then new matches, then the user's searches, then Needs-you. Numbers and activity live in a collapsed **This week** disclosure, not in the first screen.
 - **Workbench** (Tailor, Resume Studio): document center with pencil diffs, ledger left, preview right (tabs on mobile).
-- Mobile bottom bar: Today · Jobs · **Needs you** (center, shell-plate shaped button with count) · Applications · More.
+- Mobile bottom bar: **Today · Searches · Jobs · Applications · More**. More holds Profile, Settings, Needs-you, and the advanced tools. No center hexagon; the Needs-you count is a small badge.
 
 ## 9. Motion
 

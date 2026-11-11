@@ -130,7 +130,7 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 md:px-6">
-    <PageHeader :title="t('tracks.title')">
+    <PageHeader :title="t('tracks.title')" :lede="t('tracks.lede')">
       <template #actions>
         <FnButton tone="primary" @click="showNew = !showNew">{{ t("tracks.new") }}</FnButton>
       </template>
@@ -142,20 +142,21 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       :aria-label="t('tracks.new')"
     >
       <label class="flex flex-col gap-1 text-sm">
+        <span class="text-ink-600">{{ t("tracks.describe") }}</span>
+        <textarea
+          v-model="nlDraft"
+          class="min-h-24 border border-rule bg-paper-0 px-3 py-2 text-ink-900"
+          maxlength="8000"
+          :placeholder="t('tracks.describePlaceholder')"
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-sm">
         <span class="text-ink-600">{{ t("tracks.name") }}</span>
         <input
           v-model="nameDraft"
           class="min-h-11 border border-rule bg-paper-0 px-3 text-ink-900"
           type="text"
           maxlength="200"
-        />
-      </label>
-      <label class="flex flex-col gap-1 text-sm">
-        <span class="text-ink-600">{{ t("tracks.describe") }}</span>
-        <textarea
-          v-model="nlDraft"
-          class="min-h-24 border border-rule bg-paper-0 px-3 py-2 text-ink-900"
-          maxlength="8000"
         />
       </label>
       <div class="flex flex-wrap gap-2">
@@ -203,9 +204,19 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       <li v-for="tr in trackRows" :key="tr.id" class="flex flex-wrap items-center gap-3 py-3">
         <NuxtLink :to="`/tracks/${tr.id}`" class="min-w-0 flex-1">
           <FnFolderTab :hue="hue(tr.color_hue)" active>{{ tr.name }}</FnFolderTab>
-          <p class="mt-1 text-sm text-ink-600">{{ tr.summary }}</p>
+          <p
+            v-if="tr.summary && tr.summary !== tr.name && tr.summary !== tr.name + '.'"
+            class="mt-1 text-sm text-ink-600"
+          >
+            {{ tr.summary }}
+          </p>
         </NuxtLink>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <NuxtLink
+            :to="`/jobs?track=${tr.id}`"
+            class="min-h-11 px-3 text-sm font-medium text-persimmon-700 underline-offset-2 hover:underline"
+            >{{ t("tracks.viewMatches") }}</NuxtLink
+          >
           <FnButton tone="ghost" @click="duplicate(tr.id)">{{ t("tracks.duplicate") }}</FnButton>
           <FnButton tone="ghost" @click="archive(tr.id)">{{ t("tracks.archive") }}</FnButton>
         </div>

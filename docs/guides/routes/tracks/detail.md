@@ -6,16 +6,17 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| Criteria builder | Done | role signal | Documented | NL + chips + more filters |
+| Matches | Done | — | Documented | Top 10, View all, Open posting |
+| Criteria builder | Done | role signal | Documented | Below results; NL + chips + more filters |
 | Preview | N/A | — | Documented | Placeholder until Phase 5 |
 
 ## Overview
 
-Edit Track criteria via natural language (compile + optional apply), chips (must-skills, no agencies), or More filters (work mode, location, region, salary, keywords, companies). **Run now** starts discovery and lists matched jobs. In deployed environments the run is queued and the page polls progress until it finishes; in local dev and tests it runs inline.
+Results first. **Run search** starts discovery; **View matches** opens the full Jobs list. **More tools** holds Be Found, Gap plan, and Settings. The search settings (natural language, chips, More filters) sit below the match list. In deployed environments the run is queued and the page polls progress until it finishes; in local dev and tests it runs inline.
 
 ## User-facing knowledge
 
-Update from text shows a pencil diff; Apply writes it. Removing a must-skill chip saves immediately. Preview count waits for discovery.
+Update from text shows a pencil diff; Apply writes it. Removing a must-skill chip saves immediately. **Update this to refine your matches** is the hint under the role field. Match counts fill after discovery.
 
 ### Common user questions
 
@@ -23,6 +24,10 @@ Update from text shows a pencil diff; Apply writes it. Removing a must-skill chi
 - **Does Update save?** Update previews; Apply (or chip edits) saves.
 
 ## Sections
+
+### Matches
+
+Top 10 by score. **View all** opens `/jobs?track=:id`. **Open posting** goes to the source.
 
 ### NL box
 

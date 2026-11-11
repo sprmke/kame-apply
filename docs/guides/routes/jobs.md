@@ -8,18 +8,18 @@
 | --- | --- | --- | --- | --- |
 | Board list | Done | query | Documented | Phase 6 |
 | Drawer / fit | Done | — | Documented | Phase 6 |
-| Triage / CSV | Done | enum | Documented | Phase 6 |
+| Triage | Done | enum | Documented | Phase 6 |
 | Risk seal | Done | — | Documented | Phase 7 |
 | Tailor | Done | — | Documented | Phase 9 → `/tailor/:id` |
 | Mark applied | Done | — | Documented | Phase 11 → application row |
 
 ## Overview
 
-Job research board: ranked matches, drawer with qualifications and verdicts, keyboard triage, CSV export. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **I applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one Track.
+Job research board: ranked matches, readable posting, fit requirements with evidence, keyboard triage. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **Mark applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one search.
 
 ## User-facing knowledge
 
-Sort by match (default), newest, or salary. Skip reasons train ranking for that Track. Zero results show relaxation suggestions when a Track is selected.
+Sort by match (default), newest, or salary. Skip reasons train ranking for that search. Zero results show relaxation suggestions when a search is selected. The header keeps only **Show all** and sort; CSV and the shortcut legend moved out of the primary controls.
 
 ## Keyboard
 

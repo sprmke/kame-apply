@@ -5,17 +5,20 @@ test.describe("Phase 4 tracks", () => {
   test("create a track from name and open criteria", async ({ page }) => {
     await signUp(page);
     await open(page, "/tracks");
-    await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer, remote, Python");
+    await expect(page.getByRole("heading", { name: "Searches" })).toBeVisible();
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer, remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await expect(page).toHaveURL(/\/tracks\/[0-9a-f-]+/);
-    await expect(page.getByLabel("Describe the role")).toBeVisible();
-    await expect(page.getByText("Preview available after first discovery")).toBeVisible();
+    await expect(page.getByLabel("What role are you looking for?")).toBeVisible();
+    await expect(page.getByText("Update this to refine your matches.")).toBeVisible();
     await page.getByRole("button", { name: "More filters" }).click();
     await expect(page.getByText("Work mode")).toBeVisible();
-    await page.locator("main").getByRole("link", { name: "Settings" }).first().click();
+    await page
+      .getByRole("navigation", { name: "Track sections" })
+      .getByRole("link", { name: "Settings" })
+      .click();
     await expect(page).toHaveURL(/\/tracks\/.+\/settings/);
     await expect(page.getByText("Autonomy")).toBeVisible();
   });
@@ -23,9 +26,9 @@ test.describe("Phase 4 tracks", () => {
   test("duplicate and archive from the list", async ({ page }) => {
     await signUp(page);
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("ICU Nurse");
-    await page.getByLabel("Describe the role").fill("ICU nurse night shifts UAE visa");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("ICU Nurse");
+    await page.getByLabel("What role are you looking for?").fill("ICU nurse night shifts UAE visa");
     await page.getByRole("button", { name: "Create" }).click();
     await expect(page).toHaveURL(/\/tracks\/[0-9a-f-]+/);
     await open(page, "/tracks");
@@ -40,8 +43,8 @@ test.describe("Phase 4 tracks", () => {
 
   test("Today checklist links to tracks", async ({ page }) => {
     await signUp(page);
-    await expect(page.getByRole("link", { name: "Create a Track" })).toBeVisible();
-    await page.getByRole("link", { name: "Create a Track" }).click();
+    await expect(page.getByRole("link", { name: "Start a search" })).toBeVisible();
+    await page.getByRole("link", { name: "Start a search" }).click();
     await expect(page).toHaveURL(/\/tracks/);
   });
 });

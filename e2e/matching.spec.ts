@@ -6,8 +6,8 @@ test.describe("Phase 6 matching board", () => {
     await signUp(page);
     await open(page, "/jobs");
     await expect(page.getByRole("heading", { name: "Jobs" })).toBeVisible();
-    await page.getByRole("button", { name: "Shortcuts" }).click();
+    await expect(page.getByRole("combobox", { name: "Sort" })).toBeVisible();
+    await page.keyboard.press("?");
     await expect(page.getByText("j/k move")).toBeVisible();
-    await expect(page.getByRole("button", { name: "CSV" })).toBeVisible();
   });
 });

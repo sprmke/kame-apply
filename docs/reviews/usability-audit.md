@@ -49,6 +49,19 @@ This is not a visual identity problem. Field Notes is readable. The failures are
 - **Today still shows raw activity names** (`discovery.run_completed`, `matching.score_track`, `safety.job_assessed`) and the activity list is cut by the bottom bar.
 - **Track is readable on mobile**, but the header actions wrap onto three lines and the Track name is repeated with a period.
 
+## Redesign applied (2026-11-11)
+
+The shell and first-run surfaces were rebuilt around the user's job-search loop:
+
+- **Desk sidebar** with labels replaces the 11-icon rail. Primary destinations are Today, Searches, Jobs, Applications, and Profile. Resume studio, Answer help, Practice, Replies, Contacts, and Safety live under **More tools**. Settings sits at the bottom.
+- **Mobile bottom bar** is Today, Searches, Jobs, Applications, More. The center hexagon is gone. More holds Profile, Settings, Needs-you, and the advanced tools.
+- **Today** is now a guided brief: one next step, three new matches, the user's searches, and Needs-you. Numbers and activity moved into a collapsed **This week** disclosure.
+- **Tracks are called Searches** in the UI. The page leads with the role question, hides the template wall behind **Browse examples**, and gives each search a **View matches** action.
+- **Search detail** leads with matches. **Run search** and **View matches** are the primary actions; Be Found, Gap plan, and Settings moved under **More tools**. The criteria editor is below the results.
+- **Jobs** lost the CSV and shortcut buttons from the header, titles wrap instead of truncating, clear-risk seals are removed from list rows, fit requirements are limited to three with **Show all**, and the empty-profile fit panel points to adding a resume.
+- **Copy** is plainer: "Searches", "Run search", "View matches", "Posted recently", "Required", "No evidence yet", "Mark applied". Raw event names and stopword keyword chips are filtered.
+- The design system and UX blueprint now describe the labeled sidebar, mobile bar, and guided Today brief.
+
 ## Root causes
 
 1. **Placeholders shipped as done.** Phase 15 is marked Done, but the global Runs page is a placeholder. The phase exit criteria did not include "every nav item resolves to a real screen."

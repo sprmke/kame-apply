@@ -1,4 +1,4 @@
-# Route: `/tracks`
+# Route: `/tracks` (Searches)
 
 **Page:** `apps/web/app/pages/tracks/index.vue` · **Layout:** `default` · **Access:** signed in · `data.read` / `data.write`
 
@@ -7,15 +7,15 @@
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
 | List | Done | API | Documented | Phase 4 |
-| New Track | Done | name or template | Documented | Templates + NL |
+| New search | Done | role text or example | Documented | Examples hidden behind Browse examples |
 
 ## Overview
 
-Lists active Tracks for the workspace. Create from a template or a short name/description.
+Lists active searches for the workspace. The UI calls them **Searches**; the API and database keep `Track`. Create from a short role description or an example.
 
 ## User-facing knowledge
 
-A Track is a role folder (criteria, later sources and schedule). Duplicate or archive from the list.
+A search is a role you want. We check company boards and bring back matches. Duplicate or archive from the list; **View matches** opens the Jobs list for that search.
 
 ### Common user questions
 
@@ -26,11 +26,11 @@ A Track is a role folder (criteria, later sources and schedule). Duplicate or ar
 
 ### List
 
-Rows show folder-tab color, name, summary. Actions: open, duplicate, archive.
+Rows show folder-tab color, name, summary, and **View matches**. Secondary actions: duplicate, archive.
 
 ### New Track
 
-Optional name + description, or pick a template. Create calls `POST /api/v1/tracks` (ensures a career profile first).
+Lead with **What role are you looking for?** Name is optional. **Browse examples** reveals the curated starters. Create calls `POST /api/v1/tracks` (ensures a career profile first).
 
 ## API reference
 

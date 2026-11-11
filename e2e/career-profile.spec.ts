@@ -34,8 +34,8 @@ test.describe("Phase 3 career profile", () => {
 
   test("Today checklist links to profile onboarding", async ({ page }) => {
     await signUp(page);
-    await expect(page.getByRole("link", { name: "Build your profile" })).toBeVisible();
-    await page.getByRole("link", { name: "Build your profile" }).click();
+    await expect(page.getByRole("link", { name: "Add your resume" })).toBeVisible();
+    await page.getByRole("link", { name: "Add your resume" }).click();
     await expect(page).toHaveURL(/\/profile\/onboarding/);
   });
 });

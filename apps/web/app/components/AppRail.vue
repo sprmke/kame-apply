@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { FnTooltip } from "@kame/ui";
-import { NAV } from "~/lib/nav";
+import { MORE_NAV, PRIMARY_NAV, SETTINGS_NAV } from "~/lib/nav";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -14,65 +13,94 @@ function active(to: string) {
 <template>
   <nav
     :aria-label="t('shell.primaryNav')"
-    class="hidden w-16 shrink-0 flex-col items-center gap-1 border-r border-rule bg-paper-1 py-3 md:flex"
+    class="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-rule bg-paper-1 md:flex"
   >
-    <NuxtLink
-      to="/"
-      class="mb-3 grid size-11 place-items-center rounded-sm"
-      :aria-label="t('app.name')"
-    >
-      <BrandMark :size="30" />
+    <NuxtLink to="/" class="flex items-center gap-2 px-5 py-5" :aria-label="t('app.name')">
+      <BrandMark :size="28" wordmark />
     </NuxtLink>
-    <template v-for="item in NAV" :key="item.key">
-      <div v-if="item.key === 'settings'" class="mt-auto flex flex-col items-center gap-1">
-        <FnTooltip :text="t('shell.needsYou')">
-          <NuxtLink
-            to="/notifications"
-            )
-            class="relative grid size-11 place-items-center rounded-sm text-ink-600 hover:bg-paper-2"
-            :aria-label="t('shell.needsYouCount', needsYou)"
-          >
-            <NavIcon name="ph:bell" />
-            <span
-              v-if="needsYou > 0"
-              class="absolute top-1 right-1 grid min-w-4 place-items-center rounded-full bg-persimmon-500 px-1 text-[0.625rem] leading-4 font-semibold text-on-brand"
-              >{{ needsYou }}</span
-            >
-          </NuxtLink>
-        </FnTooltip>
-        <FnTooltip :text="t(`nav.${item.key}`)">
-          <NuxtLink
-            :to="item.to"
-            class="relative grid size-11 place-items-center rounded-sm hover:bg-paper-2"
-            :class="active(item.to) ? 'bg-paper-2 text-ink-900' : 'text-ink-600'"
-            :aria-label="t(`nav.${item.key}`)"
-            :aria-current="active(item.to) ? 'page' : undefined"
-          >
-            <span
-              v-if="active(item.to)"
-              class="absolute inset-y-2 left-0 w-0.5 rounded-full bg-persimmon-500"
-              aria-hidden="true"
-            />
-            <NavIcon :name="item.icon" />
-          </NuxtLink>
-        </FnTooltip>
-      </div>
-      <FnTooltip v-else :text="t(`nav.${item.key}`)">
-        <NuxtLink
-          :to="item.to"
-          class="relative grid size-11 place-items-center rounded-sm hover:bg-paper-2"
-          :class="active(item.to) ? 'bg-paper-2 text-ink-900' : 'text-ink-600'"
-          :aria-label="t(`nav.${item.key}`)"
-          :aria-current="active(item.to) ? 'page' : undefined"
+
+    <div class="px-3">
+      <p class="px-3 pb-2 text-[0.6875rem] font-medium tracking-[0.14em] text-ink-400 uppercase">
+        {{ t("shell.workspace") }}
+      </p>
+      <NuxtLink
+        v-for="item in PRIMARY_NAV"
+        :key="item.key"
+        :to="item.to"
+        class="relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm transition-colors duration-150"
+        :class="
+          active(item.to)
+            ? 'bg-paper-0 font-medium text-ink-900'
+            : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
+        "
+        :aria-current="active(item.to) ? 'page' : undefined"
+      >
+        <span
+          v-if="active(item.to)"
+          class="absolute inset-y-2 left-0 w-0.5 rounded-full bg-persimmon-500"
+          aria-hidden="true"
+        />
+        <NavIcon :name="item.icon" :size="18" />
+        <span class="flex-1">{{ t(`nav.${item.key}`) }}</span>
+        <span
+          v-if="item.key === 'today' && needsYou > 0"
+          class="grid min-w-5 place-items-center rounded-full bg-persimmon-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
+          >{{ needsYou }}</span
         >
-          <span
-            v-if="active(item.to)"
-            class="absolute inset-y-2 left-0 w-0.5 rounded-full bg-persimmon-500"
-            aria-hidden="true"
-          />
-          <NavIcon :name="item.icon" />
+      </NuxtLink>
+    </div>
+
+    <details class="mt-6 px-3">
+      <summary
+        class="flex min-h-11 cursor-pointer list-none items-center gap-3 rounded-md px-3 text-sm text-ink-600 hover:bg-paper-2 hover:text-ink-900"
+      >
+        <NavIcon name="ph:dots-three-outline" :size="18" />
+        <span class="flex-1">{{ t("shell.moreTools") }}</span>
+        <NavIcon name="ph:caret-down" :size="14" />
+      </summary>
+      <div class="mt-1 flex flex-col">
+        <NuxtLink
+          v-for="item in MORE_NAV"
+          :key="item.key"
+          :to="item.to"
+          class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
+          :class="
+            active(item.to)
+              ? 'bg-paper-0 font-medium text-ink-900'
+              : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
+          "
+        >
+          <NavIcon :name="item.icon" :size="18" />
+          <span>{{ t(`nav.${item.key}`) }}</span>
         </NuxtLink>
-      </FnTooltip>
-    </template>
+      </div>
+    </details>
+
+    <div class="mt-auto flex flex-col gap-1 border-t border-rule px-3 py-3">
+      <NuxtLink
+        to="/notifications"
+        class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm text-ink-600 hover:bg-paper-2 hover:text-ink-900"
+      >
+        <NavIcon name="ph:bell" :size="18" />
+        <span class="flex-1">{{ t("shell.needsYou") }}</span>
+        <span
+          v-if="needsYou > 0"
+          class="grid min-w-5 place-items-center rounded-full bg-persimmon-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
+          >{{ needsYou }}</span
+        >
+      </NuxtLink>
+      <NuxtLink
+        :to="SETTINGS_NAV.to"
+        class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
+        :class="
+          active(SETTINGS_NAV.to)
+            ? 'bg-paper-0 font-medium text-ink-900'
+            : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
+        "
+      >
+        <NavIcon :name="SETTINGS_NAV.icon" :size="18" />
+        <span>{{ t(`nav.${SETTINGS_NAV.key}`) }}</span>
+      </NuxtLink>
+    </div>
   </nav>
 </template>

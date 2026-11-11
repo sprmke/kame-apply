@@ -192,7 +192,7 @@ async def home_brief(
     matched = int(kpis["kpis"].get("matched") or 0)
     needs_n = needs["count"]
     if track_cards:
-        track_word = "Track" if len(track_cards) == 1 else "Tracks"
+        track_word = "search" if len(track_cards) == 1 else "searches"
         match_word = "match" if matched == 1 else "matches"
         lead = f"{matched} {match_word} across {len(track_cards)} {track_word}."
         if needs_n == 0:

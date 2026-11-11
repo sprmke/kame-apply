@@ -63,9 +63,9 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
     ];
   } else if (PHASE === "phase-11") {
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer remote, Python");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
     await open(page, "/applications");
@@ -83,9 +83,9 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
     ];
   } else if (PHASE === "phase-10") {
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer remote, Python");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
     const trackId = page.url().split("/").pop();
@@ -97,9 +97,9 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
     ];
   } else if (PHASE === "phase-09") {
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer remote, Python");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
     phaseShots = [
@@ -109,9 +109,9 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
     ];
   } else if (PHASE === "phase-08") {
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer remote, Python");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
     const trackId = page.url().split("/").pop();
@@ -130,9 +130,9 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
     ];
   } else if (PHASE === "phase-04" || PHASE === "phase-05" || PHASE === "phase-06") {
     await open(page, "/tracks");
-    await page.getByRole("button", { name: "New Track" }).click();
-    await page.getByLabel("Name").fill("AI Engineer");
-    await page.getByLabel("Describe the role").fill("AI engineer remote, Python");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("Name (optional)").fill("AI Engineer");
+    await page.getByLabel("What role are you looking for?").fill("AI engineer remote, Python");
     await page.getByRole("button", { name: "Create" }).click();
     await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
     const trackUrl = page.url();
@@ -189,7 +189,7 @@ test(`capture ${PHASE} all viewports`, async ({ page }) => {
         for (const [name, path] of phaseShots) {
           await open(page, path);
           if (name === "tracks-new") {
-            await page.getByRole("button", { name: "New Track" }).click();
+            await page.getByRole("button", { name: "New search" }).click();
           }
           if (name === "track-more-filters") {
             await page.getByRole("button", { name: "More filters" }).click();

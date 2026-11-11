@@ -63,14 +63,13 @@ const needsYou = computed(() => needsQuery.data.value ?? 0);
               <NavIcon name="ph:magnifying-glass" />
             </FnButton>
           </span>
-          <FeedbackButton />
           <ProfileMenu />
         </div>
       </header>
       <main
         id="main"
         tabindex="-1"
-        class="flex-1 px-4 pt-6 pb-24 focus:outline-none md:px-8 md:pb-10"
+        class="flex-1 px-4 pt-6 pb-24 focus:outline-none md:px-10 md:pb-12"
       >
         <slot />
       </main>
