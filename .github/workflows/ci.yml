@@ -49,11 +49,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Install psql client
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - run: uv sync --all-packages --frozen
       - name: Create app/ro roles for RLS tests
         run: bash scripts/dev/ci-prepare-postgres.sh
-      - run: uv sync --all-packages --frozen
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run basedpyright
@@ -70,7 +68,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-packages --frozen
-      - run: uv run playwright install --with-deps chromium
+      - run: uv run playwright install --with-deps chromium || uv run playwright install chromium
       - run: uv run pytest apps/runner -q
 
   web:
