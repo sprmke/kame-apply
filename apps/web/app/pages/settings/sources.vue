@@ -61,7 +61,7 @@ async function addCareers() {
 
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader :title="t('sources.title')" />
+    <PageHeader :title="t('sources.title')" :lede="t('settings.sourcesLede')" />
     <p v-if="stats.data.value" class="text-sm text-ink-600">
       {{ t("sources.directory") }}: {{ stats.data.value.boards_active }} {{ t("sources.boards") }}
     </p>

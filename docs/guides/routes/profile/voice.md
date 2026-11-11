@@ -4,7 +4,7 @@
 
 ## Overview
 
-Paste writing samples, analyze style, edit summary and banned phrases.
+Paste 2 or 3 writing samples, analyze style, edit the summary, and maintain banned phrases. Samples have numbered labels and example placeholders. Copy states that samples guide tone only; facts still come from the profile.
 
 ## API reference
 

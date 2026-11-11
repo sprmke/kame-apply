@@ -4,7 +4,7 @@
 
 ## Behavior
 
-Resume Studio for the active workspace. Pick a search, create a base resume from the Career Profile, run Critique / Improve / Insights, accept or reject diffs, render PDF/DOCX/text (parse gate), and inspect Skim and Parse views. **New resume** is the primary action when there are no resumes; the empty state also has a Create a resume button.
+Resume Studio for the active workspace. Pick a search, create a base resume from the Career Profile, run Critique / Improve / Insights, accept or reject diffs, render PDF/DOCX/text (parse gate), and inspect Skim and Parse views. The header has a short lede and each tab has a one-line explanation. **New resume** is quiet; the empty state has the single primary **Create a resume** action. Search, template, and page controls use the shared select primitive.
 
 ## Save paths
 

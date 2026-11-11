@@ -139,7 +139,7 @@ const tgDeepLink = computed(() => {
 
 <template>
   <div class="flex flex-col gap-8">
-    <PageHeader :title="t('settings.alerts')" />
+    <PageHeader :title="t('settings.alerts')" :lede="t('settings.alertsLede')" />
 
     <section v-if="ws.canManage" class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("alerts.address") }}</h2>
@@ -148,7 +148,7 @@ const tgDeepLink = computed(() => {
         <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
           addr.data.value?.address
         }}</code>
-        <FnButton size="sm" variant="ghost" @click="copy(addr.data.value?.address || '')">{{
+        <FnButton size="sm" tone="ghost" @click="copy(addr.data.value?.address || '')">{{
           t("common.copy")
         }}</FnButton>
         <FnButton

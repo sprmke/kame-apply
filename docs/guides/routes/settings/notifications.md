@@ -11,7 +11,7 @@
 
 ## Overview
 
-Per-event in-app and email preferences for the current user in the workspace.
+Per-event in-app and email preferences for the current user in the workspace. The page lede explains that this controls what we send and where.
 
 ## User-facing knowledge
 

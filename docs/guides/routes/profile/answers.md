@@ -4,7 +4,7 @@
 
 ## Overview
 
-Answer bank editor: quick setup, search, grouped keys, approve on save.
+Answer bank editor: a short lede explains that answers are reusable across applications and that Quick setup adds editable defaults. Search has an example placeholder, empty state explains the next step, and each answer saves with a quiet button.
 
 ## API reference
 

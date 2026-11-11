@@ -4,7 +4,7 @@
 
 ## Behavior
 
-Two tabs: **Flagged** (yellow/red jobs with reasons and decisions) and **Check this** (paste a recruiter message or URL/repo).
+Two tabs: **Flagged** (yellow/red jobs with reasons and decisions) and **Check this** (paste a recruiter message or URL/repo). A short lede explains what the page checks and that flagged jobs wait for a human decision.
 
 Continue on a red job asks for confirm that restates high risk. Report hides the job for this workspace and feeds the community signal. Not a scam records calibration feedback.
 

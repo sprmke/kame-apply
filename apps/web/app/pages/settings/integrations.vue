@@ -22,6 +22,16 @@ const connecting = ref(false);
 const ack = ref<Record<string, boolean>>({});
 const newRunnerToken = ref<string | null>(null);
 const runnerMode = ref<"cloud" | "local">("local");
+const runnerOptions = computed(() => [
+  { value: "local", label: t("integrations.runnerLocal") },
+  { value: "cloud", label: t("integrations.runnerCloud") },
+]);
+const runnerModeValue = computed({
+  get: () => runnerMode.value,
+  set: (value: string) => {
+    runnerMode.value = value as typeof runnerMode.value;
+  },
+});
 
 type TokenRow = {
   id: string;
@@ -266,17 +276,16 @@ async function connectExtension() {
 
 <template>
   <div class="flex flex-col gap-8">
-    <PageHeader :title="t('settings.integrations')" />
+    <PageHeader :title="t('settings.integrations')" :lede="t('settings.integrationsLede')" />
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.claude") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.claudeHint") }}</p>
       <div class="flex flex-col gap-2">
         <label class="text-sm text-ink-600">{{ t("integrations.mcpUrl") }}</label>
         <div class="flex flex-wrap items-center gap-2">
           <code class="rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{ mcpUrl }}</code>
-          <FnButton size="sm" variant="ghost" @click="copy(mcpUrl)">{{
-            t("common.copy")
-          }}</FnButton>
+          <FnButton size="sm" tone="ghost" @click="copy(mcpUrl)">{{ t("common.copy") }}</FnButton>
         </div>
       </div>
       <div class="flex flex-col gap-2">
@@ -285,9 +294,7 @@ async function connectExtension() {
           <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             setupCmd
           }}</code>
-          <FnButton size="sm" variant="ghost" @click="copy(setupCmd)">{{
-            t("common.copy")
-          }}</FnButton>
+          <FnButton size="sm" tone="ghost" @click="copy(setupCmd)">{{ t("common.copy") }}</FnButton>
         </div>
       </div>
       <div class="flex flex-col gap-2">
@@ -296,7 +303,7 @@ async function connectExtension() {
           <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             pluginCmd
           }}</code>
-          <FnButton size="sm" variant="ghost" @click="copy(pluginCmd)">{{
+          <FnButton size="sm" tone="ghost" @click="copy(pluginCmd)">{{
             t("common.copy")
           }}</FnButton>
         </div>
@@ -305,6 +312,7 @@ async function connectExtension() {
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.inbox") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.inboxHint") }}</p>
       <FnSkeleton v-if="inbox.isPending.value" class="h-10 w-64" />
       <p v-else class="text-sm text-ink-600">
         {{
@@ -316,12 +324,13 @@ async function connectExtension() {
       </p>
       <div class="flex flex-wrap items-center gap-2">
         <code class="rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{ workCmd }}</code>
-        <FnButton size="sm" variant="ghost" @click="copy(workCmd)">{{ t("common.copy") }}</FnButton>
+        <FnButton size="sm" tone="ghost" @click="copy(workCmd)">{{ t("common.copy") }}</FnButton>
       </div>
     </section>
 
     <section v-if="ws.canManage" class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.agents") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.agentsHint") }}</p>
       <FnSkeleton v-if="tokens.isPending.value" class="h-24 w-full" />
       <ul v-else class="divide-y divide-rule border border-rule">
         <li
@@ -338,7 +347,7 @@ async function connectExtension() {
           </div>
           <FnButton
             size="sm"
-            variant="ghost"
+            tone="ghost"
             :disabled="revoke.isPending.value"
             @click="revoke.mutate(tok.id)"
             >{{ t("integrations.revoke") }}</FnButton
@@ -352,6 +361,7 @@ async function connectExtension() {
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.routing") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.routingHint") }}</p>
       <ul class="flex flex-col gap-3">
         <li
           v-for="row in routing.data.value ?? []"
@@ -375,6 +385,7 @@ async function connectExtension() {
 
     <section class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.extension") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.extensionHint") }}</p>
       <FnButton
         size="sm"
         tone="primary"
@@ -386,14 +397,15 @@ async function connectExtension() {
 
     <section v-if="ws.canManage" class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.runner") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.runnerHint") }}</p>
       <div class="flex flex-wrap items-center gap-2">
-        <select
-          v-model="runnerMode"
-          class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-        >
-          <option value="local">{{ t("integrations.runnerLocal") }}</option>
-          <option value="cloud">{{ t("integrations.runnerCloud") }}</option>
-        </select>
+        <div class="w-36">
+          <FnSelect
+            v-model="runnerModeValue"
+            :options="runnerOptions"
+            :ariaLabel="t('integrations.runner')"
+          />
+        </div>
         <FnButton
           size="sm"
           :disabled="createRunner.isPending.value"
@@ -405,7 +417,7 @@ async function connectExtension() {
         <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
           newRunnerToken
         }}</code>
-        <FnButton size="sm" variant="ghost" @click="copy(newRunnerToken)">{{
+        <FnButton size="sm" tone="ghost" @click="copy(newRunnerToken)">{{
           t("common.copy")
         }}</FnButton>
         <p class="w-full text-sm text-ink-600">{{ t("integrations.runnerTokenOnce") }}</p>
@@ -422,7 +434,7 @@ async function connectExtension() {
           </div>
           <FnButton
             size="sm"
-            variant="ghost"
+            tone="ghost"
             :disabled="revokeRunner.isPending.value"
             @click="revokeRunner.mutate(tok.id)"
             >{{ t("integrations.revoke") }}</FnButton
@@ -436,6 +448,7 @@ async function connectExtension() {
 
     <section v-if="ws.canManage" class="flex flex-col gap-3">
       <h2 class="font-display text-lg text-ink-900">{{ t("integrations.platforms") }}</h2>
+      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.platformsHint") }}</p>
       <ul class="divide-y divide-rule border border-rule">
         <li
           v-for="p in restricted"

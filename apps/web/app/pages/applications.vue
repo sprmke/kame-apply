@@ -11,7 +11,7 @@ import {
   type ApplicationStatusBody,
   type TrackRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnInput, FnSelect, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -57,6 +57,57 @@ const dragId = ref<string | null>(null);
 const noteOpen = ref(false);
 const noteText = ref("");
 const pendingMove = ref<{ id: string; status: string } | null>(null);
+
+function labelize(value: string): string {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+const ALL = "__all__";
+const trackOptions = computed(() => [
+  { value: ALL, label: t("applications.allTracks") },
+  ...(tracks.data.value ?? []).map((tr) => ({ value: String(tr.id), label: tr.name })),
+]);
+const statusOptions = computed(() => [
+  { value: ALL, label: t("applications.any") },
+  ...STATUSES.map((value) => ({ value, label: labelize(value) })),
+]);
+const statusChoices = computed(() => STATUSES.map((value) => ({ value, label: labelize(value) })));
+const methodOptions = computed(() => [
+  { value: ALL, label: t("applications.any") },
+  ...["manual", "extension", "runner", "answer_desk"].map((value) => ({
+    value,
+    label: labelize(value),
+  })),
+]);
+const trackFilter = computed({
+  get: () => trackId.value || ALL,
+  set: (value: string) => {
+    trackId.value = value === ALL ? "" : value;
+  },
+});
+const statusFilter = computed({
+  get: () => status.value || ALL,
+  set: (value: string) => {
+    status.value = value === ALL ? "" : value;
+  },
+});
+const methodFilter = computed({
+  get: () => method.value || ALL,
+  set: (value: string) => {
+    method.value = value === ALL ? "" : value;
+  },
+});
+const periodOptions = computed(() => [
+  { value: "today", label: t("today.periodToday") },
+  { value: "week", label: t("today.periodWeek") },
+  { value: "total", label: t("today.periodTotal") },
+]);
+const periodValue = computed({
+  get: () => period.value,
+  set: (value: string) => {
+    period.value = value as typeof period.value;
+  },
+});
 
 const tracks = useQuery({
   queryKey: computed(() => ["tracks", ws.currentId]),
@@ -182,7 +233,8 @@ async function saveCurrentView() {
   }
 }
 
-async function moveStatus(id: string, next: string, note = "") {
+async function moveStatus(id: string, next: string | undefined, note = "") {
+  if (!next) return;
   try {
     await patchStatusApiV1ApplicationsAppIdStatusPatch({
       path: { app_id: id },
@@ -297,7 +349,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
 
 <template>
   <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-8">
-    <PageHeader :title="t('nav.applications')">
+    <PageHeader :title="t('nav.applications')" :lede="t('applications.lede')">
       <template #actions>
         <FnButton tone="quiet" size="sm" @click="exportCsv">{{
           t("applications.export")
@@ -309,52 +361,41 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     </PageHeader>
 
     <section
-      class="flex flex-wrap items-end gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+      class="grid gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_auto_auto] lg:items-end"
     >
-      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
-        {{ t("applications.track") }}
-        <select
-          v-model="trackId"
-          class="min-h-12 min-w-[10rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-        >
-          <option value="">{{ t("applications.allTracks") }}</option>
-          <option v-for="tr in tracks.data.value ?? []" :key="tr.id" :value="tr.id">
-            {{ tr.name }}
-          </option>
-        </select>
-      </label>
-      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
-        {{ t("applications.status") }}
-        <select
-          v-model="status"
-          class="min-h-12 min-w-[8rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-        >
-          <option value="">{{ t("applications.any") }}</option>
-          <option v-for="s in STATUSES" :key="s" :value="s">{{ s }}</option>
-        </select>
-      </label>
-      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
-        {{ t("applications.method") }}
-        <select
-          v-model="method"
-          class="min-h-12 min-w-[8rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-        >
-          <option value="">{{ t("applications.any") }}</option>
-          <option value="manual">manual</option>
-          <option value="extension">extension</option>
-          <option value="runner">runner</option>
-          <option value="answer_desk">answer_desk</option>
-        </select>
-      </label>
-      <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
-        {{ t("applications.find") }}
-        <input
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-semibold text-ink-900">{{ t("applications.track") }}</span>
+        <FnSelect
+          v-model="trackFilter"
+          :options="trackOptions"
+          :ariaLabel="t('applications.track')"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-semibold text-ink-900">{{ t("applications.status") }}</span>
+        <FnSelect
+          v-model="statusFilter"
+          :options="statusOptions"
+          :ariaLabel="t('applications.status')"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-semibold text-ink-900">{{ t("applications.method") }}</span>
+        <FnSelect
+          v-model="methodFilter"
+          :options="methodOptions"
+          :ariaLabel="t('applications.method')"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-semibold text-ink-900">{{ t("applications.find") }}</span>
+        <FnInput
           v-model="q"
           type="search"
-          class="min-h-12 min-w-[10rem] rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
           :placeholder="t('applications.findPlaceholder')"
+          :aria-label="t('applications.find')"
         />
-      </label>
+      </div>
       <div class="flex gap-1 rounded-lg bg-paper-2 p-1">
         <button
           type="button"
@@ -381,9 +422,14 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           {{ t("applications.board") }}
         </button>
       </div>
-      <FnButton tone="quiet" size="sm" :disabled="savingView" @click="saveCurrentView">{{
-        t("applications.saveView")
-      }}</FnButton>
+      <FnButton
+        class="min-h-12"
+        tone="quiet"
+        size="sm"
+        :disabled="savingView"
+        @click="saveCurrentView"
+        >{{ t("applications.saveView") }}</FnButton
+      >
     </section>
 
     <div v-if="(views.data.value ?? []).length" class="flex flex-wrap gap-2">
@@ -403,16 +449,11 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
         <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
           {{ t("applications.funnel") }}
         </h2>
-        <select
-          v-model="period"
-          class="min-h-11 rounded-md border border-rule bg-paper-0 px-3 text-sm font-medium text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-          :aria-label="t('today.period')"
-        >
-          <option value="today">{{ t("today.periodToday") }}</option>
-          <option value="week">{{ t("today.periodWeek") }}</option>
-          <option value="total">{{ t("today.periodTotal") }}</option>
-        </select>
+        <div class="w-40">
+          <FnSelect v-model="periodValue" :options="periodOptions" :ariaLabel="t('today.period')" />
+        </div>
       </div>
+      <p class="text-sm leading-6 text-ink-600">{{ t("applications.funnelHint") }}</p>
       <p class="text-sm tabular-nums text-ink-900">
         <span v-for="([label, n], i) in funnel" :key="label">
           <span v-if="i"> → </span>{{ n }} {{ label }}
@@ -463,14 +504,14 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
                 <div class="text-ink-600">{{ a.company_name }}</div>
               </td>
               <td class="px-4 py-4">
-                <select
-                  class="min-h-11 border border-rule bg-paper-0 px-2"
-                  :value="a.status"
-                  @click.stop
-                  @change="moveStatus(a.id, ($event.target as HTMLSelectElement).value)"
-                >
-                  <option v-for="s in STATUSES" :key="s" :value="s">{{ s }}</option>
-                </select>
+                <div class="w-40" @click.stop>
+                  <FnSelect
+                    :model-value="a.status"
+                    :options="statusChoices"
+                    :ariaLabel="t('applications.status')"
+                    @update:model-value="moveStatus(a.id, $event)"
+                  />
+                </div>
               </td>
               <td class="py-3 pr-3 font-mono text-[0.6875rem]">{{ a.method }}</td>
               <td class="py-3 pr-3 font-mono text-[0.6875rem]">

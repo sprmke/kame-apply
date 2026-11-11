@@ -14,7 +14,7 @@
 
 ## Overview
 
-Applications across searches: table or kanban board, filters, funnel strip, log from scratch, export. The saved-search filter is labeled Search; the free-text filter is labeled Find. The empty state has a Browse jobs primary button. Status changes from the table select or by dragging on the board. Backward moves ask for a note.
+Applications across searches: table or kanban board, a responsive filter grid using the shared select and input primitives, funnel strip, log from scratch, export. The saved-search filter is labeled Search; the free-text filter is labeled Find. The empty state has a Browse jobs primary button. Status changes from the row status select or by dragging on the board. The funnel has a one-line explanation above the numbers. Backward moves ask for a note.
 
 ## User-facing knowledge
 

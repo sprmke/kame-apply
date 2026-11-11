@@ -154,7 +154,8 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       </label>
       <label class="flex flex-col gap-2 text-sm">
         <span class="font-semibold text-ink-900">{{ t("tracks.name") }}</span>
-        <FnInput v-model="nameDraft" maxlength="200" />
+        <FnInput v-model="nameDraft" maxlength="200" :placeholder="t('tracks.namePlaceholder')" />
+        <span class="text-xs text-ink-600">{{ t("tracks.nameHint") }}</span>
       </label>
       <div class="flex flex-wrap gap-2">
         <FnButton tone="primary" :disabled="creating" @click="createFromText">{{
@@ -217,11 +218,9 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
           </p>
         </NuxtLink>
         <div class="flex flex-wrap items-center gap-2">
-          <NuxtLink
-            :to="`/jobs?track=${tr.id}`"
-            class="inline-flex min-h-11 items-center rounded-md bg-brand-50 px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
-            >{{ t("tracks.viewMatches") }}</NuxtLink
-          >
+          <FnButton as-child size="sm" tone="quiet">
+            <NuxtLink :to="`/jobs?track=${tr.id}`">{{ t("tracks.viewMatches") }}</NuxtLink>
+          </FnButton>
           <FnButton tone="ghost" @click="duplicate(tr.id)">{{ t("tracks.duplicate") }}</FnButton>
           <FnButton tone="ghost" @click="archive(tr.id)">{{ t("tracks.archive") }}</FnButton>
         </div>

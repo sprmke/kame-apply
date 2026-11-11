@@ -9,7 +9,7 @@ import {
   type ApplicationStatusBody,
   type ItemRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSelect, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -54,6 +54,12 @@ const STATUSES = [
   "withdrawn",
   "job_closed",
 ] as const;
+
+function labelize(value: string): string {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+const statusOptions = STATUSES.map((value) => ({ value, label: labelize(value) }));
 
 const { t } = useI18n();
 const toast = useToast();
@@ -306,8 +312,8 @@ const jobDescription = computed(() => {
   return String(job?.description_text || "");
 });
 
-async function changeStatus(next: string) {
-  if (!app.value) return;
+async function changeStatus(next: string | undefined) {
+  if (!app.value || !next) return;
   try {
     await patchStatusApiV1ApplicationsAppIdStatusPatch({
       path: { app_id: app.value.id },
@@ -430,13 +436,14 @@ async function draftReferral(contactId: string) {
           {{ t("applications.status") }}
         </h2>
         <div class="flex flex-wrap gap-2">
-          <select
-            class="min-h-11 border border-rule bg-paper-0 px-2 text-sm"
-            :value="app.status"
-            @change="changeStatus(($event.target as HTMLSelectElement).value)"
-          >
-            <option v-for="s in STATUSES" :key="s" :value="s">{{ s }}</option>
-          </select>
+          <div class="w-48">
+            <FnSelect
+              :model-value="app.status"
+              :options="statusOptions"
+              :ariaLabel="t('applications.status')"
+              @update:model-value="changeStatus"
+            />
+          </div>
           <input
             v-model="noteForStatus"
             type="text"

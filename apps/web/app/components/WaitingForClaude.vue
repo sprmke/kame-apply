@@ -18,6 +18,6 @@ async function copy() {
   >
     <span>{{ t("integrations.waitingClaude") }}</span>
     <code class="font-mono text-xs">{{ cmd }}</code>
-    <FnButton size="sm" variant="ghost" @click="copy">{{ t("common.copy") }}</FnButton>
+    <FnButton size="sm" tone="ghost" @click="copy">{{ t("common.copy") }}</FnButton>
   </div>
 </template>

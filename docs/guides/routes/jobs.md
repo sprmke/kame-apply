@@ -15,11 +15,11 @@
 
 ## Overview
 
-Job research board: ranked matches, readable posting, fit requirements with evidence, keyboard triage. On mobile the list is a full page; selecting a job opens a full-screen document with a back action and a sticky Shortlist / Tailor / Open / Skip bar. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **Mark applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one search.
+Job research board: ranked matches, a formatted and collapsible posting, fit requirements with evidence, keyboard triage. The posting is parsed into headings, paragraphs, lists, and tool chips by `JobDescription`; the first two sections show by default and **Read full description** reveals the rest. On mobile the list is a full page; selecting a job opens a full-screen document with a back action and a sticky Shortlist / Tailor / Open / Skip bar. Risk seals and reason quotes from Phase 7. Tailor opens the per-job workbench. **Mark applied** creates (or updates) an application and opens its dossier. Optional `?track=` scopes to one search.
 
 ## User-facing knowledge
 
-Sort by match (default), newest, or salary. Skip reasons train ranking for that search. Zero results show relaxation suggestions when a search is selected. The header keeps only **Show all** and sort; CSV and the shortcut legend moved out of the primary controls.
+Sort by match (default), newest, or salary. Skip reasons train ranking for that search. Zero results show relaxation suggestions when a search is selected. The header keeps only **Include ineligible** and sort; CSV and the shortcut legend moved out of the primary controls. The right panel puts **Next** actions before the fit checks so Tailor, Shortlist, Open, and Skip stay reachable. Fit checks are clamped to three lines with a **Show all checks** control.
 
 ## Keyboard
 
@@ -42,4 +42,4 @@ Sort by match (default), newest, or salary. Skip reasons train ranking for that 
 
 ## Implementation map
 
-`apps/web/app/pages/jobs.vue` · `apps/api/app/matching/`
+`apps/web/app/pages/jobs.vue`, `apps/web/app/components/JobDescription.vue`, `apps/web/app/lib/job-description.ts` · `apps/api/app/matching/`

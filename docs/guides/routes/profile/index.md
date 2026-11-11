@@ -11,7 +11,7 @@
 
 ## Overview
 
-Career Profile hub: facts from resume parse/confirm, interview proposals, and section navigation.
+Career Profile hub: facts from resume parse/confirm, interview proposals, and section navigation. The page lede explains that these facts feed matches and drafts; the experience section explains strong versus weak evidence.
 
 ## User-facing knowledge
 

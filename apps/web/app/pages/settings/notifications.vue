@@ -81,7 +81,7 @@ async function unsub() {
 
 <template>
   <section class="flex max-w-xl flex-col gap-4">
-    <PageHeader :title="t('settings.notifications')" />
+    <PageHeader :title="t('settings.notifications')" :lede="t('settings.notificationsLede')" />
     <div v-if="prefs.isPending.value"><FnSkeleton class="h-40 w-full" /></div>
     <template v-else>
       <table class="w-full text-left text-sm">

@@ -60,7 +60,10 @@ async function addProfile() {
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
-    <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("coach.title") }}</h1>
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("coach.title") }}</h1>
+      <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("coach.lede") }}</p>
+    </div>
 
     <div v-if="coach.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
     <ul

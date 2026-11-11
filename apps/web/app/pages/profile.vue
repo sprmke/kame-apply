@@ -16,7 +16,7 @@ function active(to: string, exact?: boolean) {
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
-    <PageHeader :title="t('career.title')" />
+    <PageHeader :title="t('career.title')" :lede="t('career.lede')" />
     <nav :aria-label="t('career.nav')" class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1">
       <NuxtLink
         v-for="tab in tabs"

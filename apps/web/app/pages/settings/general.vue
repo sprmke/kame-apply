@@ -33,7 +33,7 @@ onBeforeRouteLeave(() => (form.meta.value.dirty ? window.confirm(t("common.unsav
 
 <template>
   <section class="flex max-w-md flex-col gap-4">
-    <PageHeader :title="t('settings.general')" />
+    <PageHeader :title="t('settings.general')" :lede="t('settings.generalLede')" />
     <p class="flex items-center gap-2 text-sm text-ink-600">
       {{ t("workspace.kind") }}
       <FnChip>{{

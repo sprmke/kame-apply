@@ -20,7 +20,7 @@ import {
   type ParseViewRead,
   type ResumeVersionRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSelect, FnSkeleton, useToast } from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -39,6 +39,22 @@ const trackId = computed(() => (route.query.track as string) || "");
 const selectedId = ref<string | null>(null);
 const template = ref("classic");
 const pageSize = ref<"letter" | "a4">("letter");
+const templateOptions = [
+  { value: "classic", label: "Classic" },
+  { value: "compact", label: "Compact" },
+  { value: "modern", label: "Modern" },
+  { value: "serif", label: "Serif" },
+];
+const pageOptions = [
+  { value: "letter", label: "Letter" },
+  { value: "a4", label: "A4" },
+];
+const pageValue = computed({
+  get: () => pageSize.value,
+  set: (value: string) => {
+    pageSize.value = value as typeof pageSize.value;
+  },
+});
 const renderUrls = ref<{ pdf?: string | null; docx?: string | null; txt?: string | null }>({});
 const parseGate = ref<Record<string, unknown> | null>(null);
 
@@ -49,6 +65,15 @@ const tracks = useQuery({
     return data ?? [];
   },
   enabled: computed(() => Boolean(ws.currentId)),
+});
+const ALL_TRACKS = "__all__";
+const trackOptions = computed(() => [
+  { value: ALL_TRACKS, label: "All searches" },
+  ...(tracks.data.value ?? []).map((tr) => ({ value: String(tr.id), label: tr.name })),
+]);
+const trackValue = computed({
+  get: () => trackId.value || ALL_TRACKS,
+  set: (value: string) => setTrack(value === ALL_TRACKS ? "" : value),
 });
 
 const profiles = useQuery({
@@ -339,20 +364,14 @@ const contentPreview = computed(() => {
 <template>
   <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 py-8 md:p-6">
     <header class="flex flex-wrap items-end justify-between gap-4">
-      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.studio") }}</h1>
+      <div class="min-w-0">
+        <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.studio") }}</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-600">{{ t("studio.lede") }}</p>
+      </div>
       <div class="flex flex-wrap items-center gap-2">
-        <label class="sr-only" for="studio-track">Search</label>
-        <select
-          id="studio-track"
-          class="min-h-11 rounded-md border border-rule bg-paper-1 px-3 text-sm font-medium text-ink-900 shadow-[var(--shadow-card)] focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-          :value="trackId"
-          @change="setTrack(($event.target as HTMLSelectElement).value)"
-        >
-          <option value="">All searches</option>
-          <option v-for="tr in tracks.data.value || []" :key="String(tr.id)" :value="String(tr.id)">
-            {{ tr.name }}
-          </option>
-        </select>
+        <div class="w-48">
+          <FnSelect v-model="trackValue" :options="trackOptions" ariaLabel="Search" />
+        </div>
         <FnButton
           size="sm"
           tone="quiet"
@@ -396,27 +415,30 @@ const contentPreview = computed(() => {
       </div>
     </header>
 
-    <div class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1">
-      <button
-        v-for="item in [
-          ['critique', 'Critique'],
-          ['diff', 'Diff'],
-          ['insights', 'Insights'],
-          ['skim', 'Skim'],
-          ['parse', 'Parse'],
-        ] as const"
-        :key="item[0]"
-        type="button"
-        class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
-        :class="
-          tab === item[0]
-            ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
-            : 'text-ink-600 hover:text-ink-900'
-        "
-        @click="tab = item[0]"
-      >
-        {{ item[1] }}
-      </button>
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1">
+        <button
+          v-for="item in [
+            ['critique', 'Critique'],
+            ['diff', 'Diff'],
+            ['insights', 'Insights'],
+            ['skim', 'Skim'],
+            ['parse', 'Parse'],
+          ] as const"
+          :key="item[0]"
+          type="button"
+          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
+          :class="
+            tab === item[0]
+              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+              : 'text-ink-600 hover:text-ink-900'
+          "
+          @click="tab = item[0]"
+        >
+          {{ item[1] }}
+        </button>
+      </div>
+      <p class="text-sm leading-6 text-ink-600">{{ t(`studio.help.${tab}`) }}</p>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-[220px_1fr]">
@@ -459,30 +481,17 @@ const contentPreview = computed(() => {
         <div
           class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 text-sm shadow-[var(--shadow-card)]"
         >
-          <label class="flex flex-col gap-1">
-            Template
-            <select
-              v-model="template"
-              class="min-h-11 rounded-md border border-rule bg-paper-0 px-3"
-            >
-              <option value="classic">Classic</option>
-              <option value="compact">Compact</option>
-              <option value="modern">Modern</option>
-              <option value="serif">Serif</option>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1">
-            Page
-            <select
-              v-model="pageSize"
-              class="min-h-11 rounded-md border border-rule bg-paper-0 px-3"
-            >
-              <option value="letter">Letter</option>
-              <option value="a4">A4</option>
-            </select>
-          </label>
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-semibold text-ink-900">Template</span>
+            <FnSelect v-model="template" :options="templateOptions" ariaLabel="Template" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-semibold text-ink-900">Page</span>
+            <FnSelect v-model="pageValue" :options="pageOptions" ariaLabel="Page size" />
+          </div>
+          <p class="text-sm leading-6 text-ink-600">Used when you render the resume.</p>
           <div v-if="parseGate" class="text-xs text-ink-600">
-            Parse gate: {{ parseGate.ok ? "pass" : "fail" }}
+            Export check: {{ parseGate.ok ? "passed" : "failed" }}
           </div>
           <div v-if="renderUrls.pdf || renderUrls.docx" class="flex flex-col gap-1">
             <a

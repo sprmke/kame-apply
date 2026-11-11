@@ -4,7 +4,7 @@
 
 ## Overview
 
-Per-adapter health (success, errors, latency, circuit, blocks) and directory board count. Add a careers URL to grow the global board directory.
+Per-adapter health (success, errors, latency, circuit, blocks) and directory board count. The page lede frames this as the health of the boards and career pages used by searches. Add a careers URL to grow the global board directory.
 
 ## Save paths
 

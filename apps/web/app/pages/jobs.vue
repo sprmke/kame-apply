@@ -9,7 +9,7 @@ import {
   type BoardJobRead,
   type JobDetailRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnRiskSeal, FnSelect, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -24,10 +24,30 @@ const router = useRouter();
 const trackFilter = computed(() => (route.query.track as string) || undefined);
 const includeIneligible = ref(false);
 const sort = ref<"score" | "newest" | "salary">("score");
+const sortOptions = [
+  { value: "score", label: "Match" },
+  { value: "newest", label: "Newest" },
+  { value: "salary", label: "Salary" },
+];
+const sortValue = computed({
+  get: () => sort.value,
+  set: (value: string) => {
+    sort.value = value as typeof sort.value;
+  },
+});
 const selectedId = ref<string | null>(null);
 const helpOpen = ref(false);
 const skipOpen = ref(false);
 const skipReason = ref("too junior");
+const skipOptions = [
+  { value: "too junior", label: "Too junior" },
+  { value: "too senior", label: "Too senior" },
+  { value: "salary", label: "Salary" },
+  { value: "location", label: "Location" },
+  { value: "missing skills", label: "Missing skills" },
+  { value: "wrong title", label: "Wrong title" },
+  { value: "other", label: "Other" },
+];
 const riskConfirmOpen = ref(false);
 const showAllFit = ref(false);
 const mobileDetail = ref(false);
@@ -283,9 +303,12 @@ function workModeLabel(mode: string | null | undefined): string {
 }
 
 function salaryLabel(s: Record<string, unknown> | undefined): string {
-  if (!s) return "";
-  if (s.min != null) return String(s.min);
-  return "";
+  if (!s || s.min == null) return "";
+  const format = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+  const min = Number(s.min);
+  const max = s.max != null ? Number(s.max) : null;
+  const range = max != null ? `${format.format(min)}–${format.format(max)}` : format.format(min);
+  return [s.currency, range, s.period ? `/ ${s.period}` : ""].filter(Boolean).join(" ");
 }
 
 function visibleReasons(reasons: unknown[] | undefined): unknown[] {
@@ -304,6 +327,9 @@ const visibleQualifications = computed(() => {
   const rows = selected.value?.qualifications ?? [];
   return showAllFit.value ? rows : rows.slice(0, 3);
 });
+const visibleRiskReasons = computed(() =>
+  visibleReasons(selected.value?.risk_reasons ?? []).slice(0, 5),
+);
 const allUnproven = computed(() => {
   const rows = selected.value?.qualifications ?? [];
   return rows.length > 0 && rows.every((q) => String(q.verdict || "").includes("not"));
@@ -334,29 +360,35 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
   <div
     class="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-[1600px] flex-col gap-4 p-4 pb-24 md:p-6 lg:h-[calc(100dvh-4rem)] lg:pb-6"
   >
-    <header class="flex flex-wrap items-center gap-2">
-      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.jobs") }}</h1>
-      <div class="ml-auto flex flex-wrap items-center gap-2">
+    <header
+      class="flex flex-wrap items-end justify-between gap-4"
+      :class="mobileDetail ? 'max-lg:hidden' : ''"
+    >
+      <div class="min-w-0">
+        <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("nav.jobs") }}</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-600">
+          Ranked matches from your searches. Pick a job to see the posting and why it fits.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
         <label
-          class="flex min-h-11 items-center gap-2 rounded-md border border-rule bg-paper-1 px-3 text-sm font-medium text-ink-600 shadow-[var(--shadow-card)]"
+          class="flex min-h-12 items-center gap-2 rounded-md border border-rule bg-paper-1 px-3 text-sm font-medium text-ink-600 shadow-[var(--shadow-card)]"
+          title="Include jobs where you may not meet every requirement"
         >
           <input
             v-model="includeIneligible"
             type="checkbox"
             class="size-5 rounded border-rule accent-brand-600"
-            title="Include jobs you may not qualify for"
+            :aria-label="t('jobs.includeIneligible')"
           />
-          {{ t("jobs.showAllJobs") }}
+          {{ t("jobs.includeIneligible") }}
         </label>
-        <select
-          v-model="sort"
-          class="rounded border border-rule bg-paper-2 px-2 py-1 text-sm"
-          aria-label="Sort"
-        >
-          <option value="score">Match</option>
-          <option value="newest">Newest</option>
-          <option value="salary">Salary</option>
-        </select>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-ink-600">Sort</span>
+          <div class="w-36">
+            <FnSelect v-model="sortValue" :options="sortOptions" ariaLabel="Sort jobs" />
+          </div>
+        </div>
       </div>
     </header>
 
@@ -421,7 +453,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
               :label="sealLabel(row.risk_level)"
             />
             <FnChip v-if="row.eligibility === 'not_eligible'">Ineligible</FnChip>
-            <FnChip v-for="r in visibleReasons(row.reasons).slice(0, 2)" :key="String(r)">{{
+            <FnChip v-for="r in visibleReasons(row.reasons).slice(0, 1)" :key="String(r)">{{
               reasonText(r)
             }}</FnChip>
           </div>
@@ -455,8 +487,11 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
         <p v-if="selected.few_stated_requirements" class="mt-2 text-xs text-ink-400">
           Few stated requirements
         </p>
-        <div class="mt-4 whitespace-pre-wrap text-sm text-ink-900">
-          {{ selected.description_text }}
+        <div class="mt-5 border-t border-rule pt-5">
+          <h3 class="mb-3 text-sm font-semibold tracking-wide text-ink-400 uppercase">
+            Job description
+          </h3>
+          <JobDescription :text="selected.description_text" />
         </div>
       </section>
       <FnSkeleton v-else class="h-40" />
@@ -464,114 +499,154 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       <aside
         v-if="selected"
         :class="mobileDetail ? 'block' : 'hidden lg:block'"
-        class="rounded-lg border-t border-rule bg-paper-0 p-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-4"
+        class="flex flex-col gap-5 rounded-lg border-t border-rule bg-paper-0 p-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-4"
       >
-        <div class="mb-3">
-          <div class="font-mono text-3xl tabular-nums text-brand-700">
-            {{ selected.score != null ? Math.round(selected.score) : "-" }}
-          </div>
-          <p class="text-xs text-ink-400">{{ t("jobs.matchScore") }}</p>
-          <div class="mt-1 flex flex-wrap gap-1">
+        <section class="flex flex-col gap-3">
+          <div class="flex items-end gap-3">
+            <div>
+              <div class="text-3xl font-bold tabular-nums text-brand-700">
+                {{ selected.score != null ? Math.round(selected.score) : "-" }}
+              </div>
+              <p class="text-xs text-ink-400">{{ t("jobs.matchScore") }}</p>
+            </div>
             <FnRiskSeal
               v-if="selected.risk_level"
+              class="mb-1"
               :level="sealLevel(selected.risk_level)"
               :label="sealLabel(selected.risk_level)"
             />
+          </div>
+          <div v-if="visibleReasons(selected.reasons).length" class="flex flex-wrap gap-1">
             <FnChip v-for="r in visibleReasons(selected.reasons).slice(0, 5)" :key="String(r)">{{
               reasonText(r)
             }}</FnChip>
           </div>
           <ul
-            v-if="selected.risk_reasons?.length"
-            class="mt-2 space-y-1 border-l-2 border-oxblood-600 pl-2 text-xs text-ink-600"
+            v-if="visibleRiskReasons.length"
+            class="space-y-1 border-l-2 border-oxblood-600 pl-3 text-sm leading-6 text-ink-600"
           >
-            <li v-for="(r, i) in selected.risk_reasons.slice(0, 5)" :key="i">
-              {{ reasonText(r) }}
-            </li>
+            <li v-for="(r, i) in visibleRiskReasons" :key="i">{{ reasonText(r) }}</li>
           </ul>
-        </div>
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
-          {{ t("jobs.fit") }}
-        </h3>
-        <p v-if="allUnproven" class="mb-3 text-sm text-ink-600">
-          {{ t("jobs.addResumeFacts") }}
-          <NuxtLink to="/profile/onboarding" class="text-brand-700 underline">{{
-            t("jobs.addResume")
-          }}</NuxtLink>
-        </p>
-        <ul class="mb-4 space-y-2 text-sm">
-          <li
-            v-for="q in visibleQualifications"
-            :key="String(q.id)"
-            class="border-b border-rule pb-2"
-          >
-            <div class="flex items-start gap-2">
-              <FnChip :tone="chipTone(String(q.verdict || ''))">{{
-                kindLabel(String(q.kind || ""))
-              }}</FnChip>
-              <span class="text-ink-900">{{ q.text }}</span>
-            </div>
-            <p v-if="q.verdict" class="mt-1 text-xs text-ink-400">
-              {{ verdictLabel(String(q.verdict || ""))
-              }}<span v-if="q.evidence_quote"> · {{ q.evidence_quote }}</span>
-            </p>
-          </li>
-        </ul>
-        <FnButton
-          v-if="(selected.qualifications?.length ?? 0) > 3"
-          size="sm"
-          tone="ghost"
-          class="mb-3"
-          @click="showAllFit = !showAllFit"
-          >{{ showAllFit ? t("jobs.showLess") : t("jobs.showAll") }}</FnButton
-        >
-        <div class="flex flex-wrap gap-2">
-          <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
-          <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">
-            Tailor
-          </FnButton>
-          <FnButton size="sm" tone="ghost" @click="skipOpen = true">Skip</FnButton>
-          <FnButton size="sm" tone="ghost" :disabled="!selected.apply_url" @click="openOriginal">
-            Open
-          </FnButton>
-          <FnButton size="sm" tone="ghost" @click="markApplied">{{
+        </section>
+
+        <section class="flex flex-col gap-2 border-t border-rule pt-4">
+          <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">Next</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <FnButton size="sm" tone="primary" @click="router.push(`/tailor/${selectedId}`)">
+              Tailor
+            </FnButton>
+            <FnButton size="sm" tone="quiet" @click="triage('shortlist')"> Shortlist </FnButton>
+            <FnButton
+              size="sm"
+              tone="quiet"
+              :disabled="!selected.apply_url"
+              title="Open the original posting"
+              @click="openOriginal"
+            >
+              Open
+            </FnButton>
+            <FnButton size="sm" tone="ghost" @click="skipOpen = true">Skip</FnButton>
+          </div>
+          <FnButton size="sm" tone="ghost" class="self-start" @click="markApplied">{{
             t("applications.markApplied")
           }}</FnButton>
+        </section>
+
+        <section class="flex flex-col gap-3 border-t border-rule pt-4">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("jobs.fit") }}
+            </h3>
+            <span v-if="selected.qualifications?.length" class="text-xs text-ink-400">
+              {{ selected.qualifications.length }} checks
+            </span>
+          </div>
+          <p class="text-sm leading-6 text-ink-600">How your profile lines up with this posting.</p>
+          <p
+            v-if="allUnproven"
+            class="rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm leading-6 text-ink-900"
+          >
+            {{ t("jobs.addResumeFacts") }}
+            <NuxtLink
+              to="/profile/onboarding"
+              class="font-semibold whitespace-nowrap text-brand-700 underline"
+              >{{ t("jobs.addResume") }}</NuxtLink
+            >
+          </p>
+          <ul class="space-y-2">
+            <li
+              v-for="q in visibleQualifications"
+              :key="String(q.id)"
+              class="rounded-lg border border-rule bg-paper-1 p-3"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <FnChip :tone="chipTone(String(q.verdict || ''))">{{
+                  verdictLabel(String(q.verdict || ""))
+                }}</FnChip>
+                <span class="text-xs font-semibold tracking-wide text-ink-400 uppercase">{{
+                  kindLabel(String(q.kind || ""))
+                }}</span>
+              </div>
+              <p
+                class="mt-2 line-clamp-3 text-sm leading-6 text-ink-900"
+                :title="String(q.text || '')"
+              >
+                {{ q.text }}
+              </p>
+              <p
+                v-if="q.evidence_quote && q.evidence_quote !== q.text"
+                class="mt-1 line-clamp-2 text-xs leading-5 text-ink-400"
+              >
+                {{ q.evidence_quote }}
+              </p>
+            </li>
+          </ul>
           <FnButton
-            v-if="selected.risk_level === 'red' || selected.risk_level === 'yellow'"
+            v-if="(selected.qualifications?.length ?? 0) > 3"
             size="sm"
             tone="ghost"
-            @click="riskConfirmOpen = true"
-            >Continue</FnButton
+            class="self-start"
+            @click="showAllFit = !showAllFit"
+            >{{ showAllFit ? t("jobs.showFewerChecks") : t("jobs.showAllChecks") }}</FnButton
           >
-        </div>
+        </section>
+
+        <section
+          v-if="selected.risk_level === 'red' || selected.risk_level === 'yellow'"
+          class="flex flex-col gap-2 border-t border-rule pt-4"
+        >
+          <p class="text-sm leading-6 text-ink-600">
+            This posting is marked
+            {{ selected.risk_level === "red" ? "high risk" : "caution" }}. Review the reasons before
+            continuing.
+          </p>
+          <FnButton size="sm" tone="danger" class="self-start" @click="riskConfirmOpen = true">
+            Continue anyway
+          </FnButton>
+        </section>
+
         <div
           v-if="riskConfirmOpen && selected"
-          class="mt-3 space-y-2 rounded border border-oxblood-600 p-2 text-sm"
+          class="space-y-2 rounded-lg border border-oxblood-600 bg-paper-1 p-3 text-sm"
         >
-          <p>
+          <p class="leading-6">
             This job is marked
             {{ selected.risk_level === "red" ? "high risk" : "caution" }}. Continue anyway?
           </p>
           <div class="flex gap-2">
-            <FnButton size="sm" @click="continueDespiteRisk">Confirm</FnButton>
+            <FnButton size="sm" tone="danger" @click="continueDespiteRisk">Confirm</FnButton>
             <FnButton size="sm" tone="ghost" @click="riskConfirmOpen = false">Cancel</FnButton>
           </div>
         </div>
-        <div v-if="skipOpen" class="mt-3 space-y-2 rounded border border-rule p-2">
-          <select v-model="skipReason" class="w-full rounded border border-rule px-2 py-1 text-sm">
-            <option>too junior</option>
-            <option>too senior</option>
-            <option>salary</option>
-            <option>location</option>
-            <option>missing skills</option>
-            <option>wrong title</option>
-            <option>other</option>
-          </select>
-          <FnButton size="sm" @click="triage('skip', skipReason)">Confirm</FnButton>
+
+        <div v-if="skipOpen" class="space-y-2 rounded-lg border border-rule bg-paper-1 p-3">
+          <p class="text-sm font-medium text-ink-900">Why skip this job?</p>
+          <FnSelect v-model="skipReason" :options="skipOptions" ariaLabel="Skip reason" />
+          <FnButton size="sm" @click="triage('skip', skipReason)">Confirm skip</FnButton>
         </div>
-        <div v-if="selected.other_roles?.length" class="mt-6">
-          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
+
+        <div v-if="selected.other_roles?.length" class="border-t border-rule pt-4">
+          <h3 class="mb-2 text-sm font-semibold tracking-wide text-ink-400 uppercase">
             Other roles
           </h3>
           <ul class="space-y-1 text-sm">
@@ -593,8 +668,13 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       v-if="mobileDetail && selected"
       class="fixed inset-x-0 bottom-16 z-20 flex gap-2 border-t border-rule bg-paper-1 p-3 shadow-[0_-8px_24px_-20px_rgba(16,24,40,0.35)] lg:hidden"
     >
-      <FnButton size="sm" @click="triage('shortlist')">Shortlist</FnButton>
-      <FnButton size="sm" :disabled="!selectedId" @click="router.push(`/tailor/${selectedId}`)">
+      <FnButton size="sm" tone="quiet" @click="triage('shortlist')">Shortlist</FnButton>
+      <FnButton
+        size="sm"
+        tone="primary"
+        :disabled="!selectedId"
+        @click="router.push(`/tailor/${selectedId}`)"
+      >
         Tailor
       </FnButton>
       <FnButton size="sm" tone="ghost" :disabled="!selected.apply_url" @click="openOriginal">
