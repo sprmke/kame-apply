@@ -52,6 +52,8 @@ class Track(Base):
     summary: Mapped[str] = mapped_column(Text, server_default="")
     settings: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
     template_slug: Mapped[str | None] = mapped_column(String(80))
+    industry: Mapped[str] = mapped_column(String(48), server_default="technology")
+    industry_version: Mapped[int] = mapped_column(Integer, server_default="1")
     created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

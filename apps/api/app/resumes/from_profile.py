@@ -17,6 +17,7 @@ def build_from_profile(
     profile: dict[str, Any],
     *,
     target_role: str | None = None,
+    pack: Any = None,
 ) -> ResumeContent:
     contact = ContactBlock(
         full_name=str(profile.get("display_name") or profile.get("full_name") or "Candidate"),
@@ -76,7 +77,13 @@ def build_from_profile(
             )
         )
     if exp_items:
-        sections.append(ResumeSection(kind="experience", heading="Experience", items=exp_items))
+        sections.append(
+            ResumeSection(
+                kind="experience",
+                heading=_heading(pack, "experience", "Experience"),
+                items=exp_items,
+            )
+        )
 
     skill_lines = [
         ResumeLine(
@@ -87,7 +94,11 @@ def build_from_profile(
         if s.get("name")
     ]
     if skill_lines:
-        sections.append(ResumeSection(kind="skills", heading="Skills", lines=skill_lines))
+        sections.append(
+            ResumeSection(
+                kind="skills", heading=_heading(pack, "skills", "Skills"), lines=skill_lines
+            )
+        )
 
     edu_items = []
     for ed in profile.get("education") or []:
@@ -105,7 +116,106 @@ def build_from_profile(
             )
         )
     if edu_items:
-        sections.append(ResumeSection(kind="education", heading="Education", items=edu_items))
+        sections.append(
+            ResumeSection(
+                kind="education", heading=_heading(pack, "education", "Education"), items=edu_items
+            )
+        )
+
+    project_bullets: dict[str, list[dict[str, Any]]] = {}
+    for b in profile.get("bullets") or []:
+        pid = str(b.get("project_id") or "")
+        if pid:
+            project_bullets.setdefault(pid, []).append(b)
+    project_items: list[ResumeItem] = []
+    for project in profile.get("projects") or []:
+        pid = str(project.get("id") or "")
+        lines = [
+            ResumeLine(
+                text=str(b.get("text") or ""),
+                evidence_refs=[str(b["id"])] if b.get("id") else ([pid] if pid else []),
+            )
+            for b in project_bullets.get(pid, [])
+            if b.get("text")
+        ]
+        if not lines and project.get("description"):
+            lines = [
+                ResumeLine(
+                    text=str(project["description"]),
+                    evidence_refs=[pid] if pid else [],
+                )
+            ]
+        project_items.append(
+            ResumeItem(
+                id=pid or ResumeItem().id,
+                title=str(project.get("name") or "Project"),
+                subtitle=str(project.get("url") or "") or None,
+                start=_fmt_date(project.get("start_date")),
+                end=_fmt_date(project.get("end_date")),
+                lines=lines,
+                evidence_refs=[pid] if pid else [],
+            )
+        )
+    if project_items:
+        sections.append(
+            ResumeSection(
+                kind="projects",
+                heading=_heading(pack, "projects", "Projects"),
+                items=project_items,
+            )
+        )
+
+    cert_items: list[ResumeItem] = []
+    for cert in profile.get("certifications") or []:
+        cid = str(cert.get("id") or "")
+        detail = " · ".join(
+            part
+            for part in (
+                str(cert.get("issuer") or ""),
+                str(cert.get("expires_on") or "")[:10] if cert.get("expires_on") else "",
+            )
+            if part
+        )
+        cert_items.append(
+            ResumeItem(
+                id=cid or ResumeItem().id,
+                title=str(cert.get("name") or "Certification"),
+                subtitle=detail or None,
+                start=_fmt_date(cert.get("issued_on")),
+                end=None,
+                lines=[],
+                evidence_refs=[cid] if cid else [],
+            )
+        )
+    if cert_items:
+        sections.append(
+            ResumeSection(
+                kind="certifications",
+                heading=_heading(pack, "certifications", "Certifications"),
+                items=cert_items,
+            )
+        )
+
+    language_lines = [
+        ResumeLine(
+            text=str(lang.get("name") or ""),
+            evidence_refs=[str(lang["id"])] if lang.get("id") else [],
+        )
+        for lang in profile.get("languages") or []
+        if lang.get("name")
+    ]
+    if language_lines:
+        sections.append(
+            ResumeSection(
+                kind="languages",
+                heading=_heading(pack, "languages", "Languages"),
+                lines=language_lines,
+            )
+        )
+
+    if pack is not None and pack.resume.section_order:
+        order = {kind: index for index, kind in enumerate(pack.resume.section_order)}
+        sections.sort(key=lambda section: order.get(section.kind, 99))
 
     return ResumeContent(
         contact=contact,
@@ -113,6 +223,12 @@ def build_from_profile(
         sections=sections,
         target_role=target_role or (str(headline) if headline else None),
     )
+
+
+def _heading(pack: Any, kind: str, fallback: str) -> str:
+    if pack is None:
+        return fallback
+    return pack.resume.section_titles.get(kind, fallback)
 
 
 def _fmt_date(value: Any) -> str | None:

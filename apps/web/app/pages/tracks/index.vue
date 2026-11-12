@@ -11,6 +11,7 @@ import {
 import { FnButton, FnFolderTab, FnInput, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
+import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
@@ -19,12 +20,33 @@ const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const { ensureProfile, profileId } = useActiveProfile();
+const exp = useExperience();
 
 const creating = ref(false);
 const showNew = ref(false);
 const showTemplates = ref(false);
 const nlDraft = ref("");
 const nameDraft = ref("");
+const industryDraft = ref("");
+const fieldTouched = ref(false);
+const BASE_INDUSTRY = "general";
+
+watch(
+  () => exp.primary.value,
+  (value) => {
+    if (!fieldTouched.value) industryDraft.value = value;
+  },
+  { immediate: true },
+);
+
+const enabledKeys = computed(
+  () => new Set([...exp.enabled.value.map((item) => item.key), BASE_INDUSTRY]),
+);
+
+function templateFits(templateIndustry: string): boolean {
+  if (!industryDraft.value || industryDraft.value === BASE_INDUSTRY) return true;
+  return enabledKeys.value.has(templateIndustry) || templateIndustry === BASE_INDUSTRY;
+}
 
 const tracks = useQuery({
   queryKey: computed(() => ["tracks", ws.currentId]),
@@ -53,7 +75,7 @@ async function createFromTemplate(slug: string) {
   try {
     const pid = await ensureProfile();
     const { data } = await createTrackApiV1TracksPost({
-      body: { profile_id: pid, template_slug: slug },
+      body: { profile_id: pid, template_slug: slug, industry: industryDraft.value || undefined },
       throwOnError: true,
     });
     showNew.value = false;
@@ -76,6 +98,7 @@ async function createFromText() {
         profile_id: pid,
         name: nameDraft.value.trim() || nlDraft.value.trim().slice(0, 80),
         nl_text: nlDraft.value.trim(),
+        industry: industryDraft.value || undefined,
         criteria: {
           schema_version: 1,
           titles: nlDraft.value.trim()
@@ -116,7 +139,9 @@ async function archive(id: string) {
 }
 
 const trackRows = computed(() => tracks.data.value ?? []);
-const templateRows = computed(() => templates.data.value ?? []);
+const templateRows = computed(() =>
+  (templates.data.value ?? []).filter((tmpl) => templateFits(tmpl.industry)),
+);
 const tracksLoading = computed(
   () => !ws.loaded || tracks.isPending.value || (tracks.isFetching.value && !tracks.data.value),
 );
@@ -143,6 +168,27 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       class="flex flex-col gap-5 rounded-2xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
       :aria-label="t('tracks.new')"
     >
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm font-semibold text-ink-900">{{ t("tracks.field") }}</span>
+          <button
+            v-for="item in exp.enabled.value"
+            :key="item.key"
+            type="button"
+            class="min-h-11 rounded-full border px-3 text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+            :class="
+              industryDraft === item.key
+                ? 'border-brand-500 bg-brand-50 text-brand-700'
+                : 'border-rule bg-paper-0 text-ink-600 hover:border-brand-200'
+            "
+            :aria-pressed="industryDraft === item.key"
+            @click="((industryDraft = item.key), (fieldTouched = true))"
+          >
+            {{ exp.packLabel(item.key) }}
+          </button>
+        </div>
+        <p class="text-xs text-ink-600">{{ t("tracks.fieldHint") }}</p>
+      </div>
       <label class="flex flex-col gap-2 text-sm">
         <span class="font-semibold text-ink-900">{{ t("tracks.describe") }}</span>
         <FnTextarea
@@ -216,6 +262,7 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
           >
             {{ tr.summary }}
           </p>
+          <p class="mt-1 text-xs text-ink-400">{{ exp.packLabel(tr.industry) }}</p>
         </NuxtLink>
         <div class="flex flex-wrap items-center gap-2">
           <FnButton as-child size="sm" tone="quiet">

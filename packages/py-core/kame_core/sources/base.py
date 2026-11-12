@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal, Protocol
 
-Layer = Literal["ats", "board", "career_page", "email", "clip", "personal"]
+Layer = Literal["ats", "board", "career_page", "email", "clip", "personal", "search"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +21,9 @@ class AdapterMeta:
     auth: Literal["none", "api_key"] = "none"
     rate_limit_per_minute: int = 30
     concurrency: int = 1
+    # A search adapter must not run live until its terms and quota are verified in IND-0.
+    terms_verified: bool = False
+    terms_url: str = ""
 
 
 @dataclass(slots=True)

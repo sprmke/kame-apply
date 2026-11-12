@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.companies.models import Company
 from app.core.ssrf import is_public_http_url_literal
+from app.jobs.classify import classify_job
 from app.jobs.dedupe import company_norm, prefer_apply_url, same_job
 from app.jobs.models import Job, JobSource
 from app.jobs.normalize import normalize_raw
@@ -50,6 +51,7 @@ async def upsert_raw_job(
     source = await _get_source(session, raw.source_key)
     if source is None:
         raise ValueError(f"unknown source {raw.source_key}")
+    classification = classify_job(norm["title"], norm["description_text"])
 
     # Exact external id match
     existing_js = (
@@ -68,6 +70,12 @@ async def upsert_raw_job(
         existing_js.url = raw.url or existing_js.url
         job.last_seen_at = now
         job.miss_streak = 0
+        if not job.industry_hints and classification.industry_hints:
+            job.industry_hints = classification.industry_hints
+        if not job.facets and classification.facets:
+            job.facets = classification.facets
+        if not job.occupation_code and classification.occupation_code:
+            job.occupation_code = classification.occupation_code
         if job.status == "closed":
             job.status = "open"
             job.closed_at = None
@@ -75,6 +83,9 @@ async def upsert_raw_job(
         return job, False
 
     company = await _resolve_company(session, norm["company_name"], raw.company_domain)
+    if classification.industry_hints:
+        merged = set(company.industries or []) | set(classification.industry_hints)
+        company.industries = sorted(merged)
 
     # Fuzzy: same company + title + simhash
     candidates = (
@@ -114,6 +125,9 @@ async def upsert_raw_job(
             company_id=company.id,
             title=norm["title"],
             normalized_title=norm["normalized_title"],
+            industry_hints=classification.industry_hints,
+            occupation_code=classification.occupation_code,
+            facets=classification.facets,
             seniority=norm["seniority"],
             employment_type=norm["employment_type"],
             work_mode=norm["work_mode"],

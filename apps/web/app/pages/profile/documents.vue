@@ -3,16 +3,21 @@ import { useActiveProfile } from "~/composables/useActiveProfile";
 import {
   deleteDocumentApiV1ProfilesProfileIdDocumentsDocumentIdDelete,
   listDocumentsApiV1ProfilesProfileIdDocumentsGet,
+  uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
   type DocumentListItem,
 } from "@kame/api-client";
 import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useExperience } from "~/composables/useExperience";
 
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const qc = useQueryClient();
+const exp = useExperience();
 const { profileId, ensureProfile } = useActiveProfile();
+const photoInput = ref<HTMLInputElement | null>(null);
+const uploading = ref(false);
 
 onMounted(() => ensureProfile().catch((e) => toast.push({ title: apiError(e), tone: "danger" })));
 
@@ -55,6 +60,27 @@ async function remove(doc: DocumentListItem) {
     toast.push({ title: apiError(e), tone: "danger" });
   }
 }
+
+async function uploadPhoto(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file || !profileId.value) return;
+  uploading.value = true;
+  try {
+    await uploadDocumentApiV1ProfilesProfileIdDocumentsPost({
+      path: { profile_id: profileId.value },
+      body: { file, kind: "portfolio" },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries({ queryKey: ["documents", profileId.value] });
+    toast.push({ title: t("common.saved"), tone: "success" });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    input.value = "";
+    uploading.value = false;
+  }
+}
 </script>
 
 <template>
@@ -63,10 +89,22 @@ async function remove(doc: DocumentListItem) {
       <h2 class="text-xl font-bold text-ink-900">{{ t("career.tabs.documents") }}</h2>
       <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.documentsLede") }}</p>
     </div>
-    <div>
+    <div class="flex flex-wrap gap-2">
       <FnButton tone="primary" @click="navigateTo('/profile/onboarding')">{{
         t("career.upload")
       }}</FnButton>
+      <template v-if="exp.manifest.value?.features.portfolio_images">
+        <input
+          ref="photoInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="sr-only"
+          @change="uploadPhoto"
+        />
+        <FnButton :disabled="uploading" tone="quiet" @click="photoInput?.click()">{{
+          t("career.addPhoto")
+        }}</FnButton>
+      </template>
     </div>
     <div v-if="docsLoading" class="flex flex-col gap-2">
       <FnSkeleton class="h-12 w-full" />

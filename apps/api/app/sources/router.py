@@ -6,11 +6,13 @@ import asyncio
 import json
 import uuid
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
 
 from app.companies import service as company_service
+from app.core.config import get_settings
 from app.core.security import WorkspaceContext, require_action
+from app.sources import coverage as coverage_service
 from app.sources import schemas as s
 from app.sources import service
 
@@ -28,6 +30,42 @@ async def source_health(ctx: WorkspaceContext = AdminRead):
 @router.get("/sources/directory/stats", response_model=s.DirectoryStatsRead)
 async def directory_stats(ctx: WorkspaceContext = Read):
     return await company_service.directory_stats(ctx.session)
+
+
+@router.get("/sources/coverage", response_model=s.CoverageRead)
+async def source_coverage(
+    industry: str = Query(min_length=1, max_length=48),
+    country: str = Query(min_length=2, max_length=8),
+    ctx: WorkspaceContext = Read,
+):
+    return await coverage_service.coverage_for(ctx.session, industry=industry, country=country)
+
+
+@router.get("/tracks/{track_id}/where", response_model=s.WhereLookRead)
+async def where_we_look(track_id: uuid.UUID, ctx: WorkspaceContext = Read):
+    return await coverage_service.where_for_track(ctx, track_id, get_settings())
+
+
+@router.get("/sources/advice", response_model=s.SourceAdviceRead)
+async def source_advice(
+    industry: str = Query(default="general", max_length=48),
+    country: str = Query(default="", max_length=8),
+    ctx: WorkspaceContext = Read,
+):
+    return await coverage_service.source_advice(ctx.session, industry=industry, country=country)
+
+
+@router.get("/sources/alerts/guide", response_model=list[s.AlertGuideRead])
+async def alert_guide(
+    industry: str = Query(default="general", max_length=48),
+    country: str = Query(default="", max_length=8),
+    q: str = Query(default="", max_length=200),
+    location: str = Query(default="", max_length=200),
+    ctx: WorkspaceContext = Read,
+):
+    return coverage_service.alerts_guide(
+        industry=industry, country=country, keywords=q, location=location
+    )
 
 
 @router.post("/sources/careers", response_model=s.CompanyBoardRead, status_code=201)

@@ -9,10 +9,12 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
     Text,
+    UniqueConstraint,
     func,
     text,
 )
@@ -136,6 +138,7 @@ class Certification(_Section, Base):
     name: Mapped[str] = mapped_column(String(200))
     issuer: Mapped[str | None] = mapped_column(String(200))
     kind: Mapped[str] = mapped_column(String(12), server_default="certification")
+    credential_key: Mapped[str | None] = mapped_column(String(64))
     issued_on: Mapped[date | None] = mapped_column(Date)
     expires_on: Mapped[date | None] = mapped_column(Date)
     jurisdiction: Mapped[str | None] = mapped_column(String(120))
@@ -146,6 +149,21 @@ class Language(_Section, Base):
 
     name: Mapped[str] = mapped_column(String(80))
     proficiency: Mapped[str | None] = mapped_column(String(16))
+
+
+class ProfileFacet(_Section, Base):
+    """One industry fact (cuisine, station, kitchen type). Evidence refs use `facet:<id>`."""
+
+    __tablename__ = "profile_facets"
+    __table_args__ = (
+        UniqueConstraint("profile_id", "facet_key", "value", name="uq_profile_facet_value"),
+        Index("ix_profile_facets_profile", "profile_id", "facet_key"),
+    )
+
+    facet_key: Mapped[str] = mapped_column(String(48))
+    value: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(16), server_default="user")
+    sort_order: Mapped[int] = mapped_column(Integer, server_default="0")
 
 
 class Skill(_Section, Base):

@@ -63,5 +63,6 @@ onBeforeRouteLeave(() => (form.meta.value.dirty ? window.confirm(t("common.unsav
       </div>
       <p v-else class="text-sm text-ink-600">{{ t("workspace.readOnly") }}</p>
     </form>
+    <FieldsOfWorkCard />
   </section>
 </template>

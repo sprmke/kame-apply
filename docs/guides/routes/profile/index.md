@@ -28,3 +28,15 @@ This is your source of truth for applications. Upload a resume, confirm the pars
 ## Implementation map
 
 `useActiveProfile`, `InterviewDrawer`, i18n `career.*`.
+
+
+## Profile facets
+
+The page shows cuisine, kitchen type, station, and covers definitions from the workspace's enabled field packs. Each value is a `profile_facets` row; add or remove it inline. Evidence refs for tailoring use `facet:<id>`. Facets are optional; an empty section is not an error.
+
+API: `GET/POST /api/v1/profiles/{id}/facets`, `PATCH/DELETE /api/v1/profiles/{id}/facets/{item_id}`.
+
+
+## Resume output
+
+Base resumes include certifications, projects, and languages. Section order and headings follow the Track's industry pack: Hospitality puts Food safety certificates first and uses Kitchen skills and Signature dishes and menus. The pack template id is recorded on the resume version.

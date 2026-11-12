@@ -1,0 +1,31 @@
+---
+description: Industry packs drive fields of work — add content, never branches
+globs:
+  - apps/api/app/industries/**
+  - apps/api/app/tracks/**
+  - apps/web/app/**
+  - apps/api/tests/test_industries.py
+---
+
+# Industry packs
+
+Source: `docs/architecture/industries.md`, `docs/workflow/planned/multi-industry-support.md`.
+
+- One schema in `apps/api/app/industries/schema.py`. Curated packs in `packs/`. Registry in
+  `registry.py`. Resolver in `resolve.py`. Packs are frozen and `extra="forbid"`.
+- **Never branch on the industry key** in components, routers, services, or prompts. Read the
+  resolved manifest (`states`, `groups`, `labels`, `facets`, `features`) or the pack plan.
+- **Hiding is UX only.** The API accepts every `CriteriaV1` field for every pack. Do not delete or
+  null a saved value because a pack hides its control.
+- **Three states:** `visible`, `collapsed` (under More options), `hidden` (still reachable through
+  Show all filters). A global page uses the union of the workspace's enabled packs; a track page
+  uses that track's pack.
+- **General is the base layer.** Packs override it. General is always available to a track.
+- **Closed schema.** Reuse `Seniority`, `EmploymentType`, `Shift`, facet kinds, and criteria field
+  ids. A custom or AI-drafted pack can only select among existing building blocks.
+- **Tracks validate their pack.** `tracks.industry` must be General or a workspace field (422
+  otherwise). Facet keys/options must exist in that pack (422 with the field path).
+- **Sources respect P2/P5.** A pack may list only adapters with a recorded terms note and a block
+  signal that disables the source.
+- Every pack change ships a manifest snapshot test, i18n keys, and docs. Adding a pack must not
+  change a single component or router file (M4).

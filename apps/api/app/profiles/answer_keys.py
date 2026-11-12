@@ -21,6 +21,8 @@ class CanonicalKey:
     default_answer: str = ""
     # Suggested JSON shape for answer_json when structured data helps the apply engine.
     json_hint: str | None = None
+    # Industry packs that add this key. Empty means it is available in every field.
+    packs: tuple[str, ...] = ()
 
 
 CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
@@ -75,6 +77,83 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "Remote, hybrid, or on-site preference?",
             "What is your preferred work arrangement?",
         ),
+    ),
+    CanonicalKey(
+        "food_safety_certificate",
+        "Food safety certificate",
+        "eligibility",
+        default_variants=(
+            "Do you hold a food handler or food safety certificate?",
+            "Food safety certification",
+        ),
+        json_hint="have,expires_on",
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "availability_days",
+        "Days available",
+        "preferences",
+        default_variants=("Which days can you work?", "Days available"),
+        json_hint="days",
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "shift_preference",
+        "Shift preference",
+        "preferences",
+        default_variants=("Which shifts do you prefer?", "Shift preference"),
+        json_hint="shifts",
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "weekend_holiday_availability",
+        "Weekend and holiday availability",
+        "preferences",
+        default_variants=("Can you work weekends and holidays?",),
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "earliest_start_date",
+        "Earliest start date",
+        "eligibility",
+        default_variants=("When can you start?", "Earliest start date"),
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "hourly_rate_expectation",
+        "Hourly rate expectation",
+        "preferences",
+        default_variants=("What hourly rate are you looking for?",),
+        json_hint="amount,currency,period",
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "reliable_transport",
+        "Reliable transport",
+        "eligibility",
+        default_variants=("Do you have reliable transport to work?",),
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "accommodation_needed",
+        "Accommodation needed",
+        "preferences",
+        default_variants=("Do you need staff accommodation?",),
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "knife_kit",
+        "Own knife kit",
+        "preferences",
+        default_variants=("Do you have your own knife kit?",),
+        packs=("hospitality",),
+    ),
+    CanonicalKey(
+        "trial_shift_ok",
+        "Trial shift",
+        "preferences",
+        default_variants=("Are you available for a trial shift?", "Stage or trial shift"),
+        packs=("hospitality",),
     ),
     CanonicalKey(
         "eeo_race",

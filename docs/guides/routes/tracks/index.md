@@ -26,22 +26,25 @@ A search is a role you want. We check company boards and bring back matches. Dup
 
 ### List
 
-Rows show folder-tab color, name, summary, and **View matches**. Secondary actions: duplicate, archive.
+Rows show folder-tab color, name, summary, field of work, and **View matches**. Secondary actions: duplicate, archive.
 
 ### New Track
 
-Lead with **What role are you looking for?** Name is optional. **Browse examples** reveals the curated starters. Create calls `POST /api/v1/tracks` (ensures a career profile first).
+Lead with **Field of work** (the workspace's enabled fields, primary selected) and **What role are you looking for?** Name is optional. **Browse examples** reveals the curated starters for that field plus General starters. Changing the field filters the examples, so a Hospitality workspace sees kitchen templates, not software ones. Create calls `POST /api/v1/tracks` with `industry` (ensures a career profile first). If the field's pack is not enabled for the workspace, the API returns 422.
+
+Helper text: "This search uses the field's filters, words, and sources." No other copy.
 
 ## API reference
 
 | Call | Purpose |
 | --- | --- |
 | `GET /api/v1/tracks` | List active |
-| `POST /api/v1/tracks` | Create |
-| `GET /api/v1/tracks/templates` | Templates |
-| `POST /api/v1/tracks/{id}/duplicate` | Duplicate |
+| `POST /api/v1/tracks` | Create (`industry` optional; defaults to the workspace primary) |
+| `GET /api/v1/tracks/templates` | Templates (filtered client-side by enabled field) |
+| `GET /api/v1/workspace/experience` | Enabled fields and resolved manifests |
+| `POST /api/v1/tracks/{id}/duplicate` | Duplicate, carries the field |
 | `POST /api/v1/tracks/{id}/archive` | Archive |
 
 ## Implementation map
 
-`tracks/index.vue`, `useActiveProfile`, i18n `tracks.*`.
+`tracks/index.vue`, `useActiveProfile`, `useExperience` (field chips and labels), i18n `tracks.*` and `industry.*`.

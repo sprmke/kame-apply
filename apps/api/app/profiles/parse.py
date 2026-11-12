@@ -16,6 +16,7 @@ from pydantic_ai import PromptedOutput
 
 from app.ai import prompts as prompt_registry
 from app.ai import service as ai
+from app.ai.prompts import with_pack_brief as prompts_with_pack
 from app.audit import service as audit
 from app.core.config import Settings
 from app.core.errors import AppError
@@ -164,10 +165,16 @@ async def parse_document(
     # PromptedOutput: Gemini rejects NativeOutput for ProfileExtract ("too many states"
     # from nested max_length / date / Decimal bounds). Prompted JSON still validates as ProfileExtract.
 
+    from app.industries.packs.general import GENERAL
+    from app.industries.service import enabled_packs
+
+    packs = await enabled_packs(ctx)
+    pack = packs[0] if packs else GENERAL
+
     kwargs: dict[str, Any] = {
         "tier": TIER,
         "feature": FEATURE,
-        "system": PROMPT.system,
+        "system": prompts_with_pack(PROMPT.system, pack),
         "prompt": _delimit_resume(text),
         "output_type": PromptedOutput(ProfileExtract),
         "max_output_tokens": PARSE_MAX_OUTPUT_TOKENS,

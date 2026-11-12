@@ -1,4 +1,4 @@
-"""evals-lite for profile_extract.v1: schema, post-process, injection, and recorded draft shape.
+"""evals-lite for profile_extract.v2: schema, post-process, injection, and recorded draft shape.
 
 No live model. Full golden-set precision/recall is slice 9.
 """
@@ -19,7 +19,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def test_prompt_version_is_stable():
-    assert PROFILE_EXTRACT.key == "profile_extract.v1"
+    assert PROFILE_EXTRACT.key == "profile_extract.v2"
 
 
 def test_recorded_nurse_draft_validates_and_keeps_required_facts():

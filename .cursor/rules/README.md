@@ -28,6 +28,7 @@ After clone: `pnpm run setup:ai-tooling`. Claude Code and OpenCode read the same
 | `untrusted-content.mdc` | jobs, safety, ingest, runs, runner, extension (P6) |
 | `apply-engine.mdc` | sources, runs, runner, extension |
 | `dbos-workflows.mdc` | `**/workflows.py` |
+| `industry-packs.mdc` | `app/industries/**`, tracks, pack-aware UI |
 | `pydantic-ai.mdc` | `app/ai/**`, prompts |
 | `fastapi-conventions.mdc` · `migrations.mdc` · `security.mdc` | `apps/api/**` |
 | `nuxt-conventions.mdc` · `vue-components.mdc` | `apps/web`, `apps/extension`, `packages/ui` |

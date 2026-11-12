@@ -127,6 +127,7 @@ async def draft_cover_letter_ai(
     job: dict[str, Any],
     matches: list[dict[str, Any]],
     voice: dict[str, Any] | None = None,
+    pack: Any = None,
     run_structured: StructuredRunner | None = None,
     model_factory: Any = None,
 ) -> dict[str, Any] | None:
@@ -136,7 +137,7 @@ async def draft_cover_letter_ai(
         settings,
         tier=TIER,
         feature=FEATURE,
-        system=prompts.COVER_LETTER.system,
+        system=prompts.with_pack_brief(prompts.COVER_LETTER.system, pack),
         prompt=_prompt(facts=facts, job=job, matches=matches, voice=voice),
         output_type=PromptedOutput(AiCoverLetter),
         max_output_tokens=MAX_OUT,

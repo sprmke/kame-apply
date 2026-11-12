@@ -15,6 +15,8 @@ from app.core.errors import AppError
 from app.core.mail import Mail, Mailer
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
+from app.industries import service as industries_service
+from app.industries.registry import DEFAULT_WORKSPACE_INDUSTRY
 from app.workspaces import limits
 from app.workspaces.models import Invitation, Workspace, WorkspaceMember
 
@@ -58,6 +60,9 @@ async def create_workspace(
     await db.flush()
     db.add(WorkspaceMember(workspace_id=ws_id, user_id=user_id, role="owner"))
     await db.flush()
+    await industries_service.ensure_industry(
+        db, workspace_id=ws_id, industry_key=DEFAULT_WORKSPACE_INDUSTRY
+    )
     await audit.record_in_workspace(
         db,
         workspace_id=ws_id,

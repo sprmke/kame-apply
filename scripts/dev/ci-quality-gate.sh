@@ -20,6 +20,11 @@ bash scripts/dev/check-filename-conventions.sh
 step "check:stack-terminology (evasion tooling + out-of-scope stack in manifests)"
 bash scripts/dev/check-stack-terminology.sh
 
+if has_script check:industry-branches; then
+  step "check:industry-branches (no pack branching in web components)"
+  pnpm run check:industry-branches
+fi
+
 if [[ -f scripts/dev/check-untrusted-prompts.sh ]]; then
   step "check:untrusted-prompts"
   bash scripts/dev/check-untrusted-prompts.sh

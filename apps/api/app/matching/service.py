@@ -14,6 +14,9 @@ from app.audit import service as audit
 from app.companies.models import Company
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.industries.packs.general import GENERAL
+from app.industries.registry import get_pack
+from app.industries.schema import IndustryPack
 from app.jobs.models import Job, JobSource, TrackJob
 from app.matching.embed import (
     cosine,
@@ -57,6 +60,9 @@ def _job_dict(job: Job, company_name: str | None = None) -> dict[str, Any]:
         "apply_url": job.apply_url,
         "canonical_url": job.canonical_url,
         "few_stated_requirements": job.few_stated_requirements,
+        "facets": job.facets or {},
+        "industry_hints": job.industry_hints or [],
+        "occupation_code": job.occupation_code,
     }
 
 
@@ -119,12 +125,28 @@ async def _profile_context(
         ).scalars()
     )
     lang_names = [lang.name for lang in langs if lang.name]
+    certs = list(
+        (
+            await ctx.session.execute(
+                select(profile_models.Certification).where(
+                    profile_models.Certification.profile_id == profile_id
+                )
+            )
+        ).scalars()
+    )
+    credential_names: list[str] = []
+    for cert in certs:
+        if cert.credential_key:
+            credential_names.append(cert.credential_key.lower())
+        if cert.name:
+            credential_names.append(cert.name.lower())
     profile_blob = {
         "work_authorization": profile.work_authorization or {},
         "years_experience": years,
         "degrees": degree_names,
         "languages": lang_names,
         "licenses": [],
+        "certifications": sorted(set(credential_names)),
         "country": (profile.location or "").split(",")[-1].strip()[:2].upper()
         if profile.location
         else "",
@@ -132,7 +154,9 @@ async def _profile_context(
     return profile_blob, answers, skill_names, years
 
 
-async def ensure_qualifications(ctx: WorkspaceContext, job: Job) -> list[JobQualification]:
+async def ensure_qualifications(
+    ctx: WorkspaceContext, job: Job, *, pack: IndustryPack | None = None
+) -> list[JobQualification]:
     h = content_hash(job.title, job.description_text or "")
     if job.qualifications_hash == h:
         rows = list(
@@ -160,7 +184,13 @@ async def ensure_qualifications(ctx: WorkspaceContext, job: Job) -> list[JobQual
     await ctx.session.flush()
 
     extracted, few = extract_rule_based(
-        title=job.title, description=job.description_text or "", skills=list(job.skills or [])
+        title=job.title,
+        description=job.description_text or "",
+        skills=list(job.skills or []),
+        credentials=[
+            (credential.key, credential.aliases)
+            for credential in (pack.credentials if pack else ())
+        ],
     )
     out: list[JobQualification] = []
     for i, q in enumerate(extracted):
@@ -209,7 +239,8 @@ async def score_track_jobs(
     structured = (crit_row.structured if crit_row else {}) or {}
     criteria = criteria_from_dict(structured)
     settings = dict(track.settings or {})
-    weights = clamp_weights(settings.get("ranking_weights") or {})
+    pack = get_pack(track.industry) or GENERAL
+    weights = clamp_weights({**pack.matching.weights, **(settings.get("ranking_weights") or {})})
 
     profile_blob, answers, skill_names, years = await _profile_context(ctx, track.profile_id)
     hidden = {
@@ -256,7 +287,7 @@ async def score_track_jobs(
         if job.company_id:
             c = await ctx.session.get(Company, job.company_id)
             company_name = c.name if c else None
-        quals = await ensure_qualifications(ctx, job)
+        quals = await ensure_qualifications(ctx, job, pack=pack)
         qual_dicts = [
             {
                 "id": str(q.id),
@@ -270,13 +301,18 @@ async def score_track_jobs(
         ko_hits = predict_knockouts(qual_dicts, profile=profile_blob, answers=answers)
         jdict = _job_dict(job, company_name)
         eligibility, detail = hard_filter(
-            jdict, criteria, knockout_hits=ko_hits, hidden_company_ids=hidden
+            jdict, criteria, knockout_hits=ko_hits, hidden_company_ids=hidden, pack=pack
         )
         tj.eligibility = eligibility
         tj.eligibility_detail = detail
 
         comps, reasons = rule_components(
-            jdict, criteria, profile_skills=skill_names, profile_seniority=None
+            jdict,
+            criteria,
+            profile_skills=skill_names,
+            profile_seniority=None,
+            profile_credentials=list(profile_blob.get("certifications") or []),
+            pack=pack,
         )
         # Semantic
         qtexts = [q.text for q in quals]
@@ -299,11 +335,67 @@ async def score_track_jobs(
                 profile_years=years,
                 profile_degrees={d.lower() for d in profile_blob.get("degrees") or [] if d},
                 profile_languages={x.lower() for x in profile_blob.get("languages") or []},
+                profile_credentials={
+                    x.lower() for x in profile_blob.get("certifications") or [] if x
+                },
                 knockout_hit=q.get("id") in ko_ids,
             )
             fit_ledger.append({**q, **v})
 
+        certs_have = {x.lower() for x in profile_blob.get("certifications") or [] if x}
+        for key in (job.facets or {}).get("credentials") or []:
+            fit_ledger.append(
+                {
+                    "id": f"cred:{key}",
+                    "kind": "credential",
+                    "text": str(key),
+                    "normalized": {"type": "credential", "key": key},
+                    "verdict": "met" if str(key).lower() in certs_have else "not_evidenced",
+                    "evidence_quote": next(
+                        (value for value in certs_have if str(key).lower() == value), None
+                    ),
+                }
+            )
+        job_shifts = (job.facets or {}).get("shifts") or []
+        if job_shifts:
+            overlap = {str(item).lower() for item in criteria.shifts} & {
+                str(item).lower() for item in job_shifts
+            }
+            fit_ledger.append(
+                {
+                    "id": "shift:job",
+                    "kind": "shift",
+                    "text": ", ".join(str(item) for item in job_shifts),
+                    "normalized": {"type": "shift", "values": list(job_shifts)},
+                    "verdict": "met" if (not criteria.shifts or overlap) else "partial",
+                    "evidence_quote": None,
+                }
+            )
+        pay_includes = (job.facets or {}).get("pay_includes") or []
+        if pay_includes:
+            fit_ledger.append(
+                {
+                    "id": "pay:includes",
+                    "kind": "benefit",
+                    "text": ", ".join(str(item) for item in pay_includes),
+                    "normalized": {"type": "benefit", "values": list(pay_includes)},
+                    "verdict": "met",
+                    "evidence_quote": None,
+                }
+            )
+
         score = blend_score(comps, weights, semantic=sem)
+        facet_boost = 0.0
+        for facet in pack.facets:
+            if facet.match.filter or not facet.match.boost:
+                continue
+            wanted = criteria.facets.get(facet.key)
+            wanted_values = set(wanted) if isinstance(wanted, list) else set()
+            job_values = set((job.facets or {}).get(facet.key) or [])
+            if wanted_values and job_values and (wanted_values & job_values):
+                facet_boost += facet.match.boost * 100
+        if facet_boost:
+            score = min(100.0, score + facet_boost)
         # Feedback: similar to skipped "too junior" → penalize seniority component slightly in score
         skip_bias = settings.get("skip_bias") or {}
         if skip_bias.get("too_junior") and (job.seniority or "").lower() in {
@@ -390,6 +482,9 @@ async def _llm_fit_batch(
 
     settings = get_settings()
     prompt_def = get_prompt("job_fit")
+    from app.ai.prompts import with_pack_brief
+
+    pack = get_pack(track.industry)
     for tj, _ in rows:
         job = await ctx.session.get(Job, tj.job_id)
         if job is None:
@@ -408,7 +503,7 @@ async def _llm_fit_batch(
             settings,
             tier="bulk",
             feature="job_fit",
-            system=prompt_def.system,
+            system=with_pack_brief(prompt_def.system, pack),
             prompt=prompt,
             output_type=FitOut,
         )
@@ -538,6 +633,38 @@ async def get_track_job_detail(ctx: WorkspaceContext, track_job_id: uuid.UUID) -
 
     risk_row = await ctx.session.get(JobRisk, job.id)
 
+    verdicts = {
+        str(item.get("id")): item for item in (tj.fit or {}).get("ledger") or [] if item.get("id")
+    }
+    quals_out: list[dict[str, Any]] = []
+    for q in quals:
+        v = verdicts.get(str(q.id), {})
+        quals_out.append(
+            {
+                "id": q.id,
+                "kind": q.kind,
+                "text": q.text,
+                "quote": q.quote,
+                "normalized": q.normalized,
+                "verdict": v.get("verdict", "not_evidenced"),
+                "evidence_quote": v.get("evidence_quote"),
+            }
+        )
+    for key, row in verdicts.items():
+        if key.split(":", 1)[0] not in {"cred", "shift", "pay"}:
+            continue
+        quals_out.append(
+            {
+                "id": key,
+                "kind": row.get("kind") or "must",
+                "text": row.get("text") or key,
+                "quote": row.get("evidence_quote"),
+                "normalized": row.get("normalized") or {},
+                "verdict": row.get("verdict") or "not_evidenced",
+                "evidence_quote": row.get("evidence_quote"),
+            }
+        )
+
     return {
         "id": tj.id,
         "track_id": tj.track_id,
@@ -563,27 +690,7 @@ async def get_track_job_detail(ctx: WorkspaceContext, track_job_id: uuid.UUID) -
         "description_html": job.description_html,
         "description_text": job.description_text,
         "few_stated_requirements": job.few_stated_requirements,
-        "qualifications": [
-            {
-                "id": q.id,
-                "kind": q.kind,
-                "text": q.text,
-                "quote": q.quote,
-                "normalized": q.normalized,
-                **next(
-                    (
-                        {
-                            "verdict": item.get("verdict"),
-                            "evidence_quote": item.get("evidence_quote"),
-                        }
-                        for item in (tj.fit or {}).get("ledger") or []
-                        if item.get("id") == str(q.id)
-                    ),
-                    {"verdict": "not_evidenced", "evidence_quote": None},
-                ),
-            }
-            for q in quals
-        ],
+        "qualifications": quals_out,
         "sources": [{"key": src.key, "name": src.name, "url": js.url} for js, src in sources],
         "other_roles": other_roles,
         "risk_level": risk_row.level if risk_row else None,

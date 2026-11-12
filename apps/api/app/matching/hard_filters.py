@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.industries.schema import IndustryPack
 from app.jobs.normalize import normalize_title
-from app.matching.rule_score import title_tokens
+from app.matching.rule_score import same_title_group, title_tokens
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
 
 
@@ -15,10 +16,12 @@ def hard_filter(
     *,
     knockout_hits: list[dict[str, Any]] | None = None,
     hidden_company_ids: set[str] | None = None,
+    pack: IndustryPack | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """Return (eligibility, detail). eligibility: eligible | not_eligible | unknown."""
     c = structured if isinstance(structured, CriteriaV1) else criteria_from_dict(structured)
     detail: dict[str, Any] = {"failed": []}
+    generic = set(pack.matching.generic_title_words) if pack else None
 
     if (
         hidden_company_ids
@@ -49,7 +52,9 @@ def hard_filter(
             else:
                 # Ignore generic words such as "lead" and "engineer"; a marketing lead is not a
                 # support role just because both titles contain "lead".
-                if title_tokens(norm) & title_tokens(nt):
+                if pack is not None and same_title_group(pack, nt, norm):
+                    ok = True
+                elif title_tokens(norm, generic) & title_tokens(nt, generic):
                     ok = True
         if not ok and any(not t.exclude for t in c.titles):
             detail["failed"].append("title")
@@ -80,5 +85,19 @@ def hard_filter(
         if any(x in name for x in ("staffing", "recruiting agency", "talent partner")):
             detail["failed"].append("agency")
             return "not_eligible", detail
+
+    if pack is not None and c.facets:
+        job_facets = job.get("facets") or {}
+        for facet in pack.facets:
+            if not facet.match.filter:
+                continue
+            wanted = c.facets.get(facet.key)
+            wanted_values = set(wanted) if isinstance(wanted, list) else set()
+            if not wanted_values:
+                continue
+            job_values = set(job_facets.get(facet.key) or [])
+            if job_values and not (wanted_values & job_values):
+                detail["failed"].append(f"facet:{facet.key}")
+                return "not_eligible", detail
 
     return "eligible", detail

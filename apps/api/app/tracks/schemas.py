@@ -25,6 +25,7 @@ class TrackCreate(BaseModel):
     nl_text: str = Field(default="", max_length=8000)
     criteria: CriteriaV1 | None = None
     template_slug: str | None = Field(default=None, max_length=80)
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackUpdate(BaseModel):
@@ -35,6 +36,7 @@ class TrackUpdate(BaseModel):
     color_hue: int | None = Field(default=None, ge=1, le=8)
     autonomy: Autonomy | None = None
     settings: dict[str, Any] | None = None
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackReorder(BaseModel):
@@ -91,6 +93,8 @@ class TrackRead(BaseModel):
     summary: str
     settings: dict[str, Any]
     template_slug: str | None
+    industry: str
+    industry_version: int
     created_at: datetime
     updated_at: datetime
     archived_at: datetime | None

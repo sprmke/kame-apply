@@ -11,6 +11,8 @@ from sqlalchemy import select
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.industries import service as industries_service
+from app.industries.registry import get_pack
 from app.profiles import models as profile_models
 from app.sources.models import TrackSource
 from app.taxonomy import models as tax_models
@@ -89,6 +91,7 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
     criteria = body.criteria or empty_criteria()
     nl_text = body.nl_text or ""
     template_slug = body.template_slug
+    template_industry: str | None = None
 
     if template_slug:
         tmpl = (
@@ -100,6 +103,7 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
         ).scalar_one_or_none()
         if tmpl is None:
             raise AppError("template_not_found", "Template not found", 404)
+        template_industry = tmpl.industry
         if body.criteria is None:
             criteria = criteria_from_dict(tmpl.criteria)
         if not nl_text:
@@ -121,6 +125,14 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
             "Add a title, occupation, or description before saving",
             422,
         )
+    industry = await industries_service.industry_for_track(
+        ctx,
+        requested=body.industry,
+        template_slug=template_slug,
+        template_industry=template_industry,
+    )
+    await industries_service.validate_facets(ctx, criteria, industry)
+    pack = get_pack(industry)
 
     max_sort = (
         await ctx.session.execute(
@@ -142,6 +154,8 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
         sort_order=sort_order,
         summary=summarize(criteria),
         template_slug=template_slug,
+        industry=industry,
+        industry_version=pack.version if pack is not None else 1,
         created_by=ctx.user_id,
     )
     ctx.session.add(track)
@@ -166,6 +180,7 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
             "name": track.name,
             "profile_id": str(track.profile_id),
             "template_slug": template_slug,
+            "industry": industry,
             "criteria_version": 1,
         },
     )
@@ -176,16 +191,30 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
 
 async def update_track(ctx: WorkspaceContext, track_id: uuid.UUID, body: TrackUpdate) -> m.Track:
     track = await _get_track(ctx, track_id)
-    before = {"name": track.name, "autonomy": track.autonomy, "color_hue": track.color_hue}
+    before = {
+        "name": track.name,
+        "autonomy": track.autonomy,
+        "color_hue": track.color_hue,
+        "industry": track.industry,
+    }
     data = body.model_dump(exclude_unset=True)
-    if "color_hue" in data and data["color_hue"] is not None:
+    if data.get("color_hue") is not None:
         data["color_hue"] = _hue(data["color_hue"])
+    if "industry" in data:
+        if data["industry"] is None:
+            data.pop("industry")
+        else:
+            industry = await industries_service.industry_for_track(ctx, requested=data["industry"])
+            data["industry"] = industry
+            pack = get_pack(industry)
+            data["industry_version"] = pack.version if pack is not None else 1
     for k, v in data.items():
         setattr(track, k, v)
     await ctx.session.flush()
+    industry_changed = "industry" in data and data["industry"] != before["industry"]
     await audit.record(
         ctx,
-        action="track.updated",
+        action="track.industry_changed" if industry_changed else "track.updated",
         target_type="track",
         target_id=str(track.id),
         before=before,
@@ -204,6 +233,7 @@ async def put_criteria(
     criteria = normalize_salary(body.criteria)
     if not criteria.has_role_signal():
         raise AppError("missing_role", "Add at least one title or occupation", 422)
+    await industries_service.validate_facets(ctx, criteria, track.industry)
 
     # Geocode locations missing coords (cache only; network optional).
     new_locs = []
@@ -294,6 +324,7 @@ async def duplicate_track(ctx: WorkspaceContext, track_id: uuid.UUID) -> dict[st
         autonomy=autonomy,
         nl_text=src_crit.nl_text,
         criteria=criteria_from_dict(src_crit.structured),
+        industry=src.industry,
     )
     created = await create_track(ctx, body)
     new_track = created["track"]

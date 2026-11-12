@@ -14,8 +14,23 @@ One JSON document is the source of truth for a Track's search. Shape: `apps/api/
 | Validate | `tracks/validate.py` (warnings, keyword boolean syntax) |
 | FX / period | `tracks/currency.py` + `currency_rates` table |
 | Geocode | `tracks/geocode.py` + `geocode_cache` (Nominatim, 1 req/s, UA) |
+| Industry pack | `industries/` (schema, packs, resolver). Details: [`industries.md`](./industries.md) |
 
 `track_criteria.version` increments on every structured write. Preview count stays "Preview available after first discovery" until Phase 5.
+
+### Industry-aware fields (IND-1)
+
+These are additive and optional, so existing criteria documents stay valid (`schema_version` 1).
+
+| Field | Shape | Notes |
+| --- | --- | --- |
+| `shifts` | `list[Shift]` | `morning`, `afternoon`, `evening`, `night`, `weekend`, `split`, `rotating`. Common outside tech. |
+| `facets` | `dict[str, list[str] | bool | int]` | Keys exist in the Track's industry pack; unknown keys return 422. |
+| `salary.includes` | `list[SalaryInclude]` | `accommodation`, `meals`, `tips`, `service_charge`, `transport`. |
+| `employment_types` | added `casual`, `seasonal` | AU/NZ/UK hospitality and cruise work. |
+
+`track_templates.industry` maps to a curated pack when one exists (`technology`), otherwise the
+track starts in `general` until its pack ships.
 
 ## Taxonomy (global)
 
@@ -36,10 +51,10 @@ Normalizers: trigram + aliases on the request path (`taxonomy/normalize.py`); op
 
 | Method | Path | Notes |
 | --- | --- | --- |
-| GET/POST | `/api/v1/tracks` | list / create |
+| GET/POST | `/api/v1/tracks` | list / create (`industry` optional; defaults to the workspace primary) |
 | GET | `/api/v1/tracks/templates` | global templates |
 | POST | `/api/v1/tracks/reorder` | active Tracks only |
-| GET/PATCH | `/api/v1/tracks/{id}` | detail / metadata |
+| GET/PATCH | `/api/v1/tracks/{id}` | detail / metadata (`industry` change audited) |
 | PUT | `/api/v1/tracks/{id}/criteria` | structured replace |
 | POST | `/api/v1/tracks/{id}/criteria/compile` | NL → patch (+ optional apply) |
 | POST | `/api/v1/tracks/{id}/duplicate` \| `/archive` | |
@@ -47,7 +62,7 @@ Normalizers: trigram + aliases on the request path (`taxonomy/normalize.py`); op
 | GET | `/api/v1/taxonomy/occupations/normalize` | |
 | GET | `/api/v1/taxonomy/skills/normalize` | |
 
-Audit actions: `track.created`, `track.updated`, `track.criteria_updated`, `track.duplicated`, `track.archived`, `track.reordered`.
+Audit actions: `track.created`, `track.updated`, `track.criteria_updated`, `track.duplicated`, `track.archived`, `track.reordered`, `track.industry_changed`.
 
 ## Evals
 

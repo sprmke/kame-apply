@@ -78,6 +78,16 @@ class Settings(BaseSettings):
     # Phase 17: inbound email alerts, web push, Telegram
     inbound_email_domain: str = "in.kameapply.local"
     inbound_webhook_secret: str | None = None
+
+    # Layer 4 keyword + location job search. Keys are platform-level, never user-supplied.
+    search_sources_enabled: bool = True
+    # A human must confirm each search provider's terms before live calls. Fixtures are exempt.
+    search_terms_acknowledged: bool = False
+    jooble_api_key: str | None = None
+    adzuna_app_id: str | None = None
+    adzuna_app_key: str | None = None
+    source_query_ttl_hours: int = Field(default=6, ge=1, le=168)
+    search_queries_per_track: int = Field(default=6, ge=1, le=24)
     vapid_public_key: str | None = None
     vapid_private_key: str | None = None
     vapid_subject: str = "mailto:ops@kameapply.local"

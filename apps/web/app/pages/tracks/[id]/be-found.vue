@@ -128,7 +128,7 @@ async function copy(text: string) {
       </section>
 
       <section class="flex flex-col gap-2">
-        <h2 class="font-display text-lg text-ink-900">{{ t("beFound.github") }}</h2>
+        <h2 class="font-display text-lg text-ink-900">{{ t("beFound.found") }}</h2>
         <ul class="list-disc pl-5 text-sm text-ink-600">
           <li v-for="(step, i) in opt.data.value.github_checklist" :key="i">{{ step }}</li>
         </ul>

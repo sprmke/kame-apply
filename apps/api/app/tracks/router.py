@@ -12,6 +12,7 @@ from app.core.errors import AppError
 from app.core.security import WorkspaceContext, require_action
 from app.tracks import schemas as s
 from app.tracks import service
+from app.tracks.plan import SearchPlanIn, SearchPlanOut, plan_search
 
 router = APIRouter(prefix="/tracks", tags=["tracks"])
 Read = Depends(require_action("data.read"))
@@ -49,6 +50,11 @@ async def create_track(body: s.TrackCreate, ctx: WorkspaceContext = Write):
 @router.get("/templates", response_model=list[s.TrackTemplateRead])
 async def list_templates(ctx: WorkspaceContext = Read):
     return await service.list_templates(ctx)
+
+
+@router.post("/plan", response_model=SearchPlanOut)
+async def plan_search_route(body: SearchPlanIn, ctx: WorkspaceContext = Write):
+    return plan_search(body)
 
 
 @router.post("/reorder", response_model=list[s.TrackRead])

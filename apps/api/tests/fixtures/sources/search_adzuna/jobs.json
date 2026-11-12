@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "id": "ad-2001",
+      "title": "Head Chef",
+      "company": { "display_name": "Riverside Kitchen" },
+      "location": { "display_name": "London, UK" },
+      "description": "Head chef for a fine dining kitchen. HACCP, food cost, 120 covers per service. Evening shifts.",
+      "redirect_url": "https://www.adzuna.co.uk/jobs/details/ad2001",
+      "created": "2026-11-09T12:00:00Z",
+      "salary_min": 42000,
+      "salary_max": 48000,
+      "contract_time": "full_time",
+      "category": { "tag": "hospitality-catering-jobs", "label": "Hospitality and Catering" }
+    }
+  ]
+}

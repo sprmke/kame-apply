@@ -8,6 +8,7 @@ import {
   putCriteriaApiV1TracksTrackIdCriteriaPut,
   runHistoryApiV1TracksTrackIdRunsGet,
   triageJobApiV1TrackJobsTrackJobIdTriagePost,
+  client,
   type BoardJobRead,
   type CriteriaV1,
   type DiscoveryRunHistoryRead,
@@ -15,7 +16,10 @@ import {
   type TrackDetail,
 } from "@kame/api-client";
 import { FnButton, FnChip, FnFolderTab, FnPencilText, FnSkeleton, useToast } from "@kame/ui";
+import type { Ref } from "vue";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useExperience } from "~/composables/useExperience";
+import type { Facet } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const route = useRoute();
@@ -25,6 +29,7 @@ const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const fmt = useFormat();
+const exp = useExperience();
 
 const trackId = computed(() => String(route.params.id));
 const nl = ref("");
@@ -51,6 +56,17 @@ const companiesInclude = ref("");
 const companiesExclude = ref("");
 const tzOverlap = ref(4);
 const workModes = ref<string[]>([]);
+const shifts = ref<string[]>([]);
+const employmentTypes = ref<string[]>([]);
+const salaryIncludes = ref<string[]>([]);
+const relocation = ref(false);
+const postingAge = ref<number | null>(null);
+const facetValues = ref<Record<string, string[]>>({});
+const showAll = ref(false);
+const languagesDraft = ref("");
+const educationDraft = ref("");
+const clearanceDraft = ref("");
+const minScoreDraft = ref<number | null>(null);
 
 const detail = useQuery({
   queryKey: computed(() => ["track", ws.currentId, trackId.value]),
@@ -63,6 +79,69 @@ const detail = useQuery({
   },
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
+
+function splitCsv(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const track = computed(() => detail.data.value ?? null);
+const criteria = computed(() => track.value?.criteria.structured as CriteriaV1 | undefined);
+const industry = computed(() => track.value?.industry || exp.primary.value);
+const manifest = computed(() => exp.manifestFor(industry.value));
+const facets = computed(() => exp.facetsFor(industry.value));
+
+function stateOf(field: string): "visible" | "collapsed" | "hidden" {
+  return exp.stateOf(field, industry.value);
+}
+
+function labelFor(field: string, fallback: string): string {
+  return exp.labelOf(field, industry.value, t(fallback));
+}
+
+function showField(field: string): boolean {
+  return stateOf(field) === "visible" || showAll.value;
+}
+
+function toggleShowAll() {
+  showAll.value = !showAll.value;
+  if (showAll.value) moreOpen.value = true;
+}
+
+function inMore(field: string): boolean {
+  return stateOf(field) === "collapsed";
+}
+
+const hiddenWithValues = computed(() => {
+  const c = criteria.value;
+  if (!c) return [] as string[];
+  const out: string[] = [];
+  const rem = c.remote_eligibility;
+  if (
+    stateOf("remote_eligibility") === "hidden" &&
+    rem &&
+    (rem.anywhere ||
+      rem.regions?.length ||
+      rem.countries?.length ||
+      rem.timezone_overlap_hours != null)
+  ) {
+    out.push(labelFor("remote_eligibility", "tracks.tzOverlap"));
+  }
+  if (stateOf("education") === "hidden" && c.education) {
+    out.push(labelFor("education", "tracks.education"));
+  }
+  if (stateOf("clearance") === "hidden" && c.clearance) {
+    out.push(labelFor("clearance", "tracks.clearance"));
+  }
+  return out;
+});
+
+const loading = computed(
+  () => !ws.loaded || detail.isPending.value || (detail.isFetching.value && !track.value),
+);
+const loadError = computed(() => detail.error.value);
 
 watch(
   () => detail.data.value,
@@ -83,23 +162,33 @@ watch(
     companiesExclude.value = (c.companies?.exclude ?? []).join(", ");
     tzOverlap.value = c.remote_eligibility?.timezone_overlap_hours ?? 4;
     workModes.value = [...(c.work_modes ?? [])];
+    shifts.value = [...(c.shifts ?? [])];
+    employmentTypes.value = [...(c.employment_types ?? [])];
+    salaryIncludes.value = [...(c.salary?.includes ?? [])];
+    relocation.value = c.relocation === true;
+    postingAge.value = c.posting_max_age_days ?? null;
+    languagesDraft.value = (c.languages ?? []).join(", ");
+    educationDraft.value = c.education ?? "";
+    clearanceDraft.value = c.clearance ?? "";
+    minScoreDraft.value = c.min_match_score ?? null;
+    hydrateFacets(c);
   },
   { immediate: true },
 );
 
-function splitCsv(raw: string): string[] {
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+function hydrateFacets(c: CriteriaV1) {
+  const next: Record<string, string[]> = {};
+  for (const facet of facets.value) {
+    const raw = (c.facets ?? {})[facet.key];
+    next[facet.key] = Array.isArray(raw) ? [...raw] : [];
+  }
+  facetValues.value = next;
 }
 
-const track = computed(() => detail.data.value ?? null);
-const criteria = computed(() => track.value?.criteria.structured as CriteriaV1 | undefined);
-const loading = computed(
-  () => !ws.loaded || detail.isPending.value || (detail.isFetching.value && !track.value),
-);
-const loadError = computed(() => detail.error.value);
+watch(facets, () => {
+  const c = criteria.value;
+  if (c) hydrateFacets(c);
+});
 
 const matched = useQuery({
   queryKey: computed(() => ["track-jobs", ws.currentId, trackId.value]),
@@ -118,6 +207,54 @@ const matched = useQuery({
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
 const matchedJobs = computed(() => matched.data.value ?? []);
+
+type Coverage = {
+  industry: string;
+  country: string;
+  level: "strong" | "partial" | "thin" | "none";
+  note: string;
+};
+type WhereLook = {
+  industry: string;
+  queries: { keywords: string; location: string; country: string; category: string | null }[];
+  adapters: { key: string; name: string; configured: boolean; terms_note: string }[];
+  alerts: string[];
+};
+
+const coverageCountry = computed(
+  () => criteria.value?.locations?.[0]?.country?.toUpperCase() ?? "",
+);
+const coveragePlace = computed(
+  () => criteria.value?.locations?.[0]?.place || coverageCountry.value,
+);
+const coverage = useQuery({
+  queryKey: computed(() => ["coverage", industry.value, coverageCountry.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: "/api/v1/sources/coverage",
+      query: { industry: industry.value, country: coverageCountry.value },
+      throwOnError: true,
+    });
+    return data as Coverage;
+  },
+  enabled: computed(() => Boolean(ws.currentId && coverageCountry.value && industry.value)),
+});
+const whereLook = useQuery({
+  queryKey: computed(() => ["track-where", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: `/api/v1/tracks/${trackId.value}/where`,
+      throwOnError: true,
+    });
+    return data as WhereLook;
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+});
+const thinCoverage = computed(() =>
+  Boolean(
+    coverage.data.value && coverage.data.value.level !== "strong" && matchedJobs.value.length < 5,
+  ),
+);
 
 const runs = useQuery({
   queryKey: computed(() => ["track-runs", ws.currentId, trackId.value]),
@@ -256,6 +393,8 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
 async function invalidate() {
   await qc.invalidateQueries({ queryKey: ["track", ws.currentId, trackId.value] });
   await qc.invalidateQueries({ queryKey: ["tracks", ws.currentId] });
+  await qc.invalidateQueries({ queryKey: ["track-where", ws.currentId, trackId.value] });
+  await qc.invalidateQueries({ queryKey: ["coverage"] });
 }
 
 async function saveCriteria(next: CriteriaV1) {
@@ -333,13 +472,56 @@ function toggleMode(mode: string) {
   }
 }
 
+function toggleValue(list: Ref<string[]>, value: string) {
+  list.value = list.value.includes(value)
+    ? list.value.filter((item) => item !== value)
+    : [...list.value, value];
+}
+
+function toggleShift(value: string) {
+  toggleValue(shifts, value);
+}
+
+function toggleEmployment(value: string) {
+  toggleValue(employmentTypes, value);
+}
+
+function toggleInclude(value: string) {
+  toggleValue(salaryIncludes, value);
+}
+
+function toggleFacet(facet: Facet, option: string) {
+  const current = facetValues.value[facet.key] ?? [];
+  let next: string[];
+  if (facet.kind === "single") {
+    next = current.includes(option) ? [] : [option];
+  } else {
+    next = current.includes(option)
+      ? current.filter((item) => item !== option)
+      : [...current, option];
+  }
+  facetValues.value = { ...facetValues.value, [facet.key]: next };
+}
+
 async function saveMore() {
   const c = criteria.value;
   if (!c) return;
   const regions = regionPreset.value ? [regionPreset.value] : (c.remote_eligibility?.regions ?? []);
-  const locations = place.value.trim()
-    ? [{ place: place.value.trim(), radius_km: radiusKm.value || null }]
-    : [];
+  let locations: CriteriaV1["locations"] = [];
+  if (place.value.trim()) {
+    const base = { place: place.value.trim(), radius_km: radiusKm.value || null };
+    try {
+      const { data } = await client.get({
+        url: "/api/v1/tracks/geo/lookup",
+        query: { place: base.place },
+        throwOnError: true,
+      });
+      const hit = data as { lat: number; lon: number; country: string | null };
+      locations = [{ ...base, lat: hit.lat, lon: hit.lon, country: hit.country }];
+    } catch {
+      locations = [base];
+    }
+  }
   await saveCriteria({
     ...c,
     work_modes: workModes.value as CriteriaV1["work_modes"],
@@ -359,9 +541,21 @@ async function saveMore() {
             max: null,
             currency: salaryCurrency.value,
             period: salaryPeriod.value,
+            includes: salaryIncludes.value as NonNullable<CriteriaV1["salary"]>["includes"],
             hide_unspecified: c.salary?.hide_unspecified ?? false,
           }
         : null,
+    shifts: shifts.value as CriteriaV1["shifts"],
+    employment_types: employmentTypes.value as CriteriaV1["employment_types"],
+    relocation: relocation.value ? true : null,
+    posting_max_age_days: postingAge.value,
+    languages: splitCsv(languagesDraft.value).map((item) => item.toLowerCase()),
+    education: educationDraft.value.trim() || null,
+    clearance: clearanceDraft.value.trim() || null,
+    min_match_score: minScoreDraft.value,
+    facets: Object.fromEntries(
+      Object.entries(facetValues.value).filter(([, values]) => values.length > 0),
+    ),
     keywords: {
       include_expr: includeExpr.value.trim() || null,
       exclude_expr: excludeExpr.value.trim() || null,
@@ -393,7 +587,7 @@ async function saveMore() {
         <div class="min-w-0 flex-1">
           <FnFolderTab :hue="hue(track.color_hue)" active>{{ track.name }}</FnFolderTab>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex w-full flex-wrap items-center gap-2 lg:w-auto">
           <FnButton tone="primary" :disabled="running" @click="runNow">{{
             running ? t("tracks.running") : t("tracks.runNow")
           }}</FnButton>
@@ -470,6 +664,25 @@ async function saveMore() {
           >
         </div>
         <p v-if="!matchedJobs.length" class="text-sm text-ink-600">{{ t("tracks.noJobs") }}</p>
+        <div
+          v-if="thinCoverage"
+          class="flex flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm"
+        >
+          <p class="font-medium text-ink-900">
+            {{
+              t("tracks.coverageTitle", {
+                field: exp.packLabel(industry),
+                country: coveragePlace,
+              })
+            }}
+          </p>
+          <p class="text-ink-600">{{ t("tracks.coverageBody") }}</p>
+          <NuxtLink
+            to="/settings/alerts"
+            class="font-semibold text-brand-700 underline underline-offset-2"
+            >{{ t("tracks.addAlert") }}</NuxtLink
+          >
+        </div>
         <ul v-else class="divide-y divide-rule border-y border-rule">
           <li
             v-for="j in matchedJobs"
@@ -590,74 +803,81 @@ async function saveMore() {
         <p class="text-sm text-ink-600">{{ t("tracks.criteriaHint") }}</p>
       </section>
 
-      <section class="flex flex-col gap-3 border-t border-rule pt-4">
-        <FnButton
-          size="sm"
-          tone="quiet"
-          class="self-start"
-          :aria-expanded="moreOpen"
-          @click="moreOpen = !moreOpen"
-          >{{ moreOpen ? t("tracks.hideFilters") : t("tracks.moreFilters") }}</FnButton
-        >
-        <div v-if="moreOpen" class="grid gap-4 md:grid-cols-2">
-          <fieldset class="flex flex-col gap-2">
+      <section
+        v-if="manifest"
+        class="flex flex-col gap-5 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+      >
+        <div class="grid gap-4 lg:grid-cols-2">
+          <fieldset v-if="showField('work_modes')" class="flex flex-col gap-2">
             <legend class="text-sm text-ink-600">{{ t("tracks.workModes") }}</legend>
-            <label
-              v-for="m in ['remote', 'hybrid', 'on_site']"
-              :key="m"
-              class="flex min-h-11 items-center gap-2 text-sm"
-            >
-              <input type="checkbox" :checked="workModes.includes(m)" @change="toggleMode(m)" />
-              {{ t(`tracks.mode_${m}`) }}
-            </label>
-          </fieldset>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.location") }}</span>
-            <input
-              v-model="place"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="200"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.radius") }}</span>
-            <input
-              v-model.number="radiusKm"
-              type="number"
-              min="1"
-              max="500"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.region") }}</span>
-            <select
-              v-model="regionPreset"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            >
-              <option value="">{{ t("tracks.regionAny") }}</option>
-              <option
-                v-for="r in ['APAC', 'EU', 'LATAM', 'MENA', 'NA', 'AFRICA']"
-                :key="r"
-                :value="r"
+            <div class="flex flex-wrap gap-3">
+              <label
+                v-for="m in ['remote', 'hybrid', 'on_site']"
+                :key="m"
+                class="flex min-h-11 items-center gap-2 text-sm"
               >
-                {{ r }}
-              </option>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.tzOverlap") }}</span>
-            <input
-              v-model.number="tzOverlap"
-              type="range"
-              min="0"
-              max="12"
-              class="min-h-11 w-full accent-brand-600"
-            />
-            <span class="text-xs tabular-nums text-ink-600">{{ tzOverlap }}h</span>
-          </label>
-          <label class="flex min-h-11 items-center gap-2 text-sm">
+                <input type="checkbox" :checked="workModes.includes(m)" @change="toggleMode(m)" />
+                {{ t(`tracks.mode_${m}`) }}
+              </label>
+            </div>
+          </fieldset>
+
+          <template v-if="showField('locations')">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ labelFor("locations", "tracks.location") }}</span>
+              <input
+                v-model="place"
+                type="text"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+                maxlength="200"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.radius") }}</span>
+              <input
+                v-model.number="radiusKm"
+                type="number"
+                min="1"
+                max="500"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              />
+            </label>
+          </template>
+
+          <template v-if="showField('remote_eligibility')">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.region") }}</span>
+              <select
+                v-model="regionPreset"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              >
+                <option value="">{{ t("tracks.regionAny") }}</option>
+                <option
+                  v-for="r in ['APAC', 'EU', 'LATAM', 'MENA', 'NA', 'AFRICA']"
+                  :key="r"
+                  :value="r"
+                >
+                  {{ r }}
+                </option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.tzOverlap") }}</span>
+              <input
+                v-model.number="tzOverlap"
+                type="range"
+                min="0"
+                max="12"
+                class="min-h-11 w-full accent-brand-600"
+              />
+              <span class="text-xs tabular-nums text-ink-600">{{ tzOverlap }}h</span>
+            </label>
+          </template>
+
+          <label
+            v-if="showField('visa_sponsorship')"
+            class="flex min-h-11 items-center gap-2 text-sm"
+          >
             <input
               v-model="visa"
               type="checkbox"
@@ -665,57 +885,174 @@ async function saveMore() {
             />
             {{ t("tracks.visa") }}
           </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.salaryMin") }}</span>
+          <label v-if="showField('relocation')" class="flex min-h-11 items-center gap-2 text-sm">
             <input
-              v-model.number="salaryMin"
+              v-model="relocation"
+              type="checkbox"
+              class="size-5 rounded border-rule accent-brand-600"
+            />
+            {{ t("tracks.relocation") }}
+          </label>
+        </div>
+
+        <div
+          v-if="showField('salary') || showField('salary_includes')"
+          class="grid gap-4 border-t border-rule pt-4 lg:grid-cols-2"
+        >
+          <template v-if="showField('salary')">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.salaryMin") }}</span>
+              <input
+                v-model.number="salaryMin"
+                type="number"
+                min="0"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              />
+            </label>
+            <div class="flex gap-2">
+              <label class="flex flex-1 flex-col gap-1 text-sm">
+                <span class="text-ink-600">{{ t("tracks.currency") }}</span>
+                <input
+                  v-model="salaryCurrency"
+                  type="text"
+                  maxlength="3"
+                  class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm uppercase text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+                />
+              </label>
+              <label class="flex flex-1 flex-col gap-1 text-sm">
+                <span class="text-ink-600">{{ t("tracks.period") }}</span>
+                <select
+                  v-model="salaryPeriod"
+                  class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+                >
+                  <option value="hour">hour</option>
+                  <option value="day">day</option>
+                  <option value="month">month</option>
+                  <option value="year">year</option>
+                </select>
+              </label>
+            </div>
+          </template>
+          <fieldset v-if="showField('salary_includes')" class="flex flex-col gap-2">
+            <legend class="text-sm text-ink-600">
+              {{ labelFor("salary_includes", "tracks.salaryIncludes") }}
+            </legend>
+            <div class="flex flex-wrap gap-3">
+              <label
+                v-for="item in ['accommodation', 'meals', 'tips', 'service_charge', 'transport']"
+                :key="item"
+                class="flex min-h-11 items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  :checked="salaryIncludes.includes(item)"
+                  @change="toggleInclude(item)"
+                />
+                {{ t(`tracks.include_${item}`) }}
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
+        <div
+          v-if="
+            showField('shifts') ||
+            showField('employment_types') ||
+            showField('posting_max_age_days')
+          "
+          class="grid gap-4 border-t border-rule pt-4 lg:grid-cols-2"
+        >
+          <fieldset v-if="showField('shifts')" class="flex flex-col gap-2">
+            <legend class="text-sm text-ink-600">{{ t("tracks.shifts") }}</legend>
+            <div class="flex flex-wrap gap-3">
+              <label
+                v-for="item in [
+                  'morning',
+                  'afternoon',
+                  'evening',
+                  'night',
+                  'weekend',
+                  'split',
+                  'rotating',
+                ]"
+                :key="item"
+                class="flex min-h-11 items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  :checked="shifts.includes(item)"
+                  @change="toggleShift(item)"
+                />
+                {{ t(`tracks.shift_${item}`) }}
+              </label>
+            </div>
+          </fieldset>
+          <fieldset v-if="showField('employment_types')" class="flex flex-col gap-2">
+            <legend class="text-sm text-ink-600">{{ t("tracks.employmentTypes") }}</legend>
+            <div class="flex flex-wrap gap-3">
+              <label
+                v-for="item in [
+                  'full_time',
+                  'part_time',
+                  'contract',
+                  'freelance',
+                  'internship',
+                  'temporary',
+                  'casual',
+                  'seasonal',
+                ]"
+                :key="item"
+                class="flex min-h-11 items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  :checked="employmentTypes.includes(item)"
+                  @change="toggleEmployment(item)"
+                />
+                {{ t(`tracks.type_${item}`) }}
+              </label>
+            </div>
+          </fieldset>
+          <label v-if="showField('posting_max_age_days')" class="flex flex-col gap-1 text-sm">
+            <span class="text-ink-600">{{ t("tracks.postingAge") }}</span>
+            <input
+              v-model.number="postingAge"
               type="number"
-              min="0"
+              min="1"
+              max="365"
               class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
             />
           </label>
-          <div class="flex gap-2">
-            <label class="flex flex-1 flex-col gap-1 text-sm">
-              <span class="text-ink-600">{{ t("tracks.currency") }}</span>
-              <input
-                v-model="salaryCurrency"
-                type="text"
-                maxlength="3"
-                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm uppercase text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              />
-            </label>
-            <label class="flex flex-1 flex-col gap-1 text-sm">
-              <span class="text-ink-600">{{ t("tracks.period") }}</span>
-              <select
-                v-model="salaryPeriod"
-                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        </div>
+
+        <div
+          v-if="showField('facets') && facets.length"
+          class="grid gap-4 border-t border-rule pt-4 lg:grid-cols-2"
+        >
+          <fieldset v-for="facet in facets" :key="facet.key" class="flex flex-col gap-2">
+            <legend class="text-sm text-ink-600">{{ exp.facetLabel(facet) }}</legend>
+            <div class="flex flex-wrap gap-2">
+              <label
+                v-for="option in facet.options"
+                :key="option.key"
+                class="flex min-h-11 items-center gap-2 rounded-full border border-rule px-3 text-sm"
               >
-                <option value="hour">hour</option>
-                <option value="day">day</option>
-                <option value="month">month</option>
-                <option value="year">year</option>
-              </select>
-            </label>
-          </div>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.keywordsInclude") }}</span>
-            <input
-              v-model="includeExpr"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.keywordsExclude") }}</span>
-            <input
-              v-model="excludeExpr"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
+                <input
+                  type="checkbox"
+                  :checked="(facetValues[facet.key] ?? []).includes(option.key)"
+                  @change="toggleFacet(facet, option.key)"
+                />
+                {{ exp.optionLabel(option) }}
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
+        <div
+          v-if="showField('companies')"
+          class="grid gap-4 border-t border-rule pt-4 lg:grid-cols-2"
+        >
+          <label class="flex flex-col gap-1 text-sm">
             <span class="text-ink-600">{{ t("tracks.companiesInclude") }}</span>
             <input
               v-model="companiesInclude"
@@ -724,7 +1061,7 @@ async function saveMore() {
               maxlength="2000"
             />
           </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
+          <label class="flex flex-col gap-1 text-sm">
             <span class="text-ink-600">{{ t("tracks.companiesExclude") }}</span>
             <input
               v-model="companiesExclude"
@@ -733,11 +1070,208 @@ async function saveMore() {
               maxlength="2000"
             />
           </label>
+        </div>
+
+        <FnButton tone="primary" class="self-start" :disabled="saving" @click="saveMore">{{
+          t("common.save")
+        }}</FnButton>
+      </section>
+
+      <section class="flex flex-col gap-3 border-t border-rule pt-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <FnButton
+            size="sm"
+            tone="quiet"
+            :aria-expanded="moreOpen"
+            @click="moreOpen = !moreOpen"
+            >{{ moreOpen ? t("tracks.hideFilters") : t("tracks.moreFilters") }}</FnButton
+          >
+          <FnButton size="sm" tone="ghost" :aria-pressed="showAll" @click="toggleShowAll">{{
+            showAll ? t("tracks.hideAllFilters") : t("tracks.showAllFilters")
+          }}</FnButton>
+        </div>
+        <p v-if="hiddenWithValues.length" class="text-xs text-ink-600">
+          <span class="font-semibold">{{ t("tracks.setEarlier") }}:</span>
+          {{ hiddenWithValues.join(", ") }}. {{ t("tracks.setEarlierHint") }}
+        </p>
+        <div v-if="moreOpen" class="grid gap-4 lg:grid-cols-2">
+          <template
+            v-if="(inMore('remote_eligibility') || showAll) && !showField('remote_eligibility')"
+          >
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.region") }}</span>
+              <select
+                v-model="regionPreset"
+                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              >
+                <option value="">{{ t("tracks.regionAny") }}</option>
+                <option
+                  v-for="r in ['APAC', 'EU', 'LATAM', 'MENA', 'NA', 'AFRICA']"
+                  :key="r"
+                  :value="r"
+                >
+                  {{ r }}
+                </option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-ink-600">{{ t("tracks.tzOverlap") }}</span>
+              <input
+                v-model.number="tzOverlap"
+                type="range"
+                min="0"
+                max="12"
+                class="min-h-11 w-full accent-brand-600"
+              />
+              <span class="text-xs tabular-nums text-ink-600">{{ tzOverlap }}h</span>
+            </label>
+          </template>
+          <label
+            v-if="(inMore('keywords') || showAll) && !showField('keywords')"
+            class="flex flex-col gap-1 text-sm md:col-span-2"
+          >
+            <span class="text-ink-600">{{ t("tracks.keywordsInclude") }}</span>
+            <input
+              v-model="includeExpr"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="2000"
+            />
+          </label>
+          <label
+            v-if="(inMore('keywords') || showAll) && !showField('keywords')"
+            class="flex flex-col gap-1 text-sm md:col-span-2"
+          >
+            <span class="text-ink-600">{{ t("tracks.keywordsExclude") }}</span>
+            <input
+              v-model="excludeExpr"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="2000"
+            />
+          </label>
+          <label
+            v-if="(inMore('companies') || showAll) && !showField('companies')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.companiesInclude") }}</span>
+            <input
+              v-model="companiesInclude"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="2000"
+            />
+          </label>
+          <label
+            v-if="(inMore('companies') || showAll) && !showField('companies')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.companiesExclude") }}</span>
+            <input
+              v-model="companiesExclude"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="2000"
+            />
+          </label>
+          <label
+            v-if="(inMore('languages') || showAll) && !showField('languages')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.languages") }}</span>
+            <input
+              v-model="languagesDraft"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="200"
+            />
+          </label>
+          <label
+            v-if="(inMore('education') || showAll) && !showField('education')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.education") }}</span>
+            <input
+              v-model="educationDraft"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="200"
+            />
+          </label>
+          <label
+            v-if="(inMore('clearance') || showAll) && !showField('clearance')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.clearance") }}</span>
+            <input
+              v-model="clearanceDraft"
+              type="text"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+              maxlength="120"
+            />
+          </label>
+          <label
+            v-if="(inMore('min_match_score') || showAll) && !showField('min_match_score')"
+            class="flex flex-col gap-1 text-sm"
+          >
+            <span class="text-ink-600">{{ t("tracks.minScore") }}</span>
+            <input
+              v-model.number="minScoreDraft"
+              type="number"
+              min="0"
+              max="100"
+              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+            />
+          </label>
           <FnButton tone="primary" class="self-start" :disabled="saving" @click="saveMore">{{
             t("common.save")
           }}</FnButton>
         </div>
       </section>
+
+      <details
+        class="rounded-xl border border-rule bg-paper-1 p-4 text-sm shadow-[var(--shadow-card)]"
+      >
+        <summary
+          class="flex min-h-11 cursor-pointer list-none items-center font-semibold text-ink-900"
+        >
+          {{ t("tracks.whereWeLook") }}
+        </summary>
+        <div v-if="whereLook.data.value" class="mt-3 flex flex-col gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.searchTerms") }}
+            </p>
+            <ul
+              v-if="whereLook.data.value.queries.length"
+              class="mt-1 flex flex-col gap-1 text-ink-600"
+            >
+              <li v-for="(query, i) in whereLook.data.value.queries" :key="i">
+                {{ query.keywords }}
+                <template v-if="query.location">in {{ query.location }}</template>
+              </li>
+            </ul>
+            <p v-else class="mt-1 text-ink-600">{{ t("tracks.noSearchTerms") }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.sources") }}
+            </p>
+            <ul class="mt-1 flex flex-col gap-1">
+              <li
+                v-for="adapter in whereLook.data.value.adapters"
+                :key="adapter.key"
+                class="flex flex-wrap items-center gap-2 text-ink-600"
+              >
+                <span class="text-ink-900">{{ adapter.name }}</span>
+                <span class="text-xs">{{
+                  adapter.configured ? t("tracks.ready") : t("tracks.setupNeeded")
+                }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
     </template>
   </div>
 </template>

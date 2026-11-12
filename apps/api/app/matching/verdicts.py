@@ -44,6 +44,7 @@ def verdict_for_qual(
     profile_years: float,
     profile_degrees: set[str],
     profile_languages: set[str],
+    profile_credentials: set[str] | None = None,
     knockout_hit: bool = False,
 ) -> dict[str, Any]:
     if knockout_hit:
@@ -105,6 +106,13 @@ def verdict_for_qual(
         name = str(n.get("name") or "").lower()
         if name in profile_languages:
             return {"verdict": "met", "evidence_quote": name, "note": None}
+        return {"verdict": "not_evidenced", "evidence_quote": None, "note": None}
+
+    if typ == "credential":
+        key = str(n.get("key") or "").lower()
+        have = {str(item).lower() for item in (profile_credentials or set())}
+        if key and key in have:
+            return {"verdict": "met", "evidence_quote": key, "note": None}
         return {"verdict": "not_evidenced", "evidence_quote": None, "note": None}
 
     return {"verdict": "not_evidenced", "evidence_quote": quote, "note": "few stated requirements"}

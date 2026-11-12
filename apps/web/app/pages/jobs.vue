@@ -13,7 +13,7 @@ import { FnButton, FnChip, FnRiskSeal, FnSelect, FnSkeleton, useToast } from "@k
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
@@ -338,7 +338,28 @@ const allUnproven = computed(() => {
 function kindLabel(kind?: string | null): string {
   if (kind === "must") return t("jobs.required");
   if (kind === "nice") return t("jobs.preferred");
+  if (kind === "credential") return t("jobs.certificate");
+  if (kind === "shift") return t("jobs.shift");
+  if (kind === "benefit") return t("jobs.payIncludes");
   return kind || "";
+}
+
+function qualText(row: { kind?: string; text?: string }): string {
+  const raw = String(row.text || "");
+  if (row.kind === "credential") {
+    const key = `credential.${raw}`;
+    return te(key) ? t(key) : raw;
+  }
+  if (row.kind === "shift" || row.kind === "benefit") {
+    const prefix = row.kind === "shift" ? "tracks.shift_" : "tracks.include_";
+    return raw
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => (te(prefix + part) ? t(prefix + part) : part))
+      .join(", ");
+  }
+  return raw;
 }
 
 function verdictLabel(verdict?: string | null): string {
@@ -587,11 +608,8 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
                   kindLabel(String(q.kind || ""))
                 }}</span>
               </div>
-              <p
-                class="mt-2 line-clamp-3 text-sm leading-6 text-ink-900"
-                :title="String(q.text || '')"
-              >
-                {{ q.text }}
+              <p class="mt-2 line-clamp-3 text-sm leading-6 text-ink-900" :title="qualText(q)">
+                {{ qualText(q) }}
               </p>
               <p
                 v-if="q.evidence_quote && q.evidence_quote !== q.text"
