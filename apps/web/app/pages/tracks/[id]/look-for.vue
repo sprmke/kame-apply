@@ -20,6 +20,8 @@ import {
   type SelectOption,
 } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useExperience } from "~/composables/useExperience";
+import type { Facet } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const route = useRoute();
@@ -28,6 +30,8 @@ const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
+const exp = useExperience();
+const showAll = ref(false);
 
 const trackId = computed(() => String(route.params.id));
 const nl = ref("");
@@ -63,6 +67,9 @@ const companiesExclude = ref("");
 const tzOverlap = ref(4);
 const workModes = ref<string[]>([]);
 const employmentTypes = ref<string[]>([]);
+const shifts = ref<string[]>([]);
+const salaryIncludes = ref<string[]>([]);
+const facetValues = ref<Record<string, string[]>>({});
 const postingAge = ref(0);
 
 const detail = useQuery({
@@ -80,6 +87,13 @@ const detail = useQuery({
 const track = computed(() => detail.data.value ?? null);
 const criteria = computed(() => track.value?.criteria.structured as CriteriaV1 | undefined);
 const shown = computed(() => preview.value ?? criteria.value);
+const industry = computed(() => track.value?.industry || exp.primary.value);
+const facets = computed(() => exp.facetsFor(industry.value));
+
+/** Fields the field of work hides stay reachable through "Show every filter". */
+function showField(field: string): boolean {
+  return exp.stateOf(field, industry.value) !== "hidden" || showAll.value;
+}
 
 function hydrateFilters(c: CriteriaV1) {
   place.value = c.locations?.[0]?.place ?? "";
@@ -96,8 +110,24 @@ function hydrateFilters(c: CriteriaV1) {
   tzOverlap.value = c.remote_eligibility?.timezone_overlap_hours ?? 4;
   workModes.value = [...(c.work_modes ?? [])];
   employmentTypes.value = [...(c.employment_types ?? [])];
+  shifts.value = [...(c.shifts ?? [])];
+  salaryIncludes.value = [...(c.salary?.includes ?? [])];
   postingAge.value = c.posting_max_age_days ?? 0;
+  hydrateFacets(c);
 }
+
+function hydrateFacets(c: CriteriaV1) {
+  const next: Record<string, string[]> = {};
+  for (const facet of facets.value) {
+    const raw = (c.facets ?? {})[facet.key];
+    next[facet.key] = Array.isArray(raw) ? [...raw] : [];
+  }
+  facetValues.value = next;
+}
+
+watch(facets, () => {
+  if (criteria.value) hydrateFacets(criteria.value);
+});
 
 function hydrate(d: TrackDetail | null | undefined) {
   if (!d) return;
@@ -168,7 +198,11 @@ const employmentValues = [
   "freelance",
   "internship",
   "temporary",
+  "casual",
+  "seasonal",
 ];
+const shiftValues = ["morning", "afternoon", "evening", "night", "weekend", "split", "rotating"];
+const includeValues = ["accommodation", "meals", "tips", "service_charge", "transport"];
 
 const activeFilterCount = computed(() => {
   let n = 0;
@@ -326,6 +360,31 @@ function toggleEmployment(type: string) {
     : [...employmentTypes.value, type];
 }
 
+function toggleShift(shift: string) {
+  shifts.value = shifts.value.includes(shift)
+    ? shifts.value.filter((x) => x !== shift)
+    : [...shifts.value, shift];
+}
+
+function toggleInclude(item: string) {
+  salaryIncludes.value = salaryIncludes.value.includes(item)
+    ? salaryIncludes.value.filter((x) => x !== item)
+    : [...salaryIncludes.value, item];
+}
+
+function toggleFacet(facet: Facet, option: string) {
+  const current = facetValues.value[facet.key] ?? [];
+  const next =
+    facet.kind === "single"
+      ? current.includes(option)
+        ? []
+        : [option]
+      : current.includes(option)
+        ? current.filter((item) => item !== option)
+        : [...current, option];
+  facetValues.value = { ...facetValues.value, [facet.key]: next };
+}
+
 async function saveMore() {
   const c = preview.value ?? criteria.value;
   if (!c) return;
@@ -340,6 +399,10 @@ async function saveMore() {
     ...c,
     work_modes: workModes.value as CriteriaV1["work_modes"],
     employment_types: employmentTypes.value as CriteriaV1["employment_types"],
+    shifts: shifts.value as CriteriaV1["shifts"],
+    facets: Object.fromEntries(
+      Object.entries(facetValues.value).filter(([, values]) => values.length > 0),
+    ),
     posting_max_age_days: postingAge.value > 0 ? postingAge.value : null,
     visa_sponsorship: visa.value ? true : null,
     locations,
@@ -357,6 +420,7 @@ async function saveMore() {
             max: null,
             currency: salaryCurrency.value,
             period: salaryPeriod.value,
+            includes: salaryIncludes.value as NonNullable<CriteriaV1["salary"]>["includes"],
             hide_unspecified: c.salary?.hide_unspecified ?? false,
           }
         : null,
@@ -510,7 +574,7 @@ async function saveMore() {
         "
       >
         <div class="grid gap-4 sm:grid-cols-2">
-          <fieldset class="flex flex-col gap-1">
+          <fieldset v-if="showField('work_modes')" class="flex flex-col gap-1">
             <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.workModes") }}</legend>
             <label
               v-for="m in modeValues"
@@ -522,11 +586,11 @@ async function saveMore() {
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="workModes.includes(m)"
                 @change="toggleMode(m)"
-              >
+              />
               {{ t(`tracks.mode_${m}`) }}
             </label>
           </fieldset>
-          <fieldset class="flex flex-col gap-1">
+          <fieldset v-if="showField('employment_types')" class="flex flex-col gap-1">
             <legend class="text-sm font-semibold text-ink-900">
               {{ t("tracks.employment") }}
             </legend>
@@ -540,23 +604,53 @@ async function saveMore() {
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="employmentTypes.includes(e)"
                 @change="toggleEmployment(e)"
-              >
+              />
               {{ t(`tracks.emp_${e}`) }}
             </label>
           </fieldset>
-          <FnField v-slot="{ id }" :label="t('tracks.postedWithin')" :help="t('tracks.postedHelp')">
+          <fieldset v-if="showField('shifts')" class="flex flex-col gap-1">
+            <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.shifts") }}</legend>
+            <label
+              v-for="item in shiftValues"
+              :key="item"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
+              <input
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+                :checked="shifts.includes(item)"
+                @change="toggleShift(item)"
+              />
+              {{ t(`tracks.shift_${item}`) }}
+            </label>
+          </fieldset>
+          <FnField
+            v-if="showField('posting_max_age_days')"
+            v-slot="{ id }"
+            :label="t('tracks.postedWithin')"
+            :help="t('tracks.postedHelp')"
+          >
             <FnSelect :id="id" v-model="postingAgeText" :options="postingOptions" />
           </FnField>
-          <FnField v-slot="{ id }" :label="t('tracks.location')" :help="t('tracks.locationHelp')">
+          <FnField
+            v-if="showField('locations')"
+            v-slot="{ id }"
+            :label="t('tracks.location')"
+            :help="t('tracks.locationHelp')"
+          >
             <FnInput :id="id" v-model="place" :placeholder="t('tracks.locationPlaceholder')" />
           </FnField>
-          <FnField v-slot="{ id }" :label="t('tracks.radius')">
+          <FnField v-if="showField('locations')" v-slot="{ id }" :label="t('tracks.radius')">
             <FnInput :id="id" v-model="radiusText" type="number" />
           </FnField>
-          <FnField v-slot="{ id }" :label="t('tracks.region')">
+          <FnField
+            v-if="showField('remote_eligibility')"
+            v-slot="{ id }"
+            :label="t('tracks.region')"
+          >
             <FnSelect :id="id" v-model="regionPreset" :options="regionOptions" />
           </FnField>
-          <label class="flex flex-col gap-2 text-sm">
+          <label v-if="showField('remote_eligibility')" class="flex flex-col gap-2 text-sm">
             <span class="font-semibold text-ink-900">{{ t("tracks.tzOverlap") }}</span>
             <input
               v-model.number="tzOverlap"
@@ -564,18 +658,64 @@ async function saveMore() {
               min="0"
               max="12"
               class="min-h-11 w-full accent-brand-600"
-            >
+            />
             <span class="text-sm tabular-nums text-ink-600">{{ tzOverlap }}h</span>
           </label>
-          <label class="flex min-h-11 items-center gap-3 text-sm text-ink-900">
+          <label
+            v-if="showField('visa_sponsorship')"
+            class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+          >
             <input
               v-model="visa"
               type="checkbox"
               class="size-5 rounded border-rule accent-brand-600"
-            >
+            />
             {{ t("tracks.visa") }}
           </label>
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-2">
+          <fieldset v-if="showField('salary_includes')" class="flex flex-col gap-1">
+            <legend class="text-sm font-semibold text-ink-900">
+              {{ t("tracks.salaryIncludes") }}
+            </legend>
+            <label
+              v-for="item in includeValues"
+              :key="item"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
+              <input
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+                :checked="salaryIncludes.includes(item)"
+                @change="toggleInclude(item)"
+              />
+              {{ t(`tracks.include_${item}`) }}
+            </label>
+          </fieldset>
+          <fieldset
+            v-for="facet in showField('facets') ? facets : []"
+            :key="facet.key"
+            class="flex flex-col gap-1"
+          >
+            <legend class="text-sm font-semibold text-ink-900">
+              {{ exp.facetLabel(facet) }}
+            </legend>
+            <label
+              v-for="option in facet.options"
+              :key="option.key"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
+              <input
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+                :checked="(facetValues[facet.key] ?? []).includes(option.key)"
+                @change="toggleFacet(facet, option.key)"
+              />
+              {{ exp.optionLabel(option) }}
+            </label>
+          </fieldset>
+          <div
+            v-if="showField('salary')"
+            class="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-2"
+          >
             <FnField :label="t('tracks.salaryMin')" class="flex-1">
               <template #default="{ id }">
                 <FnInput :id="id" v-model="salaryText" type="number" inputmode="numeric" />
@@ -592,22 +732,26 @@ async function saveMore() {
               </template>
             </FnField>
           </div>
-          <FnField :label="t('tracks.keywordsInclude')" :help="t('tracks.keywordsIncludeHelp')">
+          <FnField
+            v-if="showField('keywords')"
+            :label="t('tracks.keywordsInclude')"
+            :help="t('tracks.keywordsIncludeHelp')"
+          >
             <template #default="{ id }">
               <FnInput :id="id" v-model="includeExpr" placeholder="support, onboarding" />
             </template>
           </FnField>
-          <FnField :label="t('tracks.keywordsExclude')">
+          <FnField v-if="showField('keywords')" :label="t('tracks.keywordsExclude')">
             <template #default="{ id }">
               <FnInput :id="id" v-model="excludeExpr" placeholder="unpaid, commission only" />
             </template>
           </FnField>
-          <FnField :label="t('tracks.companiesInclude')">
+          <FnField v-if="showField('companies')" :label="t('tracks.companiesInclude')">
             <template #default="{ id }">
               <FnInput :id="id" v-model="companiesInclude" />
             </template>
           </FnField>
-          <FnField :label="t('tracks.companiesExclude')">
+          <FnField v-if="showField('companies')" :label="t('tracks.companiesExclude')">
             <template #default="{ id }">
               <FnInput :id="id" v-model="companiesExclude" />
             </template>
@@ -619,6 +763,9 @@ async function saveMore() {
           </FnButton>
           <FnButton as-child tone="quiet">
             <NuxtLink :to="`/jobs?track=${trackId}`">{{ t("tracks.viewMatches") }}</NuxtLink>
+          </FnButton>
+          <FnButton tone="ghost" :aria-pressed="showAll" @click="showAll = !showAll">
+            {{ showAll ? t("tracks.hideAllFilters") : t("tracks.showAllFilters") }}
           </FnButton>
         </div>
       </FnSectionCard>

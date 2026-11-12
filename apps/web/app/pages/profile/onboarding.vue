@@ -75,7 +75,7 @@ async function upload() {
         class="sr-only"
         accept=".pdf,.docx,.txt,.md,.json,application/pdf,text/plain"
         @change="onPick"
-      >
+      />
       <FnButton tone="quiet" @click="input?.click()">{{
         file ? file.name : t("career.chooseFile")
       }}</FnButton>

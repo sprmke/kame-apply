@@ -8,7 +8,7 @@ Canonical skills live here and are symlinked into `.claude/skills/` and `.cursor
 
 ## Domain (initial versions; each refined in the phase that uses it)
 
-`source-adapter` (P5) · `ats-adapter` (P13/15) · `dbos-workflows` · `pydantic-ai-features` · `ai-evals` · `wxt-extension` (P13) · `live-view` (P16)
+`source-adapter` (P5) · `ats-adapter` (P13/15) · `dbos-workflows` · `pydantic-ai-features` · `ai-evals` · `industry-pack` (IND) · `wxt-extension` (P13) · `live-view` (P16)
 
 ## Frontend (Vue / Nuxt / Signal, written fresh)
 

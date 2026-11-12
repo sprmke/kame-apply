@@ -97,6 +97,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        allow_private_network=True,
         expose_headers=[REQUEST_ID_HEADER],
     )
     app.add_middleware(RequestContextMiddleware)

@@ -11,11 +11,13 @@ from app.applications.models import Application
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.industries.registry import get_pack
 from app.interview import models as m
 from app.interview.build import build_prep
 from app.interview.schemas import InterviewPrepRead
 from app.jobs.models import Job
 from app.profiles.models import Bullet, Experience, Skill
+from app.tracks.models import Track
 
 
 async def _app(ctx: WorkspaceContext, application_id: uuid.UUID) -> Application:
@@ -91,6 +93,7 @@ async def generate_prep(ctx: WorkspaceContext, application_id: uuid.UUID) -> Int
         for b in bullets
     ]
 
+    track = await ctx.session.get(Track, app.track_id) if app.track_id else None
     payload = build_prep(
         company=app.company_name,
         title=app.job_title,
@@ -98,6 +101,7 @@ async def generate_prep(ctx: WorkspaceContext, application_id: uuid.UUID) -> Int
         skills=skills,
         experiences=exp_dicts,
         bullets=bullet_dicts,
+        pack=get_pack(track.industry) if track is not None else None,
     )
 
     existing = (

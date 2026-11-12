@@ -19,6 +19,8 @@ ALLOWED_MIME = frozenset(
     }
 )
 ALLOWED_EXTENSIONS = frozenset({".pdf", ".docx", ".txt", ".md", ".json"})
+IMAGE_MIME = frozenset({"image/jpeg", "image/png", "image/webp"})
+IMAGE_EXTENSIONS = frozenset({".jpg", ".jpeg", ".png", ".webp"})
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 
@@ -29,8 +31,17 @@ class ExtractResult:
     mime: str
 
 
-def sniff_mime(filename: str, declared: str | None) -> str:
+def sniff_mime(filename: str, declared: str | None, *, kind: str = "resume_upload") -> str:
     name = filename.lower()
+    if kind == "portfolio":
+        for ext, mime in (
+            (".jpg", "image/jpeg"),
+            (".jpeg", "image/jpeg"),
+            (".png", "image/png"),
+            (".webp", "image/webp"),
+        ):
+            if name.endswith(ext):
+                return mime
     if name.endswith(".pdf"):
         return "application/pdf"
     if name.endswith(".docx"):
@@ -41,8 +52,15 @@ def sniff_mime(filename: str, declared: str | None) -> str:
         return "application/json"
     if name.endswith(".txt"):
         return "text/plain"
-    if declared and declared.split(";")[0].strip().lower() in ALLOWED_MIME:
+    accepted = ALLOWED_MIME | (IMAGE_MIME if kind == "portfolio" else frozenset())
+    if declared and declared.split(";")[0].strip().lower() in accepted:
         return declared.split(";")[0].strip().lower()
+    if kind == "portfolio":
+        raise AppError(
+            "unsupported_file_type",
+            "Upload a PDF, DOCX, TXT, MD, JSON, JPG, PNG, or WebP file",
+            422,
+        )
     raise AppError(
         "unsupported_file_type",
         "Upload a PDF, DOCX, TXT, MD, or JSON file",
@@ -50,7 +68,9 @@ def sniff_mime(filename: str, declared: str | None) -> str:
     )
 
 
-def validate_upload(filename: str, size: int, declared_mime: str | None) -> str:
+def validate_upload(
+    filename: str, size: int, declared_mime: str | None, *, kind: str = "resume_upload"
+) -> str:
     if size <= 0:
         raise AppError("empty_file", "File is empty", 422)
     if size > MAX_UPLOAD_BYTES:
@@ -61,13 +81,20 @@ def validate_upload(filename: str, size: int, declared_mime: str | None) -> str:
             {"max_bytes": MAX_UPLOAD_BYTES},
         )
     lower = filename.lower()
-    if not any(lower.endswith(ext) for ext in ALLOWED_EXTENSIONS):
+    allowed = ALLOWED_EXTENSIONS | (IMAGE_EXTENSIONS if kind == "portfolio" else frozenset())
+    if not any(lower.endswith(ext) for ext in allowed):
+        if kind == "portfolio":
+            raise AppError(
+                "unsupported_file_type",
+                "Upload a PDF, DOCX, TXT, MD, JSON, JPG, PNG, or WebP file",
+                422,
+            )
         raise AppError(
             "unsupported_file_type",
             "Upload a PDF, DOCX, TXT, MD, or JSON file",
             422,
         )
-    return sniff_mime(filename, declared_mime)
+    return sniff_mime(filename, declared_mime, kind=kind)
 
 
 def extract_text(data: bytes, mime: str) -> ExtractResult:

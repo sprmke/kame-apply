@@ -309,9 +309,7 @@ function featureLabel(feature: string): string {
         role="tab"
         class="min-h-11 shrink-0 rounded-md px-2 text-xs font-semibold whitespace-nowrap sm:px-3 sm:text-sm"
         :class="
-          tab === item[0]
-            ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
-            : 'text-ink-600'
+          tab === item[0] ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'
         "
         :aria-selected="tab === item[0]"
         @click="tab = item[0]"
@@ -321,12 +319,17 @@ function featureLabel(feature: string): string {
     </div>
 
     <section v-show="tab === 'claude'" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.claude") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.claude") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.claudeHint") }}</p>
       <div class="flex flex-col gap-2">
         <label class="text-sm text-ink-600">{{ t("integrations.mcpUrl") }}</label>
         <div class="flex flex-wrap items-center gap-2">
-          <code class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs sm:w-auto">{{ mcpUrl }}</code>
+          <code
+            class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs sm:w-auto"
+            >{{ mcpUrl }}</code
+          >
           <FnButton size="sm" tone="ghost" @click="copy(mcpUrl)">{{ t("common.copy") }}</FnButton>
         </div>
       </div>
@@ -353,7 +356,9 @@ function featureLabel(feature: string): string {
     </section>
 
     <section v-show="tab === 'claude'" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.inbox") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.inbox") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.inboxHint") }}</p>
       <FnSkeleton v-if="inbox.isPending.value" class="h-10 w-64" />
       <p v-else class="text-sm text-ink-600">
@@ -371,7 +376,9 @@ function featureLabel(feature: string): string {
     </section>
 
     <section v-show="tab === 'claude'" v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.agents") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.agents") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.agentsHint") }}</p>
       <FnSkeleton v-if="tokens.isPending.value" class="h-24 w-full" />
       <ul v-else class="divide-y divide-rule border border-rule">
@@ -401,8 +408,13 @@ function featureLabel(feature: string): string {
       </ul>
     </section>
 
-    <details v-show="tab === 'advanced'" class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4">
-      <summary class="flex min-h-11 cursor-pointer list-none items-center text-sm font-semibold text-ink-600">
+    <details
+      v-show="tab === 'advanced'"
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4"
+    >
+      <summary
+        class="flex min-h-11 cursor-pointer list-none items-center text-sm font-semibold text-ink-600"
+      >
         {{ t("integrations.routing") }}
       </summary>
       <h2 class="sr-only">{{ t("integrations.routing") }}</h2>
@@ -429,7 +441,9 @@ function featureLabel(feature: string): string {
     </details>
 
     <section v-show="tab === 'browser'" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.extension") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.extension") }}
+      </h2>
       <FnButton
         size="sm"
         tone="primary"
@@ -440,7 +454,9 @@ function featureLabel(feature: string): string {
     </section>
 
     <section v-show="tab === 'helper'" v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.runner") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.runner") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.runnerHint") }}</p>
       <div class="flex flex-wrap items-center gap-2">
         <div class="w-36">
@@ -491,7 +507,9 @@ function featureLabel(feature: string): string {
     </section>
 
     <section v-show="tab === 'advanced'" v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("integrations.platforms") }}</h2>
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.platforms") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.platformsHint") }}</p>
       <ul class="divide-y divide-rule border border-rule">
         <li

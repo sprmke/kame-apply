@@ -138,7 +138,9 @@ async function saveMeta() {
       <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.voiceLede") }}</p>
     </div>
 
-    <section class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]">
+    <section
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+    >
       <div class="flex flex-col gap-1">
         <h3 class="text-base font-bold text-ink-900">{{ t("career.voicePresetTitle") }}</h3>
         <p class="text-sm leading-6 text-ink-600">{{ t("career.voicePresetIntro") }}</p>

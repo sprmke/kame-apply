@@ -305,7 +305,7 @@ async function finish() {
           accept=".txt,.md,.pdf,.doc,.docx"
           class="sr-only"
           @change="onFile"
-        >
+        />
         <FnButton tone="quiet" as-child>
           <NuxtLink to="/profile/onboarding">{{ t("start.readPdf") }}</NuxtLink>
         </FnButton>

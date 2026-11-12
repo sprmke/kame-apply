@@ -277,6 +277,34 @@
         "title": "AiSettingsUpdate",
         "type": "object"
       },
+      "AlertGuideRead": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "label",
+          "url",
+          "note"
+        ],
+        "title": "AlertGuideRead",
+        "type": "object"
+      },
       "AnomalyStatusRead": {
         "properties": {
           "failure_rate_24h": {
@@ -2357,6 +2385,13 @@
           "label": {
             "title": "Label",
             "type": "string"
+          },
+          "packs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Packs",
+            "type": "array"
           }
         },
         "required": [
@@ -2452,6 +2487,18 @@
             "default": false,
             "title": "Confidential",
             "type": "boolean"
+          },
+          "credential_key": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Key"
           },
           "do_not_use": {
             "default": false,
@@ -2557,6 +2604,17 @@
               }
             ],
             "title": "Confidential"
+          },
+          "credential_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Key"
           },
           "do_not_use": {
             "anyOf": [
@@ -2683,6 +2741,18 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "credential_key": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Key"
           },
           "do_not_use": {
             "default": false,
@@ -3667,6 +3737,65 @@
         "title": "ContactsParseRead",
         "type": "object"
       },
+      "CoverageRead": {
+        "properties": {
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageSourceRead"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "industry",
+          "country",
+          "level",
+          "sources",
+          "note"
+        ],
+        "title": "CoverageRead",
+        "type": "object"
+      },
+      "CoverageSourceRead": {
+        "properties": {
+          "coverage": {
+            "title": "Coverage",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "source_key": {
+            "title": "Source Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_key",
+          "coverage",
+          "note"
+        ],
+        "title": "CoverageSourceRead",
+        "type": "object"
+      },
       "CredentialCreate": {
         "properties": {
           "api_key": {
@@ -3951,22 +4080,6 @@
         "title": "CriteriaPlanPreview",
         "type": "object"
       },
-      "CriteriaPlanRequest": {
-        "additionalProperties": false,
-        "properties": {
-          "text": {
-            "maxLength": 8000,
-            "minLength": 1,
-            "title": "Text",
-            "type": "string"
-          }
-        },
-        "required": [
-          "text"
-        ],
-        "title": "CriteriaPlanRequest",
-        "type": "object"
-      },
       "CriteriaPut": {
         "additionalProperties": false,
         "properties": {
@@ -4055,12 +4168,34 @@
                 "contract",
                 "freelance",
                 "internship",
-                "temporary"
+                "temporary",
+                "casual",
+                "seasonal"
               ],
               "type": "string"
             },
             "title": "Employment Types",
             "type": "array"
+          },
+          "facets": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Facets",
+            "type": "object"
           },
           "keywords": {
             "$ref": "#/components/schemas/KeywordFilter"
@@ -4161,6 +4296,22 @@
             "title": "Seniority",
             "type": "array"
           },
+          "shifts": {
+            "items": {
+              "enum": [
+                "morning",
+                "afternoon",
+                "evening",
+                "night",
+                "weekend",
+                "split",
+                "rotating"
+              ],
+              "type": "string"
+            },
+            "title": "Shifts",
+            "type": "array"
+          },
           "skills": {
             "$ref": "#/components/schemas/SkillSets"
           },
@@ -4237,6 +4388,93 @@
           "categories"
         ],
         "title": "CritiqueRead",
+        "type": "object"
+      },
+      "CustomPackAcceptIn": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "pattern": "^custom_[a-z0-9_]+$",
+            "title": "Key",
+            "type": "string"
+          },
+          "pack": {
+            "additionalProperties": true,
+            "title": "Pack",
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "pack"
+        ],
+        "title": "CustomPackAcceptIn",
+        "type": "object"
+      },
+      "CustomPackDraftIn": {
+        "additionalProperties": false,
+        "properties": {
+          "base_pack": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Pack"
+          },
+          "description": {
+            "maxLength": 600,
+            "minLength": 3,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "CustomPackDraftIn",
+        "type": "object"
+      },
+      "CustomPackDraftRead": {
+        "properties": {
+          "base_pack": {
+            "title": "Base Pack",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "pack": {
+            "additionalProperties": true,
+            "title": "Pack",
+            "type": "object"
+          },
+          "role_family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Family"
+          }
+        },
+        "required": [
+          "key",
+          "base_pack",
+          "role_family",
+          "pack"
+        ],
+        "title": "CustomPackDraftRead",
         "type": "object"
       },
       "DecideProposalBody": {
@@ -5907,6 +6145,207 @@
         "title": "ExtractedField",
         "type": "object"
       },
+      "FacetIn": {
+        "properties": {
+          "confidential": {
+            "default": false,
+            "title": "Confidential",
+            "type": "boolean"
+          },
+          "do_not_use": {
+            "default": false,
+            "title": "Do Not Use",
+            "type": "boolean"
+          },
+          "facet_key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Facet Key",
+            "type": "string"
+          },
+          "sort_order": {
+            "default": 0,
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Sort Order",
+            "type": "integer"
+          },
+          "source": {
+            "default": "user",
+            "enum": [
+              "parsed",
+              "interview",
+              "user"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet_key",
+          "value"
+        ],
+        "title": "FacetIn",
+        "type": "object"
+      },
+      "FacetPatch": {
+        "properties": {
+          "confidential": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidential"
+          },
+          "do_not_use": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Do Not Use"
+          },
+          "facet_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facet Key"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "parsed",
+                  "interview",
+                  "user"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "title": "FacetPatch",
+        "type": "object"
+      },
+      "FacetRead": {
+        "properties": {
+          "confidential": {
+            "default": false,
+            "title": "Confidential",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "do_not_use": {
+            "default": false,
+            "title": "Do Not Use",
+            "type": "boolean"
+          },
+          "facet_key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Facet Key",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "format": "uuid",
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "sort_order": {
+            "default": 0,
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Sort Order",
+            "type": "integer"
+          },
+          "source": {
+            "default": "user",
+            "enum": [
+              "parsed",
+              "interview",
+              "user"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet_key",
+          "value",
+          "id",
+          "profile_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FacetRead",
+        "type": "object"
+      },
       "FeedbackCreate": {
         "properties": {
           "category": {
@@ -6693,6 +7132,179 @@
           "command"
         ],
         "title": "InboxStatus",
+        "type": "object"
+      },
+      "IndustryAdd": {
+        "additionalProperties": false,
+        "properties": {
+          "is_primary": {
+            "default": false,
+            "title": "Is Primary",
+            "type": "boolean"
+          },
+          "key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "title": "Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "IndustryAdd",
+        "type": "object"
+      },
+      "IndustryDetectIn": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "IndustryDetectIn",
+        "type": "object"
+      },
+      "IndustryDetectRead": {
+        "properties": {
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "pack_key": {
+            "title": "Pack Key",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "role_family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Family"
+          }
+        },
+        "required": [
+          "pack_key",
+          "role_family",
+          "confidence"
+        ],
+        "title": "IndustryDetectRead",
+        "type": "object"
+      },
+      "IndustryExperienceRead": {
+        "description": "Global manifest plus one manifest per enabled pack for per-search pages.",
+        "properties": {
+          "enabled": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceIndustryRead"
+            },
+            "title": "Enabled",
+            "type": "array"
+          },
+          "manifest": {
+            "additionalProperties": true,
+            "title": "Manifest",
+            "type": "object"
+          },
+          "packs": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Packs",
+            "type": "object"
+          },
+          "primary": {
+            "title": "Primary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "primary",
+          "enabled",
+          "manifest",
+          "packs"
+        ],
+        "title": "IndustryExperienceRead",
+        "type": "object"
+      },
+      "IndustryList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IndustrySummary"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "IndustryList",
+        "type": "object"
+      },
+      "IndustryPrimaryIn": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "title": "Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "IndustryPrimaryIn",
+        "type": "object"
+      },
+      "IndustrySummary": {
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label_key": {
+            "title": "Label Key",
+            "type": "string"
+          },
+          "role_families": {
+            "items": {
+              "$ref": "#/components/schemas/RoleFamilyRead"
+            },
+            "title": "Role Families",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "label_key",
+          "icon"
+        ],
+        "title": "IndustrySummary",
         "type": "object"
       },
       "IngestReplyBody": {
@@ -9652,6 +10264,13 @@
             "title": "Experiences",
             "type": "array"
           },
+          "facets": {
+            "items": {
+              "$ref": "#/components/schemas/FacetRead"
+            },
+            "title": "Facets",
+            "type": "array"
+          },
           "headline": {
             "anyOf": [
               {
@@ -9780,7 +10399,8 @@
           "education",
           "certifications",
           "languages",
-          "skills"
+          "skills",
+          "facets"
         ],
         "title": "ProfileFull",
         "type": "object"
@@ -11298,6 +11918,31 @@
         "title": "RiskDecisionBody",
         "type": "object"
       },
+      "RoleFamilyRead": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label_key": {
+            "title": "Label Key",
+            "type": "string"
+          },
+          "titles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Titles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "label_key"
+        ],
+        "title": "RoleFamilyRead",
+        "type": "object"
+      },
       "RoutingItem": {
         "properties": {
           "fallback": {
@@ -11465,6 +12110,13 @@
             ],
             "title": "Posting Currency"
           },
+          "posting_includes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Posting Includes",
+            "type": "array"
+          },
           "posting_max": {
             "anyOf": [
               {
@@ -11486,6 +12138,17 @@
               }
             ],
             "title": "Posting Min"
+          },
+          "posting_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posting Period"
           },
           "rationale": {
             "title": "Rationale",
@@ -11558,6 +12221,20 @@
             "default": false,
             "title": "Hide Unspecified",
             "type": "boolean"
+          },
+          "includes": {
+            "items": {
+              "enum": [
+                "accommodation",
+                "meals",
+                "tips",
+                "service_charge",
+                "transport"
+              ],
+              "type": "string"
+            },
+            "title": "Includes",
+            "type": "array"
           },
           "max": {
             "anyOf": [
@@ -12014,6 +12691,277 @@
         "title": "ScoreResultRead",
         "type": "object"
       },
+      "SearchAdapterRead": {
+        "properties": {
+          "configured": {
+            "title": "Configured",
+            "type": "boolean"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Countries",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "terms_note": {
+            "title": "Terms Note",
+            "type": "string"
+          },
+          "terms_url": {
+            "title": "Terms Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "terms_note",
+          "terms_url",
+          "configured",
+          "countries"
+        ],
+        "title": "SearchAdapterRead",
+        "type": "object"
+      },
+      "SearchPlanIn": {
+        "additionalProperties": false,
+        "description": "Request body for a plan. Industry is optional: it is detected when omitted.",
+        "properties": {
+          "industry": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "text": {
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "SearchPlanIn",
+        "type": "object"
+      },
+      "SearchPlanOut": {
+        "description": "Draft search setup plus the pack it was built for and the queries it will run.",
+        "properties": {
+          "ai_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Error"
+          },
+          "confidence": {
+            "default": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "criteria": {
+            "$ref": "#/components/schemas/CriteriaV1"
+          },
+          "diff": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Diff",
+            "type": "array"
+          },
+          "industry": {
+            "default": "general",
+            "title": "Industry",
+            "type": "string"
+          },
+          "industry_version": {
+            "default": 1,
+            "title": "Industry Version",
+            "type": "integer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "prompt_version": {
+            "default": "",
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "role_family": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Family"
+          },
+          "source": {
+            "default": "defaults",
+            "enum": [
+              "ai",
+              "defaults"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "source_queries": {
+            "items": {
+              "$ref": "#/components/schemas/SearchPlanQuery"
+            },
+            "title": "Source Queries",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "titles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Titles",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "criteria",
+          "summary"
+        ],
+        "title": "SearchPlanOut",
+        "type": "object"
+      },
+      "SearchPlanQuery": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "country": {
+            "default": "",
+            "title": "Country",
+            "type": "string"
+          },
+          "keywords": {
+            "title": "Keywords",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          }
+        },
+        "required": [
+          "keywords"
+        ],
+        "title": "SearchPlanQuery",
+        "type": "object"
+      },
+      "SearchQueryRead": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "keywords": {
+            "title": "Keywords",
+            "type": "string"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          }
+        },
+        "required": [
+          "keywords",
+          "location",
+          "country"
+        ],
+        "title": "SearchQueryRead",
+        "type": "object"
+      },
       "SetupGuideRead": {
         "properties": {
           "provider": {
@@ -12428,6 +13376,82 @@
           }
         },
         "title": "SkillSets",
+        "type": "object"
+      },
+      "SourceAdviceItem": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "text"
+        ],
+        "title": "SourceAdviceItem",
+        "type": "object"
+      },
+      "SourceAdviceRead": {
+        "properties": {
+          "alert_sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Alert Sources",
+            "type": "array"
+          },
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "string"
+          },
+          "employer_tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Employer Tags",
+            "type": "array"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/SourceAdviceItem"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "industry",
+          "country",
+          "coverage",
+          "employer_tags",
+          "alert_sources",
+          "suggestions"
+        ],
+        "title": "SourceAdviceRead",
         "type": "object"
       },
       "SourceHealthRead": {
@@ -13412,6 +14436,18 @@
             "title": "Icon",
             "type": "string"
           },
+          "industry": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
           "name": {
             "anyOf": [
               {
@@ -13548,6 +14584,14 @@
             "title": "Id",
             "type": "string"
           },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "industry_version": {
+            "title": "Industry Version",
+            "type": "integer"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -13619,6 +14663,8 @@
           "summary",
           "settings",
           "template_slug",
+          "industry",
+          "industry_version",
           "created_at",
           "updated_at",
           "archived_at",
@@ -13756,6 +14802,14 @@
             "title": "Id",
             "type": "string"
           },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "industry_version": {
+            "title": "Industry Version",
+            "type": "integer"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -13827,6 +14881,8 @@
           "summary",
           "settings",
           "template_slug",
+          "industry",
+          "industry_version",
           "created_at",
           "updated_at",
           "archived_at"
@@ -14012,6 +15068,18 @@
               }
             ],
             "title": "Icon"
+          },
+          "industry": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
           },
           "name": {
             "anyOf": [
@@ -14549,6 +15617,51 @@
         "title": "WebhookAck",
         "type": "object"
       },
+      "WhereLookRead": {
+        "properties": {
+          "adapters": {
+            "items": {
+              "$ref": "#/components/schemas/SearchAdapterRead"
+            },
+            "title": "Adapters",
+            "type": "array"
+          },
+          "alerts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "employer_tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Employer Tags",
+            "type": "array"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "queries": {
+            "items": {
+              "$ref": "#/components/schemas/SearchQueryRead"
+            },
+            "title": "Queries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "industry",
+          "queries",
+          "adapters",
+          "employer_tags",
+          "alerts"
+        ],
+        "title": "WhereLookRead",
+        "type": "object"
+      },
       "WorkspaceCreate": {
         "properties": {
           "name": {
@@ -14562,6 +15675,55 @@
           "name"
         ],
         "title": "WorkspaceCreate",
+        "type": "object"
+      },
+      "WorkspaceIndustryList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceIndustryRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "WorkspaceIndustryList",
+        "type": "object"
+      },
+      "WorkspaceIndustryRead": {
+        "properties": {
+          "custom": {
+            "default": false,
+            "title": "Custom",
+            "type": "boolean"
+          },
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "is_primary": {
+            "title": "Is Primary",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label_key": {
+            "title": "Label Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label_key",
+          "icon",
+          "is_primary"
+        ],
+        "title": "WorkspaceIndustryRead",
         "type": "object"
       },
       "WorkspaceKillSwitchBody": {
@@ -20816,6 +21978,173 @@
         ]
       }
     },
+    "/api/v1/industries": {
+      "get": {
+        "operationId": "list_industries_api_v1_industries_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "List Industries",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
+    "/api/v1/industries/detect": {
+      "post": {
+        "operationId": "detect_api_v1_industries_detect_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IndustryDetectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndustryDetectRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Detect",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
+    "/api/v1/industries/draft": {
+      "post": {
+        "operationId": "draft_pack_api_v1_industries_draft_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomPackDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomPackDraftRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Draft Pack",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
     "/api/v1/invitations/accept": {
       "post": {
         "operationId": "accept_invitation_api_v1_invitations_accept_post",
@@ -26089,6 +27418,346 @@
           }
         },
         "summary": "Update Experience",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{profile_id}/facets": {
+      "get": {
+        "operationId": "list_profile_facets",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FacetRead"
+                  },
+                  "title": "Response List Profile Facets",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "List Facets",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "post": {
+        "operationId": "create_profile_facet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacetIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacetRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Create Facet",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{profile_id}/facets/{item_id}": {
+      "delete": {
+        "operationId": "delete_profile_facet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Delete Facet",
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "operationId": "update_profile_facet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacetPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacetRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Update Facet",
         "tags": [
           "profiles"
         ]
@@ -32151,6 +33820,206 @@
         ]
       }
     },
+    "/api/v1/sources/advice": {
+      "get": {
+        "operationId": "source_advice_api_v1_sources_advice_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "industry",
+            "required": false,
+            "schema": {
+              "default": "general",
+              "maxLength": 48,
+              "title": "Industry",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "country",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 8,
+              "title": "Country",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceAdviceRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Source Advice",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/sources/alerts/guide": {
+      "get": {
+        "operationId": "alert_guide_api_v1_sources_alerts_guide_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "industry",
+            "required": false,
+            "schema": {
+              "default": "general",
+              "maxLength": 48,
+              "title": "Industry",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "country",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 8,
+              "title": "Country",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 200,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "location",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 200,
+              "title": "Location",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertGuideRead"
+                  },
+                  "title": "Response Alert Guide Api V1 Sources Alerts Guide Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Alert Guide",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
     "/api/v1/sources/careers": {
       "post": {
         "operationId": "add_careers_api_v1_sources_careers_post",
@@ -32221,6 +34090,93 @@
           }
         },
         "summary": "Add Careers",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/sources/coverage": {
+      "get": {
+        "operationId": "source_coverage_api_v1_sources_coverage_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "industry",
+            "required": true,
+            "schema": {
+              "maxLength": 48,
+              "minLength": 1,
+              "title": "Industry",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "country",
+            "required": true,
+            "schema": {
+              "maxLength": 8,
+              "minLength": 2,
+              "title": "Country",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Source Coverage",
         "tags": [
           "sources"
         ]
@@ -33859,7 +35815,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CriteriaPlanRequest"
+                "$ref": "#/components/schemas/SearchPlanIn"
               }
             }
           },
@@ -33870,7 +35826,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CriteriaPlanPreview"
+                  "$ref": "#/components/schemas/SearchPlanOut"
                 }
               }
             },
@@ -36265,6 +38221,81 @@
         ]
       }
     },
+    "/api/v1/tracks/{track_id}/where": {
+      "get": {
+        "operationId": "where_we_look_api_v1_tracks__track_id__where_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "track_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Track Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhereLookRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Where We Look",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
     "/api/v1/webhooks/inbound-email": {
       "post": {
         "description": "Cloudflare Email Worker \u2192 signed webhook. Body = raw MIME; token in header or query.",
@@ -36563,6 +38594,71 @@
         ]
       }
     },
+    "/api/v1/workspace/experience": {
+      "get": {
+        "operationId": "get_experience_api_v1_workspace_experience_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndustryExperienceRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Get Experience",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
     "/api/v1/workspace/export": {
       "get": {
         "description": "Owner-only JSON export of workspace data (no secrets / no R2 bytes).",
@@ -36624,6 +38720,368 @@
         "summary": "Export Workspace",
         "tags": [
           "workspace"
+        ]
+      }
+    },
+    "/api/v1/workspace/industries": {
+      "get": {
+        "operationId": "list_workspace_industries_api_v1_workspace_industries_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceIndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "List Workspace Industries",
+        "tags": [
+          "industries"
+        ]
+      },
+      "post": {
+        "operationId": "add_workspace_industry_api_v1_workspace_industries_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IndustryAdd"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceIndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Add Workspace Industry",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
+    "/api/v1/workspace/industries/custom": {
+      "post": {
+        "operationId": "add_custom_pack_api_v1_workspace_industries_custom_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomPackAcceptIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceIndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Add Custom Pack",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
+    "/api/v1/workspace/industries/primary": {
+      "put": {
+        "operationId": "set_primary_industry_api_v1_workspace_industries_primary_put",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IndustryPrimaryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceIndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Set Primary Industry",
+        "tags": [
+          "industries"
+        ]
+      }
+    },
+    "/api/v1/workspace/industries/{key}": {
+      "delete": {
+        "operationId": "remove_workspace_industry_api_v1_workspace_industries__key__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceIndustryList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Remove Workspace Industry",
+        "tags": [
+          "industries"
         ]
       }
     },
@@ -37458,6 +39916,81 @@
         "summary": "Workspace Kill",
         "tags": [
           "autosubmit"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/experience": {
+      "get": {
+        "operationId": "get_experience_for_api_v1_workspaces__workspace_id__experience_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndustryExperienceRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Get Experience For",
+        "tags": [
+          "industries"
         ]
       }
     },

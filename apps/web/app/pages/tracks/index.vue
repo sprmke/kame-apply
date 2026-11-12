@@ -25,6 +25,7 @@ import {
 } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
+import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
@@ -33,6 +34,7 @@ const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const { ensureProfile, profileId } = useActiveProfile();
+const exp = useExperience();
 
 type Mode = "describe" | "template" | "copy";
 const open = ref(false);
@@ -43,6 +45,26 @@ const nameDraft = ref("");
 const planning = ref(false);
 const plan = ref<CriteriaV1 | null>(null);
 const planName = ref("");
+const industryDraft = ref("");
+const fieldTouched = ref(false);
+const BASE_INDUSTRY = "general";
+
+watch(
+  () => exp.primary.value,
+  (value) => {
+    if (!fieldTouched.value) industryDraft.value = value;
+  },
+  { immediate: true },
+);
+
+const enabledKeys = computed(
+  () => new Set([...exp.enabled.value.map((item) => item.key), BASE_INDUSTRY]),
+);
+
+function templateFits(templateIndustry: string): boolean {
+  if (!industryDraft.value || industryDraft.value === BASE_INDUSTRY) return true;
+  return enabledKeys.value.has(templateIndustry) || templateIndustry === BASE_INDUSTRY;
+}
 
 const tracks = useQuery({
   queryKey: computed(() => ["tracks", ws.currentId]),
@@ -102,7 +124,7 @@ async function createFromTemplate(slug: string) {
   try {
     const pid = await ensureProfile();
     const { data } = await createTrackApiV1TracksPost({
-      body: { profile_id: pid, template_slug: slug },
+      body: { profile_id: pid, template_slug: slug, industry: industryDraft.value || undefined },
       throwOnError: true,
     });
     open.value = false;
@@ -127,7 +149,7 @@ async function checkSettings() {
   planning.value = true;
   try {
     const { data } = await planSearchApiV1TracksPlanPost({
-      body: { text: nlDraft.value.trim() },
+      body: { text: nlDraft.value.trim(), industry: industryDraft.value || undefined },
       throwOnError: true,
     });
     if (!data) return;
@@ -174,19 +196,13 @@ async function createFromText() {
   creating.value = true;
   try {
     const pid = profileId.value ?? (await ensureProfile());
-    const body = plan.value
-      ? {
-          profile_id: pid,
-          name: nameDraft.value.trim() || planName.value || undefined,
-          nl_text: nlDraft.value.trim(),
-          criteria: plan.value,
-        }
-      : {
-          profile_id: pid,
-          name: nameDraft.value.trim() || planName.value || undefined,
-          nl_text: nlDraft.value.trim(),
-          suggest: true,
-        };
+    const body = {
+      profile_id: pid,
+      name: nameDraft.value.trim() || planName.value || nlDraft.value.trim().slice(0, 80),
+      nl_text: nlDraft.value.trim(),
+      industry: industryDraft.value || undefined,
+      ...(plan.value ? { criteria: plan.value } : { suggest: true }),
+    };
     const { data } = await createTrackApiV1TracksPost({ body, throwOnError: true });
     open.value = false;
     reset();
@@ -226,7 +242,9 @@ async function archive(id: string) {
 }
 
 const trackRows = computed(() => tracks.data.value ?? []);
-const templateRows = computed(() => templates.data.value ?? []);
+const templateRows = computed(() =>
+  (templates.data.value ?? []).filter((tmpl) => templateFits(tmpl.industry)),
+);
 const tracksLoading = computed(
   () => !ws.loaded || tracks.isPending.value || (tracks.isFetching.value && !tracks.data.value),
 );
@@ -277,6 +295,12 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
             <FnFolderTab :hue="hue(tr.color_hue)" active>{{ tr.name }}</FnFolderTab>
             <p class="mt-2 line-clamp-2 text-sm leading-6 text-ink-600">
               {{ tr.summary && tr.summary !== tr.name ? tr.summary : t("tracks.summaryFallback") }}
+            </p>
+            <p
+              v-if="tr.industry && tr.industry !== BASE_INDUSTRY"
+              class="mt-1 text-xs text-ink-400"
+            >
+              {{ exp.packLabel(tr.industry) }}
             </p>
           </NuxtLink>
           <span
@@ -349,6 +373,28 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
         </div>
 
         <template v-if="mode === 'describe'">
+          <div class="flex flex-col gap-2">
+            <span class="text-sm font-semibold text-ink-900">{{ t("tracks.field") }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                v-for="item in exp.enabled.value"
+                :key="item.key"
+                type="button"
+                class="min-h-11 rounded-full border px-3 text-sm font-medium transition-colors focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+                :class="
+                  industryDraft === item.key
+                    ? 'border-brand-500 bg-brand-50 text-brand-700'
+                    : 'border-rule bg-paper-0 text-ink-600 hover:border-brand-200'
+                "
+                :aria-pressed="industryDraft === item.key"
+                @click="((industryDraft = item.key), (fieldTouched = true))"
+              >
+                {{ exp.packLabel(item.key) }}
+              </button>
+            </div>
+            <p class="text-xs text-ink-600">{{ t("tracks.fieldHint") }}</p>
+          </div>
+
           <FnField v-slot="{ id }" :label="t('searches.describeLabel')">
             <FnTextarea
               :id="id"

@@ -154,12 +154,7 @@ async function applyRecommended() {
     autonomy.value = row.autonomy;
     const body = {
       preset: row.preset as
-        | "hourly"
-        | "every_2_hours"
-        | "every_4_hours"
-        | "daily_morning"
-        | "weekdays_2h"
-        | "custom",
+        "hourly" | "every_2_hours" | "every_4_hours" | "daily_morning" | "weekdays_2h" | "custom",
       timezone: row.timezone,
       quiet_hours: {
         start: String((row.quiet_hours as Record<string, unknown>).start ?? "22:00"),
@@ -468,11 +463,17 @@ async function togglePause() {
               {{ t("tracks.recommendedForSearch") }}
             </p>
             <p class="text-base font-semibold text-ink-900">
-              {{ t("tracks.recommendedLine", {
-                preset: presetOptions.find((p) => p.value === recommended.data.value?.preset)?.label ?? "",
-                level: autonomyOptions.find((o) => o.value === recommended.data.value?.autonomy)?.title ?? "",
-                cap: recommended.data.value.daily_cap,
-              }) }}
+              {{
+                t("tracks.recommendedLine", {
+                  preset:
+                    presetOptions.find((p) => p.value === recommended.data.value?.preset)?.label ??
+                    "",
+                  level:
+                    autonomyOptions.find((o) => o.value === recommended.data.value?.autonomy)
+                      ?.title ?? "",
+                  cap: recommended.data.value.daily_cap,
+                })
+              }}
             </p>
           </div>
           <FnButton tone="primary" size="sm" :loading="applyingRec" @click="applyRecommended">
@@ -651,7 +652,7 @@ async function togglePause() {
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="row.enabled"
                 @change="toggleSource(row)"
-              >
+              />
               {{ sourceLabel(row.source_key) }}
             </label>
           </div>

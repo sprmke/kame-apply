@@ -62,6 +62,8 @@ class SalaryAdviceRead(BaseModel):
     posting_min: float | None
     posting_max: float | None
     posting_currency: str | None
+    posting_period: str | None = None
+    posting_includes: list[str] = Field(default_factory=list)
     market_p50: float | None
     user_floor: float | None
     suggested_min: float | None

@@ -17,6 +17,7 @@ from app.core.config import get_settings
 from app.core.db import Base
 from app.extension import models as _extension_models  # noqa: F401
 from app.gaps import models as _gaps_models  # noqa: F401
+from app.industries import models as _industry_models  # noqa: F401
 from app.ingest import models as _ingest_models  # noqa: F401
 from app.interview import models as _interview_models  # noqa: F401
 from app.jobs import models as _job_models  # noqa: F401

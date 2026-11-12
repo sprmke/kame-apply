@@ -243,7 +243,12 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
       v-else
       class="space-y-4 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
     >
-      <FnTextarea v-model="checkInput" :rows="6" class="w-full" :aria-label="t('safety.checkLabel')" />
+      <FnTextarea
+        v-model="checkInput"
+        :rows="6"
+        class="w-full"
+        :aria-label="t('safety.checkLabel')"
+      />
       <FnButton
         size="sm"
         tone="primary"

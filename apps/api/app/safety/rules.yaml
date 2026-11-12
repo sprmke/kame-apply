@@ -6,6 +6,22 @@ rules:
     weight: 45
     signal: payment_request
     pattern: '(?i)(?:training\s+(?:kit|fee|cost)|pay\s+(?:a\s+)?(?:fee|deposit)|\$\s?\d{2,4}\s+(?:fee|kit|equipment)|buy\s+(?:your\s+)?(?:equipment|laptop|kit)|we(?:''ll| will)\s+reimburse)'
+  - id: placement_fee
+    weight: 45
+    signal: payment_request
+    pattern: '(?i)(placement\s+fee|processing\s+fee|agency\s+fee|recruitment\s+fee)'
+  - id: visa_fee
+    weight: 50
+    signal: payment_request
+    pattern: '(?i)(visa\s+fee|pay\s+(?:for\s+)?(?:the\s+)?visa|visa\s+cost|medical\s+fee\s+for\s+visa)'
+  - id: uniform_fee
+    weight: 30
+    signal: payment_request
+    pattern: '(?i)(uniform\s+fee|pay\s+for\s+(?:your\s+)?uniform|medical\s+fee)'
+  - id: agency_license_claim
+    weight: 10
+    signal: agency_license_check
+    pattern: '(?i)(dmw\s+licen[cs]e|poea\s+licen[cs]e|licensed\s+recruitment\s+agency)'
   - id: crypto_payout
     weight: 40
     signal: crypto_payout

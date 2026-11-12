@@ -51,6 +51,7 @@ External: Cloudflare R2 (files) · Resend (email out) · CF Email Routing→Work
 | --- | --- |
 | `auth` | Sign-up/login, Google OAuth, JWT access/refresh, sessions, extension tokens, MFA (P1). |
 | `workspaces` | Tenancy, members, roles, invitations, settings, plan limits, AI keys (encrypted), budgets. |
+| `industries` | Industry packs: schema, curated packs (General, Technology), resolver, workspace fields of work, experience manifest. Details: [`industries.md`](./industries.md). |
 | `profiles` | Candidate Profiles, facts (experience, education, skills, projects...), answer bank, voice profile, documents. |
 | `taxonomy` | ESCO/O*NET occupations and skills, synonyms, title normalization, skill extraction/mapping. Details: [`criteria-and-taxonomy.md`](./criteria-and-taxonomy.md). |
 | `tracks` | Tracks, criteria (structured + NL), compiled filters, schedules, autonomy policy, caps. Details: [`criteria-and-taxonomy.md`](./criteria-and-taxonomy.md). |
@@ -98,6 +99,7 @@ Human checkpoints use DBOS messaging: the workflow `recv`s on topic `checkpoint:
   3. Tests: a cross-tenant test suite tries every endpoint with another workspace's ids and expects 404.
 - **Global vs tenant data:** `companies`, `company_boards`, `jobs`, `job_sources`, `job_qualifications`, taxonomy are **global** (public data, shared, no PII). Everything the user creates or that reflects their opinion (`track_jobs` scores/status, notes, applications, risk overrides) is **tenant**.
 - **Workspace-level settings:** AI provider keys (encrypted with per-workspace data keys under a master key from env, envelope encryption), budgets, caps, notification channels, data retention, export/delete.
+- **Fields of work:** `workspace_industries` picks the workspace default; `tracks.industry` can differ per search. Global pages use the union of enabled fields. See [`industries.md`](./industries.md).
 - **Limits per workspace** (abuse and cost control): Tracks, sources, runs/day, AI spend, storage.
 
 ## 5. Data model (core tables)
@@ -108,6 +110,7 @@ Tenant tables carry `workspace_id`, `created_at`, `updated_at`, and `created_by`
 users(id, email, name, password_hash?, google_sub?, timezone, locale)
 workspaces(id, name, slug, kind[personal|team], settings jsonb)
 workspace_members(workspace_id, user_id, role[owner|admin|member|viewer])
+workspace_industries(workspace_id, industry_key, is_primary, custom_pack jsonb)  -- fields of work
 ai_credentials(workspace_id, provider, encrypted_key, model_prefs jsonb)
 ai_usage(workspace_id, feature, provider, model, tokens_in, tokens_out, cost_usd, at)
 
@@ -120,7 +123,7 @@ answer_bank(id, profile_id, key, country?, question_variants[], answer, answer_j
 voice_profiles(profile_id, samples jsonb, style jsonb, banned_phrases[], analyzed_at?)
 documents(id, workspace_id, profile_id, kind[resume_upload|portfolio|generated], r2_key, mime, parsed jsonb, parse_quality)
 
-tracks(id, workspace_id, profile_id, name, icon, color, status, autonomy[discover|prepare|assist|auto_submit], base_resume_id, settings jsonb)
+tracks(id, workspace_id, profile_id, name, icon, color, status, autonomy[discover|prepare|assist|auto_submit], base_resume_id, settings jsonb, industry, industry_version)
 track_criteria(track_id, nl_text, structured jsonb, compiled jsonb, version)
 track_sources(track_id, source_id, enabled, params jsonb)
 schedules(id, workspace_id, track_id, scope[all|source], source_id?, cron, tz, quiet_hours, enabled, next_run_at)

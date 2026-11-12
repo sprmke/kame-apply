@@ -12,6 +12,7 @@ from app.applications.models import Application
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.industries.registry import get_pack
 from app.jobs.models import Job
 from app.profiles.models import CandidateProfile, Experience, Skill
 from app.strategy import caps as caps_mod
@@ -95,6 +96,7 @@ async def optimize_linkedin(ctx: WorkspaceContext, track_id: uuid.UUID) -> Linke
         location=profile.location,
         experiences=exps,
         skills=skills,
+        pack=get_pack(track.industry),
     )
     await audit.record(
         ctx,
@@ -224,10 +226,22 @@ async def salary_for_application(
             market = float(market) if market is not None else None
         except (TypeError, ValueError):
             market = None
-    return sal_mod.advise_salary(
+    advice = sal_mod.advise_salary(
         posting_salary=job.salary if job else {},
         user_salary_prefs=profile.salary_prefs if profile else {},
         market_p50=market,
+    )
+    posting = (job.salary if job else {}) or {}
+    includes = [str(item) for item in (posting.get("includes") or [])]
+    rationale = advice.rationale
+    if includes:
+        rationale = f"{rationale} Pay includes: {', '.join(includes)}."
+    return advice.model_copy(
+        update={
+            "posting_period": posting.get("period"),
+            "posting_includes": includes,
+            "rationale": rationale,
+        }
     )
 
 

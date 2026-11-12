@@ -53,6 +53,7 @@ async def review_tailored_draft(
     content: ResumeContent,
     qualifications: list[dict[str, Any]],
     deterministic_notes: list[str],
+    pack: Any = None,
     run_structured: StructuredRunner | None = None,
     model_factory: Any = None,
 ) -> list[str]:
@@ -62,7 +63,7 @@ async def review_tailored_draft(
         settings,
         tier=TIER,
         feature=FEATURE,
-        system=prompts.RESUME_TAILOR_REVIEW.system,
+        system=prompts.with_pack_brief(prompts.RESUME_TAILOR_REVIEW.system, pack),
         prompt=_prompt(
             content, qualifications=qualifications, deterministic_notes=deterministic_notes
         ),

@@ -51,6 +51,15 @@ SETUP_GUIDES = [
             "Forward those emails to your Kame address (or use the Gmail filter).",
         ],
     },
+    {
+        "provider": "culinary_agents",
+        "title": "Culinary Agents and niche alerts",
+        "steps": [
+            "Create or open a search on Culinary Agents, JobStreet, SEEK, or hcareers.",
+            "Turn on email alerts for that search.",
+            "Forward one alert to your Kame address so we can read the format.",
+        ],
+    },
 ]
 
 

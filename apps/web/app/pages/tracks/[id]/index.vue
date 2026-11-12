@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import {
+  client,
   discoverNowApiV1TracksTrackIdDiscoverPost,
   getDiscoveryRunApiV1DiscoveryRunsRunIdGet,
+  getTrackApiV1TracksTrackIdGet,
   listJobsApiV1JobsGet,
   runHistoryApiV1TracksTrackIdRunsGet,
   type BoardJobRead,
+  type CriteriaV1,
   type DiscoveryRunHistoryRead,
   type DiscoveryRunRead,
+  type TrackDetail,
 } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnEmptyState, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const route = useRoute();
@@ -19,6 +24,7 @@ const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const fmt = useFormat();
+const exp = useExperience();
 
 const trackId = computed(() => String(route.params.id));
 const running = ref(false);
@@ -40,6 +46,58 @@ const runs = useQuery({
 });
 const lastRun = computed(() => runs.data.value?.[0] ?? null);
 const lastRunNew = computed(() => Number(lastRun.value?.progress?.linked ?? 0));
+
+const detail = useQuery({
+  queryKey: computed(() => ["track", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await getTrackApiV1TracksTrackIdGet({
+      path: { track_id: trackId.value },
+      throwOnError: true,
+    });
+    return data as TrackDetail;
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+});
+const industry = computed(() => detail.data.value?.industry || exp.primary.value);
+const criteria = computed(() => detail.data.value?.criteria.structured as CriteriaV1 | undefined);
+const coverageCountry = computed(
+  () => criteria.value?.locations?.[0]?.country?.toUpperCase() ?? "",
+);
+const coveragePlace = computed(
+  () => criteria.value?.locations?.[0]?.place || coverageCountry.value,
+);
+
+type Coverage = { level: "strong" | "partial" | "thin" | "none" };
+type WhereLook = {
+  queries: { keywords: string; location: string; country: string; category: string | null }[];
+  adapters: { key: string; name: string; configured: boolean; terms_note: string }[];
+  alerts: string[];
+};
+
+const coverage = useQuery({
+  queryKey: computed(() => ["coverage", industry.value, coverageCountry.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: "/api/v1/sources/coverage",
+      query: { industry: industry.value, country: coverageCountry.value },
+      throwOnError: true,
+    });
+    return data as Coverage;
+  },
+  enabled: computed(() => Boolean(ws.currentId && coverageCountry.value && industry.value)),
+});
+
+const whereLook = useQuery({
+  queryKey: computed(() => ["track-where", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: `/api/v1/tracks/${trackId.value}/where`,
+      throwOnError: true,
+    });
+    return data as WhereLook;
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+});
 
 const jobs = useQuery({
   queryKey: computed(() => ["track-match-preview", ws.currentId, trackId.value]),
@@ -106,6 +164,9 @@ async function runNow() {
 }
 
 const rows = computed(() => jobs.data.value ?? []);
+const thinCoverage = computed(() =>
+  Boolean(coverage.data.value && coverage.data.value.level !== "strong" && rows.value.length < 5),
+);
 
 function workModeLabel(mode: string | null | undefined): string {
   return mode ? t(`tracks.mode_${mode}`) : "";
@@ -123,12 +184,12 @@ function sealLabel(level: string | null | undefined): string {
   return t("jobs.clear");
 }
 
-function salaryLine(s: Record<string, unknown> | undefined): string {
-  if (!s || s.min == null) return "";
-  const min = Number(s.min);
-  const max = s.max != null ? Number(s.max) : null;
-  const range = max != null ? `${min}-${max}` : `${min}`;
-  return [s.currency, range, s.period ? `/ ${s.period}` : ""].filter(Boolean).join(" ");
+function salaryLine(s: unknown): string {
+  if (!s || typeof s !== "object") return "";
+  const row = s as { min?: number | null; max?: number | null; currency?: string; period?: string };
+  if (row.min == null) return "";
+  const range = row.max != null ? `${row.min}-${row.max}` : `${row.min}`;
+  return [row.currency, range, row.period ? `/ ${row.period}` : ""].filter(Boolean).join(" ");
 }
 </script>
 
@@ -163,7 +224,10 @@ function salaryLine(s: Record<string, unknown> | undefined): string {
           </span>
           <span v-else>{{ t("tracks.neverRun") }}</span>
         </div>
-        <div class="flex flex-wrap gap-2 sm:shrink-0">
+        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
+          <FnChip v-if="industry && industry !== 'general'" tone="neutral">{{
+            exp.packLabel(industry)
+          }}</FnChip>
           <FnButton tone="primary" :disabled="running" @click="runNow">
             {{ running ? t("tracks.running") : t("jobs.findNow") }}
           </FnButton>
@@ -176,6 +240,26 @@ function salaryLine(s: Record<string, unknown> | undefined): string {
       <div v-if="jobs.isPending.value" class="flex flex-col gap-3">
         <FnSkeleton class="h-20 w-full" />
         <FnSkeleton class="h-20 w-full" />
+      </div>
+
+      <div
+        v-if="thinCoverage"
+        class="flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm"
+      >
+        <p class="font-semibold text-ink-900">
+          {{
+            t("tracks.coverageTitle", {
+              field: exp.packLabel(industry),
+              country: coveragePlace,
+            })
+          }}
+        </p>
+        <p class="text-ink-600">{{ t("tracks.coverageBody") }}</p>
+        <NuxtLink
+          to="/settings/alerts"
+          class="font-semibold text-brand-700 underline underline-offset-2"
+          >{{ t("tracks.addAlert") }}</NuxtLink
+        >
       </div>
 
       <FnEmptyState
@@ -202,10 +286,8 @@ function salaryLine(s: Record<string, unknown> | undefined): string {
               <span class="block font-semibold text-ink-900">{{ job.title }}</span>
               <span class="block text-sm text-ink-600">
                 {{ job.company_name }}
-                <template v-if="job.work_mode"> · {{ workModeLabel(job.work_mode) }}</template>
-                <template v-if="salaryLine(job.salary as Record<string, unknown>)">
-                  · {{ salaryLine(job.salary as Record<string, unknown>) }}
-                </template>
+                <span v-if="job.work_mode"> · {{ workModeLabel(job.work_mode) }}</span>
+                <span v-if="salaryLine(job.salary)"> · {{ salaryLine(job.salary) }}</span>
               </span>
             </span>
             <FnRiskSeal
@@ -217,6 +299,50 @@ function salaryLine(s: Record<string, unknown> | undefined): string {
           </NuxtLink>
         </li>
       </ul>
+
+      <details
+        class="rounded-xl border border-rule bg-paper-1 p-4 text-sm shadow-[var(--shadow-card)]"
+      >
+        <summary
+          class="flex min-h-11 cursor-pointer list-none items-center font-semibold text-ink-900"
+        >
+          {{ t("tracks.whereWeLook") }}
+        </summary>
+        <div v-if="whereLook.data.value" class="mt-3 flex flex-col gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.searchTerms") }}
+            </p>
+            <ul
+              v-if="whereLook.data.value.queries.length"
+              class="mt-1 flex flex-col gap-1 text-ink-600"
+            >
+              <li v-for="(query, i) in whereLook.data.value.queries" :key="i">
+                {{ query.keywords }}
+                <template v-if="query.location">in {{ query.location }}</template>
+              </li>
+            </ul>
+            <p v-else class="mt-1 text-ink-600">{{ t("tracks.noSearchTerms") }}</p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.sources") }}
+            </p>
+            <ul class="mt-1 flex flex-col gap-1">
+              <li
+                v-for="adapter in whereLook.data.value.adapters"
+                :key="adapter.key"
+                class="flex flex-wrap items-center gap-2 text-ink-600"
+              >
+                <span class="text-ink-900">{{ adapter.name }}</span>
+                <span class="text-xs">{{
+                  adapter.configured ? t("tracks.ready") : t("tracks.setupNeeded")
+                }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </details>
     </div>
   </TrackShell>
 </template>

@@ -197,13 +197,9 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
           <p v-if="item.draft" class="text-sm text-pencil">{{ item.draft }}</p>
           <p class="text-xs text-ink-600">{{ sourceLabel(item) }}</p>
           <div class="flex flex-wrap gap-2">
-            <FnButton
-              v-if="item.draft"
-              size="sm"
-              tone="primary"
-              @click="useDraft(item)"
-              >{{ t("career.useDraft") }}</FnButton
-            >
+            <FnButton v-if="item.draft" size="sm" tone="primary" @click="useDraft(item)">{{
+              t("career.useDraft")
+            }}</FnButton>
             <FnButton
               size="sm"
               tone="ghost"

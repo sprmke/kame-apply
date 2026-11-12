@@ -52,7 +52,8 @@ const nextSteps = computed(() => {
   const out: { label: string; to: string }[] = [];
   if (!p.headline) out.push({ label: t("career.addHeadline"), to: "/start" });
   if (!p.location) out.push({ label: t("career.addLocation"), to: "/start" });
-  if (!p.experiences?.length) out.push({ label: t("career.addExperience"), to: "/profile/onboarding" });
+  if (!p.experiences?.length)
+    out.push({ label: t("career.addExperience"), to: "/profile/onboarding" });
   if (!p.skills?.length) out.push({ label: t("career.addSkills"), to: "/profile/onboarding" });
   return out.slice(0, 3);
 });
@@ -129,11 +130,9 @@ const nextSteps = computed(() => {
               :key="b.id"
               class="flex items-start gap-2 text-sm"
             >
-              <FnChip
-                :tone="chipTone(b.evidence_strength ?? 'weak')"
-                class="mt-0.5 shrink-0"
-                >{{ proofLabel(b.evidence_strength) }}</FnChip
-              >
+              <FnChip :tone="chipTone(b.evidence_strength ?? 'weak')" class="mt-0.5 shrink-0">{{
+                proofLabel(b.evidence_strength)
+              }}</FnChip>
               <span :class="b.do_not_use ? 'text-ink-600 line-through' : 'text-ink-900'">{{
                 b.text
               }}</span>
@@ -141,6 +140,8 @@ const nextSteps = computed(() => {
           </ul>
         </article>
       </section>
+
+      <ProfileFacets v-if="profileId" />
 
       <section class="flex flex-col gap-2">
         <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">

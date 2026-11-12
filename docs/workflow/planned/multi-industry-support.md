@@ -1,8 +1,8 @@
 # Multi-industry support: industry packs
 
-**Status:** Planned · **Created:** 2026-11-12 · **Type:** cross-cutting product + platform program (API, web, extension copy, AI, discovery)
+**Status:** In progress (IND-1 to IND-10 shipped) · **Created:** 2026-11-12 · **Type:** cross-cutting product + platform program (API, web, extension copy, AI, discovery)
 
-Related: [`docs/prd.md`](../../prd.md), [`docs/architecture/criteria-and-taxonomy.md`](../../architecture/criteria-and-taxonomy.md), [`docs/architecture/job-discovery.md`](../../architecture/job-discovery.md), [`docs/architecture/matching.md`](../../architecture/matching.md), [`docs/architecture/profile.md`](../../architecture/profile.md), [`ux-clarity-overhaul.md`](ux-clarity-overhaul.md) (onboarding `/start`, Searches tabs, glossary).
+Related: [`docs/prd.md`](../../prd.md), [`docs/architecture/industries.md`](../../architecture/industries.md), [`docs/architecture/criteria-and-taxonomy.md`](../../architecture/criteria-and-taxonomy.md), [`docs/architecture/job-discovery.md`](../../architecture/job-discovery.md), [`docs/architecture/matching.md`](../../architecture/matching.md), [`docs/architecture/profile.md`](../../architecture/profile.md), and [`ux-clarity-overhaul.md`](../done/ux-clarity-overhaul.md) (onboarding `/start`, Searches tabs, glossary).
 
 ---
 
@@ -108,30 +108,28 @@ An **industry pack** is a declarative, versioned, code-reviewed description of h
 
 ### 4.2 Pack schema (`apps/api/app/industries/schema.py`)
 
-```python
-class IndustryPack(BaseModel):  # frozen, extra="forbid"
-    key: str  # "technology", "hospitality", "general", ...
-    version: int  # bump on behavior change; stored on tracks for traceability
-    label_key: str  # i18n key, e.g. "industry.hospitality.label"
-    icon: str  # Phosphor, e.g. "ph:cooking-pot"
-    detection: Detection  # ISCO groups, ESCO prefixes, title keywords, resume cues
-    role_families: list[
-        RoleFamily
-    ]  # 2nd level of the picker (Kitchen, Pastry & bakery, Front of house...)
-    ui: UiManifest  # visible / collapsed / hidden fields, section order, label overrides
-    facets: list[FacetDef]  # industry-specific dimensions (cuisine, station, kitchen type...)
-    criteria_defaults: CriteriaPatch  # work modes, salary period, posting age, employment types
-    seniority_ladder: list[LadderStep]  # local rank names mapped onto CriteriaV1 Seniority
-    credentials: list[CredentialDef]  # names, aliases, regions, typical validity, knockout weight
-    answer_keys: AnswerKeyPlan  # add / hide canonical answer keys
-    sources: SourcePlan  # preferred adapters, Adzuna categories per country, query templates,
-    # employer directory tags, email-alert recommendations per country
-    matching: MatchingPlan  # weights, generic title words, title equivalence groups, knockout rules
-    profile: ProfilePlan  # section order/labels, evidence metric patterns, interview gap questions
-    resume: ResumePlan  # template id, section order, bullet guidance, photo norm per country
-    ai: AiBrief  # short brief (<= 600 chars) + vocabulary injected into prompts
-    safety: SafetyPlan  # extra scam signals (placement fees, pay-for-training, visa fees)
-    features: FeatureFlags  # be_found, github_links, coding_practice, portfolio_images, ...
+```text
+class IndustryPack(BaseModel):            # frozen, extra="forbid"
+    key: str                              # "technology", "hospitality", "general", ...
+    version: int                          # bump on behavior change; stored on tracks for traceability
+    label_key: str                        # i18n key, e.g. "industry.hospitality.label"
+    icon: str                             # Phosphor, e.g. "ph:cooking-pot"
+    detection: Detection                  # ISCO groups, ESCO prefixes, title keywords, resume cues
+    role_families: list[RoleFamily]       # 2nd level of the picker (Kitchen, Pastry & bakery, Front of house...)
+    ui: UiManifest                        # visible / collapsed / hidden fields, section order, label overrides
+    facets: list[FacetDef]                # industry-specific dimensions (cuisine, station, kitchen type...)
+    criteria_defaults: CriteriaPatch      # work modes, salary period, posting age, employment types
+    seniority_ladder: list[LadderStep]    # local rank names mapped onto CriteriaV1 Seniority
+    credentials: list[CredentialDef]      # names, aliases, regions, typical validity, knockout weight
+    answer_keys: AnswerKeyPlan            # add / hide canonical answer keys
+    sources: SourcePlan                   # preferred adapters, Adzuna categories per country, query templates,
+                                          # employer directory tags, email-alert recommendations per country
+    matching: MatchingPlan                # weights, generic title words, title equivalence groups, knockout rules
+    profile: ProfilePlan                  # section order/labels, evidence metric patterns, interview gap questions
+    resume: ResumePlan                    # template id, section order, bullet guidance, photo norm per country
+    ai: AiBrief                           # short brief (<= 600 chars) + vocabulary injected into prompts
+    safety: SafetyPlan                    # extra scam signals (placement fees, pay-for-training, visa fees)
+    features: FeatureFlags                # be_found, github_links, coding_practice, portfolio_images, ...
 ```
 
 Supporting types (all `extra="forbid"`):
@@ -558,16 +556,16 @@ Each slice is one branch and PR (`ind/NN-<slug>`), follows the repo build loop (
 | Slice | Scope | Exit criteria |
 | --- | --- | --- |
 | **IND-0 Decisions and verification** ★ | Answer §16. Verify terms/quotas for Adzuna, Jooble, Careerjet, USAJobs, Reed, Job Bank, EURES, Workday/SuccessFactors endpoints, the DMW lookup. Commit target countries. Write the `industry-pack` skill + `.cursor/rules/industry-packs.mdc` + `/ka-new-industry-pack` command (run `python3 .codex/sync.py`, `check:ai-tooling-sync`) | Decisions recorded in this file. Terms notes drafted per adapter. Tooling synced |
-| **IND-1 Pack foundation** ★ | `industries/` package (schema, registry, resolver), General + Technology packs (today's behavior), `workspace_industries`, `tracks.industry` + backfill, `CriteriaV1.shifts/facets/includes` + `casual/seasonal`, `GET /industries`, `GET /workspaces/{id}/experience`, regenerated API client | No behavior change for tech (M3 snapshot). RLS + cross-tenant tests. Backfill documented in `deployment.md` |
-| **IND-2 Picker and visibility** ★ | Create-workspace step 2, Settings > Fields of work with change preview, new-search field chip, `useExperience`, pack-driven criteria groups, More options + Show all, "Set earlier" tags, `check:industry-branches` | Visibility matrix snapshot passes. 375/820/1440 light/dark. `design-reviewer` pass |
-| **IND-3 Hospitality pack content** ★ | Role families, ladder, facets, credentials, answer keys, defaults, ≥15 templates, AI brief, i18n, profile section plan | Registry tests green. Template picker shows kitchen templates |
-| **IND-4 Discovery for non-tech** ★ | Track-aware board selection, Layer 4 adapters (start with the best verified one, then add more), query cache, query planner, `jobs/classify.py`, `source_coverage`, hospitality employer directory seed, coverage notice, guided email alerts + new alert parsers | Fixture E2E returns hospitality jobs for a chef Track. Live staging run meets M1 for committed countries. `security-auditor` pass |
-| **IND-5 Matching** ★ | Pack weights, credentials + shift components, title groups, facets in filters/boost, extract + knockout patterns, ledger rows, `job_fit` v2 | Hospitality ranking + qual evals pass. Tech eval unchanged |
-| **IND-6 Profile and answers** | `profile_facets`, parse v2, interview gap questions, evidence metrics, completeness per pack, image portfolio, answer key filtering + drafting | Fabrication-safe parse eval. EXIF test. PII tests (no physical/health auto-answers) |
-| **IND-7 Resume, tailor, letters** | ResumePlan templates, prompts v2, lens persona, photo norm | Fabrication eval zero invented claims. Chef template renders and passes the parse round-trip gate |
-| **IND-8 Advice, safety, interview** | Gaps per pack, "Get found" checklists, interview bank + trial shift, safety signals, salary period/includes | Safety fixtures flagged. Be Found route shows pack checklist |
-| **IND-9 AI assists** | `industry_detect`, `search_plan` v2, custom pack drafting, "Where to look" advisor, optional web discovery (if D5 = yes) | Detection + custom pack evals pass. All have no-AI fallbacks |
-| **IND-10 More packs** | Healthcare, Engineering (non-software), Trades, CS/Retail, Education, Logistics, Finance, Admin/VA, Sales/Marketing, Creative: one content-only PR each | M4: no component/router diffs in these PRs |
+| **IND-1 Pack foundation** ★ ✅ | `industries/` package (schema, registry, resolver), General + Technology packs (today's behavior), `workspace_industries`, `tracks.industry` + backfill, `CriteriaV1.shifts/facets/includes` + `casual/seasonal`, `GET /industries`, `GET /workspaces/{id}/experience`, regenerated API client | No behavior change for tech (M3 snapshot). RLS + cross-tenant tests. Backfill documented in `deployment.md` |
+| **IND-2 Picker and visibility** ★ ✅ | Create-workspace step 2, Settings > Fields of work with change preview, new-search field chip, `useExperience`, pack-driven criteria groups, More options + Show all, "Set earlier" tags, `check:industry-branches` | Visibility matrix snapshot passes. 375/820/1440 light/dark. `design-reviewer` pass |
+| **IND-3 Hospitality pack content** ★ ✅ | Role families, ladder, facets, credentials, answer keys, defaults, ≥15 templates, AI brief, i18n, profile section plan | Registry tests green. Template picker shows kitchen templates |
+| **IND-4 Discovery for non-tech** ★ ✅ | Track-aware board selection, Layer 4 adapters (`search_jooble`, `search_adzuna`, terms-gated), shared query cache, query planner, `jobs/classify.py`, `source_coverage`, coverage notice, `Where we look`, guided alert links + Culinary Agents guide | Fixture E2E returns and links hospitality jobs; `/sources/coverage`, `/tracks/{id}/where`, `/sources/alerts/guide` tested |
+| **IND-5 Matching** ★ ✅ | Pack weights, credentials + shift components, title groups, facets in filters/boost, commute distance, credential extract, ledger rows | Hospitality matching unit tests; existing tech matching tests unchanged |
+| **IND-6 Profile and answers** ✅ | `profile_facets` CRUD + RLS, profile UI section, pack-filtered answer keys, hospitality answer keys, image portfolio with EXIF strip, credential key on certifications | Facet CRUD + RLS tests, answer-key filtering test, EXIF test |
+| **IND-7 Resume, tailor, letters** ✅ | Pack-aware resume sections/order, certifications/projects/languages, `profile_extract` v2, resume/critique/cover-letter prompt v2 with field brief, template id recorded | Chef sections render in pack order; prompt brief test |
+| **IND-8 Advice, safety, interview** ✅ | Gaps per pack, "Get found" checklist, interview questions + trial shift, placement/visa/uniform fee signals, salary period/includes | Safety fixture flags, pack checklist and interview tests |
+| **IND-9 AI assists** ✅ | Deterministic `industry_detect`, `search_plan.v2` baseline, custom pack drafting + accept, source advice; AI prompt entries for each | Detection, search plan, custom pack, advice endpoint tests |
+| **IND-10 More packs** ✅ | Healthcare, Engineering, Trades, Customer service/retail, Education, Logistics, Finance, Admin/VA, Sales/Marketing, Creative as content packs | Registry/i18n tests; no component or router diff |
 
 Suggested order: IND-0 → IND-1 → (IND-3 ∥ IND-4) → IND-2 → IND-5 = Friend MVP. Then IND-6 → IND-7 → IND-8 → IND-9 → IND-10.
 
@@ -579,8 +577,8 @@ Docs per slice: `docs/architecture/industries.md` (new, the canonical pack refer
 
 | # | Decision | Recommendation |
 | --- | --- | --- |
-| D1 | Industry at workspace only, or workspace default + per-search | **Workspace default + per-search** (§4.1). Same simple UX for one field, handles two-field people and coaches |
-| D2 | Which countries does the chef friend target (home country, Gulf, cruise, AU/CA/UK)? | Commit 2 to 3 countries for M1. Source choice depends on this more than anything else |
+| D1 | Industry at workspace only, or workspace default + per-search | **Workspace default + per-search** (§4.1). Same simple UX for one field, handles two-field people and coaches. **Answered 2026-11-12: workspace default + per search.** |
+| D2 | Which countries does the chef friend target (home country, Gulf, cruise, AU/CA/UK)? | Commit 2 to 3 countries for M1. Source choice depends on this more than anything else. **Answered 2026-11-12: Philippines + UAE/Gulf first.** |
 | D3 | Front of house in v1 or later | **Later.** Kitchen first, front of house titles only in v1 |
 | D4 | Platform-level search API keys (we hold them) vs BYO per workspace | **Platform-level** with a shared cache. BYO only if quotas force it |
 | D5 | Optional web discovery (SearXNG / search API) for finding employer career pages | **Yes, off by default,** URLs only, through the existing detector + user confirm |

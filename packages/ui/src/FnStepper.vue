@@ -42,7 +42,8 @@ const emit = defineEmits<{ "update:modelValue": [value: string] }>();
                   ? 'bg-fern-600 text-paper-1'
                   : 'bg-paper-1 text-ink-600'
             "
-          >{{ i + 1 }}</span>
+            >{{ i + 1 }}</span
+          >
           <span :class="step.key === modelValue ? '' : 'hidden lg:inline'">{{ step.label }}</span>
         </button>
       </li>

@@ -211,7 +211,13 @@ async function unsub() {
     >
       <div class="flex justify-end gap-2">
         <FnButton @click="resetOpen = false">{{ t("common.cancel") }}</FnButton>
-        <FnButton :loading="saving" @click="useRecommended(); resetOpen = false">
+        <FnButton
+          :loading="saving"
+          @click="
+            useRecommended();
+            resetOpen = false;
+          "
+        >
           {{ t("notifications.useRecommended") }}
         </FnButton>
       </div>

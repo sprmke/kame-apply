@@ -10,6 +10,15 @@ from app.autosubmit.router import router as autosubmit_router
 from app.extension.router import router as extension_router
 from app.feedback.router import router as feedback_router
 from app.gaps.router import router as gaps_router
+from app.industries.router import (
+    router as industries_router,
+)
+from app.industries.router import (
+    workspace_router as industry_workspace_router,
+)
+from app.industries.router import (
+    workspaces_router as industry_workspaces_router,
+)
 from app.ingest.router import router as ingest_router
 from app.interview.router import router as interview_router
 from app.matching.router import router as matching_router
@@ -42,6 +51,9 @@ router.include_router(ai_router)
 router.include_router(activity_router)
 router.include_router(profiles_router)
 router.include_router(onboarding_router)
+router.include_router(industries_router)
+router.include_router(industry_workspace_router)
+router.include_router(industry_workspaces_router)
 router.include_router(tracks_router)
 router.include_router(taxonomy_router)
 router.include_router(sources_router)

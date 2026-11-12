@@ -9,12 +9,15 @@ Ingest open jobs from compliant sources into a global pool, dedupe them, and lin
 | 1 ATS | greenhouse, lever, ashby, workable, smartrecruiters, recruitee |
 | 2 boards | remotive, remoteok, himalayas, arbeitnow, jobicy, muse |
 | 3 career pages | career_jsonld (JobPosting JSON-LD) |
+| 4 search | search_jooble, search_adzuna (keyword + location) |
 
-Adapter package: `packages/py-core/kame_core/sources/`. Each adapter carries a terms note, descriptive UA, and fails closed on block signals (never evasion). Career-page crawling checks `robots.txt` first (`robots_allowed`, cached per host for an hour) and raises a block signal on a disallow. Career-page boards also send a conditional `HEAD` with the stored ETag/Last-Modified and skip the fetch on `304`.
+Adapter package: `packages/py-core/kame_core/sources/`. Each adapter carries a terms note, descriptive UA, and fails closed on block signals (never evasion). Layer 4 adapters are gated: they run only when a platform key exists **and** `SEARCH_TERMS_ACKNOWLEDGED=true`, or when a fixture directory is supplied for tests. A missing key disables that provider cleanly (P7). Career-page crawling checks `robots.txt` first (`robots_allowed`, cached per host for an hour) and raises a block signal on a disallow. Career-page boards also send a conditional `HEAD` with the stored ETag/Last-Modified and skip the fetch on `304`.
 
 ## Data model
 
-**Global (no RLS):** `sources`, `companies`, `company_boards`, `jobs`, `job_sources`, `country_source_registry`.
+**Global (no RLS):** `sources`, `companies`, `company_boards`, `jobs`, `job_sources`, `country_source_registry`, `source_coverage`, `source_query_cache`.
+
+Industry fields: `companies.industries`, `company_boards.industries`, `jobs.industry_hints`, `jobs.occupation_code`, `jobs.facets` (cuisine, station, kitchen type, shifts, credentials, pay includes). They are filled by the rule classifier in `jobs/classify.py` at ingest. Existing rows are backfilled to Technology.
 
 **Tenant (RLS):** `track_sources`, `track_jobs`, `discovery_runs`.
 
@@ -34,13 +37,19 @@ User add: `POST /api/v1/sources/careers` with a careers URL (ATS detector).
 
 `POST /api/v1/tracks/{id}/discover` runs `discover_track` (service + optional DBOS enqueue when `DBOS_SYSTEM_DATABASE_URL` is set). Progress on the run row; SSE at `/api/v1/discovery-runs/{id}/events`.
 
-Interim Track link: rule filter on criteria titles/skills/work modes (`sources/discover.py`). Phase 6 replaces this with ranking.
+Track-aware boards: `_boards_for_run` picks boards whose `industries` overlap the Track pack's `employer_tags`, plus user-added boards with no tag. A Track's explicit source toggles still win. Without toggles, the pack's `sources.adapters` are the allowlist, so a Hospitality track does not poll Remotive or tech ATS feeds.
+
+Interim Track link: rule filter on criteria titles/skills/work modes (`jobs/link.py`). Phase 6 ranking refines it.
+
+Layer 4: `sources/search_service.py` builds up to 6 keyword + location queries from the Track's titles and locations, checks the global `source_query_cache` (default 6 hours), calls the provider, upserts through the same dedupe path, and links the Track. The same cache serves every workspace.
+
+Coverage: `source_coverage(source_key, country, industry, coverage, note)` powers `GET /api/v1/sources/coverage` and the Track's "Few jobs" notice. `GET /api/v1/tracks/{id}/where` shows the planned queries, adapters, and whether each is configured. `GET /api/v1/sources/alerts/guide` returns prefilled public search URLs for the person to create their own alerts; Kame never signs in for them.
 
 ## Admin
 
 `GET /api/v1/sources/health` (managers): success/error counts, latency, circuit, block signals.
 
-UI: `/settings/sources`, Track settings Sources toggles, Track detail **Run now**.
+UI: `/settings/sources`, Track settings Sources toggles, Track detail **Run now**, the **Where we look** disclosure, and the coverage notice that links to Settings > Alerts.
 
 ## Fixtures
 

@@ -26,9 +26,7 @@ const tint = {
       <div class="flex-1">
         <ToastTitle class="text-sm font-semibold text-ink-900">{{ t.title }}</ToastTitle>
         <ToastDescription v-if="t.description" class="mt-1 text-sm text-ink-600">
-          {{
-            t.description
-          }}
+          {{ t.description }}
         </ToastDescription>
       </div>
       <button

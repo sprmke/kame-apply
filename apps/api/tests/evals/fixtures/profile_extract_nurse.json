@@ -1,5 +1,5 @@
 {
-  "prompt_version": "profile_extract.v1",
+  "prompt_version": "profile_extract.v2",
   "resume_text": "Ana Reyes\nRegistered Nurse\nManila\n\nSt. Luke's Medical Center — Registered Nurse (Mar 2019–Present)\n- Managed a 12-bed ICU float pool\n- Cut medication errors by mentoring new hires\n\nUniversity of the Philippines Manila — BSN, 2018\nRN License (Philippines)\nSkills: patient care, triage, EHR\n",
   "expected_draft": {
     "display_name": { "value": "Ana Reyes", "confidence": 0.95 },

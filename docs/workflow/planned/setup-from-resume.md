@@ -413,7 +413,9 @@ class SetupBundle(BaseModel):
     schema_version: Literal[1] = 1
     items: list[SetupItem]  # max 600
     searches: list[SearchProposal]  # max 3
-    profile_merge: dict | None  # update mode: existing merge preview (matches, conflicts, additions)
+    profile_merge: (
+        dict | None
+    )  # update mode: existing merge preview (matches, conflicts, additions)
     notices: list[str]  # i18n keys: "photo_left_out", "ai_off_basics_only", "needs_ocr", ...
     counts: dict[str, int]  # per group, for the summary sentence
 ```

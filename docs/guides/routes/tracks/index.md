@@ -26,23 +26,24 @@ A search is a role you want. We check company boards and bring back matches. Dup
 
 ### List
 
-Rows show folder-tab color, name, summary, and **View matches**. Secondary actions: duplicate, archive.
+Rows show folder-tab color, name, summary, field of work, and **View matches**. Secondary actions: duplicate, archive.
 
 ### New Track
 
-Lead with **What role are you looking for?** Name is optional. **Check settings** calls `POST /api/v1/tracks/plan` and shows a pencil preview: role titles, core skills, nice-to-have skills, work mode, employment type, freshness, and agency exclusion. Chips can be removed and the agencies toggle edited before saving; editing the description discards the preview.
+Lead with **Field of work** (the workspace's enabled fields, primary selected), then **What role are you looking for?** Name is optional. Changing the field filters the examples, so a Hospitality workspace sees kitchen templates, not software ones, and sends `industry` with the new search. **Check settings** calls `POST /api/v1/tracks/plan` and shows a pencil preview: role titles, core skills, nice-to-have skills, work mode, employment type, freshness, and agency exclusion. Chips can be removed and the agencies toggle edited before saving; editing the description discards the preview.
 
-**Create** uses the previewed criteria when one is open. Without a preview it sends `suggest: true`, so the API builds the same plan before insert (deterministic defaults when AI is not configured). A career profile is ensured first. **Browse examples** reveals the curated starters.
+**Create** uses the previewed criteria when one is open. Without a preview it sends `suggest: true`, so the API builds the same plan before insert (deterministic pack defaults when AI is not configured). A career profile is ensured first. **Browse examples** reveals the curated starters for that field plus General starters. If the field's pack is not enabled for the workspace, the API returns 422.
 
 ## API reference
 
 | Call | Purpose |
 | --- | --- |
 | `GET /api/v1/tracks` | List active |
-| `POST /api/v1/tracks` | Create (`suggest: true` plans from the description) |
-| `POST /api/v1/tracks/plan` | Preview a plan without creating |
-| `GET /api/v1/tracks/templates` | Templates |
-| `POST /api/v1/tracks/{id}/duplicate` | Duplicate |
+| `POST /api/v1/tracks` | Create (`suggest: true` plans from the description; `industry` optional, defaults to the workspace primary) |
+| `POST /api/v1/tracks/plan` | Preview a pack-aware plan without creating |
+| `GET /api/v1/tracks/templates` | Templates (filtered client-side by enabled field) |
+| `GET /api/v1/workspace/experience` | Enabled fields and resolved manifests |
+| `POST /api/v1/tracks/{id}/duplicate` | Duplicate, carries the field |
 | `POST /api/v1/tracks/{id}/archive` | Archive |
 
 ## Implementation map

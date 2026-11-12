@@ -377,7 +377,12 @@
     "presetWarm": "Warm and human",
     "presetWarmEffect": "Friendly openings, calm tone, still specific.",
     "presetFormal": "Formal and precise",
-    "presetFormalEffect": "Complete sentences, measured tone, no slang."
+    "presetFormalEffect": "Complete sentences, measured tone, no slang.",
+    "addPhoto": "Add dish photo",
+    "facets": "Cuisines, stations, and kitchen types",
+    "addFacet": "Add",
+    "facetAdded": "Added",
+    "facetRemoved": "Removed"
   },
   "verify": {
     "banner": "Confirm {email} to secure your account.",
@@ -424,7 +429,31 @@
     "kind": "Type",
     "personal": "Personal",
     "team": "Team",
-    "readOnly": "Only owners and admins can rename this workspace."
+    "readOnly": "Only owners and admins can rename this workspace.",
+    "step": "Step {n} of 2",
+    "next": "Next",
+    "back": "Back",
+    "pickField": "What kind of work?",
+    "pickFieldHint": "Pick one or two. Not sure? Pick General and we'll work it out from your resume.",
+    "limitTwo": "Two fields is the limit. Remove one to pick another.",
+    "primaryField": "Primary",
+    "fieldsOfWork": "Fields of work",
+    "fieldsOfWorkHint": "The workspace default. Each search can use a different field.",
+    "notPrimary": "Extra field",
+    "fallback": "Fallback for any search",
+    "makePrimary": "Make primary",
+    "primaryPreview": "New searches default to {name}.",
+    "previewShifts": "Shift filters appear in searches.",
+    "previewShiftsHidden": "Shift filters move out of the way.",
+    "previewGithub": "GitHub moves to More options.",
+    "previewGithubOn": "GitHub links become available.",
+    "previewProfile": "Profile sections reorder for this field.",
+    "fieldAdded": "Field added",
+    "fieldRemoved": "Field removed",
+    "primaryChanged": "Primary field changed",
+    "removeFieldConfirm": "Remove {name}? Searches using it move to General. Nothing is deleted.",
+    "confirm": "Confirm",
+    "fieldsReadOnly": "Only owners and admins can change fields of work."
   },
   "role": {
     "owner": "Owner",
@@ -483,7 +512,8 @@
     "state_added": "Added",
     "state_needsLook": "Needs a look",
     "state_skipped": "Skipped",
-    "state_reading": "Reading"
+    "state_reading": "Reading",
+    "rotate": "Rotate"
   },
   "integrations": {
     "claude": "Claude",
@@ -724,7 +754,20 @@
     "detailsTitle": "Your details",
     "appearanceTitle": "Appearance",
     "unlinkTitle": "Unlink Google?",
-    "unlinkBody": "You can still sign in with your email and password."
+    "unlinkBody": "You can still sign in with your email and password.",
+    "experience": {
+      "kitchen": "Kitchen experience"
+    },
+    "skills": {
+      "techniques": "Skills and techniques"
+    },
+    "projects": {
+      "label": "Projects",
+      "signature_dishes": "Signature dishes and menus"
+    },
+    "certifications": {
+      "food_safety": "Food safety certificates"
+    }
   },
   "sessions": {
     "lede": "Devices signed in to your account.",
@@ -863,7 +906,13 @@
     "geocode_not_found": "Place not found.",
     "ats_not_detected": "Could not read that company career site from the URL.",
     "storage_unavailable": "Files could not be saved. Try again.",
-    "track_not_found": "That search no longer exists."
+    "track_not_found": "That search no longer exists.",
+    "general_is_implicit": "General is always available.",
+    "unknown_industry": "That field of work is not available.",
+    "unknown_facet": "That filter is not available for this search.",
+    "unknown_facet_option": "That option is not available for this search.",
+    "image_too_large": "That image is too large. Use a smaller photo.",
+    "invalid_pack": "That field setup is not valid. Try again."
   },
   "autoSubmit": {
     "title": "Auto-apply",
@@ -890,7 +939,8 @@
     "consistency": "Consistency",
     "paste": "Paste LinkedIn text",
     "check": "Check",
-    "score": "Score"
+    "score": "Score",
+    "found": "Get found"
   },
   "tracks": {
     "title": "Searches",
@@ -1085,7 +1135,63 @@
     "failedHint": "Try again. If it keeps failing, check the sources below.",
     "locationPlaceholder": "Manila",
     "recommendedLine": "{preset}, {level}, up to {cap} new jobs a day",
-    "relaxTitle": "To see more jobs, loosen one of these"
+    "relaxTitle": "To see more jobs, loosen one of these",
+    "criteria": "Search settings",
+    "settings": "Settings",
+    "update": "Update",
+    "applyDiff": "Apply",
+    "chips": "Criteria chips",
+    "runStats": "{linked} new · {scored} scored · {prepared} prepared · {duration}",
+    "moreFilters": "More filters",
+    "hideFilters": "Hide filters",
+    "languages": "Languages",
+    "education": "Education",
+    "clearance": "Security clearance",
+    "minScore": "Minimum match score",
+    "matchedJobs": "Matches",
+    "noJobs": "No matches yet. Run this search to check company boards.",
+    "sourcesEnabled": "Sources",
+    "criteriaHint": "Update this to refine your matches.",
+    "field": "Field of work",
+    "fieldHint": "This search uses the field's filters, words, and sources.",
+    "shifts": "Shifts",
+    "shift_morning": "Morning",
+    "shift_afternoon": "Afternoon",
+    "shift_evening": "Evening",
+    "shift_night": "Night",
+    "shift_weekend": "Weekend",
+    "shift_split": "Split shift",
+    "shift_rotating": "Rotating",
+    "employmentTypes": "Employment type",
+    "type_full_time": "Full time",
+    "type_part_time": "Part time",
+    "type_contract": "Contract",
+    "type_freelance": "Freelance",
+    "type_internship": "Internship",
+    "type_temporary": "Temporary",
+    "type_casual": "Casual",
+    "type_seasonal": "Seasonal",
+    "postingAge": "Posted within days",
+    "salaryIncludes": "Pay includes",
+    "include_accommodation": "Accommodation",
+    "include_meals": "Meals",
+    "include_tips": "Tips",
+    "include_service_charge": "Service charge",
+    "include_transport": "Transport",
+    "relocation": "Relocation support",
+    "showAllFilters": "Show all filters",
+    "hideAllFilters": "Show fewer filters",
+    "setEarlier": "Set earlier",
+    "setEarlierHint": "This filter is hidden for this field but still applied.",
+    "clear": "Clear",
+    "coverageTitle": "Few {field} jobs from our sources in {country} yet.",
+    "coverageBody": "Add a job alert and we'll read it for you, or add a company careers page.",
+    "addAlert": "Set up a job alert",
+    "whereWeLook": "Where we look",
+    "searchTerms": "Search terms",
+    "noSearchTerms": "Add a location to search this field.",
+    "ready": "Ready",
+    "setupNeeded": "Setup needed"
   },
   "sources": {
     "title": "Source health",
@@ -1207,7 +1313,10 @@
     "otherRoles": "Other roles at this company",
     "skipPrompt": "Why skip this job?",
     "skipWrongTitle": "Wrong role",
-    "fitCompact": "You match {met} of {total} requirements. Each line is checked against your profile."
+    "fitCompact": "You match {met} of {total} requirements. Each line is checked against your profile.",
+    "certificate": "Certificate",
+    "shift": "Shift",
+    "payIncludes": "Pay includes"
   },
   "safety": {
     "lede": "Check a message or posting for scam signals. Flagged jobs wait here for your decision.",
@@ -1448,5 +1557,219 @@
   "help": {
     "glossaryIntro": "The words this app uses, in plain language.",
     "shortcutsHint": "Shortcuts work on the job list when no field is focused."
+  },
+  "industry": {
+    "general": {
+      "label": "General"
+    },
+    "technology": {
+      "label": "Technology and software",
+      "family": {
+        "software": "Software",
+        "data": "Data",
+        "infrastructure": "Infrastructure",
+        "product": "Product"
+      }
+    },
+    "hospitality": {
+      "label": "Hospitality and food",
+      "family": {
+        "kitchen": "Kitchen",
+        "pastry": "Pastry and bakery",
+        "catering": "Catering and banquets",
+        "cruise": "Cruise and resort kitchens",
+        "front_of_house": "Front of house"
+      },
+      "facet": {
+        "cuisine": "Cuisine",
+        "kitchen_type": "Kitchen type",
+        "station": "Station",
+        "covers_band": "Covers per service"
+      },
+      "cuisine": {
+        "filipino": "Filipino",
+        "japanese": "Japanese",
+        "chinese": "Chinese",
+        "korean": "Korean",
+        "thai": "Thai",
+        "indian": "Indian",
+        "italian": "Italian",
+        "french": "French",
+        "mediterranean": "Mediterranean",
+        "middle_eastern": "Middle Eastern",
+        "american": "American",
+        "mexican": "Mexican",
+        "vegetarian": "Vegetarian and vegan",
+        "fusion": "Fusion"
+      },
+      "kitchen": {
+        "fine_dining": "Fine dining",
+        "casual_dining": "Casual dining",
+        "hotel": "Hotel",
+        "banquet_catering": "Banquet and catering",
+        "qsr": "Quick service",
+        "cruise": "Cruise ship",
+        "institutional": "Institutional",
+        "bakery": "Bakery",
+        "central_kitchen": "Central kitchen",
+        "cloud_kitchen": "Cloud kitchen"
+      },
+      "station": {
+        "grill": "Grill",
+        "saute": "Saute",
+        "garde_manger": "Garde manger",
+        "pastry": "Pastry",
+        "fry": "Fry",
+        "prep": "Prep",
+        "expo": "Expo",
+        "butchery": "Butchery",
+        "sauce": "Sauce",
+        "roast": "Roast"
+      },
+      "covers": {
+        "under_50": "Under 50",
+        "band_50_150": "50 to 150",
+        "band_150_300": "150 to 300",
+        "band_300_plus": "300 or more"
+      }
+    },
+    "healthcare": {
+      "label": "Healthcare",
+      "family": {
+        "nursing": "Nursing",
+        "allied_health": "Allied Health",
+        "care": "Care"
+      }
+    },
+    "engineering": {
+      "label": "Engineering",
+      "family": {
+        "civil": "Civil",
+        "mechanical": "Mechanical",
+        "electrical": "Electrical"
+      }
+    },
+    "trades": {
+      "label": "Skilled trades",
+      "family": {
+        "electrical": "Electrical",
+        "mechanical": "Mechanical",
+        "site": "Site"
+      }
+    },
+    "customer_service": {
+      "label": "Customer service and retail",
+      "family": {
+        "retail": "Retail",
+        "contact_center": "Contact Center"
+      }
+    },
+    "education": {
+      "label": "Education",
+      "family": {
+        "school": "School",
+        "early_years": "Early Years"
+      }
+    },
+    "logistics": {
+      "label": "Logistics and driving",
+      "family": {
+        "driving": "Driving",
+        "warehouse": "Warehouse"
+      }
+    },
+    "finance": {
+      "label": "Finance and accounting",
+      "family": {
+        "accounting": "Accounting",
+        "analysis": "Analysis"
+      }
+    },
+    "admin": {
+      "label": "Admin and virtual assistance",
+      "family": {
+        "office": "Office",
+        "virtual": "Virtual"
+      }
+    },
+    "sales_marketing": {
+      "label": "Sales and marketing",
+      "family": {
+        "sales": "Sales",
+        "marketing": "Marketing"
+      }
+    },
+    "creative": {
+      "label": "Creative and design",
+      "family": {
+        "design": "Design",
+        "content": "Content"
+      }
+    }
+  },
+  "rank": {
+    "kitchen_hand": "Kitchen hand",
+    "demi_chef": "Demi chef de partie",
+    "chef_de_partie": "Chef de partie",
+    "pastry_chef": "Pastry chef",
+    "sous_chef": "Sous chef",
+    "head_chef": "Head chef",
+    "executive_chef": "Executive chef"
+  },
+  "credential": {
+    "food_handler": "Food handler card",
+    "servsafe_handler": "ServSafe Food Handler",
+    "servsafe_manager": "ServSafe Manager",
+    "haccp": "HACCP",
+    "food_safety_l2_uk": "Food Hygiene Level 2",
+    "food_safety_l3_uk": "Food Hygiene Level 3",
+    "tesda_cookery_nc2_ph": "TESDA Cookery NC II",
+    "rsa_au": "RSA certificate",
+    "stcw_basic": "STCW basic safety",
+    "culinary_diploma": "Culinary diploma",
+    "seaman_book": "Seaman's book",
+    "rn_license": "RN license",
+    "bls_cpr": "BLS / CPR",
+    "caregiver_cert": "Caregiver certificate",
+    "pe_license": "PE license",
+    "ceng": "CEng",
+    "pmp": "PMP",
+    "electrician_license": "Electrician license",
+    "welding_cert": "Welding certificate",
+    "drivers_license": "Driver's license",
+    "teaching_license": "Teaching license",
+    "tefl": "TEFL / TESOL",
+    "cdl": "CDL",
+    "forklift_cert": "Forklift certificate",
+    "cpa": "CPA",
+    "acca": "ACCA",
+    "cfa": "CFA"
+  },
+  "criteria": {
+    "skills": {
+      "tech_stack": "Tech stack",
+      "techniques": "Skills and techniques"
+    },
+    "locations": {
+      "commute": "Commute"
+    },
+    "titles": {
+      "roles": "Kitchen roles"
+    },
+    "pay": {
+      "includes": "Pay includes"
+    }
+  },
+  "seniority": {
+    "intern": "Intern",
+    "junior": "Junior",
+    "mid": "Mid level",
+    "senior": "Senior",
+    "staff": "Staff",
+    "principal": "Principal",
+    "lead": "Lead",
+    "manager": "Manager",
+    "director": "Director",
+    "executive": "Executive"
   }
 }

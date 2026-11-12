@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from app.industries.schema import IndustryPack
 from app.jobs.normalize import normalize_title
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
 
@@ -37,8 +38,25 @@ _GENERIC_TITLE_WORDS = frozenset(
 )
 
 
-def title_tokens(value: str) -> set[str]:
-    return {w for w in value.split() if len(w) > 2 and w not in _GENERIC_TITLE_WORDS}
+def title_tokens(value: str, generic: frozenset[str] | set[str] | None = None) -> set[str]:
+    words = generic if generic is not None else _GENERIC_TITLE_WORDS
+    return {w for w in value.split() if len(w) > 2 and w not in words}
+
+
+def same_title_group(pack: IndustryPack, wanted: str, actual: str) -> bool:
+    for group in pack.matching.title_groups:
+        if any(term in wanted for term in group) and any(term in actual for term in group):
+            return True
+    return False
+
+
+def _distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    from math import asin, cos, radians, sin, sqrt
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    return 6371.0 * 2 * asin(sqrt(a))
 
 
 DEFAULT_WEIGHTS: dict[str, float] = {
@@ -68,10 +86,13 @@ def rule_components(
     *,
     profile_skills: list[str] | None = None,
     profile_seniority: str | None = None,
+    profile_credentials: list[str] | None = None,
+    pack: IndustryPack | None = None,
 ) -> tuple[dict[str, float], list[str]]:
     c = structured if isinstance(structured, CriteriaV1) else criteria_from_dict(structured)
     comps: dict[str, float] = {}
     reasons: list[str] = []
+    generic = set(pack.matching.generic_title_words) if pack else None
 
     # Title
     title_blob = f"{job.get('title', '')} {job.get('normalized_title', '')}".lower()
@@ -87,8 +108,10 @@ def rule_components(
                 best = 100.0
             elif nt in norm or t.title.lower() in title_blob:
                 best = max(best, 85.0)
+            elif pack and same_title_group(pack, nt, norm):
+                best = max(best, 90.0)
             else:
-                shared = title_tokens(norm) & title_tokens(nt)
+                shared = title_tokens(norm, generic) & title_tokens(nt, generic)
                 if len(shared) >= 2:
                     best = max(best, 65.0)
                 elif shared:
@@ -211,6 +234,60 @@ def rule_components(
             comps["location"] = 30.0
     elif wm and c.work_modes and wm in c.work_modes:
         comps["location"] = 80.0
+
+    # Commute: when both sides have coordinates, distance beats remote wording.
+    wanted = c.locations[0] if c.locations else None
+    job_locs = job.get("locations") or []
+    job_loc = job_locs[0] if job_locs and isinstance(job_locs[0], dict) else None
+    if (
+        wanted
+        and wanted.lat is not None
+        and wanted.lon is not None
+        and job_loc
+        and job_loc.get("lat") is not None
+        and job_loc.get("lon") is not None
+    ):
+        try:
+            km = _distance_km(
+                float(wanted.lat), float(wanted.lon), float(job_loc["lat"]), float(job_loc["lon"])
+            )
+            radius = wanted.radius_km or 25
+            if km <= radius:
+                comps["location"] = 100.0
+                reasons.append(f"{km:.0f} km away")
+            elif km <= radius * 2:
+                comps["location"] = 65.0
+                reasons.append(f"{km:.0f} km away")
+            else:
+                comps["location"] = 25.0
+        except (TypeError, ValueError):
+            pass
+
+    # Credentials named in the posting vs the profile's certifications.
+    required = {str(item).lower() for item in (job.get("facets") or {}).get("credentials") or []}
+    if required:
+        have = {str(item).lower() for item in (profile_credentials or [])}
+        matched = required & have
+        if len(matched) == len(required):
+            comps["credentials"] = 100.0
+            reasons.append("Food safety credential matches")
+        elif matched:
+            comps["credentials"] = 65.0
+        else:
+            comps["credentials"] = 20.0
+    else:
+        comps["credentials"] = 70.0
+
+    # Shift preference. Unknown job shifts stay neutral instead of failing a person.
+    want_shifts = {str(item).lower() for item in c.shifts}
+    job_shifts = {str(item).lower() for item in (job.get("facets") or {}).get("shifts") or []}
+    if want_shifts and job_shifts:
+        overlap = want_shifts & job_shifts
+        comps["shift"] = 100.0 if overlap else 30.0
+        if overlap:
+            reasons.append("Shift fits")
+    else:
+        comps["shift"] = 60.0
 
     return comps, reasons[:5]
 

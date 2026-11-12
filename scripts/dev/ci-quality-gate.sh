@@ -25,6 +25,11 @@ if has_script check:ux-jargon; then
   pnpm run check:ux-jargon
 fi
 
+if has_script check:industry-branches; then
+  step "check:industry-branches (no pack branching in web components)"
+  pnpm run check:industry-branches
+fi
+
 if [[ -f scripts/dev/check-untrusted-prompts.sh ]]; then
   step "check:untrusted-prompts"
   bash scripts/dev/check-untrusted-prompts.sh

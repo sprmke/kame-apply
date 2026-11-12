@@ -55,7 +55,8 @@ const groupName = props.name ?? `choice-${uid}`;
             <span
               v-if="opt.badge"
               class="rounded-full bg-brand-100 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-700"
-            >{{ opt.badge }}</span>
+              >{{ opt.badge }}</span
+            >
           </span>
           <span v-if="opt.effect" class="text-sm leading-5 text-ink-600">{{ opt.effect }}</span>
         </span>
