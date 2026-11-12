@@ -7,7 +7,7 @@
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
 | List | Done | API | Documented | Phase 4 |
-| New search | Done | role text or example | Documented | Examples hidden behind Browse examples |
+| New search | Done | role text or example | Documented | Check settings previews roles, skills, filters; examples behind Browse examples |
 
 ## Overview
 
@@ -30,14 +30,17 @@ Rows show folder-tab color, name, summary, and **View matches**. Secondary actio
 
 ### New Track
 
-Lead with **What role are you looking for?** Name is optional. **Browse examples** reveals the curated starters. Create calls `POST /api/v1/tracks` (ensures a career profile first).
+Lead with **What role are you looking for?** Name is optional. **Check settings** calls `POST /api/v1/tracks/plan` and shows a pencil preview: role titles, core skills, nice-to-have skills, work mode, employment type, freshness, and agency exclusion. Chips can be removed and the agencies toggle edited before saving; editing the description discards the preview.
+
+**Create** uses the previewed criteria when one is open. Without a preview it sends `suggest: true`, so the API builds the same plan before insert (deterministic defaults when AI is not configured). A career profile is ensured first. **Browse examples** reveals the curated starters.
 
 ## API reference
 
 | Call | Purpose |
 | --- | --- |
 | `GET /api/v1/tracks` | List active |
-| `POST /api/v1/tracks` | Create |
+| `POST /api/v1/tracks` | Create (`suggest: true` plans from the description) |
+| `POST /api/v1/tracks/plan` | Preview a plan without creating |
 | `GET /api/v1/tracks/templates` | Templates |
 | `POST /api/v1/tracks/{id}/duplicate` | Duplicate |
 | `POST /api/v1/tracks/{id}/archive` | Archive |

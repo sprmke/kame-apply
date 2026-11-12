@@ -2039,6 +2039,55 @@ export type CriteriaCompileRequest = {
 };
 
 /**
+ * CriteriaPlanPreview
+ */
+export type CriteriaPlanPreview = {
+    /**
+     * Ai Error
+     */
+    ai_error?: string | null;
+    /**
+     * Applied
+     */
+    applied?: boolean;
+    criteria: CriteriaV1;
+    /**
+     * Diff
+     */
+    diff: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Source
+     */
+    source?: 'ai' | 'defaults';
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Warnings
+     */
+    warnings: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * CriteriaPlanRequest
+ */
+export type CriteriaPlanRequest = {
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
  * CriteriaPut
  */
 export type CriteriaPut = {
@@ -2047,6 +2096,20 @@ export type CriteriaPut = {
      * Nl Text
      */
     nl_text?: string | null;
+};
+
+/**
+ * CriteriaSuggestRequest
+ */
+export type CriteriaSuggestRequest = {
+    /**
+     * Apply
+     */
+    apply?: boolean;
+    /**
+     * Text
+     */
+    text: string;
 };
 
 /**
@@ -7186,6 +7249,10 @@ export type TrackCreate = {
      * Profile Id
      */
     profile_id: string;
+    /**
+     * Suggest
+     */
+    suggest?: boolean;
     /**
      * Template Slug
      */
@@ -17336,6 +17403,41 @@ export type GeoLookupApiV1TracksGeoLookupGetResponses = {
 
 export type GeoLookupApiV1TracksGeoLookupGetResponse = GeoLookupApiV1TracksGeoLookupGetResponses[keyof GeoLookupApiV1TracksGeoLookupGetResponses];
 
+export type PlanSearchApiV1TracksPlanPostData = {
+    body: CriteriaPlanRequest;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/tracks/plan';
+};
+
+export type PlanSearchApiV1TracksPlanPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type PlanSearchApiV1TracksPlanPostError = PlanSearchApiV1TracksPlanPostErrors[keyof PlanSearchApiV1TracksPlanPostErrors];
+
+export type PlanSearchApiV1TracksPlanPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CriteriaPlanPreview;
+};
+
+export type PlanSearchApiV1TracksPlanPostResponse = PlanSearchApiV1TracksPlanPostResponses[keyof PlanSearchApiV1TracksPlanPostResponses];
+
 export type ReorderApiV1TracksReorderPostData = {
     body: TrackReorder;
     headers?: {
@@ -17771,6 +17873,46 @@ export type CompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponses = {
 };
 
 export type CompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponse = CompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponses[keyof CompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponses];
+
+export type SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostData = {
+    body: CriteriaSuggestRequest;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Track Id
+         */
+        track_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tracks/{track_id}/criteria/suggest';
+};
+
+export type SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostError = SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostErrors[keyof SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostErrors];
+
+export type SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CriteriaPlanPreview;
+};
+
+export type SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponse = SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponses[keyof SuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponses];
 
 export type DiscoverNowApiV1TracksTrackIdDiscoverPostData = {
     body?: never;

@@ -38,8 +38,14 @@ async def list_tracks(
 
 
 @router.post("", response_model=s.TrackDetail, status_code=201)
-async def create_track(body: s.TrackCreate, ctx: WorkspaceContext = Write):
-    detail = await service.create_track(ctx, body)
+async def create_track(
+    body: s.TrackCreate,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    detail = await service.create_track(ctx, body, settings=settings, run_structured=runner)
     return s.TrackDetail(
         **_track_read(detail["track"]).model_dump(),
         criteria=s.TrackCriteriaRead.model_validate(detail["criteria"]),
@@ -73,6 +79,38 @@ async def geo_lookup(
         display_name=hit.display_name,
         cached=hit.cached,
     )
+
+
+@router.post("/plan", response_model=s.CriteriaPlanPreview)
+async def plan_search(
+    body: s.CriteriaPlanRequest,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    result = await service.plan_search(ctx, settings, text=body.text, run_structured=runner)
+    return s.CriteriaPlanPreview(**result)
+
+
+@router.post("/{track_id}/criteria/suggest", response_model=s.CriteriaPlanPreview)
+async def suggest_criteria(
+    track_id: uuid.UUID,
+    body: s.CriteriaSuggestRequest,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    result = await service.suggest_criteria(
+        ctx,
+        settings,
+        track_id,
+        text=body.text,
+        apply=body.apply,
+        run_structured=runner,
+    )
+    return s.CriteriaPlanPreview(**result)
 
 
 @router.get("/{track_id}", response_model=s.TrackDetail)

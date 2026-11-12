@@ -45,6 +45,11 @@ def fake_factory(provider, *, api_key, model, base_url):
             )
         if behavior["mode"] == "500":
             raise ModelHTTPError(500, model, {"error": "boom"})
+        if behavior["mode"] == "503":
+            raise ModelHTTPError(503, model, {"error": "overloaded"})
+        if behavior["mode"] == "503_once":
+            behavior["mode"] = "ok"  # a provider that recovers on its own
+            raise ModelHTTPError(503, model, {"error": "overloaded"})
         return ModelResponse(
             parts=[TextPart("ok")], usage=RequestUsage(input_tokens=1000, output_tokens=500)
         )
@@ -61,7 +66,11 @@ def _reset():
 @pytest.fixture
 async def env():
     settings = Settings(
-        database_url=TEST_DB_URL, environment="test", log_json=False, auth_rate_limit_enabled=False
+        database_url=TEST_DB_URL,
+        environment="test",
+        log_json=False,
+        auth_rate_limit_enabled=False,
+        ai_retry_base_seconds=0,  # retries still run, without the wall-clock wait
     )
     app = create_app(settings)
     app.state.mailer = Outbox()
@@ -447,3 +456,54 @@ async def test_provider_400_api_key_invalid_marks_the_key_invalid(env):
     behavior["mode"] = "gemini400"
     r = await c.post(f"/api/v1/ai/credentials/{cred['id']}/test", headers=owner.h(ws))
     assert r.json()["status"] == "invalid"
+
+
+# --- transient provider errors ------------------------------------------------------------------
+
+
+async def test_transient_provider_error_is_retried(env):
+    c, outbox = env
+    owner, ws, _ = await team(c, outbox)
+    await add(c, owner, ws)
+    behavior["mode"] = "503_once"
+    r = await c.post("/api/v1/_ai_probe", headers=owner.h(ws))
+    assert r.status_code == 200 and r.json()["text"] == "ok"
+    assert len(calls) == 2
+
+
+async def test_persistent_outage_gives_up_after_the_retries(env):
+    c, outbox = env
+    owner, ws, _ = await team(c, outbox)
+    await add(c, owner, ws)
+    behavior["mode"] = "503"
+    r = await c.post("/api/v1/_ai_probe", headers=owner.h(ws))
+    assert r.status_code == 502 and r.json()["error"]["code"] == "ai_provider_error"
+    assert len(calls) == 1 + Settings.model_fields["ai_transient_retries"].default
+
+
+async def test_fallback_provider_takes_over_on_an_outage(env):
+    c, outbox = env
+    owner, ws, _ = await team(c, outbox)
+    await add(c, owner, ws, provider="gemini")
+    await add(c, owner, ws, provider="groq", key="gsk-test-1234")
+    for row in (await c.get("/api/v1/ai/credentials", headers=owner.h(ws))).json():
+        await c.post(f"/api/v1/ai/credentials/{row['id']}/test", headers=owner.h(ws))
+    calls.clear()
+
+    def gemini_down(provider, *, api_key, model, base_url):
+        def respond(messages, info):
+            calls.append({"provider": provider})
+            if provider == "gemini":
+                raise ModelHTTPError(503, model, {"error": "overloaded"})
+            return ModelResponse(
+                parts=[TextPart("ok")], usage=RequestUsage(input_tokens=1, output_tokens=1)
+            )
+
+        return FunctionModel(respond)
+
+    c._transport.app.state.model_factory = gemini_down  # type: ignore[attr-defined]
+    r = await c.post("/api/v1/_ai_probe", headers=owner.h(ws))
+    assert r.status_code == 502  # no fallback configured
+    await c.patch("/api/v1/ai/settings", json={"fallback_enabled": True}, headers=owner.h(ws))
+    r = await c.post("/api/v1/_ai_probe", headers=owner.h(ws))
+    assert r.status_code == 200 and r.json()["provider"] == "groq"

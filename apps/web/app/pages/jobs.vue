@@ -59,9 +59,9 @@ function sealLevel(level: string | null | undefined): "clear" | "caution" | "dan
 }
 
 function sealLabel(level: string | null | undefined): string {
-  if (level === "red") return "High risk";
-  if (level === "yellow") return "Caution";
-  return "Clear";
+  if (level === "red") return t("jobs.highRisk");
+  if (level === "yellow") return t("jobs.caution");
+  return t("jobs.clear");
 }
 
 const STOP_REASONS = new Set([
@@ -425,40 +425,67 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       v-else
       class="grid min-h-0 flex-1 gap-4 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,18rem)]"
     >
-      <ul
-        :class="mobileDetail ? 'hidden lg:block' : 'block'"
-        class="border-r border-rule pr-2 lg:min-h-0 lg:overflow-y-auto"
-        role="listbox"
+      <div
+        :class="mobileDetail ? 'hidden lg:flex' : 'flex'"
+        class="min-h-0 min-w-0 flex-col lg:border-r lg:border-rule lg:pr-2"
       >
-        <li
-          v-for="row in rows"
-          :key="row.id"
-          role="option"
-          :aria-selected="row.id === selectedId"
-          class="cursor-pointer rounded-lg border-b border-rule px-3 py-3 text-sm transition-colors hover:bg-paper-2"
-          :class="row.id === selectedId ? 'bg-brand-50' : ''"
-          @click="selectJob(row.id)"
+        <div
+          class="flex items-center gap-3 border-b border-rule px-3 pb-1.5 text-[0.6875rem] font-semibold tracking-wide text-ink-400 uppercase"
         >
-          <div class="flex items-baseline gap-2">
-            <span class="font-mono text-xs tabular-nums text-brand-700">{{
-              row.score != null ? Math.round(row.score) : "-"
-            }}</span>
-            <span class="line-clamp-2 font-medium text-ink-900">{{ row.title }}</span>
-          </div>
-          <div class="mt-0.5 flex flex-wrap gap-1 text-xs text-ink-400">
-            <span>{{ row.company_name }}</span>
-            <FnRiskSeal
-              v-if="row.risk_level === 'yellow' || row.risk_level === 'red'"
-              :level="sealLevel(row.risk_level)"
-              :label="sealLabel(row.risk_level)"
-            />
-            <FnChip v-if="row.eligibility === 'not_eligible'">Ineligible</FnChip>
-            <FnChip v-for="r in visibleReasons(row.reasons).slice(0, 1)" :key="String(r)">{{
-              reasonText(r)
-            }}</FnChip>
-          </div>
-        </li>
-      </ul>
+          <span class="w-9 shrink-0 text-right">{{ t("jobs.colMatch") }}</span>
+          <span class="flex-1">{{ t("jobs.colJob") }}</span>
+        </div>
+        <ul :aria-label="t('jobs.list')" class="min-h-0 flex-1 lg:overflow-y-auto" role="listbox">
+          <li
+            v-for="row in rows"
+            :key="row.id"
+            role="option"
+            :aria-selected="row.id === selectedId"
+            class="cursor-pointer border-b border-rule transition-colors last:border-b-0"
+            :class="
+              row.id === selectedId
+                ? 'bg-brand-50 shadow-[inset_2px_0_0_0_var(--brand-500)]'
+                : 'hover:bg-paper-2'
+            "
+            @click="selectJob(row.id)"
+          >
+            <div class="flex items-center gap-3 px-3 py-2.5">
+              <span
+                class="w-9 shrink-0 text-right text-sm font-semibold tabular-nums"
+                :class="row.id === selectedId ? 'text-brand-700' : 'text-ink-600'"
+                >{{ row.score != null ? Math.round(row.score) : "-" }}</span
+              >
+              <div class="min-w-0 flex-1">
+                <p
+                  class="truncate text-sm font-semibold text-ink-900"
+                  :title="row.title ?? undefined"
+                >
+                  {{ row.title }}
+                </p>
+                <p class="mt-0.5 flex items-center gap-1.5 text-xs">
+                  <span class="min-w-0 truncate text-ink-600">{{ row.company_name }}</span>
+                  <span v-if="row.work_mode" class="shrink-0 text-ink-400"
+                    >· {{ workModeLabel(row.work_mode) }}</span
+                  >
+                  <span
+                    v-if="row.risk_level === 'red'"
+                    class="inline-flex shrink-0 items-center gap-1 font-semibold text-oxblood-600"
+                    ><span aria-hidden="true">✕</span>{{ t("jobs.highRisk") }}</span
+                  >
+                  <span
+                    v-else-if="row.risk_level === 'yellow'"
+                    class="inline-flex shrink-0 items-center gap-1 font-semibold text-saffron-600"
+                    ><span aria-hidden="true">!</span>{{ t("jobs.caution") }}</span
+                  >
+                  <span v-if="row.eligibility === 'not_eligible'" class="shrink-0 text-ink-400"
+                    >· {{ t("jobs.ineligible") }}</span
+                  >
+                </p>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
 
       <section
         v-if="selected"
@@ -502,7 +529,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
         class="flex flex-col gap-5 rounded-lg border-t border-rule bg-paper-0 p-4 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l lg:pl-4"
       >
         <section class="flex flex-col gap-3">
-          <div class="flex items-end gap-3">
+          <div class="flex items-start justify-between gap-3">
             <div>
               <div class="text-3xl font-bold tabular-nums text-brand-700">
                 {{ selected.score != null ? Math.round(selected.score) : "-" }}
@@ -511,7 +538,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             </div>
             <FnRiskSeal
               v-if="selected.risk_level"
-              class="mb-1"
+              class="mt-1 shrink-0"
               :level="sealLevel(selected.risk_level)"
               :label="sealLabel(selected.risk_level)"
             />
@@ -522,7 +549,10 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             }}</FnChip>
           </div>
           <ul
-            v-if="visibleRiskReasons.length"
+            v-if="
+              visibleRiskReasons.length &&
+              (selected.risk_level === 'yellow' || selected.risk_level === 'red')
+            "
             class="space-y-1 border-l-2 border-oxblood-600 pl-3 text-sm leading-6 text-ink-600"
           >
             <li v-for="(r, i) in visibleRiskReasons" :key="i">{{ reasonText(r) }}</li>
@@ -532,7 +562,12 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
         <section class="flex flex-col gap-2 border-t border-rule pt-4">
           <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">Next</h3>
           <div class="grid grid-cols-2 gap-2">
-            <FnButton size="sm" tone="primary" @click="router.push(`/tailor/${selectedId}`)">
+            <FnButton
+              size="sm"
+              tone="primary"
+              class="col-span-2"
+              @click="router.push(`/tailor/${selectedId}`)"
+            >
               Tailor
             </FnButton>
             <FnButton size="sm" tone="quiet" @click="triage('shortlist')"> Shortlist </FnButton>
@@ -546,10 +581,10 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
               Open
             </FnButton>
             <FnButton size="sm" tone="ghost" @click="skipOpen = true">Skip</FnButton>
+            <FnButton size="sm" tone="ghost" @click="markApplied">{{
+              t("applications.markApplied")
+            }}</FnButton>
           </div>
-          <FnButton size="sm" tone="ghost" class="self-start" @click="markApplied">{{
-            t("applications.markApplied")
-          }}</FnButton>
         </section>
 
         <section class="flex flex-col gap-3 border-t border-rule pt-4">

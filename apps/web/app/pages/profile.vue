@@ -22,7 +22,7 @@ function active(to: string, exact?: boolean) {
         v-for="tab in tabs"
         :key="tab.key"
         :to="tab.to"
-        class="rounded-md px-4 py-2 text-sm font-semibold"
+        class="flex min-h-11 items-center rounded-md px-4 text-sm font-semibold"
         :class="
           active(tab.to, tab.exact)
             ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'

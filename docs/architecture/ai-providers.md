@@ -30,11 +30,13 @@ Both share the same path:
 3. Run a PydanticAI agent with **no tools**, so untrusted text in `prompt` cannot trigger actions. Callers must still delimit untrusted content.
 4. Record tokens and estimated cost in `ai_usage` (append-only for the app role).
 
+**Transient upstream errors.** A provider answering `408`, `429`, `500`, `502`, `503`, or `504` (Gemini's `503 UNAVAILABLE` for an overloaded model is the common case) is retried in place: `AI_TRANSIENT_RETRIES` extra attempts (default 2) with exponential backoff from `AI_RETRY_BASE_SECONDS` (default 0.6) plus jitter, logged as `ai_provider_retry`. With `fallback_enabled`, an exhausted primary also hands the call to the next provider whose credential is `valid`. Only then does the caller see `ai_provider_error` (502). Auth failures and timeouts are not retried by status; a timeout still fails with 504.
+
 Versioned prompts live in `app/ai/prompts.py`. Resume parse uses `profile_extract.v1` via `run_structured` (see `docs/architecture/profile.md`).
 
 **Optional AI.** Features that must keep working on a free tier call `app/ai/optional.try_structured`, which returns `None` for `ai_not_configured`, `budget_reached`, `ai_provider_error`, `ai_output_invalid`, and `ai_credential_invalid`. Callers keep their deterministic result. Used by the resume critique rubric and the cover letter drafter; the letter is verified sentence by sentence against profile evidence before it is returned.
 
-Errors: `ai_not_configured` (409), `budget_reached` (402), `ai_credential_invalid` (409), `ai_provider_error` (502/504), `ai_output_invalid` (502). Optional fallback to other providers' `valid` credentials only when `fallback_enabled` is on.
+Errors: `ai_not_configured` (409), `budget_reached` (402), `ai_credential_invalid` (409), `ai_provider_error` (502/504), `ai_output_invalid` (502). Optional fallback to other providers' `valid` credentials only when `fallback_enabled` is on; the fallback also covers an outage after the retries above are spent.
 
 Costs are estimates from a price table in `providers.py`; unknown models use the provider's default price. Default models change often (Google retired `gemini-2.5-flash-lite` for new keys while this was built), so workspaces can override any tier and the defaults should be re-checked each phase with `RUN_LIVE_AI=1 uv run pytest apps/api/tests/test_ai_live.py`.
 

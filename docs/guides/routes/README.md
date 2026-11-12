@@ -17,6 +17,7 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/coach` | [coach.md](./coach.md) | Documented (Phase 20) |
 | `/contacts` | [contacts.md](./contacts.md) | Documented (Phase 20) |
 | `/answers` | [answers.md](./answers.md) | Documented (Phase 12) |
+| `/settings` | [settings/index.md](./settings/index.md) | Documented (grouped sub-nav, 2026-11-12) |
 | `/settings/general` | [settings/general.md](./settings/general.md) | Documented (Phase 2) |
 | `/settings/members` | [settings/members.md](./settings/members.md) | Documented (Phase 2) |
 | `/settings/ai` | [settings/ai.md](./settings/ai.md) | Documented (Phase 2) |
@@ -40,11 +41,11 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/profile/review/:documentId` | [profile/review.md](./profile/review.md) | Documented (Phase 3) |
 | `/profile/merge/:documentId` | [profile/merge.md](./profile/merge.md) | Documented (Phase 3) |
 | `/tracks` | [tracks/index.md](./tracks/index.md) | Documented (Searches label, 2026-11-11) |
-| `/tracks/:id` | [tracks/detail.md](./tracks/detail.md) | Documented (results-first, Run search, 2026-11-11) |
+| `/tracks/:id` | [tracks/detail.md](./tracks/detail.md) | Documented (Criteria tab, 2026-11-12) |
 | `/tracks/:id/be-found` | [tracks/be-found.md](./tracks/be-found.md) | Documented (Phase 18) |
 | `/tracks/:id/gaps` | [tracks/gaps.md](./tracks/gaps.md) | Documented (Phase 20) |
-| `/tracks/:id/settings` | [tracks/settings.md](./tracks/settings.md) | Documented (Phase 10 schedules) |
-| `/tracks/:id/runs` | [tracks/runs.md](./tracks/runs.md) | Documented (Phase 10) |
+| `/tracks/:id/settings` | [tracks/settings.md](./tracks/settings.md) | Documented (Automation tab, 2026-11-12) |
+| `/tracks/:id/runs` | [tracks/runs.md](./tracks/runs.md) | Documented (History table, 2026-11-12) |
 | `/notifications` | [notifications.md](./notifications.md) | Documented (Phase 10) |
 | `/settings/notifications` | [settings/notifications.md](./settings/notifications.md) | Documented (Phase 10) |
 | `/settings/alerts` | [settings/alerts.md](./settings/alerts.md) | Documented (Phase 17) |

@@ -12,6 +12,7 @@ from app.main import create_app
 from app.taxonomy.seed import seed_taxonomy
 from app.tracks.criteria import SkillSets, TitleSpec
 from app.tracks.merge import CriteriaPatch
+from app.tracks.plan import SearchPlanOut
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
 from tests.test_ai import env  # noqa: F401
 from tests.test_workspaces import signup
@@ -188,6 +189,162 @@ async def test_compile_preview_with_injected_runner(env_tracks):
     data = r.json()
     assert data["summary"]
     assert any(d.get("path") for d in data["diff"])
+
+
+async def test_plan_defaults_without_ai(env_tracks):
+    c, _ = env_tracks
+    me = await signup(c)
+    r = await c.post(
+        T + "/plan",
+        json={"text": "Software engineer, remote-friendly, full-time"},
+        headers=me.h(me.personal),
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["source"] == "defaults"
+    assert data["ai_error"] == "ai_not_configured"
+    crit = data["criteria"]
+    assert crit["titles"][0]["title"] == "Software engineer"
+    assert crit["work_modes"] == ["remote"]
+    assert crit["employment_types"] == ["full_time"]
+    assert crit["companies"]["exclude_agencies"] is True
+    assert crit["posting_max_age_days"] == 21
+
+
+async def test_plan_uses_ai_titles_and_skills(env_tracks):
+    c, app = env_tracks
+    me = await signup(c)
+
+    class Result:
+        output = SearchPlanOut(
+            titles=[
+                TitleSpec(title="Backend Engineer", synonyms=["Backend Developer"]),
+                TitleSpec(title="Platform Engineer"),
+            ],
+            core_skills=["Python", "PostgreSQL"],
+            nice_skills=["Kubernetes", "AWS"],
+            seniority=["senior"],
+            employment_types=["full_time"],
+            work_modes=["remote", "hybrid"],
+            posting_max_age_days=14,
+        )
+        provider = "test"
+        model = "test"
+
+    async def fake_runner(ctx, settings, **kwargs):
+        assert kwargs["feature"] == "search_plan"
+        return Result()
+
+    app.state.run_structured = fake_runner
+    r = await c.post(
+        T + "/plan",
+        json={"text": "Senior backend engineer, remote, Python and Postgres"},
+        headers=me.h(me.personal),
+    )
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["source"] == "ai"
+    assert data["name"] == "Backend Engineer"
+    crit = data["criteria"]
+    assert [t["title"] for t in crit["titles"]] == ["Backend Engineer", "Platform Engineer"]
+    assert crit["titles"][0]["synonyms"] == ["Backend Developer"]
+    assert crit["skills"]["must"] == ["Python", "PostgreSQL"]
+    assert crit["skills"]["nice"] == ["Kubernetes", "AWS"]
+    assert crit["seniority"] == ["senior"]
+    assert crit["posting_max_age_days"] == 14
+
+
+async def test_suggest_preserves_personal_filters(env_tracks):
+    c, app = env_tracks
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await _profile(c, me)
+    tid = (
+        await c.post(
+            T,
+            json={
+                "profile_id": p["id"],
+                "name": "Backend",
+                "criteria": _criteria(
+                    titles=[{"title": "Backend Engineer", "synonyms": [], "exclude": False}],
+                    work_modes=["hybrid"],
+                    salary={
+                        "min": 5000,
+                        "currency": "USD",
+                        "period": "month",
+                        "hide_unspecified": False,
+                    },
+                    min_match_score=60,
+                ),
+            },
+            headers=h,
+        )
+    ).json()["id"]
+
+    class Result:
+        output = SearchPlanOut(
+            titles=[TitleSpec(title="Platform Engineer")],
+            core_skills=["Go"],
+            work_modes=["remote"],
+        )
+        provider = "test"
+        model = "test"
+
+    async def fake_runner(ctx, settings, **kwargs):
+        return Result()
+
+    app.state.run_structured = fake_runner
+    r = await c.post(
+        T + f"/{tid}/criteria/suggest",
+        json={"text": "Platform engineer, remote", "apply": False},
+        headers=h,
+    )
+    assert r.status_code == 200, r.text
+    crit = r.json()["criteria"]
+    assert crit["titles"][0]["title"] == "Platform Engineer"
+    assert crit["skills"]["must"] == ["Go"]
+    assert crit["work_modes"] == ["remote"]
+    assert crit["salary"]["min"] == 5000
+    assert crit["min_match_score"] == 60
+
+    applied = await c.post(
+        T + f"/{tid}/criteria/suggest",
+        json={"text": "Platform engineer, remote", "apply": True},
+        headers=h,
+    )
+    assert applied.status_code == 200, applied.text
+    assert applied.json()["applied"] is True
+    detail = await c.get(T + f"/{tid}", headers=h)
+    assert detail.json()["criteria"]["structured"]["skills"]["must"] == ["Go"]
+
+
+async def test_create_with_suggest_uses_plan(env_tracks):
+    c, app = env_tracks
+    me = await signup(c)
+    p = await _profile(c, me)
+
+    class Result:
+        output = SearchPlanOut(
+            titles=[TitleSpec(title="Data Analyst")],
+            core_skills=["SQL"],
+            work_modes=["remote"],
+        )
+        provider = "test"
+        model = "test"
+
+    async def fake_runner(ctx, settings, **kwargs):
+        return Result()
+
+    app.state.run_structured = fake_runner
+    r = await c.post(
+        T,
+        json={"profile_id": p["id"], "nl_text": "Data analyst, SQL, remote", "suggest": True},
+        headers=me.h(me.personal),
+    )
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["name"] == "Data Analyst"
+    assert body["criteria"]["structured"]["skills"]["must"] == ["SQL"]
 
 
 async def test_templates_list(env, seeded_templates):  # noqa: F811

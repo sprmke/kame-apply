@@ -21,6 +21,7 @@ from app.tracks.criteria import criteria_from_dict, empty_criteria
 from app.tracks.currency import normalize_salary
 from app.tracks.diff import diff_criteria
 from app.tracks.geocode import geocode_place
+from app.tracks.plan import generate_plan
 from app.tracks.schemas import CriteriaPut, TrackCreate, TrackUpdate
 from app.tracks.summary import summarize
 from app.tracks.validate import validate_criteria
@@ -84,11 +85,19 @@ async def get_detail(ctx: WorkspaceContext, track_id: uuid.UUID) -> dict[str, An
     return {"track": track, "criteria": _criteria_read(track, crit)}
 
 
-async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, Any]:
+async def create_track(
+    ctx: WorkspaceContext,
+    body: TrackCreate,
+    *,
+    settings=None,
+    run_structured=None,
+    model_factory=None,
+) -> dict[str, Any]:
     await _get_profile(ctx, body.profile_id)
     criteria = body.criteria or empty_criteria()
     nl_text = body.nl_text or ""
     template_slug = body.template_slug
+    name = body.name
 
     if template_slug:
         tmpl = (
@@ -104,15 +113,26 @@ async def create_track(ctx: WorkspaceContext, body: TrackCreate) -> dict[str, An
             criteria = criteria_from_dict(tmpl.criteria)
         if not nl_text:
             nl_text = tmpl.nl_seed
-        name = body.name or tmpl.name
+        name = name or tmpl.name
         icon = body.icon if body.icon != "ph:path" else tmpl.icon
         hue = body.color_hue if body.color_hue != 1 else tmpl.color_hue
     else:
-        if not body.name:
-            raise AppError("name_required", "Name is required", 422)
-        name = body.name
         icon = body.icon
         hue = body.color_hue
+        if body.suggest and body.criteria is None and nl_text.strip():
+            templates = await list_templates(ctx)
+            planned = await generate_plan(
+                ctx,
+                settings,
+                text=nl_text,
+                templates=templates,
+                run_structured=run_structured,
+                model_factory=model_factory,
+            )
+            criteria = planned["criteria"]
+            name = name or planned["name"]
+        if not name:
+            raise AppError("name_required", "Name is required", 422)
 
     criteria = normalize_salary(criteria)
     if not criteria.has_role_signal() and not nl_text.strip():
@@ -277,6 +297,58 @@ async def compile_and_maybe_apply(
     body = CriteriaPut(criteria=compiled["criteria"], nl_text=text)
     detail = await put_criteria(ctx, track_id, body)
     return {**compiled, "track": detail["track"], "applied": True}
+
+
+async def plan_search(
+    ctx: WorkspaceContext,
+    settings,
+    *,
+    text: str,
+    run_structured=None,
+    model_factory=None,
+) -> dict[str, Any]:
+    """Full search setup for a new Track, without creating anything."""
+    templates = await list_templates(ctx)
+    return await generate_plan(
+        ctx,
+        settings,
+        text=text,
+        templates=templates,
+        run_structured=run_structured,
+        model_factory=model_factory,
+    )
+
+
+async def suggest_criteria(
+    ctx: WorkspaceContext,
+    settings,
+    track_id: uuid.UUID,
+    *,
+    text: str,
+    apply: bool = False,
+    run_structured=None,
+    model_factory=None,
+) -> dict[str, Any]:
+    """Refresh a Track's role-shaped criteria from its description."""
+    await _get_track(ctx, track_id)
+    crit = await _get_criteria(ctx, track_id)
+    current = criteria_from_dict(crit.structured)
+    templates = await list_templates(ctx)
+    planned = await generate_plan(
+        ctx,
+        settings,
+        text=text,
+        templates=templates,
+        current=current,
+        run_structured=run_structured,
+        model_factory=model_factory,
+    )
+    if not apply:
+        return planned
+
+    body = CriteriaPut(criteria=planned["criteria"], nl_text=text)
+    detail = await put_criteria(ctx, track_id, body)
+    return {**planned, "track": detail["track"], "applied": True}
 
 
 async def duplicate_track(ctx: WorkspaceContext, track_id: uuid.UUID) -> dict[str, Any]:

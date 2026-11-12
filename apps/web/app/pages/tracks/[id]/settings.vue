@@ -8,12 +8,13 @@ import {
   pauseTrackApiV1TracksTrackIdPausePost,
   resumeTrackApiV1TracksTrackIdResumePost,
   trackSourcesApiV1TracksTrackIdSourcesGet,
+  updateScheduleApiV1SchedulesScheduleIdPatch,
   updateTrackApiV1TracksTrackIdPatch,
   client,
   type ScheduleRead,
   type TrackSourceRead,
 } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnCheckbox, FnField, FnInput, FnSelect, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -23,15 +24,21 @@ const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
+const fmt = useFormat();
+
 const trackId = computed(() => String(route.params.id));
-const autonomy = ref("discover");
+type Autonomy = "discover" | "prepare" | "assist" | "auto_submit";
+
+const autonomy = ref<Autonomy>("discover");
 const saving = ref(false);
 const preset = ref("every_2_hours");
-const timezone = ref("Asia/Manila");
+const timezone = ref(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
 const quietStart = ref("23:00");
 const quietEnd = ref("07:00");
 const dailyCap = ref(12);
+const addOpen = ref(false);
 const adding = ref(false);
+const sourcesOpen = ref(false);
 
 const detail = useQuery({
   queryKey: computed(() => ["track", ws.currentId, trackId.value]),
@@ -46,10 +53,7 @@ const detail = useQuery({
 });
 
 const track = computed(() => detail.data.value ?? null);
-const loading = computed(
-  () => !ws.loaded || detail.isPending.value || (detail.isFetching.value && !track.value),
-);
-const loadError = computed(() => detail.error.value);
+const paused = computed(() => track.value?.status === "paused");
 
 const sources = useQuery({
   queryKey: computed(() => ["track-sources", ws.currentId, trackId.value]),
@@ -63,6 +67,55 @@ const sources = useQuery({
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
 const sourceRows = computed(() => sources.data.value ?? []);
+const enabledCount = computed(() => sourceRows.value.filter((r) => r.enabled).length);
+
+const SOURCE_NAMES: Record<string, string> = {
+  arbeitnow: "Arbeitnow",
+  ashby: "Ashby",
+  greenhouse: "Greenhouse",
+  himalayas: "Himalayas",
+  jobicy: "Jobicy",
+  lever: "Lever",
+  muse: "Muse",
+  recruitee: "Recruitee",
+  remoteok: "Remote OK",
+  remotiv: "Remotiv",
+  smartrecruiters: "SmartRecruiters",
+  workable: "Workable",
+};
+const ATS_KEYS = new Set([
+  "ashby",
+  "greenhouse",
+  "lever",
+  "recruitee",
+  "smartrecruiters",
+  "workable",
+]);
+
+const sourceGroups = computed(() => {
+  const buckets: Record<"ats" | "boards" | "other", TrackSourceRead[]> = {
+    ats: [],
+    boards: [],
+    other: [],
+  };
+  for (const row of sourceRows.value) {
+    if (ATS_KEYS.has(row.source_key)) buckets.ats.push(row);
+    else if (SOURCE_NAMES[row.source_key]) buckets.boards.push(row);
+    else buckets.other.push(row);
+  }
+  const labels = {
+    ats: t("tracks.groupAts"),
+    boards: t("tracks.groupBoards"),
+    other: t("tracks.groupOther"),
+  };
+  return (["ats", "boards", "other"] as const)
+    .filter((key) => buckets[key].length > 0)
+    .map((key) => ({ key, label: labels[key], rows: buckets[key] }));
+});
+
+function sourceLabel(key: string): string {
+  return SOURCE_NAMES[key] ?? key;
+}
 
 const schedules = useQuery({
   queryKey: computed(() => ["track-schedules", ws.currentId, trackId.value]),
@@ -112,6 +165,71 @@ const dryRuns = useQuery({
   ),
 });
 
+const autonomyOptions = computed<{ value: typeof autonomy.value; label: string; hint: string }[]>(
+  () => [
+    {
+      value: "discover",
+      label: t("tracks.autonomyDiscover"),
+      hint: t("tracks.stepDiscover"),
+    },
+    {
+      value: "prepare",
+      label: t("tracks.autonomyPrepare"),
+      hint: t("tracks.stepPrepare"),
+    },
+    {
+      value: "assist",
+      label: t("tracks.autonomyAssist"),
+      hint: t("tracks.stepAssist"),
+    },
+    {
+      value: "auto_submit",
+      label: t("tracks.autonomyAuto"),
+      hint: t("tracks.stepAuto"),
+    },
+  ],
+);
+
+watch(
+  () => detail.data.value?.autonomy,
+  (v) => {
+    if (v) autonomy.value = v;
+  },
+  { immediate: true },
+);
+
+const capText = computed({
+  get: () => String(dailyCap.value ?? ""),
+  set: (value: string) => {
+    dailyCap.value = value.trim() === "" ? 0 : Number(value);
+  },
+});
+
+const presetOptions = computed(() => [
+  { value: "hourly", label: t("tracks.presetHourly") },
+  { value: "every_2_hours", label: t("tracks.presetEvery2h") },
+  { value: "every_4_hours", label: t("tracks.presetEvery4h") },
+  { value: "daily_morning", label: t("tracks.presetDaily") },
+  { value: "weekdays_2h", label: t("tracks.presetWeekdays2h") },
+]);
+
+function presetLabel(value: string): string {
+  return presetOptions.value.find((p) => p.value === value)?.label ?? value;
+}
+
+function scheduleMeta(row: ScheduleRead): string {
+  const quiet = row.quiet_hours as { start?: string; end?: string };
+  const parts: string[] = [];
+  if (quiet?.start && quiet?.end) {
+    parts.push(t("tracks.quietRange", { start: quiet.start, end: quiet.end }));
+  }
+  parts.push(t("tracks.capPerDay", { n: row.daily_cap }));
+  if (row.enabled && row.next_run_at) {
+    parts.push(t("tracks.nextRun", { when: fmt.dateTime(row.next_run_at) }));
+  }
+  return parts.join(" · ");
+}
+
 async function saveAuto(patch: Partial<AutoCfg>) {
   try {
     await client.put({
@@ -125,14 +243,6 @@ async function saveAuto(patch: Partial<AutoCfg>) {
     toast.push({ title: apiError(e), tone: "danger" });
   }
 }
-
-watch(
-  () => detail.data.value?.autonomy,
-  (v) => {
-    if (v) autonomy.value = v;
-  },
-  { immediate: true },
-);
 
 async function toggleSource(row: TrackSourceRead) {
   try {
@@ -149,15 +259,17 @@ async function toggleSource(row: TrackSourceRead) {
 
 async function saveAutonomy() {
   saving.value = true;
+  const previous = track.value?.autonomy;
   try {
     await updateTrackApiV1TracksTrackIdPatch({
       path: { track_id: trackId.value },
-      body: { autonomy: autonomy.value as "discover" | "prepare" | "assist" | "auto_submit" },
+      body: { autonomy: autonomy.value },
       throwOnError: true,
     });
     await qc.invalidateQueries({ queryKey: ["track", ws.currentId, trackId.value] });
     toast.push({ title: t("common.saved"), tone: "neutral" });
   } catch (e) {
+    if (previous) autonomy.value = previous;
     toast.push({ title: apiError(e), tone: "danger" });
   } finally {
     saving.value = false;
@@ -179,11 +291,25 @@ async function addSchedule() {
       throwOnError: true,
     });
     await qc.invalidateQueries({ queryKey: ["track-schedules", ws.currentId, trackId.value] });
+    addOpen.value = false;
     toast.push({ title: t("common.saved"), tone: "neutral" });
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });
   } finally {
     adding.value = false;
+  }
+}
+
+async function setScheduleEnabled(row: ScheduleRead, enabled: boolean) {
+  try {
+    await updateScheduleApiV1SchedulesScheduleIdPatch({
+      path: { schedule_id: String(row.id) },
+      body: { enabled },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries({ queryKey: ["track-schedules", ws.currentId, trackId.value] });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
   }
 }
 
@@ -201,7 +327,7 @@ async function removeSchedule(id: string) {
 
 async function togglePause() {
   try {
-    if (track.value?.status === "paused") {
+    if (paused.value) {
       await resumeTrackApiV1TracksTrackIdResumePost({
         path: { track_id: trackId.value },
         throwOnError: true,
@@ -221,188 +347,209 @@ async function togglePause() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
-    <div v-if="loading">
-      <FnSkeleton class="h-10 w-48" />
-    </div>
-    <p v-else-if="loadError" class="text-sm text-ink-600">{{ apiError(loadError) }}</p>
-    <template v-else-if="track">
-      <PageHeader :title="track.name" />
-      <nav
-        class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1"
-        :aria-label="t('tracks.sections')"
+  <TrackShell :track-id="trackId">
+    <div v-if="track" class="flex flex-col gap-6">
+      <section
+        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
       >
-        <NuxtLink
-          :to="`/tracks/${trackId}`"
-          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-          >{{ t("tracks.criteria") }}</NuxtLink
-        >
-        <NuxtLink
-          :to="`/tracks/${trackId}/runs`"
-          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-          >{{ t("tracks.runHistory") }}</NuxtLink
-        >
-        <span
-          class="rounded-md bg-paper-1 px-4 py-2 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)]"
-          >{{ t("tracks.settings") }}</span
-        >
-      </nav>
+        <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.autonomy") }}</h2>
+        <fieldset :disabled="saving">
+          <legend class="sr-only">{{ t("tracks.autonomy") }}</legend>
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label
+              v-for="(opt, i) in autonomyOptions"
+              :key="opt.value"
+              class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors"
+              :class="
+                autonomy === opt.value
+                  ? 'border-brand-500 bg-brand-50'
+                  : 'border-rule bg-paper-1 hover:border-edge'
+              "
+            >
+              <input
+                v-model="autonomy"
+                type="radio"
+                name="autonomy"
+                class="mt-1 size-4 shrink-0 accent-brand-600"
+                :value="opt.value"
+                @change="saveAutonomy"
+              />
+              <span class="flex min-w-0 flex-col gap-1">
+                <span class="flex items-baseline gap-2">
+                  <span class="text-xs tabular-nums text-ink-400" aria-hidden="true">{{
+                    i + 1
+                  }}</span>
+                  <span class="text-sm font-semibold text-ink-900">{{ opt.label }}</span>
+                </span>
+                <span class="text-sm text-ink-600">{{ opt.hint }}</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
 
-      <section class="flex flex-col gap-3">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("tracks.autonomy") }}
-        </h2>
-        <select
-          v-model="autonomy"
-          class="min-h-12 max-w-xs rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+        <div
+          v-if="autonomy === 'auto_submit' && autoCfg.data.value"
+          class="flex flex-col gap-3 rounded-lg border border-rule bg-paper-0 p-4"
         >
-          <option value="discover">{{ t("tracks.autonomyDiscover") }}</option>
-          <option value="prepare">{{ t("tracks.autonomyPrepare") }}</option>
-          <option value="assist">{{ t("tracks.autonomyAssist") }}</option>
-          <option value="auto_submit">{{ t("tracks.autonomyAuto") }}</option>
-        </select>
-        <div class="flex flex-wrap gap-2">
-          <FnButton tone="primary" :disabled="saving" @click="saveAutonomy">{{
-            t("common.save")
-          }}</FnButton>
-          <FnButton tone="quiet" @click="togglePause">{{
-            track.status === "paused" ? t("tracks.resume") : t("tracks.pause")
-          }}</FnButton>
+          <h3 class="text-sm font-semibold text-ink-900">{{ t("autoSubmit.title") }}</h3>
+          <p class="text-sm text-ink-600">
+            {{ t("autoSubmit.dryLeft") }} {{ autoCfg.data.value.dry_run_remaining }} ·
+            {{ t("autoSubmit.threshold") }} {{ autoCfg.data.value.score_threshold }}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <FnButton
+              size="sm"
+              :disabled="autoCfg.data.value.dry_run_remaining > 0"
+              @click="saveAuto({ live_enabled: true, dry_run_remaining: 0 })"
+              >{{ t("autoSubmit.enableLive") }}</FnButton
+            >
+            <FnButton
+              size="sm"
+              tone="quiet"
+              @click="saveAuto({ kill_switch: !autoCfg.data.value.kill_switch })"
+              >{{
+                autoCfg.data.value.kill_switch ? t("autoSubmit.clearKill") : t("autoSubmit.kill")
+              }}</FnButton
+            >
+          </div>
+          <ul v-if="dryRuns.data.value?.length" class="flex flex-col gap-1 text-sm text-ink-600">
+            <li v-for="d in dryRuns.data.value" :key="d.id">
+              {{ d.would_submit ? t("autoSubmit.wouldSubmit") : t("autoSubmit.blocked") }} ·
+              {{ fmt.dateTime(d.created_at) }}
+            </li>
+          </ul>
         </div>
       </section>
 
       <section
-        v-if="autonomy === 'auto_submit' && autoCfg.data.value"
-        class="flex flex-col gap-3 border-t border-rule pt-4"
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
       >
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("autoSubmit.title") }}
-        </h2>
-        <p class="text-sm text-ink-600">
-          {{ t("autoSubmit.dryLeft") }} {{ autoCfg.data.value.dry_run_remaining }}
-        </p>
-        <p class="text-sm text-ink-600">
-          {{ t("autoSubmit.threshold") }} {{ autoCfg.data.value.score_threshold }}
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <FnButton
-            size="sm"
-            :disabled="autoCfg.data.value.dry_run_remaining > 0"
-            @click="saveAuto({ live_enabled: true, dry_run_remaining: 0 })"
-            >{{ t("autoSubmit.enableLive") }}</FnButton
-          >
-          <FnButton
-            size="sm"
-            tone="quiet"
-            @click="saveAuto({ kill_switch: !autoCfg.data.value.kill_switch })"
-            >{{
-              autoCfg.data.value.kill_switch ? t("autoSubmit.clearKill") : t("autoSubmit.kill")
-            }}</FnButton
-          >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.sources") }}</h2>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-ink-600">{{
+              t("tracks.sourcesOn", { on: enabledCount, total: sourceRows.length })
+            }}</span>
+            <button
+              type="button"
+              class="min-h-11 rounded-md px-3 text-sm font-semibold text-brand-700 hover:bg-paper-2"
+              :aria-expanded="sourcesOpen"
+              @click="sourcesOpen = !sourcesOpen"
+            >
+              {{ sourcesOpen ? t("common.done") : t("tracks.changeSources") }}
+            </button>
+          </div>
         </div>
-        <ul class="text-sm text-ink-600">
-          <li v-for="d in dryRuns.data.value ?? []" :key="d.id">
-            {{ d.would_submit ? t("autoSubmit.wouldSubmit") : t("autoSubmit.blocked") }} ·
-            {{ d.created_at }}
-          </li>
-        </ul>
-      </section>
-
-      <section class="flex flex-col gap-2 border-t border-rule pt-4">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("tracks.sourcesEnabled") }}
-        </h2>
-        <ul class="divide-y divide-rule border-y border-rule">
-          <li
-            v-for="row in sourceRows"
-            :key="row.id"
-            class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm"
-          >
-            <span class="font-mono text-ink-900">{{ row.source_key }}</span>
-            <label class="flex items-center gap-2">
+        <div v-if="sourcesOpen" class="grid gap-5 sm:grid-cols-2">
+          <div v-for="group in sourceGroups" :key="group.key" class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+              {{ group.label }}
+            </h3>
+            <label
+              v-for="row in group.rows"
+              :key="row.id"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
               <input
                 type="checkbox"
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="row.enabled"
                 @change="toggleSource(row)"
               />
+              {{ sourceLabel(row.source_key) }}
             </label>
-          </li>
-        </ul>
-      </section>
-
-      <section class="flex flex-col gap-3 border-t border-rule pt-4">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("tracks.schedule") }}
-        </h2>
-        <ul v-if="scheduleRows.length" class="divide-y divide-rule border-y border-rule">
-          <li
-            v-for="s in scheduleRows"
-            :key="s.id"
-            class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm"
-          >
-            <div class="flex min-w-0 flex-col">
-              <span class="text-ink-900">{{ s.preview }}</span>
-              <span class="text-xs tabular-nums text-ink-600"
-                >{{ s.scope }} · cap {{ s.daily_cap }} ·
-                {{ s.enabled ? t("tracks.scheduleOn") : t("tracks.scheduleOff") }}</span
-              >
-            </div>
-            <FnButton tone="quiet" size="sm" @click="removeSchedule(String(s.id))">{{
-              t("common.delete")
-            }}</FnButton>
-          </li>
-        </ul>
-        <div class="grid max-w-md gap-2">
-          <select
-            v-model="preset"
-            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-          >
-            <option value="hourly">{{ t("tracks.presetHourly") }}</option>
-            <option value="every_2_hours">{{ t("tracks.presetEvery2h") }}</option>
-            <option value="every_4_hours">{{ t("tracks.presetEvery4h") }}</option>
-            <option value="daily_morning">{{ t("tracks.presetDaily") }}</option>
-            <option value="weekdays_2h">{{ t("tracks.presetWeekdays2h") }}</option>
-          </select>
-          <input
-            v-model="timezone"
-            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            :aria-label="t('profile.timezone')"
-          />
-          <div class="flex gap-2">
-            <input
-              v-model="quietStart"
-              class="min-h-12 w-full rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              :aria-label="t('tracks.quietStart')"
-            />
-            <input
-              v-model="quietEnd"
-              class="min-h-12 w-full rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              :aria-label="t('tracks.quietEnd')"
-            />
           </div>
-          <input
-            v-model.number="dailyCap"
-            type="number"
-            min="0"
-            max="48"
-            class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            :aria-label="t('tracks.dailyCap')"
-          />
-          <FnButton tone="primary" class="self-start" :disabled="adding" @click="addSchedule">{{
-            t("tracks.addSchedule")
-          }}</FnButton>
         </div>
       </section>
 
-      <section class="flex flex-col gap-2 border-t border-rule pt-4">
-        <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-          {{ t("tracks.resume") }}
-        </h2>
-        <NuxtLink :to="`/studio?track=${trackId}`" class="text-sm text-brand-700 underline">
-          {{ t("tracks.openStudio") }}
-        </NuxtLink>
+      <section
+        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.schedule") }}</h2>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-sm text-ink-600">
+              <span
+                class="size-1.5 rounded-full"
+                :class="paused ? 'bg-saffron-600' : 'bg-fern-600'"
+                aria-hidden="true"
+              />
+              {{ paused ? t("tracks.paused") : t("tracks.active") }}
+            </span>
+            <FnButton size="sm" tone="quiet" @click="togglePause">{{
+              paused ? t("tracks.resume") : t("tracks.pause")
+            }}</FnButton>
+          </div>
+        </div>
+
+        <p v-if="!scheduleRows.length" class="text-sm text-ink-600">
+          {{ t("tracks.noSchedules") }}
+        </p>
+        <ul v-else class="divide-y divide-rule border-y border-rule">
+          <li
+            v-for="s in scheduleRows"
+            :key="s.id"
+            class="flex flex-wrap items-center justify-between gap-3 py-3"
+          >
+            <div class="flex min-w-0 flex-col gap-0.5">
+              <span class="text-sm font-semibold text-ink-900"
+                >{{ presetLabel(s.preset) }} · {{ s.timezone }}</span
+              >
+              <span class="text-xs text-ink-600">{{ scheduleMeta(s) }}</span>
+              <span v-if="s.last_skip_reason" class="text-xs text-saffron-600">{{
+                s.last_skip_reason
+              }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <FnCheckbox
+                :model-value="s.enabled"
+                :label="s.enabled ? t('tracks.scheduleOn') : t('tracks.scheduleOff')"
+                @update:model-value="(value) => setScheduleEnabled(s, Boolean(value))"
+              />
+              <FnButton size="sm" tone="ghost" @click="removeSchedule(String(s.id))">{{
+                t("common.delete")
+              }}</FnButton>
+            </div>
+          </li>
+        </ul>
+
+        <div v-if="addOpen" class="grid gap-4 rounded-lg border border-rule p-4 md:grid-cols-2">
+          <FnField :label="t('tracks.frequency')">
+            <template #default="{ id }">
+              <FnSelect :id="id" v-model="preset" :options="presetOptions" />
+            </template>
+          </FnField>
+          <FnField :label="t('profile.timezone')">
+            <template #default="{ id }">
+              <FnInput :id="id" v-model="timezone" />
+            </template>
+          </FnField>
+          <FnField :label="t('tracks.quietStart')">
+            <template #default="{ id }">
+              <FnInput :id="id" v-model="quietStart" type="time" />
+            </template>
+          </FnField>
+          <FnField :label="t('tracks.quietEnd')">
+            <template #default="{ id }">
+              <FnInput :id="id" v-model="quietEnd" type="time" />
+            </template>
+          </FnField>
+          <FnField :label="t('tracks.dailyCap')">
+            <template #default="{ id }">
+              <FnInput :id="id" v-model="capText" type="number" />
+            </template>
+          </FnField>
+          <div class="flex items-end gap-2 md:justify-end">
+            <FnButton tone="ghost" @click="addOpen = false">{{ t("common.cancel") }}</FnButton>
+            <FnButton tone="primary" :disabled="adding" @click="addSchedule">{{
+              t("tracks.addSchedule")
+            }}</FnButton>
+          </div>
+        </div>
+        <FnButton v-else size="sm" tone="quiet" class="self-start" @click="addOpen = true">{{
+          t("tracks.addSchedule")
+        }}</FnButton>
       </section>
-    </template>
-  </div>
+    </div>
+  </TrackShell>
 </template>

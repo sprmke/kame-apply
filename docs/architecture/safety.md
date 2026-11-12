@@ -16,6 +16,8 @@ Explainable job risk, untrusted-content sanitization, PII field classes, and Che
 
 Aggregator (`aggregate.py`) → `job_risk` (global). Per-workspace decisions in `risk_overrides` (`continue` / `skip` / `reported` / `not_scam`). Red `continue` requires `confirm_risk`.
 
+Reasons are user-facing copy, not model internals. L5 stores its contributing terms in `layers.L5.top_terms` for diagnostics only; the reason evidence is a plain sentence. `reasons_for_display()` normalizes reasons on read (`/jobs`, `/track-jobs/{id}`, `/safety/flagged`, `/jobs/{id}/risk`) so rows assessed before that change render the same sentence instead of a token list.
+
 Calibration: missing salary alone never red; new domain alone caps at yellow. Targets: false-red on legit ATS < 3%; scam red recall ≥ 85% (`tests/evals/test_risk_eval.py`).
 
 ## Sanitize (PRD P6)

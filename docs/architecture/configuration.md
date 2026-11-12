@@ -132,6 +132,8 @@ Workspace AI keys are added in **Settings → AI** and encrypted with `MASTER_KE
 | Variable | Value |
 | --- | --- |
 | `AI_MAX_OUTPUT_TOKENS` | `1024` default |
+| `AI_TRANSIENT_RETRIES` | `2` extra attempts on provider 429/5xx (plus jittered backoff) |
+| `AI_RETRY_BASE_SECONDS` | `0.6`, doubled per attempt |
 | `DBOS_SYSTEM_DATABASE_URL` | Optional DBOS system database; defaults to `DATABASE_URL` when unset |
 
 ### Optional integrations

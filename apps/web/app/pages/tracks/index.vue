@@ -5,10 +5,12 @@ import {
   duplicateApiV1TracksTrackIdDuplicatePost,
   listTemplatesApiV1TracksTemplatesGet,
   listTracksApiV1TracksGet,
+  planSearchApiV1TracksPlanPost,
+  type CriteriaV1,
   type TrackRead,
   type TrackTemplateRead,
 } from "@kame/api-client";
-import { FnButton, FnFolderTab, FnInput, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnFolderTab, FnInput, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -25,6 +27,9 @@ const showNew = ref(false);
 const showTemplates = ref(false);
 const nlDraft = ref("");
 const nameDraft = ref("");
+const planning = ref(false);
+const plan = ref<CriteriaV1 | null>(null);
+const planName = ref("");
 
 const tracks = useQuery({
   queryKey: computed(() => ["tracks", ws.currentId]),
@@ -66,28 +71,80 @@ async function createFromTemplate(slug: string) {
   }
 }
 
+watch(nlDraft, () => {
+  if (plan.value) plan.value = null;
+});
+
+async function checkSettings() {
+  if (!nlDraft.value.trim()) return;
+  planning.value = true;
+  try {
+    const { data } = await planSearchApiV1TracksPlanPost({
+      body: { text: nlDraft.value.trim() },
+      throwOnError: true,
+    });
+    if (!data) return;
+    plan.value = data.criteria as CriteriaV1;
+    planName.value = data.name || "";
+    if (!nameDraft.value.trim() && data.name) nameDraft.value = data.name;
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    planning.value = false;
+  }
+}
+
+function removePlanSkill(skill: string) {
+  if (!plan.value) return;
+  plan.value = {
+    ...plan.value,
+    skills: {
+      must: (plan.value.skills?.must ?? []).filter((s) => s !== skill),
+      nice: (plan.value.skills?.nice ?? []).filter((s) => s !== skill),
+      exclude: plan.value.skills?.exclude ?? [],
+    },
+  };
+}
+
+function togglePlanAgencies() {
+  if (!plan.value) return;
+  const companies = plan.value.companies;
+  plan.value = {
+    ...plan.value,
+    companies: {
+      include: companies?.include ?? [],
+      exclude: companies?.exclude ?? [],
+      sizes: companies?.sizes ?? [],
+      industries: companies?.industries ?? [],
+      stages: companies?.stages ?? [],
+      exclude_agencies: !companies?.exclude_agencies,
+    },
+  };
+}
+
 async function createFromText() {
   if (!nameDraft.value.trim() && !nlDraft.value.trim()) return;
   creating.value = true;
   try {
     const pid = profileId.value ?? (await ensureProfile());
-    const { data } = await createTrackApiV1TracksPost({
-      body: {
-        profile_id: pid,
-        name: nameDraft.value.trim() || nlDraft.value.trim().slice(0, 80),
-        nl_text: nlDraft.value.trim(),
-        criteria: {
-          schema_version: 1,
-          titles: nlDraft.value.trim()
-            ? [{ title: nameDraft.value.trim() || "Role", synonyms: [], exclude: false }]
-            : [{ title: nameDraft.value.trim(), synonyms: [], exclude: false }],
-        },
-      },
-      throwOnError: true,
-    });
+    const body = plan.value
+      ? {
+          profile_id: pid,
+          name: nameDraft.value.trim() || planName.value || undefined,
+          nl_text: nlDraft.value.trim(),
+          criteria: plan.value,
+        }
+      : {
+          profile_id: pid,
+          name: nameDraft.value.trim() || planName.value || undefined,
+          nl_text: nlDraft.value.trim(),
+          suggest: true,
+        };
+    const { data } = await createTrackApiV1TracksPost({ body, throwOnError: true });
     showNew.value = false;
     nlDraft.value = "";
     nameDraft.value = "";
+    plan.value = null;
     await refresh();
     if (data?.id) await navigateTo(`/tracks/${data.id}`);
   } catch (e) {
@@ -157,7 +214,56 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
         <FnInput v-model="nameDraft" maxlength="200" :placeholder="t('tracks.namePlaceholder')" />
         <span class="text-xs text-ink-600">{{ t("tracks.nameHint") }}</span>
       </label>
+      <div
+        v-if="plan"
+        class="flex flex-col gap-3 rounded-lg border border-dashed border-pencil bg-paper-0 p-4"
+      >
+        <p class="text-sm font-semibold text-ink-900">{{ t("tracks.settingsTitle") }}</p>
+        <div class="flex flex-wrap gap-2">
+          <FnChip
+            v-for="title in plan.titles?.filter((x) => !x.exclude) ?? []"
+            :key="title.title"
+            tone="accent"
+            >{{ title.title }}</FnChip
+          >
+          <FnChip
+            v-for="s in plan.skills?.must ?? []"
+            :key="`m-${s}`"
+            tone="neutral"
+            removable
+            :remove-label="t('tracks.removeChip')"
+            @remove="removePlanSkill(s)"
+            >{{ s }}</FnChip
+          >
+          <FnChip
+            v-for="s in plan.skills?.nice ?? []"
+            :key="`n-${s}`"
+            tone="pencil"
+            removable
+            :remove-label="t('tracks.removeChip')"
+            @remove="removePlanSkill(s)"
+            >{{ s }}</FnChip
+          >
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-xs font-semibold transition-colors"
+            :class="
+              plan.companies?.exclude_agencies
+                ? 'border-rule bg-paper-2 text-ink-900'
+                : 'border-dashed border-edge bg-paper-1 text-ink-600 hover:bg-paper-2'
+            "
+            :aria-pressed="Boolean(plan.companies?.exclude_agencies)"
+            @click="togglePlanAgencies"
+          >
+            <span aria-hidden="true">{{ plan.companies?.exclude_agencies ? "✓" : "+" }}</span>
+            {{ t("tracks.noAgencies") }}
+          </button>
+        </div>
+      </div>
       <div class="flex flex-wrap gap-2">
+        <FnButton tone="quiet" :disabled="planning || !nlDraft.trim()" @click="checkSettings">{{
+          planning ? t("tracks.checkingSettings") : t("tracks.checkSettings")
+        }}</FnButton>
         <FnButton tone="primary" :disabled="creating" @click="createFromText">{{
           t("common.create")
         }}</FnButton>

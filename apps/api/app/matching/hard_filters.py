@@ -2,11 +2,33 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from app.jobs.normalize import normalize_title
 from app.matching.rule_score import title_tokens
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
+
+# A posting's coarse employment label → the CriteriaV1 types it satisfies.
+_EMPLOYMENT = {
+    "full_time": {"full_time"},
+    "part_time": {"part_time"},
+    "contract": {"contract", "freelance", "temporary"},
+    "intern": {"internship"},
+}
+
+
+def _posted_before(value: Any, days: int) -> bool:
+    if not value:
+        return False
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return False
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return (datetime.now(UTC) - value).days > days
 
 
 def hard_filter(
@@ -68,6 +90,16 @@ def hard_filter(
         ):
             detail["failed"].append("work_mode")
             return "not_eligible", detail
+
+    if c.employment_types and job.get("employment_type"):
+        allowed = _EMPLOYMENT.get(job["employment_type"], set())
+        if allowed and not allowed & set(c.employment_types):
+            detail["failed"].append("employment_type")
+            return "not_eligible", detail
+
+    if c.posting_max_age_days and _posted_before(job.get("posted_at"), c.posting_max_age_days):
+        detail["failed"].append("posting_age")
+        return "not_eligible", detail
 
     if c.salary and c.salary.hide_unspecified:
         sal = job.get("salary") or {}

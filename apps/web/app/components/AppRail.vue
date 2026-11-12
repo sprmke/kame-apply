@@ -5,6 +5,19 @@ const { t } = useI18n();
 const route = useRoute();
 defineProps<{ needsYou: number }>();
 
+const moreRef = ref<HTMLDetailsElement | null>(null);
+const moreActive = computed(() => MORE_NAV.some((item) => active(item.to)));
+
+onMounted(() => {
+  if (moreActive.value && moreRef.value) moreRef.value.open = true;
+});
+watch(
+  () => route.path,
+  () => {
+    if (moreActive.value && moreRef.value) moreRef.value.open = true;
+  },
+);
+
 function active(to: string) {
   return to === "/" ? route.path === "/" : route.path.startsWith(to);
 }
@@ -45,9 +58,10 @@ function active(to: string) {
       </NuxtLink>
     </div>
 
-    <details class="mt-6 px-3">
+    <details ref="moreRef" class="mt-6 px-3">
       <summary
-        class="flex min-h-11 cursor-pointer list-none items-center gap-3 rounded-md px-3 text-sm text-ink-600 hover:bg-paper-2 hover:text-ink-900"
+        class="flex min-h-11 cursor-pointer list-none items-center gap-3 rounded-md px-3 text-sm hover:bg-paper-2 hover:text-ink-900"
+        :class="moreActive ? 'font-semibold text-brand-700' : 'text-ink-600'"
       >
         <NavIcon name="ph:dots-three-outline" :size="18" />
         <span class="flex-1">{{ t("shell.moreTools") }}</span>

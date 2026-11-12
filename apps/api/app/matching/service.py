@@ -31,6 +31,7 @@ from app.matching.relax import suggest_relaxations
 from app.matching.rule_score import blend_score, clamp_weights, rule_components
 from app.matching.verdicts import verdict_for_qual
 from app.profiles import models as profile_models
+from app.safety.aggregate import reasons_for_display
 from app.safety.models import JobRisk
 from app.sources.models import Source
 from app.tracks import models as track_models
@@ -47,6 +48,7 @@ def _job_dict(job: Job, company_name: str | None = None) -> dict[str, Any]:
         "title": job.title,
         "normalized_title": job.normalized_title,
         "seniority": job.seniority,
+        "employment_type": job.employment_type,
         "work_mode": job.work_mode,
         "locations": job.locations,
         "remote_eligibility": job.remote_eligibility,
@@ -587,7 +589,7 @@ async def get_track_job_detail(ctx: WorkspaceContext, track_job_id: uuid.UUID) -
         "sources": [{"key": src.key, "name": src.name, "url": js.url} for js, src in sources],
         "other_roles": other_roles,
         "risk_level": risk_row.level if risk_row else None,
-        "risk_reasons": list(risk_row.reasons or []) if risk_row else [],
+        "risk_reasons": reasons_for_display(risk_row.reasons if risk_row else []),
     }
 
 

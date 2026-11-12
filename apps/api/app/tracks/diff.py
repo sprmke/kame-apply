@@ -15,8 +15,24 @@ def _norm(v: Any) -> Any:
     return v
 
 
+_HUMAN = {
+    "titles": "roles",
+    "skills.must": "core skills",
+    "skills.nice": "nice to have",
+    "skills.exclude": "excluded skills",
+    "work_modes": "work modes",
+    "employment_types": "employment",
+    "seniority": "experience",
+    "posting_max_age_days": "posted within",
+    "remote_eligibility.regions": "region",
+    "remote_eligibility.anywhere": "remote anywhere",
+    "company.exclude_agencies": "no agencies",
+    "companies.exclude_agencies": "no agencies",
+}
+
+
 def _path_label(path: str) -> str:
-    return path.replace("_", " ").replace(".", " / ")
+    return _HUMAN.get(path, path.replace("_", " ").replace(".", " / "))
 
 
 def diff_criteria(before: CriteriaV1, after: CriteriaV1) -> list[dict[str, Any]]:
@@ -65,7 +81,7 @@ def diff_criteria(before: CriteriaV1, after: CriteriaV1) -> list[dict[str, Any]]
                     "path": path,
                     "before": pa,
                     "after": pb,
-                    "label": f"changed {_path_label(path)}",
+                    "label": f"{_path_label(path)}: {_short(pb)}",
                 }
             )
 
@@ -83,6 +99,18 @@ def _is_empty(v: Any) -> bool:
     if isinstance(v, dict):
         return all(_is_empty(x) for x in v.values())
     return False
+
+
+def _short(value: Any) -> str:
+    if isinstance(value, list) and value and all(isinstance(x, str) for x in value):
+        return ", ".join(value[:5])
+    if isinstance(value, list) and value and isinstance(value[0], dict) and "title" in value[0]:
+        return ", ".join(str(x.get("title", "?")) for x in value[:5])
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    if isinstance(value, (str, int, float)):
+        return str(value)
+    return "updated"
 
 
 def _describe(path: str, value: Any) -> str:

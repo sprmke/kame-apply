@@ -849,6 +849,21 @@ export const zCriteriaCompileRequest = z.object({
 });
 
 /**
+ * CriteriaPlanRequest
+ */
+export const zCriteriaPlanRequest = z.object({
+    text: z.string().min(1).max(8000)
+});
+
+/**
+ * CriteriaSuggestRequest
+ */
+export const zCriteriaSuggestRequest = z.object({
+    apply: z.boolean().optional().default(false),
+    text: z.string().min(1).max(8000)
+});
+
+/**
  * CritiqueRead
  */
 export const zCritiqueRead = z.object({
@@ -3156,6 +3171,20 @@ export const zCriteriaCompilePreview = z.object({
 });
 
 /**
+ * CriteriaPlanPreview
+ */
+export const zCriteriaPlanPreview = z.object({
+    ai_error: z.string().nullish(),
+    applied: z.boolean().optional().default(false),
+    criteria: zCriteriaV1,
+    diff: z.array(z.record(z.unknown())),
+    name: z.string().optional().default(''),
+    source: z.enum(['ai', 'defaults']).optional().default('defaults'),
+    summary: z.string(),
+    warnings: z.array(z.record(z.unknown()))
+});
+
+/**
  * CriteriaPut
  */
 export const zCriteriaPut = z.object({
@@ -3212,6 +3241,7 @@ export const zTrackCreate = z.object({
     name: z.string().min(1).max(200).nullish(),
     nl_text: z.string().max(8000).optional().default(''),
     profile_id: z.string().uuid(),
+    suggest: z.boolean().optional().default(false),
     template_slug: z.string().max(80).nullish()
 });
 
@@ -6819,6 +6849,18 @@ export const zGeoLookupApiV1TracksGeoLookupGetQuery = z.object({
  */
 export const zGeoLookupApiV1TracksGeoLookupGetResponse = zGeocodeRead;
 
+export const zPlanSearchApiV1TracksPlanPostBody = zCriteriaPlanRequest;
+
+export const zPlanSearchApiV1TracksPlanPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zPlanSearchApiV1TracksPlanPostResponse = zCriteriaPlanPreview;
+
 export const zReorderApiV1TracksReorderPostBody = zTrackReorder;
 
 export const zReorderApiV1TracksReorderPostHeaders = z.object({
@@ -6980,6 +7022,22 @@ export const zCompileCriteriaApiV1TracksTrackIdCriteriaCompilePostPath = z.objec
  * Successful Response
  */
 export const zCompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponse = zCriteriaCompilePreview;
+
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostBody = zCriteriaSuggestRequest;
+
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostPath = z.object({
+    track_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponse = zCriteriaPlanPreview;
 
 export const zDiscoverNowApiV1TracksTrackIdDiscoverPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),

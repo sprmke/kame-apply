@@ -13,6 +13,7 @@ from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.jobs.models import Job, TrackJob
+from app.safety.aggregate import reasons_for_display
 from app.safety.assess import assess_job_text
 from app.safety.check_this import analyze_text, analyze_url
 from app.safety.models import JobRisk, RiskOverride
@@ -157,7 +158,7 @@ async def get_job_risk(ctx: WorkspaceContext, job_id: uuid.UUID) -> dict[str, An
         "job_id": row.job_id,
         "level": row.level,
         "score": row.score,
-        "reasons": row.reasons or [],
+        "reasons": reasons_for_display(row.reasons),
         "layers": row.layers or {},
         "model_version": row.model_version,
         "partial": row.partial,
@@ -347,7 +348,7 @@ async def list_flagged(ctx: WorkspaceContext, *, limit: int = 50) -> list[dict[s
                 "company_name": company_name,
                 "level": risk.level,
                 "score": risk.score,
-                "reasons": risk.reasons or [],
+                "reasons": reasons_for_display(risk.reasons),
                 "override": ov.decision if ov else None,
             }
         )

@@ -109,13 +109,13 @@ Scale (rem, 16px base): `xs .75 · sm .875 · base 1 · md 1.125 · lg 1.25 · x
 
 ## 8. Layouts
 
-- **Desk sidebar** (240px): Today, Searches, Jobs, Applications, Profile. More tools collapsed. Settings at the bottom. Labels always visible. Active item is a brand-50 pill with brand-700 text.
+- **Desk sidebar** (240px): Today, Searches, Jobs, Applications, Profile. More tools collapsed unless one of its children is active, then it opens and the group label takes brand-700. Settings at the bottom. Labels always visible. Active item is a brand-50 pill with brand-700 text.
 - **Header** (64px): workspace switcher, search, account. No feedback button in the primary chrome.
 - **Reader:** list, document, context. Desktop three panes inside one card. Mobile: list, then full-screen document with a sticky action bar above the tab bar.
 - **Brief:** Today, max 1040px. One next step, top matches, searches, Needs-you. Numbers in a collapsed disclosure.
 - **Workbench:** resume and tailor. Document center, ledger, preview.
 - **Mobile bar:** Today, Searches, Jobs, Applications, More. 64px. Active tab brand-700, label always visible.
-- **Settings:** horizontal tab track; one row scrolls on mobile, wraps on desktop. Content sits in one white card.
+- **Settings:** grouped sub-nav column on desktop (Workspace, Admin, Account, with Danger zone set apart at the end); content sits in one white card. Below `xl` the sub-nav collapses to one row showing the current section, which opens the same groups in a sheet. No scrolling tab strip.
 
 ## 9. Motion
 

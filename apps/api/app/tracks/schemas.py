@@ -25,6 +25,8 @@ class TrackCreate(BaseModel):
     nl_text: str = Field(default="", max_length=8000)
     criteria: CriteriaV1 | None = None
     template_slug: str | None = Field(default=None, max_length=80)
+    # Build a full role-based search setup from nl_text (falls back to deterministic defaults).
+    suggest: bool = False
 
 
 class TrackUpdate(BaseModel):
@@ -63,6 +65,27 @@ class CriteriaCompilePreview(BaseModel):
     diff: list[dict[str, Any]]
     warnings: list[dict[str, Any]]
     invented_fields: list[str] = Field(default_factory=list)
+
+
+class CriteriaPlanRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=8000)
+
+
+class CriteriaPlanPreview(BaseModel):
+    criteria: CriteriaV1
+    summary: str
+    diff: list[dict[str, Any]]
+    warnings: list[dict[str, Any]]
+    source: Literal["ai", "defaults"] = "defaults"
+    ai_error: str | None = None
+    name: str = ""
+    applied: bool = False
+
+
+class CriteriaSuggestRequest(CriteriaPlanRequest):
+    apply: bool = False
 
 
 class TrackCriteriaRead(BaseModel):

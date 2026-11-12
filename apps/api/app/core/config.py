@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     # prod refuses it. Generate: python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"
     master_kek: str = "ZGV2LW9ubHktbWFzdGVyLWtleS0wMTIzNDU2Nzg5YWI="
     ai_max_output_tokens: int = 1024
+    # Retries for transient upstream answers (429/5xx). Attempts = retries + 1; backoff doubles.
+    ai_transient_retries: int = 2
+    ai_retry_base_seconds: float = 0.6
 
     # Mail: SMTP (Mailpit locally) or Resend when RESEND_API_KEY is set.
     mail_from: str = "Kame Apply <no-reply@kame-apply.local>"

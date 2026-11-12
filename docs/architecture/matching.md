@@ -4,7 +4,7 @@ Rank Track jobs with explainable scores and triage them on the Jobs board.
 
 ## Funnel
 
-1. **Hard filters** (`matching/hard_filters.py`): compiled criteria + knockout predictor + hidden companies → `eligible` / `not_eligible`.
+1. **Hard filters** (`matching/hard_filters.py`): titles, excluded skills, work mode, employment type, posting age, agencies, knockout predictor, hidden companies → `eligible` / `not_eligible`. Unknown job values (missing employment type or posted date) stay eligible; we do not drop a job for a field the source did not state.
 2. **Rule score** (`matching/rule_score.py`): title, must-skills, seniority, salary, freshness (<72h), location/remote.
 3. **Semantic** (`matching/embed.py`): fastembed `bge-small-en-v1.5` (or hash embedder in tests via `MATCHING_EMBEDDER=hash`); cosine → 0–100; stored on `jobs.embedding` (pgvector HNSW).
 4. **LLM fit** (optional, top N): prompt `job_fit` via bulk tier; skipped when AI unset/budget → `ai_review_paused`.
