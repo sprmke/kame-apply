@@ -44,7 +44,7 @@ test("baseline captures at 375, 820, 1440 in both themes", async ({ page }) => {
   await open(page, "/tracks");
   await page.getByRole("button", { name: "New search" }).click();
   await page.getByLabel("What role are you looking for?").fill("Customer support lead, remote");
-  await page.getByRole("button", { name: "Create", exact: true }).click();
+  await page.getByRole("button", { name: "Create search", exact: true }).click();
   await page.waitForURL(/\/tracks\/[0-9a-f-]+/);
   const trackId = page.url().split("/").pop()!;
 

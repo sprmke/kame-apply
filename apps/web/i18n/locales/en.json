@@ -994,6 +994,8 @@
     "emp_freelance": "Freelance",
     "emp_internship": "Internship",
     "emp_temporary": "Temporary",
+    "emp_casual": "Casual",
+    "emp_seasonal": "Seasonal",
     "postedWithin": "Posted within",
     "postedAny": "Any time",
     "postedDays": "{n} days",
