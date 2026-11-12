@@ -32,10 +32,7 @@ function active(to: string) {
       <BrandMark :size="28" wordmark />
     </NuxtLink>
 
-    <div class="px-3">
-      <p class="px-3 pb-2 text-[0.6875rem] font-medium tracking-[0.14em] text-ink-400 uppercase">
-        {{ t("shell.workspace") }}
-      </p>
+    <div class="flex flex-col gap-0.5 px-3">
       <NuxtLink
         v-for="item in PRIMARY_NAV"
         :key="item.key"
@@ -58,37 +55,55 @@ function active(to: string) {
       </NuxtLink>
     </div>
 
-    <details ref="moreRef" class="mt-6 px-3">
+    <details ref="moreRef" class="mt-5 px-3">
       <summary
         class="flex min-h-11 cursor-pointer list-none items-center gap-3 rounded-md px-3 text-sm hover:bg-paper-2 hover:text-ink-900"
         :class="moreActive ? 'font-semibold text-brand-700' : 'text-ink-600'"
       >
         <NavIcon name="ph:dots-three-outline" :size="18" />
-        <span class="flex-1">{{ t("shell.moreTools") }}</span>
+        <span class="flex-1">{{ t("shell.tools") }}</span>
         <NavIcon name="ph:caret-down" :size="14" />
       </summary>
-      <div class="mt-1 flex flex-col">
+      <div class="mt-1 flex flex-col gap-0.5">
         <NuxtLink
           v-for="item in MORE_NAV"
           :key="item.key"
           :to="item.to"
-          class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
+          class="flex min-h-11 flex-col justify-center rounded-md px-3 py-1.5"
           :class="
             active(item.to)
-              ? 'bg-brand-50 font-semibold text-brand-700'
+              ? 'bg-brand-50 text-brand-700'
               : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
           "
+          :aria-current="active(item.to) ? 'page' : undefined"
         >
-          <NavIcon :name="item.icon" :size="18" />
-          <span>{{ t(`nav.${item.key}`) }}</span>
+          <span
+            class="flex items-center gap-3 text-sm"
+            :class="active(item.to) ? 'font-semibold' : ''"
+          >
+            <NavIcon :name="item.icon" :size="18" />
+            {{ t(`nav.${item.key}`) }}
+          </span>
+          <span
+            v-if="item.descKey"
+            class="pl-[1.875rem] text-xs leading-4 text-ink-400"
+            :class="active(item.to) ? 'text-brand-700/80' : ''"
+            >{{ t(item.descKey) }}</span
+          >
         </NuxtLink>
       </div>
     </details>
 
-    <div class="mt-auto flex flex-col gap-1 border-t border-rule px-3 py-3">
+    <div class="mt-auto flex flex-col gap-0.5 border-t border-rule px-3 py-3">
       <NuxtLink
-        to="/notifications"
-        class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm text-ink-600 hover:bg-paper-2 hover:text-ink-900"
+        to="/needs-you"
+        class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
+        :class="
+          active('/needs-you')
+            ? 'bg-brand-50 font-semibold text-brand-700'
+            : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
+        "
+        :aria-current="active('/needs-you') ? 'page' : undefined"
       >
         <NavIcon name="ph:bell" :size="18" />
         <span class="flex-1">{{ t("shell.needsYou") }}</span>
@@ -97,6 +112,19 @@ function active(to: string) {
           class="grid min-w-5 place-items-center rounded-full bg-brand-500 px-1.5 text-[0.625rem] leading-5 font-semibold text-on-brand"
           >{{ needsYou }}</span
         >
+      </NuxtLink>
+      <NuxtLink
+        to="/help"
+        class="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
+        :class="
+          active('/help')
+            ? 'bg-brand-50 font-semibold text-brand-700'
+            : 'text-ink-600 hover:bg-paper-2 hover:text-ink-900'
+        "
+        :aria-current="active('/help') ? 'page' : undefined"
+      >
+        <NavIcon name="ph:question" :size="18" />
+        <span>{{ t("shell.help") }}</span>
       </NuxtLink>
       <NuxtLink
         :to="SETTINGS_NAV.to"

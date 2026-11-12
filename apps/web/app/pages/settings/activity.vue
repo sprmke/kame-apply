@@ -46,17 +46,45 @@ async function load(more = false) {
 }
 watch(filter, () => load(), { immediate: true });
 
+const scopeLabel: Record<string, string> = {
+  ai: "AI",
+  workspace: "Workspace",
+  member: "Member",
+  invitation: "Invitation",
+  profile: "Profile",
+  job: "Job",
+  track: "Search",
+  run: "Search run",
+  application: "Application",
+  answer: "Answer",
+  resume: "Resume",
+  source: "Source",
+  settings: "Settings",
+};
+
+function humanize(part: string): string {
+  const words = scopeLabel[part] ?? part.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+function eventLabel(action: string): string {
+  return action
+    .split(".")
+    .map((part) => humanize(part))
+    .join(" · ");
+}
+
 const columns = computed(() => [
-  { key: "when", label: t("activity.when"), mono: true },
-  { key: "action", label: t("activity.action"), mono: true },
-  { key: "target", label: t("activity.target"), mono: true },
+  { key: "when", label: t("activity.when") },
+  { key: "action", label: t("activity.action") },
+  { key: "target", label: t("activity.target") },
 ]);
 const rows = computed(() =>
   items.value.map((i) => ({
     id: i.id,
     when: fmt.dateTime(i.created_at),
-    action: i.action,
-    target: i.target_type ? `${i.target_type}` : "—",
+    action: eventLabel(i.action),
+    target: i.target_type ? humanize(i.target_type) : "—",
   })),
 );
 </script>
@@ -67,15 +95,26 @@ const rows = computed(() =>
     <div class="max-w-56"><FnSelect v-model="filter" :options="options" /></div>
     <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
     <FnSkeleton v-if="loading && !items.length" :lines="5" />
-    <FnTable
-      v-else
-      :columns="columns"
-      :rows="rows"
-      row-key="id"
-      density="compact"
-      :caption="t('settings.activity')"
-      :empty="t('activity.empty')"
-    />
+    <template v-else>
+      <ul class="flex flex-col divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 sm:hidden">
+        <li v-for="r in rows" :key="r.id" class="flex flex-col gap-0.5 px-4 py-3">
+          <p class="text-sm font-medium text-ink-900">{{ r.action }}</p>
+          <p class="text-xs text-ink-600">{{ r.target }} · {{ r.when }}</p>
+        </li>
+        <li v-if="!rows.length" class="px-4 py-8 text-center text-sm text-ink-600">
+          {{ t("activity.empty") }}
+        </li>
+      </ul>
+      <FnTable
+        class="max-sm:hidden"
+        :columns="columns"
+        :rows="rows"
+        row-key="id"
+        density="compact"
+        :caption="t('settings.activity')"
+        :empty="t('activity.empty')"
+      />
+    </template>
     <div v-if="nextBefore">
       <FnButton :loading="loading" @click="load(true)">{{ t("activity.more") }}</FnButton>
     </div>

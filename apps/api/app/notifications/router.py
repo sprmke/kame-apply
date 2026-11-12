@@ -54,6 +54,11 @@ async def put_prefs(body: s.PrefsUpdate, ctx: WorkspaceContext = Write):
     return {"cells": cells}
 
 
+@router.post("/notification-prefs/reset", response_model=s.PrefsMatrix)
+async def reset_prefs(ctx: WorkspaceContext = Write):
+    return {"cells": await service.reset_prefs(ctx)}
+
+
 @router.post("/notification-prefs/unsubscribe-email")
 async def unsubscribe_email(ctx: WorkspaceContext = Write):
     await service.unsubscribe_email(ctx)

@@ -42,3 +42,13 @@ Classifier is deterministic (keyword patterns). Scam heuristics set `scam_level=
 | `/contacts` | Import and list contacts |
 | `/tracks/:id/gaps` | Gap plan |
 | `/applications/:id` | Interview prep + referral matches |
+
+
+## UX additions (2026-11-13)
+
+| Call | Purpose |
+| --- | --- |
+| `POST /api/v1/contacts/parse` | Read contacts from a signature, profile, vCard, or CSV. Deterministic parser first; optional AI with grounded email check. Sanitizes untrusted text first. |
+| `POST /api/v1/responses/match` | Find the application a pasted reply belongs to. Rule-based, workspace scoped, no ids. Returns `null` when nothing matches. |
+
+Audit is unchanged for contacts (import still records `contacts.imported`). Parsing writes nothing.

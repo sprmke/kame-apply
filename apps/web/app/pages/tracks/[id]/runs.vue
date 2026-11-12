@@ -3,7 +3,7 @@ import {
   runHistoryApiV1TracksTrackIdRunsGet,
   type DiscoveryRunHistoryRead,
 } from "@kame/api-client";
-import { FnButton, FnTable, type Column } from "@kame/ui";
+import { FnButton, FnEmptyState, FnSectionCard, FnTable, type Column } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -114,19 +114,21 @@ function foundLabel(row: RunRow): string {
 
 <template>
   <TrackShell :track-id="trackId">
-    <div class="flex flex-col gap-4">
-      <div v-if="!runs.isPending.value && rows.length" class="flex flex-wrap items-center gap-2">
-        <p class="text-sm text-ink-600">
-          {{ t("tracks.runsSummary", { runs: rows.length, found: totalNew }) }}
-        </p>
-        <span v-if="live" class="inline-flex items-center gap-1.5 text-sm text-ink-600">
-          <span class="size-2 animate-pulse rounded-full bg-saffron-600" aria-hidden="true" />
-          {{ t("tracks.runningNow") }}
-        </span>
+    <FnSectionCard
+      :title="t('tracks.runHistory')"
+      :intro="t('tracks.historyIntro')"
+      :summary="
+        rows.length ? t('tracks.runsSummary', { runs: rows.length, found: totalNew }) : undefined
+      "
+    >
+      <div v-if="live" class="flex items-center gap-1.5 text-sm text-ink-600">
+        <span class="size-2 animate-pulse rounded-full bg-saffron-600" aria-hidden="true" />
+        {{ t("tracks.runningNow") }}
       </div>
 
       <FnTable
         v-if="rows.length"
+        stack
         :columns="columns"
         :rows="rows"
         row-key="id"
@@ -135,7 +137,7 @@ function foundLabel(row: RunRow): string {
         :empty="t('tracks.noRuns')"
       >
         <template #cell-status="{ row }">
-          <div class="flex flex-col gap-0.5 py-2">
+          <div class="flex flex-col gap-0.5 py-2 text-left sm:py-0">
             <span class="flex items-center gap-2 text-sm font-semibold text-ink-900">
               <span class="size-2 rounded-full" :class="statusDot(row.status)" aria-hidden="true" />
               {{ statusLabel(row.status) }}
@@ -150,6 +152,9 @@ function foundLabel(row: RunRow): string {
             >
               {{ row.error }}
             </span>
+            <span v-if="row.status === 'failed'" class="text-xs text-ink-600">
+              {{ t("tracks.failedHint") }}
+            </span>
           </div>
         </template>
         <template #cell-found="{ row }">
@@ -162,15 +167,15 @@ function foundLabel(row: RunRow): string {
         </template>
       </FnTable>
 
-      <div
+      <FnEmptyState
         v-else-if="!runs.isPending.value"
-        class="flex flex-col items-start gap-3 rounded-xl border border-dashed border-rule bg-paper-1 p-6"
+        :title="t('tracks.noRuns')"
+        :body="t('tracks.historyEmptyBody')"
       >
-        <p class="text-sm text-ink-600">{{ t("tracks.noRuns") }}</p>
         <FnButton as-child tone="primary" size="sm">
-          <NuxtLink :to="`/tracks/${trackId}`">{{ t("tracks.runNow") }}</NuxtLink>
+          <NuxtLink :to="`/tracks/${trackId}`">{{ t("jobs.findNow") }}</NuxtLink>
         </FnButton>
-      </div>
-    </div>
+      </FnEmptyState>
+    </FnSectionCard>
   </TrackShell>
 </template>

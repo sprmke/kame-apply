@@ -115,7 +115,7 @@ Scale (rem, 16px base): `xs .75 · sm .875 · base 1 · md 1.125 · lg 1.25 · x
 - **Brief:** Today, max 1040px. One next step, top matches, searches, Needs-you. Numbers in a collapsed disclosure.
 - **Workbench:** resume and tailor. Document center, ledger, preview.
 - **Mobile bar:** Today, Searches, Jobs, Applications, More. 64px. Active tab brand-700, label always visible.
-- **Settings:** grouped sub-nav column on desktop (Workspace, Admin, Account, with Danger zone set apart at the end); content sits in one white card. Below `xl` the sub-nav collapses to one row showing the current section, which opens the same groups in a sheet. No scrolling tab strip.
+- **Settings:** grouped sub-nav column on desktop (Workspace, Account, Admin, with Danger zone set apart at the end). Below `xl` the sub-nav collapses to one row showing the current section, which opens the same groups in a sheet. No scrolling tab strip. Pages build from section cards, one primary action each, and a save that stays disabled until something changed.
 
 ## 9. Motion
 
@@ -148,3 +148,23 @@ WCAG 2.2 AA. 44px targets. Visible 2px brand focus ring. Two channels for meanin
 - Use sparkles for AI. Use pencil text and proof marks.
 - Use color alone for status.
 - Truncate job titles, company names, errors, or primary labels.
+
+## Clarity components (2026-11-12)
+
+Built for the UX clarity program and shown on `/_design` in every state.
+
+| Component | Purpose | Rules |
+| --- | --- | --- |
+| `FnSectionCard` | Standard settings block: title, one intro line, body, one summary sentence, one More options fold | Never nest a card in a card. Advanced controls always live in the fold. |
+| `FnChoiceCards` | Radio cards with title, one effect line, optional Recommended or Advanced badge | Used for **How much we do**, AI connection paths, and onboarding options. |
+| `FnMoreOptions` | One disclosure for advanced controls | Basic first, advanced folded. One level only. |
+| `FnSummaryLine` | One sentence rendered from current values | Must reflect saved state, not a promise. |
+| `FnTerm` | Dotted-underline word with its plain definition on hover or tap | Definitions come from `docs/design/glossary.md`. |
+| `FnEmptyState` | One line, one action, optional icon | No paragraphs. |
+| `FnStepper` | Linear setup or draft steps, scroll-safe at 375 | Labels are short; every step is reachable. |
+| `FnField` `help` | A `?` beside the label with one sentence | Use only when the label alone can mislead. |
+| `FnTable` `stack` | Rows become labelled cards under 640px | Use for lists people read on a phone. |
+
+### Copy policy
+
+One intro line per section (about 12 words), one `?` help sentence, one summary line per settings block, one-line empty states. No page subtitles that restate the title, no paragraphs, no em dashes. See `.cursor/rules/ui-minimal-copy.mdc`.

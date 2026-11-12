@@ -43,3 +43,8 @@ RLS on `workspace_id`.
 ## Mutations → audit
 
 `answer_desk.parsed`, `answer_desk.saved_to_bank`, `answer_desk.stance_updated`.
+
+
+## Bank drafts from the profile (2026-11-13)
+
+`POST /profiles/{id}/answers/draft` returns per-key drafts with `source` = `profile`, `default`, or `needs_story`. The rule reads work authorization, salary floor, and profile links; EEO keys default to decline. Existing rows are skipped unless `include_existing` is true. The web bank shows them in pencil with **Use this** and **Dismiss**; accepting calls `POST /answers` or `PATCH /answers/{id}`, so the write is audited.

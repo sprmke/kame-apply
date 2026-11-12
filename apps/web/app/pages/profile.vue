@@ -15,14 +15,14 @@ function active(to: string, exact?: boolean) {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
     <PageHeader :title="t('career.title')" :lede="t('career.lede')" />
-    <nav :aria-label="t('career.nav')" class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1">
+    <nav :aria-label="t('career.nav')" class="flex gap-1 overflow-x-auto rounded-lg bg-paper-2 p-1">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.key"
         :to="tab.to"
-        class="flex min-h-11 items-center rounded-md px-4 text-sm font-semibold"
+        class="flex min-h-11 shrink-0 items-center rounded-md px-3 text-sm font-semibold whitespace-nowrap sm:px-4"
         :class="
           active(tab.to, tab.exact)
             ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'

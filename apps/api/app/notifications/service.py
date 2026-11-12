@@ -7,7 +7,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.audit import service as audit
@@ -23,7 +23,7 @@ from app.workspaces.models import WorkspaceMember
 logger = logging.getLogger(__name__)
 
 # Defaults: digest email on; instant email only for needs-you-class events; in-app on for all.
-_DEFAULT_EMAIL_ON = {"needs_review", "risk_flag", "run_failed", "budget_reached", "digest"}
+_DEFAULT_EMAIL_ON = {"needs_review", "risk_flag", "budget_reached", "digest"}
 
 
 def default_enabled(channel: str, event: str) -> bool:
@@ -296,6 +296,23 @@ async def upsert_prefs(ctx: WorkspaceContext, cells: list[dict[str, Any]]) -> li
         action="notification.prefs_updated",
         target_type="notification_prefs",
         after={"count": len(cells)},
+    )
+    return await get_prefs_matrix(ctx)
+
+
+async def reset_prefs(ctx: WorkspaceContext) -> list[dict[str, Any]]:
+    """Remove this user's overrides so the recommended defaults apply again."""
+    await ctx.session.execute(
+        delete(NotificationPref).where(
+            NotificationPref.workspace_id == ctx.workspace_id,
+            NotificationPref.user_id == ctx.user_id,
+        )
+    )
+    await audit.record(
+        ctx,
+        action="notification.prefs_reset",
+        target_type="notification_prefs",
+        after={"recommended": True},
     )
     return await get_prefs_matrix(ctx)
 

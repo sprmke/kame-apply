@@ -142,7 +142,7 @@ async function copy(text: string) {
         rows="6"
         class="w-full border border-rule bg-paper-1 p-2 text-sm"
         :aria-label="t('beFound.paste')"
-      ></textarea>
+      />
       <FnButton
         size="sm"
         :disabled="paste.length < 20 || check.isPending.value"

@@ -122,3 +122,16 @@ Events: `profile.created|updated|deleted`, `profile.<section>.created|updated|de
 | `S3_REGION` | `auto` | |
 
 Tests use an in-memory store (`ENVIRONMENT=test`).
+
+
+## Drafts, presets, and onboarding plans (2026-11-13)
+
+| Call | Purpose |
+| --- | --- |
+| `POST /api/v1/profiles/{id}/answers/draft` | Draft answer-bank values from profile facts. Body `{ keys?, include_existing? }`. Read-only; accept through the normal answer endpoints. |
+| `POST /api/v1/profiles/{id}/voice/preset` | Apply `plain`, `warm`, or `formal` when there are no samples. Keeps samples if present. |
+| `POST /api/v1/onboarding/plan` | Read-only setup bundle: rule-based resume basics, answer drafts, a search plan, and recommended schedule. Optional AI for the search plan. |
+
+Drafts only use facts the user entered. Eligibility claims are returned as `needs_story` with an empty draft. Sensitive classes are never read or returned. Accepting any draft writes through the normal endpoints, so the existing audit events cover it. The plan endpoint writes nothing; AI usage is recorded by the AI service.
+
+New audit event: `voice.preset_applied` (`profile_id`, `preset`).

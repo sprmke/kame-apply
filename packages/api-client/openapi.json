@@ -406,6 +406,114 @@
         "title": "AnswerCreate",
         "type": "object"
       },
+      "AnswerDraftBody": {
+        "properties": {
+          "include_existing": {
+            "default": false,
+            "title": "Include Existing",
+            "type": "boolean"
+          },
+          "keys": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keys"
+          }
+        },
+        "title": "AnswerDraftBody",
+        "type": "object"
+      },
+      "AnswerDraftBundle": {
+        "properties": {
+          "existing": {
+            "default": 0,
+            "title": "Existing",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerDraftRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "AnswerDraftBundle",
+        "type": "object"
+      },
+      "AnswerDraftRead": {
+        "properties": {
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "draft": {
+            "title": "Draft",
+            "type": "string"
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence Refs",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "title": "Message",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "profile",
+              "default",
+              "needs_story"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "question",
+          "draft",
+          "source"
+        ],
+        "title": "AnswerDraftRead",
+        "type": "object"
+      },
       "AnswerInsertBody": {
         "properties": {
           "application_id": {
@@ -3405,6 +3513,32 @@
         "title": "ContactCreate",
         "type": "object"
       },
+      "ContactDraftRead": {
+        "properties": {
+          "company": {
+            "default": "",
+            "title": "Company",
+            "type": "string"
+          },
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "title": "ContactDraftRead",
+        "type": "object"
+      },
       "ContactImportBody": {
         "properties": {
           "contacts": {
@@ -3484,6 +3618,53 @@
           "created_at"
         ],
         "title": "ContactRead",
+        "type": "object"
+      },
+      "ContactsParseBody": {
+        "properties": {
+          "text": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ContactsParseBody",
+        "type": "object"
+      },
+      "ContactsParseRead": {
+        "properties": {
+          "ai_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Error"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ContactDraftRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "source"
+        ],
+        "title": "ContactsParseRead",
         "type": "object"
       },
       "CredentialCreate": {
@@ -7074,6 +7255,13 @@
             "title": "Locations",
             "type": "array"
           },
+          "match_terms": {
+            "items": {
+              "$ref": "#/components/schemas/MatchTermRead"
+            },
+            "title": "Match Terms",
+            "type": "array"
+          },
           "other_roles": {
             "items": {
               "$ref": "#/components/schemas/OtherRoleRead"
@@ -8010,6 +8198,94 @@
         "title": "MatchRead",
         "type": "object"
       },
+      "MatchReplyBody": {
+        "properties": {
+          "body_text": {
+            "default": "",
+            "maxLength": 50000,
+            "title": "Body Text",
+            "type": "string"
+          },
+          "sender": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Sender",
+            "type": "string"
+          },
+          "subject": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "title": "MatchReplyBody",
+        "type": "object"
+      },
+      "MatchTermRead": {
+        "description": "One named skill found in the posting, with the user's evidence verdict.",
+        "properties": {
+          "blocked_after": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocked After",
+            "type": "array"
+          },
+          "case_sensitive": {
+            "default": false,
+            "title": "Case Sensitive",
+            "type": "boolean"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "mentions": {
+            "default": 1,
+            "title": "Mentions",
+            "type": "integer"
+          },
+          "patterns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Patterns",
+            "type": "array"
+          },
+          "verdict": {
+            "enum": [
+              "met",
+              "partial",
+              "gap"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "verdict"
+        ],
+        "title": "MatchTermRead",
+        "type": "object"
+      },
       "MeRead": {
         "properties": {
           "email": {
@@ -8615,6 +8891,98 @@
           }
         },
         "title": "OkRead",
+        "type": "object"
+      },
+      "OnboardingPlanBody": {
+        "properties": {
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "resume_text": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume Text"
+          },
+          "role_text": {
+            "anyOf": [
+              {
+                "maxLength": 8000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Text"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "title": "OnboardingPlanBody",
+        "type": "object"
+      },
+      "OnboardingPlanRead": {
+        "properties": {
+          "answers": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "basics": {
+            "$ref": "#/components/schemas/ResumeBasics"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDefaults"
+          },
+          "search": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search"
+          },
+          "source": {
+            "default": "defaults",
+            "enum": [
+              "defaults",
+              "ai"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basics",
+          "schedule"
+        ],
+        "title": "OnboardingPlanRead",
         "type": "object"
       },
       "OtherRoleRead": {
@@ -10185,6 +10553,74 @@
         "title": "QuietHours",
         "type": "object"
       },
+      "RecommendedSettingsRead": {
+        "properties": {
+          "autonomy": {
+            "enum": [
+              "discover",
+              "prepare",
+              "assist",
+              "auto_submit"
+            ],
+            "title": "Autonomy",
+            "type": "string"
+          },
+          "daily_cap": {
+            "title": "Daily Cap",
+            "type": "integer"
+          },
+          "minimum_match": {
+            "title": "Minimum Match",
+            "type": "integer"
+          },
+          "new_per_day": {
+            "title": "New Per Day",
+            "type": "number"
+          },
+          "per_run": {
+            "title": "Per Run",
+            "type": "integer"
+          },
+          "preset": {
+            "title": "Preset",
+            "type": "string"
+          },
+          "quiet_hours": {
+            "additionalProperties": true,
+            "title": "Quiet Hours",
+            "type": "object"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "sources": {
+            "title": "Sources",
+            "type": "integer"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "autonomy",
+          "preset",
+          "timezone",
+          "quiet_hours",
+          "daily_cap",
+          "minimum_match",
+          "sources",
+          "new_per_day",
+          "per_run",
+          "reasons"
+        ],
+        "title": "RecommendedSettingsRead",
+        "type": "object"
+      },
       "ReferralDraftRead": {
         "properties": {
           "application_id": {
@@ -10433,6 +10869,40 @@
         "title": "RenderRead",
         "type": "object"
       },
+      "ReplyMatchRead": {
+        "properties": {
+          "application_id": {
+            "format": "uuid",
+            "title": "Application Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "job_title": {
+            "title": "Job Title",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "application_id",
+          "job_title",
+          "company_name",
+          "score",
+          "reason"
+        ],
+        "title": "ReplyMatchRead",
+        "type": "object"
+      },
       "ResetIn": {
         "properties": {
           "password": {
@@ -10570,6 +11040,50 @@
           "page_level"
         ],
         "title": "RestrictionRead",
+        "type": "object"
+      },
+      "ResumeBasics": {
+        "properties": {
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "headline": {
+            "default": "",
+            "title": "Headline",
+            "type": "string"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years"
+          }
+        },
+        "title": "ResumeBasics",
         "type": "object"
       },
       "ResumeCreateBody": {
@@ -11226,6 +11740,34 @@
           }
         },
         "title": "ScheduleCreate",
+        "type": "object"
+      },
+      "ScheduleDefaults": {
+        "properties": {
+          "daily_cap": {
+            "default": 12,
+            "title": "Daily Cap",
+            "type": "integer"
+          },
+          "preset": {
+            "default": "every_4_hours",
+            "title": "Preset",
+            "type": "string"
+          },
+          "quiet_hours": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Quiet Hours",
+            "type": "object"
+          },
+          "timezone": {
+            "default": "UTC",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "title": "ScheduleDefaults",
         "type": "object"
       },
       "ScheduleRead": {
@@ -12837,7 +13379,7 @@
         "additionalProperties": false,
         "properties": {
           "autonomy": {
-            "default": "discover",
+            "default": "prepare",
             "enum": [
               "discover",
               "prepare",
@@ -13697,6 +14239,24 @@
         "title": "VapidPublicRead",
         "type": "object"
       },
+      "VoicePresetBody": {
+        "properties": {
+          "preset": {
+            "enum": [
+              "plain",
+              "warm",
+              "formal"
+            ],
+            "title": "Preset",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preset"
+        ],
+        "title": "VoicePresetBody",
+        "type": "object"
+      },
       "VoiceRead": {
         "properties": {
           "ai_use_stance": {
@@ -13888,6 +14448,11 @@
             },
             "title": "Openers",
             "type": "array"
+          },
+          "preset": {
+            "default": "",
+            "title": "Preset",
+            "type": "string"
           },
           "sample_count": {
             "default": 0,
@@ -18576,6 +19141,81 @@
         ]
       }
     },
+    "/api/v1/contacts/parse": {
+      "post": {
+        "operationId": "parse_contacts_api_v1_contacts_parse_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactsParseBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactsParseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Parse Contacts",
+        "tags": [
+          "referrals"
+        ]
+      }
+    },
     "/api/v1/discovery-runs/{run_id}": {
       "get": {
         "operationId": "get_discovery_run_api_v1_discovery_runs__run_id__get",
@@ -21297,6 +21937,71 @@
         ]
       }
     },
+    "/api/v1/notification-prefs/reset": {
+      "post": {
+        "operationId": "reset_prefs_api_v1_notification_prefs_reset_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrefsMatrix"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Reset Prefs",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/notification-prefs/unsubscribe-email": {
       "post": {
         "operationId": "unsubscribe_email_api_v1_notification_prefs_unsubscribe_email_post",
@@ -21713,6 +22418,81 @@
         "summary": "Mark Read",
         "tags": [
           "notifications"
+        ]
+      }
+    },
+    "/api/v1/onboarding/plan": {
+      "post": {
+        "operationId": "plan_api_v1_onboarding_plan_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingPlanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingPlanRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Plan",
+        "tags": [
+          "onboarding"
         ]
       }
     },
@@ -22493,6 +23273,92 @@
           }
         },
         "summary": "Create Answer",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/api/v1/profiles/{profile_id}/answers/draft": {
+      "post": {
+        "description": "Draft answer-bank values from profile facts. No writes; accept through the bank endpoints.",
+        "operationId": "draft_answers_api_v1_profiles__profile_id__answers_draft_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerDraftBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerDraftBundle"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Draft Answers",
         "tags": [
           "profiles"
         ]
@@ -26989,6 +27855,91 @@
         ]
       }
     },
+    "/api/v1/profiles/{profile_id}/voice/preset": {
+      "post": {
+        "operationId": "apply_voice_preset_api_v1_profiles__profile_id__voice_preset_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoicePresetBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Apply Voice Preset",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
     "/api/v1/profiles/{profile_id}/voice/samples": {
       "put": {
         "operationId": "put_voice_samples_api_v1_profiles__profile_id__voice_samples_put",
@@ -27510,6 +28461,89 @@
           }
         },
         "summary": "Ingest",
+        "tags": [
+          "responses"
+        ]
+      }
+    },
+    "/api/v1/responses/match": {
+      "post": {
+        "operationId": "match_reply_api_v1_responses_match_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchReplyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ReplyMatchRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Match Reply Api V1 Responses Match Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Match Reply",
         "tags": [
           "responses"
         ]
@@ -34509,6 +35543,81 @@
         "summary": "Pause Track",
         "tags": [
           "schedules"
+        ]
+      }
+    },
+    "/api/v1/tracks/{track_id}/recommended-settings": {
+      "get": {
+        "operationId": "recommended_settings_api_v1_tracks__track_id__recommended_settings_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "track_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Track Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendedSettingsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Recommended Settings",
+        "tags": [
+          "tracks"
         ]
       }
     },

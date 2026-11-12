@@ -453,6 +453,7 @@ class VoiceSampleRead(BaseModel):
 
 class VoiceStyle(BaseModel):
     summary: str = ""
+    preset: str = ""
     avg_sentence_length: float = 0.0
     formality: float = Field(default=0.5, ge=0, le=1)
     contraction_rate: float = Field(default=0.0, ge=0, le=1)
@@ -537,3 +538,28 @@ class ProposalRead(BaseModel):
 class InterviewTurnRead(BaseModel):
     proposal: ProposalRead
     next_gap: InterviewGapRead | None = None
+
+
+class AnswerDraftRead(BaseModel):
+    key: str
+    country: str | None = None
+    label: str
+    question: str
+    draft: str
+    source: Literal["profile", "default", "needs_story"]
+    evidence_refs: list[str] = Field(default_factory=list)
+    message: str = ""
+
+
+class AnswerDraftBody(BaseModel):
+    keys: list[str] | None = Field(default=None, max_length=20)
+    include_existing: bool = False
+
+
+class AnswerDraftBundle(BaseModel):
+    items: list[AnswerDraftRead]
+    existing: int = 0
+
+
+class VoicePresetBody(BaseModel):
+    preset: Literal["plain", "warm", "formal"]

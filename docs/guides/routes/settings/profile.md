@@ -6,13 +6,13 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| Name and timezone | acceptance.spec.ts | timezone must be a real IANA zone | Done |  |
-| Theme | acceptance.spec.ts | n/a | Done | Stored in this browser |
-| Google link | pytest (mocked) | n/a | Done | Needs server credentials |
+| Your details | acceptance.spec.ts | timezone must be a real IANA zone | Done | Save disabled until changed |
+| Appearance | acceptance.spec.ts | n/a | Done | Stored in this browser |
+| Connected accounts | pytest (mocked) | n/a | Done | Needs server credentials; unlink asks first |
 
 ## Overview
 
-Your name, timezone, theme and connected accounts.
+Three cards: your details, appearance, and connected accounts. This page changes the person, not the workspace.
 
 ## User-facing knowledge
 
@@ -25,15 +25,15 @@ Times across the app show in your timezone. Theme follows your system until you 
 
 ## Details
 
-Email (read only), name, timezone.
+Email (read only), name, timezone. Save stays disabled until something changed.
 
-## Theme
+## Appearance
 
-System, light or dark.
+System, light or dark. Applies immediately on this device.
 
 ## Connected accounts
 
-Google link status.
+Google link status. Unlinking opens a confirm dialog that says password sign-in still works.
 
 ## API reference
 
@@ -45,4 +45,4 @@ Google link status.
 
 ## Implementation map
 
-`pages/settings/profile.vue`, `composables/useTheme.ts`; i18n `profile.*`, `theme.*`.
+`pages/settings/profile.vue`, `composables/useTheme.ts`; i18n `profile.*`, `theme.*`; `FnSectionCard`.

@@ -14,6 +14,7 @@ from app.ingest.router import router as ingest_router
 from app.interview.router import router as interview_router
 from app.matching.router import router as matching_router
 from app.notifications.router import router as notifications_router
+from app.onboarding.router import router as onboarding_router
 from app.ops.router import router as ops_router
 from app.profiles.router import router as profiles_router
 from app.referrals.router import router as referrals_router
@@ -40,6 +41,7 @@ router.include_router(workspace_router)
 router.include_router(ai_router)
 router.include_router(activity_router)
 router.include_router(profiles_router)
+router.include_router(onboarding_router)
 router.include_router(tracks_router)
 router.include_router(taxonomy_router)
 router.include_router(sources_router)

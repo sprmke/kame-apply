@@ -55,3 +55,9 @@ The query polls every 15s. The empty state is a dashed card with one action, and
 ## Implementation map
 
 `tracks/[id]/runs.vue`, `apps/api/app/schedules/service.py` `list_run_history`.
+
+## UX clarity (2026-11-12)
+
+- History sits in one section with an intro line and a summary sentence.
+- The table stacks into labelled cards under 640px, so run status and new matches are readable on a phone.
+- Failed runs add one plain line: try again, then check the sources.

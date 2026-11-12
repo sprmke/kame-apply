@@ -48,3 +48,11 @@ Lead with **What role are you looking for?** Name is optional. **Check settings*
 ## Implementation map
 
 `tracks/index.vue`, `useActiveProfile`, i18n `tracks.*`.
+
+## UX clarity (2026-11-12)
+
+- **New search** opens a sheet with three tabs: **Describe it**, **Pick a template**, **Copy a search**. Describe it is the default; the plan preview stays a pencil draft.
+- Cards show name, the saved summary sentence, status (Active or Paused), and **How much we do** in user words.
+- A new search gets a recommended schedule (every 4 hours, quiet 22:00 to 07:00, 12 new jobs a day) and the default **Find and prepare**.
+- Empty state is one line plus **Start a search**.
+- Actions no longer sit in a right-aligned overflow at 375. **View matches** and **Automation** keep one row; Duplicate and Archive wrap below.

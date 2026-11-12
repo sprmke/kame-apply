@@ -21,7 +21,7 @@ class TrackCreate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     icon: str = Field(default="ph:path", max_length=64)
     color_hue: int = Field(default=1, ge=1, le=8)
-    autonomy: Autonomy = "discover"
+    autonomy: Autonomy = "prepare"
     nl_text: str = Field(default="", max_length=8000)
     criteria: CriteriaV1 | None = None
     template_slug: str | None = Field(default=None, max_length=80)
@@ -148,3 +148,16 @@ class GeocodeRead(BaseModel):
     country: str | None
     display_name: str
     cached: bool
+
+
+class RecommendedSettingsRead(BaseModel):
+    autonomy: Autonomy
+    preset: str
+    timezone: str
+    quiet_hours: dict[str, Any]
+    daily_cap: int
+    minimum_match: int
+    sources: int
+    new_per_day: float
+    per_run: int
+    reasons: list[str]

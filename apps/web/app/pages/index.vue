@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { homeApiV1HomeGet, listJobsApiV1JobsGet, type BoardJobRead } from "@kame/api-client";
-import { FnButton, FnFolderTab, FnRiskSeal, FnSkeleton } from "@kame/ui";
+import { FnButton, FnEmptyState, FnFolderTab, FnRiskSeal, FnSkeleton } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useAuthStore } from "~/stores/auth";
@@ -78,7 +78,7 @@ const primary = computed(() => {
       title: t("today.addResumeTitle"),
       body: t("today.addResumeBody"),
       label: t("today.addResume"),
-      to: "/profile/onboarding",
+      to: "/start",
     };
   }
   if (!hasTracks.value) {
@@ -107,8 +107,27 @@ const primary = computed(() => {
   };
 });
 
-const needs = computed(() => data.value?.needs_you);
+/** The API can return the same draft twice when two runs finish together. */
+const needs = computed(() => {
+  const raw = data.value?.needs_you;
+  if (!raw) return { count: 0, items: [] };
+  const seen = new Set<string>();
+  const items = (raw.items ?? []).filter((item) => {
+    const key = `${item.href}:${item.title}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return { count: Math.max(raw.count ?? 0, items.length), items };
+});
 const week = computed(() => data.value?.kpis?.kpis ?? {});
+
+function detailText(detail: string): string {
+  const risk = detail.match(/^risk\s+(red|yellow)$/i);
+  if (risk) return risk[1]!.toLowerCase() === "red" ? t("jobs.highRisk") : t("jobs.caution");
+  if (/^checkpoint:/i.test(detail)) return t("needsYou.checkpointDetail");
+  return detail;
+}
 
 function hue(n: number | undefined): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
   return Math.min(8, Math.max(1, n || 1)) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -121,9 +140,9 @@ function sealLevel(level: string | null | undefined): "clear" | "caution" | "dan
 }
 
 function sealLabel(level: string | null | undefined): string {
-  if (level === "red") return "High risk";
-  if (level === "yellow") return "Caution";
-  return "Clear";
+  if (level === "red") return t("jobs.highRisk");
+  if (level === "yellow") return t("jobs.caution");
+  return t("jobs.clear");
 }
 
 const STOP_REASONS = new Set([
@@ -193,22 +212,24 @@ function topReason(job: BoardJobRead): string {
 function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
   const found = track.pipeline?.found ?? 0;
   const shortlisted = track.pipeline?.shortlisted ?? 0;
-  return `${found} matches · ${shortlisted} shortlisted`;
+  return t("today.trackLine", { found, shortlisted }, found);
 }
 </script>
 
 <template>
-  <section class="mx-auto flex w-full max-w-[1040px] flex-col gap-8">
+  <section class="mx-auto flex w-full max-w-[1040px] flex-col gap-6 md:gap-8">
     <VerifyEmailBanner />
 
     <header class="flex flex-col gap-2">
-      <p class="text-xs font-medium tracking-[0.14em] text-ink-400 uppercase">
+      <p class="text-xs font-semibold tracking-[0.12em] text-ink-400 uppercase">
         {{ ws.current?.name }}
       </p>
-      <h1 class="text-[length:var(--text-display)] leading-tight font-bold tracking-[-0.04em]">
+      <h1
+        class="text-3xl leading-tight font-bold tracking-[-0.04em] text-ink-900 sm:text-4xl md:text-[length:var(--text-display)]"
+      >
         {{ greeting }}
       </h1>
-      <p class="max-w-2xl text-lg text-ink-600">
+      <p class="max-w-2xl text-base leading-7 text-ink-600 sm:text-lg">
         {{ data?.headline || t("today.lede") }}
       </p>
     </header>
@@ -220,31 +241,34 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
 
     <template v-else-if="data">
       <section
-        class="rounded-2xl border border-brand-100 bg-brand-50 p-7 md:p-9"
+        class="rounded-2xl border border-brand-100 bg-brand-50 p-5 sm:p-7 md:p-9"
         aria-labelledby="next-step-title"
       >
         <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div class="max-w-xl">
-            <p class="text-xs font-bold tracking-[0.14em] text-brand-700 uppercase">
+            <p class="text-xs font-bold tracking-[0.12em] text-brand-700 uppercase">
               {{ t("today.nextStep") }}
             </p>
-            <h2 id="next-step-title" class="mt-2 text-2xl font-bold tracking-[-0.03em] md:text-3xl">
+            <h2
+              id="next-step-title"
+              class="mt-2 text-2xl font-bold tracking-[-0.03em] text-ink-900 sm:text-3xl"
+            >
               {{ primary.title }}
             </h2>
-            <p class="mt-2 text-ink-600">{{ primary.body }}</p>
+            <p class="mt-2 text-base leading-7 text-ink-600">{{ primary.body }}</p>
           </div>
-          <FnButton tone="primary" class="shrink-0" @click="navigateTo(primary.to)">{{
+          <FnButton tone="primary" class="shrink-0 max-md:w-full" @click="navigateTo(primary.to)">{{
             primary.label
           }}</FnButton>
         </div>
       </section>
 
-      <section v-if="needs?.count" class="flex flex-col gap-2">
+      <section v-if="needs.count" class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
-          <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
+          <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
             {{ t("shell.needsYou") }}
           </h2>
-          <NuxtLink to="/notifications" class="text-sm text-brand-700 underline">{{
+          <NuxtLink to="/needs-you" class="text-sm font-semibold text-brand-700 underline">{{
             t("today.viewAll")
           }}</NuxtLink>
         </div>
@@ -252,10 +276,14 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
           <li v-for="(item, i) in needs.items.slice(0, 4)" :key="i">
             <NuxtLink
               :to="item.href"
-              class="flex min-h-11 flex-col gap-0.5 py-3 text-sm hover:bg-paper-1"
+              class="flex min-h-11 items-start gap-3 py-3 text-sm hover:bg-paper-1"
             >
-              <span class="font-medium text-ink-900">{{ item.title }}</span>
-              <span class="text-ink-600">{{ item.detail }}</span>
+              <span class="mt-1 size-2 shrink-0 rounded-full bg-brand-700" aria-hidden="true" />
+              <span class="flex min-w-0 flex-col gap-0.5">
+                <span class="font-medium text-ink-900">{{ item.title }}</span>
+                <span class="text-ink-600">{{ detailText(item.detail) }}</span>
+              </span>
+              <NavIcon name="ph:caret-right" :size="16" class="mt-1 ml-auto text-ink-400" />
             </NuxtLink>
           </li>
         </ul>
@@ -263,15 +291,15 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
 
       <section
         v-if="top.length"
-        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
       >
         <div class="flex items-center justify-between gap-2">
-          <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
+          <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
             {{ t("today.topMatches") }}
           </h2>
           <NuxtLink
             :to="`/jobs?track=${firstTrack?.id}`"
-            class="text-sm text-brand-700 underline"
+            class="text-sm font-semibold text-brand-700 underline"
             >{{ t("today.viewAll") }}</NuxtLink
           >
         </div>
@@ -281,9 +309,10 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
               :to="`/jobs?track=${firstTrack?.id}&job=${job.id}`"
               class="flex items-start gap-3 py-4 hover:bg-paper-1"
             >
-              <span class="mt-0.5 font-mono text-sm tabular-nums text-brand-700">{{
-                job.score != null ? Math.round(job.score) : "-"
-              }}</span>
+              <span
+                class="mt-0.5 grid min-w-9 place-items-center rounded-md bg-paper-2 px-1.5 py-0.5 text-sm font-bold tabular-nums text-brand-700"
+                >{{ job.score != null ? Math.round(job.score) : "-" }}</span
+              >
               <span class="min-w-0 flex-1">
                 <span class="block font-medium text-ink-900">{{ job.title }}</span>
                 <span class="block text-sm text-ink-600">
@@ -306,14 +335,14 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
 
       <section v-if="data.tracks?.length" class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-2">
-          <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
+          <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
             {{ t("today.yourSearches") }}
           </h2>
-          <NuxtLink to="/tracks" class="text-sm text-brand-700 underline">{{
+          <NuxtLink to="/tracks" class="text-sm font-semibold text-brand-700 underline">{{
             t("today.viewAllSearches")
           }}</NuxtLink>
         </div>
-        <ul class="grid gap-3 md:grid-cols-2">
+        <ul class="grid gap-3 sm:grid-cols-2">
           <li v-for="track in data.tracks" :key="track.id">
             <NuxtLink
               :to="`/jobs?track=${track.id}`"
@@ -321,7 +350,7 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
             >
               <FnFolderTab :hue="hue(track.color_hue)">{{ track.name }}</FnFolderTab>
               <p class="text-sm text-ink-600">{{ trackLine(track) }}</p>
-              <span class="mt-auto text-sm font-medium text-brand-700">{{
+              <span class="mt-auto text-sm font-semibold text-brand-700">{{
                 t("tracks.viewMatches")
               }}</span>
             </NuxtLink>
@@ -329,16 +358,42 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         </ul>
       </section>
 
+      <FnEmptyState
+        v-if="!top.length && !data.tracks?.length"
+        :title="t('today.startSearchTitle')"
+        :body="t('today.startSearchBody')"
+      >
+        <FnButton as-child tone="quiet">
+          <NuxtLink to="/start">{{ t("today.startSearch") }}</NuxtLink>
+        </FnButton>
+      </FnEmptyState>
+
       <OnboardingChecklist v-if="data.empty" />
 
       <details class="border-t border-rule pt-4">
-        <summary class="cursor-pointer text-sm text-ink-600">{{ t("today.thisWeek") }}</summary>
-        <p class="mt-2 text-sm text-ink-600">
-          {{ week.submitted ?? 0 }} {{ t("today.submitted") }} ·
-          {{ Math.round((week.response_rate ?? 0) * 100) }}% {{ t("today.responseRate") }} ·
-          {{ week.interviews ?? 0 }} {{ t("today.interviews") }} · {{ week.matched ?? 0 }}
-          {{ t("today.matched") }}
-        </p>
+        <summary class="min-h-11 cursor-pointer text-sm font-semibold text-ink-600">
+          {{ t("today.thisWeek") }}
+        </summary>
+        <dl class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-lg bg-paper-2 px-3 py-2">
+            <dt class="text-xs text-ink-600">{{ t("today.applicationsSubmitted") }}</dt>
+            <dd class="text-lg font-bold tabular-nums">{{ week.submitted ?? 0 }}</dd>
+          </div>
+          <div class="rounded-lg bg-paper-2 px-3 py-2">
+            <dt class="text-xs text-ink-600">{{ t("today.responseRateLabel") }}</dt>
+            <dd class="text-lg font-bold tabular-nums">
+              {{ Math.round((week.response_rate ?? 0) * 100) }}%
+            </dd>
+          </div>
+          <div class="rounded-lg bg-paper-2 px-3 py-2">
+            <dt class="text-xs text-ink-600">{{ t("today.interviewsLabel") }}</dt>
+            <dd class="text-lg font-bold tabular-nums">{{ week.interviews ?? 0 }}</dd>
+          </div>
+          <div class="rounded-lg bg-paper-2 px-3 py-2">
+            <dt class="text-xs text-ink-600">{{ t("today.matchesLabel") }}</dt>
+            <dd class="text-lg font-bold tabular-nums">{{ week.matched ?? 0 }}</dd>
+          </div>
+        </dl>
       </details>
     </template>
   </section>

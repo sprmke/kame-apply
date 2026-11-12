@@ -55,3 +55,20 @@ class ReferralDraftRead(BaseModel):
 
 class DraftCreateBody(BaseModel):
     contact_id: uuid.UUID
+
+
+class ContactsParseBody(BaseModel):
+    text: str = Field(min_length=1, max_length=20_000)
+
+
+class ContactDraftRead(BaseModel):
+    name: str = ""
+    email: str = ""
+    company: str = ""
+    title: str = ""
+
+
+class ContactsParseRead(BaseModel):
+    items: list[ContactDraftRead]
+    source: str
+    ai_error: str | None = None

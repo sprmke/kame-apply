@@ -66,3 +66,16 @@ Shows the saved schedules, each with the frequency and timezone, quiet hours, da
 ## Implementation map
 
 `tracks/[id]/settings.vue`, `apps/api/app/schedules/`, `apps/api/app/autosubmit/`. See `docs/architecture/automation.md`.
+
+## UX clarity (2026-11-12)
+
+- Three blocks, each one sentence of consequence: **How much we do**, **When we search**, **Where we look**.
+- **How much we do** uses radio cards with a **Recommended** badge on Find and prepare and an **Advanced** badge on Apply for me. The summary line states what actually happens.
+- Auto-apply shows practice runs as "N of 3 done", **Minimum match** as a whole number, **Turn on auto-apply**, **Pause auto-apply**, and the always-manual platforms (LinkedIn, Indeed, JobStreet).
+- Timezone is a select seeded from the device zone. Quiet hours and **New jobs per day** carry `?` help.
+- Sources are grouped as **Job sites** and **Company career sites**.
+
+
+## Recommendation (2026-11-13)
+
+A card at the top of Automation shows **Recommended for this search**: schedule, how much we do, daily cap, and up to three reasons. **Use recommended** applies autonomy and creates or updates the schedule through the audited endpoints. Rules only; no AI call.

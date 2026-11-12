@@ -4,7 +4,7 @@ Canonical skills live here and are symlinked into `.claude/skills/` and `.cursor
 
 ## Core (ported and adapted)
 
-`fastapi-stack` · `fastapi-jwt-auth` · `rbac-and-audit` · `audit-logging` · `alembic-migrations` · `fix-migration-issues` · `pgvector-search` · `pdf-generation` · `workspace-scoping` · `documentation-maintenance` · `route-guides` · `docs-first` · `self-review` · `git-commits` · `human-copy` · `minimal-ui-copy` · `accessibility` · `karpathy-guidelines` · `workflow` · `design-review`
+`fastapi-stack` · `fastapi-jwt-auth` · `rbac-and-audit` · `audit-logging` · `alembic-migrations` · `fix-migration-issues` · `pgvector-search` · `pdf-generation` · `workspace-scoping` · `documentation-maintenance` · `route-guides` · `docs-first` · `self-review` · `git-commits` · `human-copy` · `minimal-ui-copy` · `accessibility` · `karpathy-guidelines` · `workflow` · `design-review` · `ux-clarity-review` · `ux-preview`
 
 ## Domain (initial versions; each refined in the phase that uses it)
 

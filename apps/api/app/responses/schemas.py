@@ -54,3 +54,17 @@ class BatchDecideBody(BaseModel):
     proposal_ids: list[uuid.UUID] = Field(min_length=1, max_length=50)
     accept: bool
     note: str = Field(default="", max_length=500)
+
+
+class MatchReplyBody(BaseModel):
+    sender: str = Field(default="", max_length=500)
+    subject: str = Field(default="", max_length=500)
+    body_text: str = Field(default="", max_length=50_000)
+
+
+class ReplyMatchRead(BaseModel):
+    application_id: uuid.UUID
+    job_title: str
+    company_name: str
+    score: float
+    reason: str

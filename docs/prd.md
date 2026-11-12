@@ -61,7 +61,8 @@ Feature IDs are referenced by phase files. Priority: **P0** = MVP, **P1** = v1, 
 - Upload existing resume(s) (PDF, DOCX, TXT, LinkedIn PDF export) and portfolio. Parse into structured facts with per-field confidence. The user confirms or corrects every field.
 - Guided "profile interview" (chat) to fill gaps: metrics behind bullets, tools used, team size, scope, outcomes.
 - **Answer bank:** reusable facts for forms (work authorization, notice period, salary expectations, relocation, pronouns optional, EEO answers optional and default "prefer not to say", how-did-you-hear defaults, links).
-- **Writing voice:** user pastes 2–5 samples of their own writing (emails, Slack messages, cover letters). The system extracts a style profile (sentence length, formality, vocabulary, banned phrases) used for all free-text answers.
+- **Writing voice:** user pastes 2–5 samples of their own writing (emails, Slack messages, cover letters). The system extracts a style profile (sentence length, formality, vocabulary, banned phrases) used for all free-text answers. A user with no samples can pick a preset (plain, warm, formal) instead; samples stay optional.
+- **Guided setup:** a six-step flow reads a resume (in the browser when AI is off), confirms basics, seeds common answers, creates the first search from one sentence, chooses how much the app does, and offers AI as an optional last step. Every step has a recommended path and a skip.
 - Sensitive data (government IDs, bank) is **never** stored in the profile.
 
 ### F2. Tracks: role folders (P0)
@@ -136,6 +137,7 @@ For sites where nothing can be automated:
 
 - Paste one or many questions (or capture them from the page with the extension). AI drafts answers in the user's voice using only Profile facts; each has a one-click copy, character counter, and "shorter / more specific / more casual" controls.
 - Answers can be saved back to the answer bank so the next form reuses them.
+- The answer bank can draft values from profile facts (work authorization, salary floor, links, EEO declines). Eligibility claims are never guessed; the user answers those.
 - Answers are written in the user's voice: plain, specific, no stock AI phrases (banned-phrase list + style profile). The goal is that answers sound like the user because they are grounded in the user's real facts and real writing. We do **not** try to defeat AI detectors, and questions about AI use are answered truthfully.
 - If a question says "do not use AI", the Answer Desk does not draft it. It shows the question with relevant profile facts as notes so the user can write it themselves.
 

@@ -129,3 +129,29 @@ def _plain_summary(avg_len: float, formality: float, contraction_rate: float, vo
     else:
         bits.append("avoids jargon when possible")
     return ", ".join(bits)
+
+
+# Presets for people who have no samples yet (A4). Wording only; facts never change.
+VOICE_PRESETS: dict[str, dict[str, object]] = {
+    "plain": {
+        "summary": "Plain and direct. Short sentences, everyday words, no flourish.",
+        "avg_sentence_length": 14.0,
+        "formality": 0.4,
+        "contraction_rate": 0.6,
+        "vocabulary_level": "plain",
+    },
+    "warm": {
+        "summary": "Warm and human. Friendly openings, calm tone, still specific.",
+        "avg_sentence_length": 16.0,
+        "formality": 0.35,
+        "contraction_rate": 0.75,
+        "vocabulary_level": "plain",
+    },
+    "formal": {
+        "summary": "Formal and precise. Complete sentences, measured tone, no slang.",
+        "avg_sentence_length": 20.0,
+        "formality": 0.8,
+        "contraction_rate": 0.1,
+        "vocabulary_level": "elevated",
+    },
+}

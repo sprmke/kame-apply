@@ -27,7 +27,7 @@ const submit = form.handleSubmit(async (v) => {
   try {
     await auth.register(v.email, v.password, v.name);
     await workspace.load();
-    await navigateTo(safeNext(route.query.next));
+    await navigateTo(safeNext(route.query.next, "/start"));
   } catch (e) {
     const { code } = toApiError(e);
     if (code === "email_taken") form.setFieldError("email", "validation.emailTaken");

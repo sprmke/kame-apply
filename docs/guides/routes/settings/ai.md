@@ -54,3 +54,9 @@ Provider and model per tier, plus fallback to another provider if a key is rejec
 ## Implementation map
 
 `pages/settings/ai.vue`, `components/UsageMeter.vue`, `components/UsageChart.vue`; i18n `ai.*`, `usage.*`. Details: `docs/architecture/ai-providers.md`.
+
+## UX clarity (2026-11-12)
+
+- Hero: **Choose a way to connect** with three radio cards: **Use a free provider** (Recommended), **Use my own key**, **Connect my Claude**.
+- Usage and budget sit in the next block. Model tiers, fallback, and provider routing are folded under **More options**.
+- No key is never a dead end: the free option opens the key form with OpenRouter preselected.

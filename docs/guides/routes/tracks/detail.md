@@ -69,3 +69,10 @@ Collapsed by default. The header shows how many filters are on; collapsed it lis
 ## Implementation map
 
 `tracks/[id]/index.vue`, `components/TrackShell.vue`, i18n `tracks.*`.
+
+## UX clarity (2026-11-12)
+
+- `/tracks/:id` is now **Matches**: last-run line, **Find jobs now**, a compact list of the top matches (score, salary, risk), and **View matches** for the full reader.
+- The criteria page moved to `/tracks/:id/look-for`. Section tabs are **Matches**, **What to look for**, **Automation**, **History**, **Improve**. Old links to the criteria view land on Matches, which is the better default after a run.
+- **Improve** replaces the hidden **More tools** disclosure and holds the gap plan (filled on first open) plus the Be Found link.
+- The run action states its consequence through the live progress line ("14 sources, 9 new, 41 s").

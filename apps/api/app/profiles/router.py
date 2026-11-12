@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.core.security import WorkspaceContext, require_action
+from app.profiles import answer_drafts as answer_drafts_svc
 from app.profiles import answers as answers_svc
 from app.profiles import documents as docs
 from app.profiles import interview as interview_svc
@@ -130,6 +131,14 @@ async def list_answer_keys(profile_id: uuid.UUID, ctx: WorkspaceContext = Read):
     return await answers_svc.list_canonical_keys(ctx, profile_id)
 
 
+@router.post("/{profile_id}/answers/draft", response_model=s.AnswerDraftBundle)
+async def draft_answers(
+    profile_id: uuid.UUID, body: s.AnswerDraftBody, ctx: WorkspaceContext = Write
+):
+    """Draft answer-bank values from profile facts. No writes; accept through the bank endpoints."""
+    return await answer_drafts_svc.draft_answers(ctx, profile_id, body)
+
+
 @router.get("/{profile_id}/answers", response_model=list[s.AnswerRead])
 async def list_answers(
     profile_id: uuid.UUID,
@@ -251,6 +260,13 @@ async def put_voice_samples(
     profile_id: uuid.UUID, body: s.VoiceSamplesPut, ctx: WorkspaceContext = Write
 ):
     return await voice_svc.put_samples(ctx, profile_id, body)
+
+
+@router.post("/{profile_id}/voice/preset", response_model=s.VoiceRead)
+async def apply_voice_preset(
+    profile_id: uuid.UUID, body: s.VoicePresetBody, ctx: WorkspaceContext = Write
+):
+    return await voice_svc.apply_preset(ctx, profile_id, body)
 
 
 @router.post("/{profile_id}/voice/analyze", response_model=s.VoiceRead)

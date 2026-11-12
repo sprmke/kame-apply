@@ -4,6 +4,7 @@ import {
   deleteScheduleApiV1SchedulesScheduleIdDelete,
   getTrackApiV1TracksTrackIdGet,
   listSchedulesApiV1TracksTrackIdSchedulesGet,
+  recommendedSettingsApiV1TracksTrackIdRecommendedSettingsGet,
   patchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatch,
   pauseTrackApiV1TracksTrackIdPausePost,
   resumeTrackApiV1TracksTrackIdResumePost,
@@ -14,7 +15,17 @@ import {
   type ScheduleRead,
   type TrackSourceRead,
 } from "@kame/api-client";
-import { FnButton, FnCheckbox, FnField, FnInput, FnSelect, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnCheckbox,
+  FnChoiceCards,
+  FnField,
+  FnInput,
+  FnSectionCard,
+  FnSelect,
+  useToast,
+  type SelectOption,
+} from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -29,16 +40,17 @@ const fmt = useFormat();
 const trackId = computed(() => String(route.params.id));
 type Autonomy = "discover" | "prepare" | "assist" | "auto_submit";
 
-const autonomy = ref<Autonomy>("discover");
+const autonomy = ref<Autonomy>("prepare");
 const saving = ref(false);
-const preset = ref("every_2_hours");
+const preset = ref("every_4_hours");
 const timezone = ref(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
-const quietStart = ref("23:00");
+const quietStart = ref("22:00");
 const quietEnd = ref("07:00");
 const dailyCap = ref(12);
 const addOpen = ref(false);
 const adding = ref(false);
 const sourcesOpen = ref(false);
+const applyingRec = ref(false);
 
 const detail = useQuery({
   queryKey: computed(() => ["track", ws.currentId, trackId.value]),
@@ -76,14 +88,14 @@ const SOURCE_NAMES: Record<string, string> = {
   himalayas: "Himalayas",
   jobicy: "Jobicy",
   lever: "Lever",
-  muse: "Muse",
+  muse: "The Muse",
   recruitee: "Recruitee",
   remoteok: "Remote OK",
   remotiv: "Remotiv",
   smartrecruiters: "SmartRecruiters",
   workable: "Workable",
 };
-const ATS_KEYS = new Set([
+const CAREER_SITE_KEYS = new Set([
   "ashby",
   "greenhouse",
   "lever",
@@ -93,28 +105,91 @@ const ATS_KEYS = new Set([
 ]);
 
 const sourceGroups = computed(() => {
-  const buckets: Record<"ats" | "boards" | "other", TrackSourceRead[]> = {
-    ats: [],
+  const buckets: Record<"career" | "boards" | "other", TrackSourceRead[]> = {
+    career: [],
     boards: [],
     other: [],
   };
   for (const row of sourceRows.value) {
-    if (ATS_KEYS.has(row.source_key)) buckets.ats.push(row);
+    if (CAREER_SITE_KEYS.has(row.source_key)) buckets.career.push(row);
     else if (SOURCE_NAMES[row.source_key]) buckets.boards.push(row);
     else buckets.other.push(row);
   }
   const labels = {
-    ats: t("tracks.groupAts"),
+    career: t("tracks.groupAts"),
     boards: t("tracks.groupBoards"),
     other: t("tracks.groupOther"),
   };
-  return (["ats", "boards", "other"] as const)
+  return (["boards", "career", "other"] as const)
     .filter((key) => buckets[key].length > 0)
     .map((key) => ({ key, label: labels[key], rows: buckets[key] }));
 });
 
 function sourceLabel(key: string): string {
   return SOURCE_NAMES[key] ?? key;
+}
+
+const recommended = useQuery({
+  queryKey: computed(() => ["track-recommendation", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await recommendedSettingsApiV1TracksTrackIdRecommendedSettingsGet({
+      path: { track_id: trackId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+});
+
+async function applyRecommended() {
+  const row = recommended.data.value;
+  if (!row) return;
+  applyingRec.value = true;
+  try {
+    await updateTrackApiV1TracksTrackIdPatch({
+      path: { track_id: trackId.value },
+      body: { autonomy: row.autonomy },
+      throwOnError: true,
+    });
+    autonomy.value = row.autonomy;
+    const body = {
+      preset: row.preset as
+        | "hourly"
+        | "every_2_hours"
+        | "every_4_hours"
+        | "daily_morning"
+        | "weekdays_2h"
+        | "custom",
+      timezone: row.timezone,
+      quiet_hours: {
+        start: String((row.quiet_hours as Record<string, unknown>).start ?? "22:00"),
+        end: String((row.quiet_hours as Record<string, unknown>).end ?? "07:00"),
+      },
+      daily_cap: row.daily_cap,
+    };
+    const existing = firstSchedule.value;
+    if (existing) {
+      await updateScheduleApiV1SchedulesScheduleIdPatch({
+        path: { schedule_id: String(existing.id) },
+        body,
+        throwOnError: true,
+      });
+    } else {
+      await createScheduleApiV1TracksTrackIdSchedulesPost({
+        path: { track_id: trackId.value },
+        body,
+        throwOnError: true,
+      });
+    }
+    await qc.invalidateQueries({ queryKey: ["track", ws.currentId, trackId.value] });
+    await qc.invalidateQueries({ queryKey: ["track-schedules", ws.currentId, trackId.value] });
+    await qc.invalidateQueries({ queryKey: ["track-recommendation", ws.currentId, trackId.value] });
+    toast.push({ title: t("common.saved"), tone: "success" });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    applyingRec.value = false;
+  }
 }
 
 const schedules = useQuery({
@@ -129,6 +204,7 @@ const schedules = useQuery({
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
 const scheduleRows = computed(() => schedules.data.value ?? []);
+const firstSchedule = computed(() => scheduleRows.value[0] ?? null);
 
 type AutoCfg = {
   live_enabled: boolean;
@@ -165,30 +241,37 @@ const dryRuns = useQuery({
   ),
 });
 
-const autonomyOptions = computed<{ value: typeof autonomy.value; label: string; hint: string }[]>(
-  () => [
-    {
-      value: "discover",
-      label: t("tracks.autonomyDiscover"),
-      hint: t("tracks.stepDiscover"),
-    },
-    {
-      value: "prepare",
-      label: t("tracks.autonomyPrepare"),
-      hint: t("tracks.stepPrepare"),
-    },
-    {
-      value: "assist",
-      label: t("tracks.autonomyAssist"),
-      hint: t("tracks.stepAssist"),
-    },
-    {
-      value: "auto_submit",
-      label: t("tracks.autonomyAuto"),
-      hint: t("tracks.stepAuto"),
-    },
-  ],
-);
+const autonomyOptions = computed(() => [
+  {
+    value: "discover",
+    title: t("tracks.autonomyDiscover"),
+    effect: t("tracks.stepDiscover"),
+  },
+  {
+    value: "prepare",
+    title: t("tracks.autonomyPrepare"),
+    effect: t("tracks.stepPrepare"),
+    badge: t("tracks.recommended"),
+  },
+  {
+    value: "assist",
+    title: t("tracks.autonomyAssist"),
+    effect: t("tracks.stepAssist"),
+  },
+  {
+    value: "auto_submit",
+    title: t("tracks.autonomyAuto"),
+    effect: t("tracks.stepAuto"),
+    badge: t("tracks.advanced"),
+  },
+]);
+
+const howMuchSummary = computed(() => {
+  if (autonomy.value === "discover") return t("tracks.summaryDiscover");
+  if (autonomy.value === "assist") return t("tracks.summaryAssist");
+  if (autonomy.value === "auto_submit") return t("autoSubmit.reviewBefore");
+  return t("tracks.summaryPrepare");
+});
 
 watch(
   () => detail.data.value?.autonomy,
@@ -200,18 +283,30 @@ watch(
 
 const capText = computed({
   get: () => String(dailyCap.value ?? ""),
-  set: (value: string) => {
-    dailyCap.value = value.trim() === "" ? 0 : Number(value);
+  set: (value: string | number) => {
+    const text = String(value ?? "");
+    dailyCap.value = text.trim() === "" ? 0 : Number(text);
   },
 });
 
 const presetOptions = computed(() => [
-  { value: "hourly", label: t("tracks.presetHourly") },
-  { value: "every_2_hours", label: t("tracks.presetEvery2h") },
   { value: "every_4_hours", label: t("tracks.presetEvery4h") },
+  { value: "every_2_hours", label: t("tracks.presetEvery2h") },
   { value: "daily_morning", label: t("tracks.presetDaily") },
   { value: "weekdays_2h", label: t("tracks.presetWeekdays2h") },
+  { value: "hourly", label: t("tracks.presetHourly") },
 ]);
+
+const timezoneOptions = computed<SelectOption[]>(() => {
+  const here = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const all = (
+    typeof Intl.supportedValuesOf === "function"
+      ? Intl.supportedValuesOf("timeZone")
+      : [here, "UTC"]
+  ).slice();
+  if (!all.includes(here)) all.unshift(here);
+  return all.map((z) => ({ value: z, label: z.replaceAll("_", " ") }));
+});
 
 function presetLabel(value: string): string {
   return presetOptions.value.find((p) => p.value === value)?.label ?? value;
@@ -220,15 +315,29 @@ function presetLabel(value: string): string {
 function scheduleMeta(row: ScheduleRead): string {
   const quiet = row.quiet_hours as { start?: string; end?: string };
   const parts: string[] = [];
-  if (quiet?.start && quiet?.end) {
+  if (quiet?.start && quiet?.end)
     parts.push(t("tracks.quietRange", { start: quiet.start, end: quiet.end }));
-  }
   parts.push(t("tracks.capPerDay", { n: row.daily_cap }));
-  if (row.enabled && row.next_run_at) {
+  if (row.enabled && row.next_run_at)
     parts.push(t("tracks.nextRun", { when: fmt.dateTime(row.next_run_at) }));
-  }
   return parts.join(" · ");
 }
+
+const scheduleSummary = computed(() => {
+  const row = firstSchedule.value;
+  if (!row) return undefined;
+  const quiet = row.quiet_hours as { start?: string; end?: string };
+  const parts = [presetLabel(row.preset).toLowerCase()];
+  if (quiet?.start && quiet?.end)
+    parts.push(t("tracks.quietRange", { start: quiet.start, end: quiet.end }));
+  parts.push(t("tracks.capPerDay", { n: row.daily_cap }));
+  parts.push(row.timezone);
+  return `${t("tracks.weCheck")} ${parts.join(", ")}.`;
+});
+
+const sourcesSummary = computed(() =>
+  t("tracks.sourcesSummary", { n: enabledCount.value }, enabledCount.value),
+);
 
 async function saveAuto(patch: Partial<AutoCfg>) {
   try {
@@ -348,57 +457,69 @@ async function togglePause() {
 
 <template>
   <TrackShell :track-id="trackId">
-    <div v-if="track" class="flex flex-col gap-6">
+    <div v-if="track" class="flex flex-col gap-5">
       <section
-        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
+        v-if="recommended.data.value"
+        class="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-5"
       >
-        <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.autonomy") }}</h2>
-        <fieldset :disabled="saving">
-          <legend class="sr-only">{{ t("tracks.autonomy") }}</legend>
-          <div class="grid gap-2 sm:grid-cols-2">
-            <label
-              v-for="(opt, i) in autonomyOptions"
-              :key="opt.value"
-              class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors"
-              :class="
-                autonomy === opt.value
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-rule bg-paper-1 hover:border-edge'
-              "
-            >
-              <input
-                v-model="autonomy"
-                type="radio"
-                name="autonomy"
-                class="mt-1 size-4 shrink-0 accent-brand-600"
-                :value="opt.value"
-                @change="saveAutonomy"
-              />
-              <span class="flex min-w-0 flex-col gap-1">
-                <span class="flex items-baseline gap-2">
-                  <span class="text-xs tabular-nums text-ink-400" aria-hidden="true">{{
-                    i + 1
-                  }}</span>
-                  <span class="text-sm font-semibold text-ink-900">{{ opt.label }}</span>
-                </span>
-                <span class="text-sm text-ink-600">{{ opt.hint }}</span>
-              </span>
-            </label>
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div class="flex flex-col gap-1">
+            <p class="text-xs font-bold tracking-[0.12em] text-brand-700 uppercase">
+              {{ t("tracks.recommendedForSearch") }}
+            </p>
+            <p class="text-base font-semibold text-ink-900">
+              {{ t("tracks.recommendedLine", {
+                preset: presetOptions.find((p) => p.value === recommended.data.value?.preset)?.label ?? "",
+                level: autonomyOptions.find((o) => o.value === recommended.data.value?.autonomy)?.title ?? "",
+                cap: recommended.data.value.daily_cap,
+              }) }}
+            </p>
           </div>
-        </fieldset>
+          <FnButton tone="primary" size="sm" :loading="applyingRec" @click="applyRecommended">
+            {{ t("tracks.useRecommended") }}
+          </FnButton>
+        </div>
+        <ul class="flex flex-col gap-1 text-sm text-ink-600">
+          <li v-for="reason in recommended.data.value.reasons" :key="reason">· {{ reason }}</li>
+        </ul>
+      </section>
+      <FnSectionCard
+        :title="t('tracks.autonomy')"
+        :intro="t('tracks.howMuchIntro')"
+        :summary="howMuchSummary"
+      >
+        <FnChoiceCards
+          v-model="autonomy"
+          :options="autonomyOptions"
+          :label="t('tracks.autonomy')"
+          :columns="2"
+          @update:model-value="saveAutonomy"
+        />
 
         <div
           v-if="autonomy === 'auto_submit' && autoCfg.data.value"
           class="flex flex-col gap-3 rounded-lg border border-rule bg-paper-0 p-4"
         >
           <h3 class="text-sm font-semibold text-ink-900">{{ t("autoSubmit.title") }}</h3>
-          <p class="text-sm text-ink-600">
-            {{ t("autoSubmit.dryLeft") }} {{ autoCfg.data.value.dry_run_remaining }} ·
-            {{ t("autoSubmit.threshold") }} {{ autoCfg.data.value.score_threshold }}
-          </p>
+          <p class="text-sm text-ink-600">{{ t("autoSubmit.practiceExplainer") }}</p>
+          <dl class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <dt class="text-ink-600">{{ t("autoSubmit.practiceRuns") }}</dt>
+              <dd class="font-semibold tabular-nums">
+                {{ Math.max(0, 3 - (autoCfg.data.value.dry_run_remaining ?? 0)) }} of 3 done
+              </dd>
+            </div>
+            <div>
+              <dt class="text-ink-600">{{ t("autoSubmit.threshold") }}</dt>
+              <dd class="font-semibold tabular-nums">
+                {{ Math.round((autoCfg.data.value.score_threshold ?? 0.85) * 100) }}
+              </dd>
+            </div>
+          </dl>
           <div class="flex flex-wrap gap-2">
             <FnButton
               size="sm"
+              tone="primary"
               :disabled="autoCfg.data.value.dry_run_remaining > 0"
               @click="saveAuto({ live_enabled: true, dry_run_remaining: 0 })"
               >{{ t("autoSubmit.enableLive") }}</FnButton
@@ -412,6 +533,7 @@ async function togglePause() {
               }}</FnButton
             >
           </div>
+          <p class="text-sm text-ink-600">{{ t("autoSubmit.alwaysManual") }}</p>
           <ul v-if="dryRuns.data.value?.length" class="flex flex-col gap-1 text-sm text-ink-600">
             <li v-for="d in dryRuns.data.value" :key="d.id">
               {{ d.would_submit ? t("autoSubmit.wouldSubmit") : t("autoSubmit.blocked") }} ·
@@ -419,67 +541,25 @@ async function togglePause() {
             </li>
           </ul>
         </div>
-      </section>
+      </FnSectionCard>
 
-      <section
-        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
+      <FnSectionCard
+        :title="t('tracks.schedule')"
+        :intro="t('tracks.scheduleIntro')"
+        :summary="scheduleSummary"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.sources") }}</h2>
-          <div class="flex items-center gap-3">
-            <span class="text-sm text-ink-600">{{
-              t("tracks.sourcesOn", { on: enabledCount, total: sourceRows.length })
-            }}</span>
-            <button
-              type="button"
-              class="min-h-11 rounded-md px-3 text-sm font-semibold text-brand-700 hover:bg-paper-2"
-              :aria-expanded="sourcesOpen"
-              @click="sourcesOpen = !sourcesOpen"
-            >
-              {{ sourcesOpen ? t("common.done") : t("tracks.changeSources") }}
-            </button>
-          </div>
-        </div>
-        <div v-if="sourcesOpen" class="grid gap-5 sm:grid-cols-2">
-          <div v-for="group in sourceGroups" :key="group.key" class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
-              {{ group.label }}
-            </h3>
-            <label
-              v-for="row in group.rows"
-              :key="row.id"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="row.enabled"
-                @change="toggleSource(row)"
-              />
-              {{ sourceLabel(row.source_key) }}
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <section
-        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] md:p-6"
-      >
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-lg font-bold text-ink-900">{{ t("tracks.schedule") }}</h2>
-          <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 text-sm text-ink-600">
-              <span
-                class="size-1.5 rounded-full"
-                :class="paused ? 'bg-saffron-600' : 'bg-fern-600'"
-                aria-hidden="true"
-              />
-              {{ paused ? t("tracks.paused") : t("tracks.active") }}
-            </span>
-            <FnButton size="sm" tone="quiet" @click="togglePause">{{
-              paused ? t("tracks.resume") : t("tracks.pause")
-            }}</FnButton>
-          </div>
+          <span class="inline-flex items-center gap-1.5 text-sm text-ink-600">
+            <span
+              class="size-1.5 rounded-full"
+              :class="paused ? 'bg-saffron-600' : 'bg-fern-600'"
+              aria-hidden="true"
+            />
+            {{ paused ? t("tracks.paused") : t("tracks.active") }}
+          </span>
+          <FnButton size="sm" tone="quiet" @click="togglePause">{{
+            paused ? t("tracks.resume") : t("tracks.pause")
+          }}</FnButton>
         </div>
 
         <p v-if="!scheduleRows.length" class="text-sm text-ink-600">
@@ -493,7 +573,7 @@ async function togglePause() {
           >
             <div class="flex min-w-0 flex-col gap-0.5">
               <span class="text-sm font-semibold text-ink-900"
-                >{{ presetLabel(s.preset) }} · {{ s.timezone }}</span
+                >{{ presetLabel(s.preset) }} · {{ s.timezone.replaceAll("_", " ") }}</span
               >
               <span class="text-xs text-ink-600">{{ scheduleMeta(s) }}</span>
               <span v-if="s.last_skip_reason" class="text-xs text-saffron-600">{{
@@ -513,33 +593,23 @@ async function togglePause() {
           </li>
         </ul>
 
-        <div v-if="addOpen" class="grid gap-4 rounded-lg border border-rule p-4 md:grid-cols-2">
-          <FnField :label="t('tracks.frequency')">
-            <template #default="{ id }">
-              <FnSelect :id="id" v-model="preset" :options="presetOptions" />
-            </template>
+        <div v-if="addOpen" class="grid gap-4 rounded-lg border border-rule p-4 sm:grid-cols-2">
+          <FnField v-slot="{ id }" :label="t('tracks.frequency')">
+            <FnSelect :id="id" v-model="preset" :options="presetOptions" />
           </FnField>
-          <FnField :label="t('profile.timezone')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="timezone" />
-            </template>
+          <FnField v-slot="{ id }" :label="t('profile.timezone')" :help="t('tracks.timezoneHelp')">
+            <FnSelect :id="id" v-model="timezone" :options="timezoneOptions" />
           </FnField>
-          <FnField :label="t('tracks.quietStart')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="quietStart" type="time" />
-            </template>
+          <FnField v-slot="{ id }" :label="t('tracks.quietStart')">
+            <FnInput :id="id" v-model="quietStart" type="time" />
           </FnField>
-          <FnField :label="t('tracks.quietEnd')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="quietEnd" type="time" />
-            </template>
+          <FnField v-slot="{ id }" :label="t('tracks.quietEnd')">
+            <FnInput :id="id" v-model="quietEnd" type="time" />
           </FnField>
-          <FnField :label="t('tracks.dailyCap')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="capText" type="number" />
-            </template>
+          <FnField v-slot="{ id }" :label="t('tracks.dailyCap')" :help="t('tracks.dailyCapHelp')">
+            <FnInput :id="id" v-model="capText" type="number" inputmode="numeric" />
           </FnField>
-          <div class="flex items-end gap-2 md:justify-end">
+          <div class="flex items-end gap-2 sm:justify-end">
             <FnButton tone="ghost" @click="addOpen = false">{{ t("common.cancel") }}</FnButton>
             <FnButton tone="primary" :disabled="adding" @click="addSchedule">{{
               t("tracks.addSchedule")
@@ -549,7 +619,44 @@ async function togglePause() {
         <FnButton v-else size="sm" tone="quiet" class="self-start" @click="addOpen = true">{{
           t("tracks.addSchedule")
         }}</FnButton>
-      </section>
+      </FnSectionCard>
+
+      <FnSectionCard
+        :title="t('tracks.sources')"
+        :intro="t('tracks.sourcesIntro')"
+        :summary="sourcesSummary"
+      >
+        <template #actions>
+          <button
+            type="button"
+            class="min-h-11 rounded-md px-3 text-sm font-semibold text-brand-700 hover:bg-paper-2"
+            :aria-expanded="sourcesOpen"
+            @click="sourcesOpen = !sourcesOpen"
+          >
+            {{ sourcesOpen ? t("common.done") : t("tracks.changeSources") }}
+          </button>
+        </template>
+        <div v-if="sourcesOpen" class="flex flex-col gap-4 sm:grid sm:grid-cols-2">
+          <div v-for="group in sourceGroups" :key="group.key" class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+              {{ group.label }}
+            </h3>
+            <label
+              v-for="row in group.rows"
+              :key="row.id"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
+              <input
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+                :checked="row.enabled"
+                @change="toggleSource(row)"
+              >
+              {{ sourceLabel(row.source_key) }}
+            </label>
+          </div>
+        </div>
+      </FnSectionCard>
     </div>
   </TrackShell>
 </template>

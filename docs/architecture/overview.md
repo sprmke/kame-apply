@@ -67,6 +67,7 @@ External: Cloudflare R2 (files) · Resend (email out) · CF Email Routing→Work
 | `interview` | Per-application interview prep (truthful, cited). |
 | `gaps` | Track skill gap plans. |
 | `referrals` | Contacts import + outreach drafts (user sends). |
+| `onboarding` | Read-only setup plan from resume text and a role sentence. Owns no tables. |
 | `notifications` | In-app, email, web push, Telegram; preferences; digests. Details: [`automation.md`](./automation.md). |
 | `ai` | Provider router, model tiers, prompt registry, cost metering, budget enforcement, eval hooks. |
 | `audit` | `activity_log`, admin views. |
@@ -172,3 +173,5 @@ activity_log(id, workspace_id, actor_type[user|system|ai], actor_id, entity, ent
 ## 7. Observability
 
 Structured logs (no PII, no answers), Sentry for errors, per-workflow metrics (runs, durations, failures by reason), per-source health dashboard (success rate, latency, jobs/day, block signals), AI cost per feature per workspace, and an admin page for source and runner health.
+
+

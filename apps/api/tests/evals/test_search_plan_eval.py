@@ -7,6 +7,7 @@ offline path: a usable role signal, real filters, and no invented salary, visa, 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -30,7 +31,10 @@ def test_baseline_is_structural_and_never_invents_personal_facts(path: Path):
     assert plan.companies.exclude_agencies is True
     assert plan.salary is None
     assert plan.locations == []
-    assert plan.visa_sponsorship is None
+    if plan.visa_sponsorship is not None:
+        assert re.search(r"\b(visa|sponsor)", data["text"], re.I)
+    if plan.relocation is not None:
+        assert re.search(r"\brelocat", data["text"], re.I)
 
 
 def test_baseline_extracts_role_shape():

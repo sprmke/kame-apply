@@ -109,27 +109,29 @@ An **industry pack** is a declarative, versioned, code-reviewed description of h
 ### 4.2 Pack schema (`apps/api/app/industries/schema.py`)
 
 ```python
-class IndustryPack(BaseModel):            # frozen, extra="forbid"
-    key: str                              # "technology", "hospitality", "general", ...
-    version: int                          # bump on behavior change; stored on tracks for traceability
-    label_key: str                        # i18n key, e.g. "industry.hospitality.label"
-    icon: str                             # Phosphor, e.g. "ph:cooking-pot"
-    detection: Detection                  # ISCO groups, ESCO prefixes, title keywords, resume cues
-    role_families: list[RoleFamily]       # 2nd level of the picker (Kitchen, Pastry & bakery, Front of house...)
-    ui: UiManifest                        # visible / collapsed / hidden fields, section order, label overrides
-    facets: list[FacetDef]                # industry-specific dimensions (cuisine, station, kitchen type...)
-    criteria_defaults: CriteriaPatch      # work modes, salary period, posting age, employment types
-    seniority_ladder: list[LadderStep]    # local rank names mapped onto CriteriaV1 Seniority
-    credentials: list[CredentialDef]      # names, aliases, regions, typical validity, knockout weight
-    answer_keys: AnswerKeyPlan            # add / hide canonical answer keys
-    sources: SourcePlan                   # preferred adapters, Adzuna categories per country, query templates,
-                                          # employer directory tags, email-alert recommendations per country
-    matching: MatchingPlan                # weights, generic title words, title equivalence groups, knockout rules
-    profile: ProfilePlan                  # section order/labels, evidence metric patterns, interview gap questions
-    resume: ResumePlan                    # template id, section order, bullet guidance, photo norm per country
-    ai: AiBrief                           # short brief (<= 600 chars) + vocabulary injected into prompts
-    safety: SafetyPlan                    # extra scam signals (placement fees, pay-for-training, visa fees)
-    features: FeatureFlags                # be_found, github_links, coding_practice, portfolio_images, ...
+class IndustryPack(BaseModel):  # frozen, extra="forbid"
+    key: str  # "technology", "hospitality", "general", ...
+    version: int  # bump on behavior change; stored on tracks for traceability
+    label_key: str  # i18n key, e.g. "industry.hospitality.label"
+    icon: str  # Phosphor, e.g. "ph:cooking-pot"
+    detection: Detection  # ISCO groups, ESCO prefixes, title keywords, resume cues
+    role_families: list[
+        RoleFamily
+    ]  # 2nd level of the picker (Kitchen, Pastry & bakery, Front of house...)
+    ui: UiManifest  # visible / collapsed / hidden fields, section order, label overrides
+    facets: list[FacetDef]  # industry-specific dimensions (cuisine, station, kitchen type...)
+    criteria_defaults: CriteriaPatch  # work modes, salary period, posting age, employment types
+    seniority_ladder: list[LadderStep]  # local rank names mapped onto CriteriaV1 Seniority
+    credentials: list[CredentialDef]  # names, aliases, regions, typical validity, knockout weight
+    answer_keys: AnswerKeyPlan  # add / hide canonical answer keys
+    sources: SourcePlan  # preferred adapters, Adzuna categories per country, query templates,
+    # employer directory tags, email-alert recommendations per country
+    matching: MatchingPlan  # weights, generic title words, title equivalence groups, knockout rules
+    profile: ProfilePlan  # section order/labels, evidence metric patterns, interview gap questions
+    resume: ResumePlan  # template id, section order, bullet guidance, photo norm per country
+    ai: AiBrief  # short brief (<= 600 chars) + vocabulary injected into prompts
+    safety: SafetyPlan  # extra scam signals (placement fees, pay-for-training, visa fees)
+    features: FeatureFlags  # be_found, github_links, coding_practice, portfolio_images, ...
 ```
 
 Supporting types (all `extra="forbid"`):

@@ -33,10 +33,14 @@
     "source-command-ka-start-app",
     "source-command-ka-start-work",
     "source-command-ka-submit-for-review",
+    "source-command-ka-ux-preview",
+    "source-command-ka-ux-review",
     "source-command-workflow-done",
     "source-command-workflow-start",
     "source-command-workflow-wont-do",
     "tanstack-table-vue",
+    "ux-clarity-review",
+    "ux-preview",
     "vee-validate-forms",
     "vue-query-data",
     "workflow",
@@ -52,11 +56,14 @@
     "ka-start-app": ".cursor/commands/ka-start-app.md",
     "ka-start-work": ".cursor/commands/ka-start-work.md",
     "ka-submit-for-review": ".cursor/commands/ka-submit-for-review.md",
+    "ka-ux-preview": ".cursor/commands/ka-ux-preview.md",
+    "ka-ux-review": ".cursor/commands/ka-ux-review.md",
     "workflow-done": ".cursor/commands/workflow-done.md",
     "workflow-start": ".cursor/commands/workflow-start.md",
     "workflow-wont-do": ".cursor/commands/workflow-wont-do.md"
   },
   "agents": [
+    "ux-reviewer.toml",
     "verifier.toml",
     "design-reviewer.toml",
     "security-auditor.toml",
@@ -98,11 +105,6 @@
       "path": ".cursor/rules/fastapi-conventions.mdc",
       "always": false,
       "scope": "- apps/api/**"
-    },
-    {
-      "path": ".cursor/rules/field-notes-design.mdc",
-      "always": false,
-      "scope": "- apps/web/**"
     },
     {
       "path": ".cursor/rules/git-commits.mdc",
@@ -193,6 +195,11 @@
       "path": ".cursor/rules/self-review.mdc",
       "always": false,
       "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/signal-design.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
     },
     {
       "path": ".cursor/rules/superpowers-opt-in.mdc",

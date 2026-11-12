@@ -28,3 +28,10 @@ This is your source of truth for applications. Upload a resume, confirm the pars
 ## Implementation map
 
 `useActiveProfile`, `InterviewDrawer`, i18n `career.*`.
+
+## UX clarity (2026-11-12)
+
+- Tabs are **Profile**, **Answers**, **Writing style**, **Files**.
+- A completeness bar names the next three things to add and links to them.
+- Evidence chips read **Proof from your resume** or **Our guess**, never strong/weak.
+- The profile drawer is **Strengthen your profile**.

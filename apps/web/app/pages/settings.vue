@@ -10,13 +10,17 @@ const mobileOpen = ref(false);
 type NavLink = { to: string; label: string };
 
 const groups = computed<{ key: string; label: string; links: NavLink[] }[]>(() => {
+  const account: NavLink[] = [
+    { to: "/settings/profile", label: t("settings.profile") },
+    { to: "/settings/sessions", label: t("settings.sessions") },
+    { to: "/settings/notifications", label: t("settings.notifications") },
+  ];
   const workspace: NavLink[] = [
     { to: "/settings/general", label: t("settings.general") },
     { to: "/settings/members", label: t("settings.members") },
+    { to: "/settings/alerts", label: t("settings.alerts") },
     { to: "/settings/ai", label: t("settings.ai") },
     { to: "/settings/integrations", label: t("settings.integrations") },
-    { to: "/settings/notifications", label: t("settings.notifications") },
-    { to: "/settings/alerts", label: t("settings.alerts") },
   ];
   const admin: NavLink[] = ws.canManage
     ? [
@@ -25,16 +29,11 @@ const groups = computed<{ key: string; label: string; links: NavLink[] }[]>(() =
         { to: "/settings/activity", label: t("settings.activity") },
       ]
     : [];
-  const out = [{ key: "workspace", label: t("shell.workspace"), links: workspace }];
+  const out = [
+    { key: "workspace", label: t("settings.groupWorkspace"), links: workspace },
+    { key: "account", label: t("settings.groupAccount"), links: account },
+  ];
   if (admin.length) out.push({ key: "admin", label: t("settings.groupAdmin"), links: admin });
-  out.push({
-    key: "account",
-    label: t("shell.account"),
-    links: [
-      { to: "/settings/profile", label: t("settings.profile") },
-      { to: "/settings/sessions", label: t("settings.sessions") },
-    ],
-  });
   return out;
 });
 
@@ -50,12 +49,6 @@ const activeTo = computed(() => {
     .filter((l) => route.path === l.to || route.path.startsWith(`${l.to}/`))
     .sort((a, b) => b.to.length - a.to.length)[0]?.to;
 });
-const current = computed(
-  () =>
-    [...groups.value.flatMap((g) => g.links), danger.value].find((l) => l.to === activeTo.value) ??
-    groups.value[0]?.links[0],
-);
-
 watch(
   () => route.path,
   () => {
@@ -115,7 +108,7 @@ function linkClass(to: string) {
         @click="mobileOpen = true"
       >
         <span class="text-sm font-semibold text-ink-900">{{ t("settings.nav") }}</span>
-        <span class="min-w-0 flex-1 truncate text-sm text-ink-600">/ {{ current?.label }}</span>
+        <span class="flex-1" />
         <NavIcon name="ph:caret-down" :size="16" class="shrink-0 text-ink-600" />
       </button>
       <FnDialog
@@ -154,9 +147,7 @@ function linkClass(to: string) {
       </FnDialog>
     </div>
 
-    <div
-      class="min-w-0 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] sm:p-6"
-    >
+    <div class="min-w-0">
       <NuxtPage />
     </div>
   </div>

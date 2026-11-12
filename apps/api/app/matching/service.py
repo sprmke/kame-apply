@@ -25,6 +25,7 @@ from app.matching.embed import (
 from app.matching.extract import content_hash, extract_rule_based
 from app.matching.feedback import skip_reason_bucket, update_weights
 from app.matching.hard_filters import hard_filter
+from app.matching.highlights import build_match_terms
 from app.matching.knockout import predict_knockouts
 from app.matching.models import HiddenCompany, JobQualification
 from app.matching.relax import suggest_relaxations
@@ -540,6 +541,55 @@ async def get_track_job_detail(ctx: WorkspaceContext, track_job_id: uuid.UUID) -
 
     risk_row = await ctx.session.get(JobRisk, job.id)
 
+    ledger = {
+        str(item.get("id")): item for item in (tj.fit or {}).get("ledger") or [] if item.get("id")
+    }
+    qualification_rows = [
+        {
+            "id": q.id,
+            "kind": q.kind,
+            "text": q.text,
+            "quote": q.quote,
+            "normalized": q.normalized,
+            "verdict": (ledger.get(str(q.id)) or {}).get("verdict", "not_evidenced"),
+            "evidence_quote": (ledger.get(str(q.id)) or {}).get("evidence_quote"),
+        }
+        for q in quals
+    ]
+
+    track = await ctx.session.get(track_models.Track, tj.track_id)
+    criteria = None
+    profile_skills: list[str] = []
+    if track is not None and track.workspace_id == ctx.workspace_id:
+        crit_row = (
+            await ctx.session.execute(
+                select(track_models.TrackCriteria).where(
+                    track_models.TrackCriteria.track_id == track.id
+                )
+            )
+        ).scalar_one_or_none()
+        criteria = criteria_from_dict(crit_row.structured if crit_row else None)
+        profile = await ctx.session.get(profile_models.CandidateProfile, track.profile_id)
+        if profile is not None and profile.workspace_id == ctx.workspace_id:
+            profile_skills = [
+                skill.name
+                for skill in (
+                    await ctx.session.execute(
+                        select(profile_models.Skill).where(
+                            profile_models.Skill.profile_id == profile.id
+                        )
+                    )
+                ).scalars()
+                if skill.name
+            ]
+
+    match_terms = build_match_terms(
+        description=job.description_text,
+        profile_skills=profile_skills,
+        criteria=criteria,
+        qualifications=qualification_rows,
+    )
+
     return {
         "id": tj.id,
         "track_id": tj.track_id,
@@ -565,27 +615,8 @@ async def get_track_job_detail(ctx: WorkspaceContext, track_job_id: uuid.UUID) -
         "description_html": job.description_html,
         "description_text": job.description_text,
         "few_stated_requirements": job.few_stated_requirements,
-        "qualifications": [
-            {
-                "id": q.id,
-                "kind": q.kind,
-                "text": q.text,
-                "quote": q.quote,
-                "normalized": q.normalized,
-                **next(
-                    (
-                        {
-                            "verdict": item.get("verdict"),
-                            "evidence_quote": item.get("evidence_quote"),
-                        }
-                        for item in (tj.fit or {}).get("ledger") or []
-                        if item.get("id") == str(q.id)
-                    ),
-                    {"verdict": "not_evidenced", "evidence_quote": None},
-                ),
-            }
-            for q in quals
-        ],
+        "qualifications": qualification_rows,
+        "match_terms": match_terms,
         "sources": [{"key": src.key, "name": src.name, "url": js.url} for js, src in sources],
         "other_roles": other_roles,
         "risk_level": risk_row.level if risk_row else None,

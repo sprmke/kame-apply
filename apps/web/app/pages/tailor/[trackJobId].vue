@@ -6,7 +6,7 @@ import {
   startTailorApiV1TrackJobsTrackJobIdTailorPost,
   type TailorRunRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnStepper, useToast } from "@kame/ui";
 import { useMutation } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -19,7 +19,8 @@ const router = useRouter();
 const { waiting: inboxWaiting } = useAgentInboxStatus();
 
 const trackJobId = computed(() => String(route.params.trackJobId || ""));
-const tab = ref<"ledger" | "changes" | "preview" | "letter">("ledger");
+const tab = ref<"preview" | "letter">("preview");
+const step = ref("match");
 const run = ref<TailorRunRead | null>(null);
 
 const startMut = useMutation({
@@ -186,28 +187,36 @@ const letter = computed(
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 py-8 md:p-6">
-    <header class="flex flex-wrap items-center gap-3">
-      <div class="min-w-0">
-        <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">Tailor</h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-ink-600">{{ t("tailor.lede") }}</p>
-      </div>
-      <div class="text-sm tabular-nums text-ink-600">{{ beforeGrade }} → {{ afterGrade }}</div>
-      <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')" tone="neutral">
-        {{ run.status }}
-      </FnChip>
-      <div class="ml-auto flex flex-wrap gap-2">
-        <FnButton size="sm" tone="quiet" @click="router.push('/jobs')">Back</FnButton>
+  <div class="mx-auto flex w-full max-w-4xl flex-col gap-5">
+    <PageHeader :title="t('jobs.tailorResume')" :lede="t('tailor.lede')">
+      <template #actions>
+        <FnButton size="sm" tone="ghost" @click="router.push('/jobs')">{{ t("start.back") }}</FnButton>
         <FnButton
           size="sm"
           tone="primary"
           :disabled="!run || acceptMut.isPending.value || run.status !== 'ready'"
           @click="acceptMut.mutate()"
         >
-          Accept
+          {{ t("tailor.acceptAttach") }}
         </FnButton>
-      </div>
-    </header>
+      </template>
+    </PageHeader>
+
+    <FnStepper
+      v-model="step"
+      :steps="[
+        { key: 'match', label: t('tailor.stepMatch') },
+        { key: 'edits', label: t('tailor.stepEdits') },
+        { key: 'check', label: t('tailor.stepCheck') },
+      ]"
+      :label="t('jobs.tailorResume')"
+      clickable
+    />
+    <div class="flex flex-wrap items-center gap-2 text-sm text-ink-600">
+      <span class="tabular-nums">{{ beforeGrade }} → {{ afterGrade }}</span>
+      <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')">{{ run.status }}</FnChip>
+    </div>
+
     <WaitingForClaude v-if="inboxWaiting > 0" :waiting="inboxWaiting" />
 
     <div v-if="startMut.isPending.value" class="space-y-2">
@@ -216,162 +225,134 @@ const letter = computed(
     </div>
 
     <template v-else-if="run">
-      <div class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1 lg:hidden">
-        <button
-          v-for="item in [
-            ['ledger', 'Ledger'],
-            ['changes', 'Changes'],
-            ['preview', 'Preview'],
-            ['letter', 'Letter'],
-          ] as const"
-          :key="item[0]"
-          type="button"
-          class="min-h-11 rounded-md px-4 text-sm font-semibold transition-colors"
-          :class="
-            tab === item[0]
-              ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
-              : 'text-ink-600 hover:text-ink-900'
-          "
-          @click="tab = item[0]"
-        >
-          {{ item[1] }}
-        </button>
-      </div>
-
-      <div
-        class="grid items-start gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)]"
+      <section
+        v-if="step === 'match'"
+        class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
       >
-        <section
-          v-show="tab === 'ledger'"
-          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
+        <div class="mb-3 flex flex-col gap-1">
+          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("tailor.ledger") }}</h2>
+          <p class="text-sm leading-6 text-ink-600">{{ t("tailor.ledgerHint") }}</p>
+        </div>
+        <div
+          v-if="knockouts.length"
+          class="mb-3 rounded-lg border border-oxblood-600 bg-paper-0 p-3 text-sm"
         >
-          <div class="mb-3 flex flex-col gap-1">
-            <h2 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
-              {{ t("tailor.ledger") }}
-            </h2>
-            <p class="text-sm leading-6 text-ink-600">{{ t("tailor.ledgerHint") }}</p>
-          </div>
-          <div
-            v-if="knockouts.length"
-            class="mb-3 rounded-lg border border-oxblood-600 bg-paper-0 p-3 text-sm"
-          >
-            <p class="font-medium text-ink-900">Knockouts</p>
-            <ul class="mt-1 space-y-1 text-ink-600">
-              <li v-for="(k, i) in knockouts" :key="i">{{ k.reason }} · {{ k.quote }}</li>
-            </ul>
-          </div>
-          <ul class="divide-y divide-rule text-sm">
-            <li v-for="(row, i) in ledgerRows" :key="i" class="px-1 py-3">
-              <div class="flex gap-2">
-                <span class="font-mono text-xs">{{ verdictGlyph(String(row.verdict)) }}</span>
-                <div class="min-w-0 flex-1">
-                  <div class="flex flex-wrap gap-1">
-                    <FnChip>{{ row.kind }}</FnChip>
-                    <span class="text-ink-900">{{ row.text }}</span>
-                  </div>
-                  <p class="mt-1 text-xs text-ink-400">
-                    {{ row.before || "-" }} → {{ row.verdict }}
-                    <span v-if="row.evidence_quote"> · {{ row.evidence_quote }}</span>
-                  </p>
+          <p class="font-medium text-ink-900">{{ t("tailor.knockouts") }}</p>
+          <ul class="mt-1 space-y-1 text-ink-600">
+            <li v-for="(k, i) in knockouts" :key="i">{{ k.reason }} · {{ k.quote }}</li>
+          </ul>
+        </div>
+        <ul class="divide-y divide-rule text-sm">
+          <li v-for="(row, i) in ledgerRows" :key="i" class="px-1 py-3">
+            <div class="flex gap-2">
+              <span class="mt-0.5 w-4 shrink-0 text-center text-xs font-bold">{{ verdictGlyph(String(row.verdict)) }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <FnChip>{{ row.kind }}</FnChip>
+                  <span class="text-ink-900">{{ row.text }}</span>
                 </div>
+                <p class="mt-1 text-xs leading-5 text-ink-400">
+                  {{ row.before || "-" }} → {{ row.verdict }}
+                  <span v-if="row.evidence_quote"> · {{ row.evidence_quote }}</span>
+                </p>
               </div>
-            </li>
-          </ul>
-          <ul v-if="gaps.length" class="mt-3 space-y-2 text-sm">
-            <li
-              v-for="(g, i) in gaps"
-              :key="i"
-              class="rounded-lg border border-rule bg-paper-0 p-3"
-            >
-              <p class="font-medium">{{ g.text }}</p>
-              <p class="text-ink-600">{{ g.message }}</p>
-            </li>
-          </ul>
-        </section>
+            </div>
+          </li>
+        </ul>
+        <ul v-if="gaps.length" class="mt-3 space-y-2 text-sm">
+          <li v-for="(g, i) in gaps" :key="i" class="rounded-lg border border-rule bg-paper-0 p-3">
+            <p class="font-medium">{{ g.text }}</p>
+            <p class="text-ink-600">{{ g.message }}</p>
+          </li>
+        </ul>
+        <FnButton class="mt-4" size="sm" tone="primary" @click="step = 'edits'">
+          {{ t("start.next") }}
+        </FnButton>
+      </section>
 
-        <section
-          v-show="tab === 'changes'"
-          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
-        >
-          <div class="mb-3 flex flex-col gap-1">
-            <h2 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
-              {{ t("tailor.changes") }}
-            </h2>
-            <p class="text-sm leading-6 text-ink-600">{{ t("tailor.changesHint") }}</p>
-          </div>
-          <p v-if="!changes.length" class="text-sm text-ink-600">No text changes</p>
-          <ul v-else class="divide-y divide-rule text-sm">
-            <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="py-3">
-              <p class="font-medium">{{ ch.op }}</p>
-              <p class="text-ink-600">{{ ch.reason }}</p>
-              <p v-if="ch.before" class="mt-1 text-ink-400 line-through">{{ ch.before }}</p>
-              <p v-if="ch.after" class="text-ink-900">{{ ch.after }}</p>
-              <div v-if="ch.change_id" class="mt-2 flex gap-1">
-                <FnButton
-                  size="sm"
-                  :tone="ch.status === 'accepted' ? 'quiet' : 'ghost'"
-                  :disabled="ch.status === 'accepted' || changeMut.isPending.value"
-                  @click="decideChange(ch.change_id, 'accepted')"
-                >
-                  Keep
-                </FnButton>
-                <FnButton
-                  size="sm"
-                  :tone="ch.status === 'rejected' ? 'quiet' : 'ghost'"
-                  :disabled="ch.status === 'rejected' || changeMut.isPending.value"
-                  @click="decideChange(ch.change_id, 'rejected')"
-                >
-                  Remove
-                </FnButton>
-              </div>
-            </li>
-          </ul>
-        </section>
+      <section
+        v-else-if="step === 'edits'"
+        class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+      >
+        <div class="mb-3 flex flex-col gap-1">
+          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("tailor.changes") }}</h2>
+          <p class="text-sm leading-6 text-ink-600">{{ t("tailor.changesHint") }}</p>
+        </div>
+        <p v-if="!changes.length" class="text-sm text-ink-600">{{ t("tailor.noChanges") }}</p>
+        <ul v-else class="divide-y divide-rule text-sm">
+          <li v-for="(ch, i) in changes" :key="ch.change_id || i" class="py-3">
+            <p class="text-ink-600">{{ ch.reason }}</p>
+            <p v-if="ch.before" class="mt-1 text-ink-400 line-through">{{ ch.before }}</p>
+            <p v-if="ch.after" class="text-ink-900">{{ ch.after }}</p>
+            <div v-if="ch.change_id" class="mt-2 flex gap-1">
+              <FnButton
+                size="sm"
+                :tone="ch.status === 'accepted' ? 'quiet' : 'ghost'"
+                :disabled="ch.status === 'accepted' || changeMut.isPending.value"
+                @click="decideChange(ch.change_id, 'accepted')"
+              >
+                {{ t("tailor.keep") }}
+              </FnButton>
+              <FnButton
+                size="sm"
+                :tone="ch.status === 'rejected' ? 'quiet' : 'ghost'"
+                :disabled="ch.status === 'rejected' || changeMut.isPending.value"
+                @click="decideChange(ch.change_id, 'rejected')"
+              >
+                {{ t("tailor.remove") }}
+              </FnButton>
+            </div>
+          </li>
+        </ul>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <FnButton size="sm" tone="ghost" @click="step = 'match'">{{ t("start.back") }}</FnButton>
+          <FnButton size="sm" tone="primary" @click="step = 'check'">{{ t("start.next") }}</FnButton>
+        </div>
+      </section>
 
-        <section
-          v-show="tab === 'preview' || tab === 'letter'"
-          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] lg:!block"
-        >
-          <p class="mb-3 text-sm leading-6 text-ink-600">{{ t("tailor.previewHint") }}</p>
-          <div class="mb-3 hidden gap-1 rounded-lg bg-paper-2 p-1 lg:flex">
-            <button
-              type="button"
-              class="min-h-11 rounded-md px-4 text-sm font-semibold"
-              :class="
-                tab !== 'letter'
-                  ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
-                  : 'text-ink-600 hover:text-ink-900'
-              "
-              @click="tab = 'preview'"
-            >
-              Preview
-            </button>
-            <button
-              type="button"
-              class="min-h-11 rounded-md px-4 text-sm font-semibold"
-              :class="
-                tab === 'letter'
-                  ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
-                  : 'text-ink-600 hover:text-ink-900'
-              "
-              @click="tab = 'letter'"
-            >
-              Letter
-            </button>
-          </div>
-          <pre
-            v-if="tab !== 'letter'"
-            class="whitespace-pre-wrap rounded-lg bg-paper-0 p-4 text-sm text-ink-900"
-            >{{ previewText }}</pre>
-          <div v-else class="rounded-lg bg-paper-0 p-4 text-sm text-ink-900">
-            <p v-if="!letter" class="text-ink-600">No cover letter</p>
-            <template v-else>
-              <p class="mb-2 text-xs text-ink-400">{{ letter.word_count }} words</p>
-              <pre class="whitespace-pre-wrap font-sans">{{ letter.content }}</pre>
-            </template>
-          </div>
-        </section>
-      </div>
+      <section
+        v-else
+        class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+      >
+        <p class="mb-3 text-sm leading-6 text-ink-600">{{ t("tailor.previewHint") }}</p>
+        <div class="mb-3 flex gap-1 rounded-lg bg-paper-2 p-1">
+          <button
+            type="button"
+            class="min-h-11 rounded-md px-4 text-sm font-semibold"
+            :class="tab !== 'letter' ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'"
+            @click="tab = 'preview'"
+          >
+            {{ t("tailor.resume") }}
+          </button>
+          <button
+            type="button"
+            class="min-h-11 rounded-md px-4 text-sm font-semibold"
+            :class="tab === 'letter' ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'"
+            @click="tab = 'letter'"
+          >
+            {{ t("tailor.letter") }}
+          </button>
+        </div>
+        <pre v-if="tab !== 'letter'" class="overflow-x-auto whitespace-pre-wrap rounded-lg bg-paper-0 p-4 text-sm text-ink-900">{{ previewText }}</pre>
+        <div v-else class="rounded-lg bg-paper-0 p-4 text-sm text-ink-900">
+          <p v-if="!letter" class="text-ink-600">{{ t("tailor.noLetter") }}</p>
+          <template v-else>
+            <p class="mb-2 text-xs text-ink-400">{{ letter.word_count }} {{ t("tailor.words") }}</p>
+            <pre class="whitespace-pre-wrap font-sans">{{ letter.content }}</pre>
+          </template>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <FnButton size="sm" tone="ghost" @click="step = 'edits'">{{ t("start.back") }}</FnButton>
+          <FnButton
+            size="sm"
+            tone="primary"
+            :disabled="!run || acceptMut.isPending.value || run.status !== 'ready'"
+            @click="acceptMut.mutate()"
+          >
+            {{ t("tailor.acceptAttach") }}
+          </FnButton>
+        </div>
+      </section>
     </template>
   </div>
 </template>

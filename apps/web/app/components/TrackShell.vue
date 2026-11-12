@@ -4,7 +4,7 @@ import { FnSkeleton } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
-/** Header and section nav shared by the three search tabs. */
+/** Header and section nav shared by the search tabs. */
 const props = defineProps<{ trackId: string }>();
 
 const route = useRoute();
@@ -32,9 +32,11 @@ const hue = computed(() => Math.min(8, Math.max(1, track.value?.color_hue || 1))
 const paused = computed(() => track.value?.status === "paused");
 
 const tabs = computed(() => [
-  { to: `/tracks/${props.trackId}`, label: t("tracks.tabCriteria") },
+  { to: `/tracks/${props.trackId}`, label: t("tracks.tabMatches") },
+  { to: `/tracks/${props.trackId}/look-for`, label: t("tracks.tabCriteria") },
   { to: `/tracks/${props.trackId}/settings`, label: t("tracks.tabAutomation") },
   { to: `/tracks/${props.trackId}/runs`, label: t("tracks.tabHistory") },
+  { to: `/tracks/${props.trackId}/improve`, label: t("tracks.tabImprove") },
 ]);
 const path = computed(() => route.path.replace(/\/+$/, "") || "/");
 </script>
@@ -74,27 +76,6 @@ const path = computed(() => route.path.replace(/\/+$/, "") || "/");
               />
               {{ paused ? t("tracks.paused") : t("tracks.active") }}
             </span>
-            <details class="relative text-sm">
-              <summary
-                class="flex min-h-11 cursor-pointer list-none items-center rounded-md px-3 text-ink-600 hover:bg-paper-2 hover:text-ink-900"
-              >
-                {{ t("tracks.moreTools") }}
-              </summary>
-              <div
-                class="absolute right-0 z-10 mt-1 flex min-w-44 flex-col rounded-md border border-rule bg-paper-1 p-1 shadow-[var(--shadow-float)]"
-              >
-                <NuxtLink
-                  :to="`/tracks/${trackId}/be-found`"
-                  class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
-                  >{{ t("beFound.title") }}</NuxtLink
-                >
-                <NuxtLink
-                  :to="`/tracks/${trackId}/gaps`"
-                  class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
-                  >{{ t("gaps.title") }}</NuxtLink
-                >
-              </div>
-            </details>
           </div>
         </div>
         <nav :aria-label="t('tracks.sections')">
@@ -102,7 +83,7 @@ const path = computed(() => route.path.replace(/\/+$/, "") || "/");
             <li v-for="tab in tabs" :key="tab.to">
               <NuxtLink
                 :to="tab.to"
-                class="flex min-h-11 shrink-0 items-center rounded-md px-4 text-sm font-semibold whitespace-nowrap"
+                class="flex min-h-11 shrink-0 items-center rounded-md px-3 text-sm font-semibold whitespace-nowrap sm:px-4"
                 :class="
                   path === tab.to
                     ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'

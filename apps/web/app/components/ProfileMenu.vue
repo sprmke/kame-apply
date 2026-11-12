@@ -24,11 +24,13 @@ async function signOut() {
 const items = computed<MenuItem[]>(() => [
   { label: auth.user?.email ?? "", disabled: true, onSelect: () => {} },
   { type: "separator" },
-  { label: t("career.title"), onSelect: () => navigateTo("/profile") },
+  { label: t("nav.profile"), onSelect: () => navigateTo("/profile") },
   { label: t("career.tabs.answers"), onSelect: () => navigateTo("/profile/answers") },
   { label: t("career.tabs.voice"), onSelect: () => navigateTo("/profile/voice") },
   { label: t("career.tabs.documents"), onSelect: () => navigateTo("/profile/documents") },
   { type: "separator" },
+  { label: t("shell.help") + ": " + t("shell.helpGlossary"), onSelect: () => navigateTo("/help") },
+  { label: t("shell.helpSetup"), onSelect: () => navigateTo("/start") },
   { label: t("settings.profile"), onSelect: () => navigateTo("/settings/profile") },
   {
     label: `${t("theme.label")}: ${t(`theme.${choice.value}`)}`,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FnSkeleton } from "@kame/ui";
+import { FnEmptyState, FnSectionCard, FnSkeleton } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -10,6 +10,7 @@ const { t } = useI18n();
 const ws = useWorkspaceStore();
 const auth = useAuthStore();
 const cfg = useRuntimeConfig().public;
+const fmt = useFormat();
 
 const dash = useQuery({
   queryKey: computed(() => ["ops-dashboard", ws.currentId]),
@@ -47,6 +48,32 @@ const dash = useQuery({
   enabled: computed(() => Boolean(ws.currentId) && ws.canManage),
 });
 
+function featureLabel(feature: string): string {
+  const labels: Record<string, string> = {
+    resume_tailoring: "Resume tailoring",
+    resume_critique: "Resume check",
+    cover_letter: "Cover letters",
+    answer_draft: "Answer drafts",
+    search_plan: "Search setup",
+    reply_classify: "Reading replies",
+    contacts_parse: "Reading contacts",
+    search_plan_eval: "Search setup check",
+  };
+  return labels[feature] ?? feature.replaceAll("_", " ");
+}
+
+const statusKey: Record<string, string> = {
+  succeeded: "completed",
+  failed: "stopped",
+  running: "running",
+  queued: "queued",
+};
+
+function triggerLabel(value: string): string {
+  const words = value.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 const spentUsd = computed(() =>
   (((dash.data.value?.ai_cost?.spent_micros ?? 0) as number) / 1_000_000).toFixed(2),
 );
@@ -58,41 +85,66 @@ const budgetUsd = computed(() =>
 <template>
   <section class="flex max-w-3xl flex-col gap-6">
     <PageHeader :title="t('ops.title')" />
+
     <FnSkeleton v-if="dash.isPending.value && !dash.data.value" class="h-32" />
+
+    <FnEmptyState v-else-if="dash.isError.value" :title="t('ops.loadError')" tone="danger" />
+
     <template v-else-if="dash.data.value">
-      <div class="border-t border-rule pt-4">
-        <h2 class="font-medium">{{ t("ops.aiCost") }}</h2>
-        <p class="mt-1 text-sm text-ink-600">
-          {{ t("ops.spent") }}: ${{ spentUsd }} · {{ t("ops.budget") }}: ${{ budgetUsd }}
-        </p>
-        <ul class="mt-2 space-y-1 text-sm">
-          <li v-for="f in dash.data.value.ai_cost.by_feature" :key="f.feature">
-            {{ f.feature }}: {{ (f.cost_micros / 1_000_000).toFixed(3) }} ({{ f.calls }})
-          </li>
-        </ul>
-      </div>
-      <div class="border-t border-rule pt-4">
-        <h2 class="font-medium">{{ t("ops.sources") }}</h2>
-        <ul class="mt-2 space-y-1 text-sm">
-          <li v-for="s in dash.data.value.sources" :key="s.id">
-            {{ s.name }}
-            <span class="text-ink-600"
-              >· {{ s.circuit_open ? "open" : "ok" }} · {{ s.jobs_ingested }} jobs</span
+      <FnSectionCard
+        :title="t('ops.aiCost')"
+        :summary="`${t('ops.spent')} $${spentUsd} · ${t('ops.budget')} $${budgetUsd}`"
+      >
+        <ul v-if="dash.data.value.ai_cost.by_feature.length" class="flex flex-col gap-1 text-sm">
+          <li
+            v-for="f in dash.data.value.ai_cost.by_feature"
+            :key="f.feature"
+            class="flex items-baseline justify-between gap-4"
+          >
+            <span class="text-ink-900">{{ featureLabel(f.feature) }}</span>
+            <span class="text-ink-600 tabular-nums"
+              >${{ (f.cost_micros / 1_000_000).toFixed(3) }} · {{ f.calls }}</span
             >
           </li>
         </ul>
-      </div>
-      <div class="border-t border-rule pt-4">
-        <h2 class="font-medium">{{ t("ops.runs") }}</h2>
-        <p v-if="!dash.data.value.recent_runs.length" class="mt-1 text-sm text-ink-600">
-          {{ t("ops.emptyRuns") }}
-        </p>
-        <ul v-else class="mt-2 space-y-1 font-mono text-xs">
-          <li v-for="r in dash.data.value.recent_runs" :key="r.id">
-            {{ r.status }} · {{ r.trigger }} · {{ r.created_at }}
+        <p v-else class="text-sm text-ink-600">{{ t("ops.noCost") }}</p>
+      </FnSectionCard>
+
+      <FnSectionCard :title="t('ops.sources')">
+        <ul v-if="dash.data.value.sources.length" class="flex flex-col gap-1 text-sm">
+          <li
+            v-for="s in dash.data.value.sources"
+            :key="s.id"
+            class="flex flex-wrap items-baseline justify-between gap-x-4"
+          >
+            <span class="text-ink-900">{{ s.name }}</span>
+            <span class="text-ink-600">
+              {{ s.circuit_open ? t("sources.circuit") : t("sources.ok") }} · {{ s.jobs_ingested }}
+              {{ t("sources.jobs") }}
+            </span>
           </li>
         </ul>
-      </div>
+        <p v-else class="text-sm text-ink-600">{{ t("ops.noSources") }}</p>
+      </FnSectionCard>
+
+      <FnSectionCard :title="t('ops.runs')">
+        <ul v-if="dash.data.value.recent_runs.length" class="flex flex-col gap-1 text-sm">
+          <li
+            v-for="r in dash.data.value.recent_runs"
+            :key="r.id"
+            class="flex flex-wrap items-baseline justify-between gap-x-4"
+          >
+            <span class="text-ink-900">{{
+              t(`ops.status_${statusKey[r.status] ?? "unknown"}`)
+            }}</span>
+            <span class="text-ink-600">
+              {{ triggerLabel(r.trigger) }} ·
+              {{ r.created_at ? fmt.dateTime(r.created_at) : "" }}
+            </span>
+          </li>
+        </ul>
+        <p v-else class="text-sm text-ink-600">{{ t("ops.emptyRuns") }}</p>
+      </FnSectionCard>
     </template>
   </section>
 </template>

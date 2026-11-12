@@ -41,6 +41,19 @@ class OtherRoleRead(BaseModel):
     apply_url: str
 
 
+class MatchTermRead(BaseModel):
+    """One named skill found in the posting, with the user's evidence verdict."""
+
+    key: str
+    label: str
+    patterns: list[str] = Field(default_factory=list)
+    blocked_after: list[str] = Field(default_factory=list)
+    verdict: Literal["met", "partial", "gap"]
+    mentions: int = 1
+    evidence: str | None = None
+    case_sensitive: bool = False
+
+
 class JobDetailRead(BaseModel):
     id: uuid.UUID
     track_id: uuid.UUID
@@ -67,6 +80,7 @@ class JobDetailRead(BaseModel):
     description_text: str = ""
     few_stated_requirements: bool = False
     qualifications: list[dict[str, Any]] = Field(default_factory=list)
+    match_terms: list[MatchTermRead] = Field(default_factory=list)
     sources: list[dict[str, Any]] = Field(default_factory=list)
     other_roles: list[OtherRoleRead] = Field(default_factory=list)
     risk_level: str | None = None

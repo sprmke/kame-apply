@@ -1,6 +1,6 @@
 # UX clarity overhaul: plain, guided, AI-assisted
 
-**Status:** Planned · **Created:** 2026-11-12 · **Type:** cross-cutting UX program (web app; extension copy where shared)
+**Status:** Done (2026-11-13) · **Created:** 2026-11-12 · **Type:** cross-cutting UX program (web app; extension copy where shared)
 
 Related: [`docs/design/ux-blueprint.md`](../../design/ux-blueprint.md), [`docs/design/design-system.md`](../../design/design-system.md), [`docs/guides/routes/`](../../guides/routes/), `.agent/skills/minimal-ui-copy`, `.agent/skills/human-copy`, `.agent/skills/design-review`.
 
@@ -502,3 +502,46 @@ Every new mutation gets an `activity_log` event; every new tenant table gets RLS
 | R2 | More copy drifts into clutter | `ux-clarity-review` checks length limits; `design-review` still runs. |
 | R3 | Renames break deep links | Redirects for moved settings routes; keep API names. |
 | R4 | Uncommitted work on `main` (tracks pages, AI service) overlaps UX-4 and UX-7 | Land or stash it before starting those slices. |
+
+---
+
+## 14. Delivery status (2026-11-12)
+
+Decisions taken with the plan owner:
+
+- **D1 approved.** `minimal-ui-copy` and its rule are now "clear and short" with the §4 limits.
+- **D2 resolved without a new parser.** Onboarding asks for the resume first, reads pasted text in the browser, and offers **Turn on AI (free)** inline. PDF reading still needs AI; the page says so and offers paste. `/start` never blocks on a key.
+- **D3:** People I help stays in Tools, renamed so nav and page title match.
+- **D4:** raw captures stay in `.audit-screenshots/`; approved after-shots go to `docs/design/previews/<slug>/`.
+- **D5:** new searches default to **Find and prepare** (`prepare`) server-side, and onboarding defaults to the same.
+
+Shipped:
+
+- **UX-0:** glossary, copy policy, `ux-clarity-review`, `ux-preview`, `ux-reviewer`, `/ka-ux-review`, `/ka-ux-preview`, `check:ux-jargon` (blocking), baseline report, working screenshot config and spec.
+- **UX-1:** `FnField help`, `FnSectionCard`, `FnChoiceCards`, `FnMoreOptions`, `FnSummaryLine`, `FnTerm`, `FnEmptyState`, `FnStepper`, stacked `FnTable`, all on `/_design`.
+- **UX-2:** Tools with one-line descriptions, People I help, `/needs-you`, Help page, profile-menu Help and Finish setup, settings regroup, Track to Search sweep, plain settings labels, mobile/rail polish.
+- **UX-3:** `/start` six-step flow with defaults, monthly answers seeding, search plan, recommended schedule.
+- **UX-4:** searches list cards, new-search sheet with three tabs, Matches landing tab, `/look-for`, `/improve`, automation blocks with recommended choice and summary sentences, history on stacked cards.
+- **UX-5:** Jobs status chips, More filters, Why this match, How you match, one primary action, mobile bar and list padding; Studio plain tabs, auto-selected resume/search, auto first check, mobile layout; Tailor three-step shell.
+- **UX-6 (partial):** profile completeness and proof labels, Answers tab renaming, Replies auto-match with no id field, Tailor step copy.
+- **UX-7 (partial):** AI connect hero with three paths, Connections plain words and folded routing, Contacts paste-anything with preview, Inbox title and Needs-you split.
+
+Additional shipped (2026-11-13):
+
+- **A1:** `POST /onboarding/plan` returns basics, answer drafts, a search plan, and schedule defaults. `/start` uses the server parser, so every client reads resumes the same way.
+- **A3:** `POST /profiles/{id}/answers/draft` drafts from profile facts with `profile` / `default` / `needs_story` sources; the bank UI shows pencil cards with Use and Dismiss.
+- **A4:** voice presets (plain, warm, formal) with an audited `voice.preset_applied` event.
+- **A5:** `POST /responses/match` finds the application for a pasted reply; the browser keeps a local fallback.
+- **A6:** `POST /contacts/parse` with a deterministic parser first and a grounded AI path; injection and invented emails are covered by an eval.
+- **A8:** `GET /tracks/{id}/recommended-settings` with rules only, shown as one card with **Use recommended**.
+- Notification defaults reset, registration landing on `/start`, and a full scripted usability run with the fixes it surfaced.
+
+Remaining:
+
+- The five-task run covers a cold account end to end; the tailoring and reply tasks were exercised on a seeded account rather than timed from zero.
+- Settings Connections uses tabs on one route instead of four routes. Deep links are intentionally unchanged.
+- `/safety` still opens on the flagged list when it is empty; the check box is one click away.
+
+Status: complete for the code and docs in this program. The usability run and review pass are recorded in `docs/design/previews/_reviews/2026-11-13-ux-clarity-pass.md`.
+
+Verification on 2026-11-13: `pytest` 664 passed + 3 skipped (runner 14 passed), `vitest` 27 web + 9 extension, `basedpyright` 0 errors, `vue-tsc` clean, `lint` 0 errors, `check:ux-jargon`, `check:design-slop`, `check:token-contrast`, `check:api-client`, `check:ai-tooling-sync` green, `pnpm run build` passes.

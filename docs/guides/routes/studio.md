@@ -33,3 +33,10 @@ Same HTTP surface for MCP later. No MCP tools in Phase 8.
 ## Edge cases
 
 No Track selected: list all workspace resumes; Insights disabled. Sample &lt; 30 → low-confidence banner. Ask-metric proposals do not invent numbers.
+
+## UX clarity (2026-11-12)
+
+- Tabs are **Resume check**, **Suggested edits**, **What employers ask for**, **6-second view**, **What hiring software reads**.
+- The newest resume and newest search are selected automatically, and the check runs once when a resume has no report.
+- The resume picker is a select on every width; the template and page size moved to a side panel. Nothing hides until two choices are made.
+- Category names are user words (Can hiring software read it, Matches the role, and so on).

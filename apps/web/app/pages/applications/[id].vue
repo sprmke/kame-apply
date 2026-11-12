@@ -390,6 +390,34 @@ async function draftReferral(contactId: string) {
     draftingReferral.value = null;
   }
 }
+
+function checkpointLabel(kind: string): string {
+  const labels: Record<string, string> = {
+    login: "Sign in to continue",
+    captcha: "Complete the security check",
+    ai_restricted: "This page asks for answers without AI",
+    sensitive_field: "Enter this detail yourself",
+    unknown_required: "A required field needs your answer",
+    answer_approval: "Approve the answers",
+    risk: "Review the risk",
+    final_review: "Final check",
+    blocked: "Stopped by the site",
+  };
+  return labels[kind] ?? "Needs your decision";
+}
+
+function statusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    queued: "Queued",
+    running: "Filling forms",
+    needs_you: "Needs you",
+    paused: "Paused",
+    done: "Done",
+    failed: "Stopped",
+    cancelled: "Cancelled",
+  };
+  return labels[status] ?? status.replaceAll("_", " ");
+}
 </script>
 
 <template>
@@ -440,7 +468,7 @@ async function draftReferral(contactId: string) {
             <FnSelect
               :model-value="app.status"
               :options="statusOptions"
-              :ariaLabel="t('applications.status')"
+              :aria-label="t('applications.status')"
               @update:model-value="changeStatus"
             />
           </div>
@@ -449,7 +477,7 @@ async function draftReferral(contactId: string) {
             type="text"
             class="min-h-11 min-w-[12rem] flex-1 border border-rule bg-paper-0 px-2 text-sm"
             :placeholder="t('applications.statusNote')"
-          />
+          >
         </div>
       </section>
 
@@ -479,17 +507,11 @@ async function draftReferral(contactId: string) {
           {{ runnerWarnings.join(" ") }}
         </p>
         <div v-if="activeRun" class="flex flex-wrap items-center gap-2 text-sm">
-          <FnChip>{{ activeRun.status }}</FnChip>
-          <span class="font-mono text-[0.6875rem] text-ink-600">{{ activeRun.ats }}</span>
-          <span v-if="activeRun.runner_id" class="font-mono text-[0.6875rem] text-ink-600">{{
-            activeRun.runner_id
-          }}</span>
-          <span class="font-mono text-[0.6875rem] text-ink-600"
-            >{{ activeRun.last_step_seq }} steps</span
-          >
+          <FnChip>{{ statusLabel(activeRun.status) }}</FnChip>
+          <span class="text-ink-600">{{ t("applications.stepCount", { n: activeRun.last_step_seq }) }}</span>
         </div>
         <div v-if="openCheckpoint" class="flex flex-col gap-2 border border-rule bg-paper-1 p-3">
-          <p class="text-sm font-medium text-ink-900">{{ openCheckpoint.kind }}</p>
+          <p class="text-sm font-medium text-ink-900">{{ checkpointLabel(openCheckpoint.kind) }}</p>
           <p class="text-sm text-ink-600">
             {{
               String(
@@ -504,8 +526,14 @@ async function draftReferral(contactId: string) {
             autocomplete="off"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm"
             :aria-label="t('applications.typedValue')"
-          />
+          >
           <div class="flex flex-wrap gap-2">
+            <p
+              v-if="openCheckpoint.kind === 'final_review'"
+              class="w-full text-sm leading-6 text-ink-600"
+            >
+              {{ t("applications.consequenceSubmit") }}
+            </p>
             <FnButton
               v-if="openCheckpoint.kind === 'final_review'"
               size="sm"

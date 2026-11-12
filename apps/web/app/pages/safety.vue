@@ -10,6 +10,7 @@ import { FnButton, FnRiskSeal, FnSkeleton, FnTextarea, useToast } from "@kame/ui
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
+const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
@@ -132,7 +133,7 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-6">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div class="min-w-0">
         <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ $t("nav.safety") }}</h1>
@@ -242,7 +243,7 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
       v-else
       class="space-y-4 rounded-xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
     >
-      <FnTextarea v-model="checkInput" :rows="6" class="w-full" aria-label="Message or URL" />
+      <FnTextarea v-model="checkInput" :rows="6" class="w-full" :aria-label="t('safety.checkLabel')" />
       <FnButton
         size="sm"
         tone="primary"

@@ -6,18 +6,18 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| Leave | acceptance.spec.ts (pytest rules) | owner cannot leave | Done |  |
-| Transfer | pytest | target must be a member | Done |  |
-| Delete | pytest | type the name to confirm | Done | Soft-delete + immediate R2 purge; rows after 30 days |
-| Export | pytest Phase 14 | owner only | Done | JSON without secrets |
+| Export a copy | pytest Phase 14 | owner only | Done | JSON without secrets |
+| Transfer ownership | pytest | target must be a member | Done | You become an admin |
+| Leave workspace | acceptance.spec.ts (pytest rules) | owner cannot leave | Done |  |
+| Delete this workspace | pytest | type the name to confirm | Done | Soft-delete + immediate R2 purge; rows after 30 days |
 
 ## Overview
 
-Leave, transfer, export, or delete a team workspace. Owners can export any workspace (including personal).
+One section card per action, destructive last. The lede says what the page does: export a copy, or transfer, leave, or delete this workspace.
 
 ## User-facing knowledge
 
-Personal workspaces cannot be left, transferred or deleted. In a team workspace the owner transfers or deletes; everyone else can leave. Export downloads JSON without secrets or file bytes.
+Personal workspaces cannot be transferred or deleted; the page says so and offers a support address. In a team workspace the owner transfers or deletes; everyone else can leave. Export downloads JSON without secrets or file bytes.
 
 **Common user questions**
 
@@ -26,7 +26,7 @@ Personal workspaces cannot be left, transferred or deleted. In a team workspace 
 
 ## Actions
 
-Each opens a confirm dialog; delete requires typing the workspace name. Export downloads a file.
+Each action has its own card: title, one consequence line, one button. Buttons are verb + object: Download copy, Transfer ownership, Leave workspace, Delete workspace. Every action opens a confirm dialog that repeats the consequence; delete also requires typing the workspace name.
 
 ## API reference
 
@@ -37,4 +37,4 @@ Each opens a confirm dialog; delete requires typing the workspace name. Export d
 
 ## Implementation map
 
-`pages/settings/danger.vue`; i18n `danger.*`.
+`pages/settings/danger.vue`; i18n `danger.*`; `FnSectionCard`.

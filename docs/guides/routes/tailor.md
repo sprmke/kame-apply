@@ -31,3 +31,10 @@ HTTP-first for MCP later. No MCP tool in Phase 9.
 ## Edge cases
 
 Job closed mid-tailor → application `job_closed`. Re-tailor reuses the application row and points at the new resume version.
+
+## UX clarity (2026-11-12)
+
+- Three steps visible at every width: **How you match**, **Suggested edits**, **Check and attach**.
+- **How you match** is the old fit ledger: each requirement, its before and after verdict, and the gaps with one line each.
+- **Suggested edits** keeps or drops each change. **Check and attach** previews the resume or the letter.
+- Footer action is **Accept and attach**; Back and Discard are quiet.

@@ -34,6 +34,7 @@ For every Track, show the jobs most worth the user's time, with honest, explaina
 ### Board UX (blueprint §3.2)
 - [x] Track Jobs section + global Jobs page; filters; sorting; reason chips.
 - [x] Job drawer: header, why-match, qualifications with verdicts, description, company other roles, actions (shortlist, skip w/ reason, mark applied, open original).
+- [x] Inline skill highlights with met / related / missing verdicts, summary chips, a persisted toggle, and a collapsed score breakdown.
 - [x] Keyboard shortcuts + help; CSV export.
 - [ ] Mobile swipe cards (deferred; keyboard + tap triage ships). Virtualized table deferred until volume needs it.
 

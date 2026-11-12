@@ -126,7 +126,7 @@ function isLow(path: string) {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 md:px-6">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-5">
     <PageHeader :title="t('career.reviewTitle')" />
     <div v-if="loadError" class="rounded-md border border-saffron-600 bg-paper-1 p-3 text-sm">
       {{ loadError }}

@@ -97,7 +97,7 @@ Trivial fixes (typos, behavior-neutral renames) need no doc change. Index: `.cur
 
 ## Agent tooling
 
-Skills in `.agent/skills/` (canonical; symlinked into `.agents/skills/` and `.cursor/skills/`; index in `.agent/skills/README.md`). Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`. Commands: `/ka-*` (start with `/ka-help`) and `/workflow-*`. MCP: `context7`, `markitdown`, `playwright`, `postgres` (local read-only role only; `.mcp.json`). Hooks: shell guard, shipped-migration guard, formatter, stack/evasion check, docs-sync reminders. Superpowers is **opt-in only** (`superpowers-opt-in.mdc`).
+Skills in `.agent/skills/` (canonical; symlinked into `.agents/skills/` and `.cursor/skills/`; index in `.agent/skills/README.md`). Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`, `ux-reviewer`. UX changes run `ux-clarity-review` and keep user words in `docs/design/glossary.md`; `check:ux-jargon` blocks internal words in UI strings. Commands: `/ka-*` (start with `/ka-help`) and `/workflow-*`. MCP: `context7`, `markitdown`, `playwright`, `postgres` (local read-only role only; `.mcp.json`). Hooks: shell guard, shipped-migration guard, formatter, stack/evasion check, docs-sync reminders. Superpowers is **opt-in only** (`superpowers-opt-in.mdc`).
 
 ## Don'ts
 

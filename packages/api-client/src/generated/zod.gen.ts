@@ -78,6 +78,40 @@ export const zAnswerCreate = z.object({
 });
 
 /**
+ * AnswerDraftBody
+ */
+export const zAnswerDraftBody = z.object({
+    include_existing: z.boolean().optional().default(false),
+    keys: z.array(z.string()).max(20).nullish()
+});
+
+/**
+ * AnswerDraftRead
+ */
+export const zAnswerDraftRead = z.object({
+    country: z.string().nullish(),
+    draft: z.string(),
+    evidence_refs: z.array(z.string()).optional(),
+    key: z.string(),
+    label: z.string(),
+    message: z.string().optional().default(''),
+    question: z.string(),
+    source: z.enum([
+        'profile',
+        'default',
+        'needs_story'
+    ])
+});
+
+/**
+ * AnswerDraftBundle
+ */
+export const zAnswerDraftBundle = z.object({
+    existing: z.number().int().optional().default(0),
+    items: z.array(zAnswerDraftRead)
+});
+
+/**
  * AnswerInsertBody
  */
 export const zAnswerInsertBody = z.object({
@@ -781,6 +815,16 @@ export const zContactCreate = z.object({
 });
 
 /**
+ * ContactDraftRead
+ */
+export const zContactDraftRead = z.object({
+    company: z.string().optional().default(''),
+    email: z.string().optional().default(''),
+    name: z.string().optional().default(''),
+    title: z.string().optional().default('')
+});
+
+/**
  * ContactImportBody
  */
 export const zContactImportBody = z.object({
@@ -806,6 +850,22 @@ export const zContactRead = z.object({
     name: z.string(),
     source: z.string(),
     title: z.string()
+});
+
+/**
+ * ContactsParseBody
+ */
+export const zContactsParseBody = z.object({
+    text: z.string().min(1).max(20000)
+});
+
+/**
+ * ContactsParseRead
+ */
+export const zContactsParseRead = z.object({
+    ai_error: z.string().nullish(),
+    items: z.array(zContactDraftRead),
+    source: z.string()
 });
 
 /**
@@ -1822,6 +1882,35 @@ export const zMatchRead = z.object({
 });
 
 /**
+ * MatchReplyBody
+ */
+export const zMatchReplyBody = z.object({
+    body_text: z.string().max(50000).optional().default(''),
+    sender: z.string().max(500).optional().default(''),
+    subject: z.string().max(500).optional().default('')
+});
+
+/**
+ * MatchTermRead
+ *
+ * One named skill found in the posting, with the user's evidence verdict.
+ */
+export const zMatchTermRead = z.object({
+    blocked_after: z.array(z.string()).optional(),
+    case_sensitive: z.boolean().optional().default(false),
+    evidence: z.string().nullish(),
+    key: z.string(),
+    label: z.string(),
+    mentions: z.number().int().optional().default(1),
+    patterns: z.array(z.string()).optional(),
+    verdict: z.enum([
+        'met',
+        'partial',
+        'gap'
+    ])
+});
+
+/**
  * MeRead
  */
 export const zMeRead = z.object({
@@ -2015,6 +2104,16 @@ export const zOkRead = z.object({
 });
 
 /**
+ * OnboardingPlanBody
+ */
+export const zOnboardingPlanBody = z.object({
+    profile_id: z.string().nullish(),
+    resume_text: z.string().max(20000).nullish(),
+    role_text: z.string().max(8000).nullish(),
+    timezone: z.string().max(64).optional().default('UTC')
+});
+
+/**
  * OtherRoleRead
  */
 export const zOtherRoleRead = z.object({
@@ -2042,6 +2141,7 @@ export const zJobDetailRead = z.object({
     id: z.string().uuid(),
     job_id: z.string().uuid(),
     locations: z.array(z.unknown()).optional(),
+    match_terms: z.array(zMatchTermRead).optional(),
     other_roles: z.array(zOtherRoleRead).optional(),
     posted_at: z.string().datetime().nullish(),
     qualifications: z.array(z.record(z.unknown())).optional(),
@@ -2417,6 +2517,27 @@ export const zQuietHours = z.object({
 });
 
 /**
+ * RecommendedSettingsRead
+ */
+export const zRecommendedSettingsRead = z.object({
+    autonomy: z.enum([
+        'discover',
+        'prepare',
+        'assist',
+        'auto_submit'
+    ]),
+    daily_cap: z.number().int(),
+    minimum_match: z.number().int(),
+    new_per_day: z.number(),
+    per_run: z.number().int(),
+    preset: z.string(),
+    quiet_hours: z.record(z.unknown()),
+    reasons: z.array(z.string()),
+    sources: z.number().int(),
+    timezone: z.string()
+});
+
+/**
  * ReferralDraftRead
  */
 export const zReferralDraftRead = z.object({
@@ -2479,6 +2600,17 @@ export const zRenderRead = z.object({
 });
 
 /**
+ * ReplyMatchRead
+ */
+export const zReplyMatchRead = z.object({
+    application_id: z.string().uuid(),
+    company_name: z.string(),
+    job_title: z.string(),
+    reason: z.string(),
+    score: z.number()
+});
+
+/**
  * ResetIn
  */
 export const zResetIn = z.object({
@@ -2518,6 +2650,18 @@ export const zRestrictionRead = z.object({
     page_level: z.boolean(),
     restricted: z.boolean(),
     score: z.number().optional().default(0)
+});
+
+/**
+ * ResumeBasics
+ */
+export const zResumeBasics = z.object({
+    email: z.string().optional().default(''),
+    headline: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    name: z.string().optional().default(''),
+    skills: z.array(z.string()).optional(),
+    years: z.number().int().nullish()
 });
 
 /**
@@ -2684,6 +2828,27 @@ export const zScheduleCreate = z.object({
     scope: z.enum(['all', 'source']).optional().default('all'),
     source_id: z.string().uuid().nullish(),
     timezone: z.string().optional().default('UTC')
+});
+
+/**
+ * ScheduleDefaults
+ */
+export const zScheduleDefaults = z.object({
+    daily_cap: z.number().int().optional().default(12),
+    preset: z.string().optional().default('every_4_hours'),
+    quiet_hours: z.record(z.string()).optional(),
+    timezone: z.string().optional().default('UTC')
+});
+
+/**
+ * OnboardingPlanRead
+ */
+export const zOnboardingPlanRead = z.object({
+    answers: z.array(z.record(z.unknown())).optional(),
+    basics: zResumeBasics,
+    schedule: zScheduleDefaults,
+    search: z.record(z.unknown()).nullish(),
+    source: z.enum(['defaults', 'ai']).optional().default('defaults')
 });
 
 /**
@@ -3234,7 +3399,7 @@ export const zTrackCreate = z.object({
         'prepare',
         'assist',
         'auto_submit'
-    ]).optional().default('discover'),
+    ]).optional().default('prepare'),
     color_hue: z.number().int().gte(1).lte(8).optional().default(1),
     criteria: zCriteriaV1.nullish(),
     icon: z.string().max(64).optional().default('ph:path'),
@@ -3472,6 +3637,17 @@ export const zVapidPublicRead = z.object({
 });
 
 /**
+ * VoicePresetBody
+ */
+export const zVoicePresetBody = z.object({
+    preset: z.enum([
+        'plain',
+        'warm',
+        'formal'
+    ])
+});
+
+/**
  * VoiceSampleIn
  */
 export const zVoiceSampleIn = z.object({
@@ -3508,6 +3684,7 @@ export const zVoiceStyle = z.object({
     contraction_rate: z.number().gte(0).lte(1).optional().default(0),
     formality: z.number().gte(0).lte(1).optional().default(0.5),
     openers: z.array(z.string()).optional(),
+    preset: z.string().optional().default(''),
     sample_count: z.number().int().optional().default(0),
     summary: z.string().optional().default(''),
     vocabulary_level: z.enum([
@@ -4332,6 +4509,18 @@ export const zImportContactsApiV1ContactsImportPostHeaders = z.object({
  */
 export const zImportContactsApiV1ContactsImportPostResponse = zContactImportResult;
 
+export const zParseContactsApiV1ContactsParsePostBody = zContactsParseBody;
+
+export const zParseContactsApiV1ContactsParsePostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zParseContactsApiV1ContactsParsePostResponse = zContactsParseRead;
+
 export const zGetDiscoveryRunApiV1DiscoveryRunsRunIdGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -4793,6 +4982,16 @@ export const zPutPrefsApiV1NotificationPrefsPutHeaders = z.object({
  */
 export const zPutPrefsApiV1NotificationPrefsPutResponse = zPrefsMatrix;
 
+export const zResetPrefsApiV1NotificationPrefsResetPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zResetPrefsApiV1NotificationPrefsResetPostResponse = zPrefsMatrix;
+
 export const zUnsubscribeEmailApiV1NotificationPrefsUnsubscribeEmailPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -4843,6 +5042,18 @@ export const zMarkReadApiV1NotificationsNotificationIdReadPostPath = z.object({
  * Successful Response
  */
 export const zMarkReadApiV1NotificationsNotificationIdReadPostResponse = zNotificationRead;
+
+export const zPlanApiV1OnboardingPlanPostBody = zOnboardingPlanBody;
+
+export const zPlanApiV1OnboardingPlanPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zPlanApiV1OnboardingPlanPostResponse = zOnboardingPlanRead;
 
 export const zOpsDashboardApiV1OpsDashboardGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -4968,6 +5179,22 @@ export const zCreateAnswerApiV1ProfilesProfileIdAnswersPostPath = z.object({
  * Successful Response
  */
 export const zCreateAnswerApiV1ProfilesProfileIdAnswersPostResponse = zAnswerRead;
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostBody = zAnswerDraftBody;
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponse = zAnswerDraftBundle;
 
 export const zListAnswerKeysApiV1ProfilesProfileIdAnswersKeysGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -5809,6 +6036,22 @@ export const zAnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostPath = z.object(
  */
 export const zAnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponse = zVoiceRead;
 
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostBody = zVoicePresetBody;
+
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponse = zVoiceRead;
+
 export const zPutVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPutBody = zVoiceSamplesPut;
 
 export const zPutVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPutHeaders = z.object({
@@ -5895,6 +6138,20 @@ export const zIngestApiV1ResponsesIngestPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
 });
+
+export const zMatchReplyApiV1ResponsesMatchPostBody = zMatchReplyBody;
+
+export const zMatchReplyApiV1ResponsesMatchPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Response Match Reply Api V1 Responses Match Post
+ *
+ * Successful Response
+ */
+export const zMatchReplyApiV1ResponsesMatchPostResponse = zReplyMatchRead.nullable();
 
 export const zListProposalsApiV1ResponsesProposalsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -7178,6 +7435,20 @@ export const zPauseTrackApiV1TracksTrackIdPausePostPath = z.object({
  * Successful Response
  */
 export const zPauseTrackApiV1TracksTrackIdPausePostResponse = zTrackRead;
+
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetPath = z.object({
+    track_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponse = zRecommendedSettingsRead;
 
 export const zRelaxationsApiV1TracksTrackIdRelaxationsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),

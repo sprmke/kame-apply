@@ -227,6 +227,72 @@ export type AnswerCreate = {
 };
 
 /**
+ * AnswerDraftBody
+ */
+export type AnswerDraftBody = {
+    /**
+     * Include Existing
+     */
+    include_existing?: boolean;
+    /**
+     * Keys
+     */
+    keys?: Array<string> | null;
+};
+
+/**
+ * AnswerDraftBundle
+ */
+export type AnswerDraftBundle = {
+    /**
+     * Existing
+     */
+    existing?: number;
+    /**
+     * Items
+     */
+    items: Array<AnswerDraftRead>;
+};
+
+/**
+ * AnswerDraftRead
+ */
+export type AnswerDraftRead = {
+    /**
+     * Country
+     */
+    country?: string | null;
+    /**
+     * Draft
+     */
+    draft: string;
+    /**
+     * Evidence Refs
+     */
+    evidence_refs?: Array<string>;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Message
+     */
+    message?: string;
+    /**
+     * Question
+     */
+    question: string;
+    /**
+     * Source
+     */
+    source: 'profile' | 'default' | 'needs_story';
+};
+
+/**
  * AnswerInsertBody
  */
 export type AnswerInsertBody = {
@@ -1866,6 +1932,28 @@ export type ContactCreate = {
 };
 
 /**
+ * ContactDraftRead
+ */
+export type ContactDraftRead = {
+    /**
+     * Company
+     */
+    company?: string;
+    /**
+     * Email
+     */
+    email?: string;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Title
+     */
+    title?: string;
+};
+
+/**
  * ContactImportBody
  */
 export type ContactImportBody = {
@@ -1921,6 +2009,34 @@ export type ContactRead = {
      * Title
      */
     title: string;
+};
+
+/**
+ * ContactsParseBody
+ */
+export type ContactsParseBody = {
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * ContactsParseRead
+ */
+export type ContactsParseRead = {
+    /**
+     * Ai Error
+     */
+    ai_error?: string | null;
+    /**
+     * Items
+     */
+    items: Array<ContactDraftRead>;
+    /**
+     * Source
+     */
+    source: string;
 };
 
 /**
@@ -3953,6 +4069,10 @@ export type JobDetailRead = {
      */
     locations?: Array<unknown>;
     /**
+     * Match Terms
+     */
+    match_terms?: Array<MatchTermRead>;
+    /**
      * Other Roles
      */
     other_roles?: Array<OtherRoleRead>;
@@ -4480,6 +4600,64 @@ export type MatchRead = {
 };
 
 /**
+ * MatchReplyBody
+ */
+export type MatchReplyBody = {
+    /**
+     * Body Text
+     */
+    body_text?: string;
+    /**
+     * Sender
+     */
+    sender?: string;
+    /**
+     * Subject
+     */
+    subject?: string;
+};
+
+/**
+ * MatchTermRead
+ *
+ * One named skill found in the posting, with the user's evidence verdict.
+ */
+export type MatchTermRead = {
+    /**
+     * Blocked After
+     */
+    blocked_after?: Array<string>;
+    /**
+     * Case Sensitive
+     */
+    case_sensitive?: boolean;
+    /**
+     * Evidence
+     */
+    evidence?: string | null;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Mentions
+     */
+    mentions?: number;
+    /**
+     * Patterns
+     */
+    patterns?: Array<string>;
+    /**
+     * Verdict
+     */
+    verdict: 'met' | 'partial' | 'gap';
+};
+
+/**
  * MeRead
  */
 export type MeRead = {
@@ -4861,6 +5039,52 @@ export type OkRead = {
      * Ok
      */
     ok?: boolean;
+};
+
+/**
+ * OnboardingPlanBody
+ */
+export type OnboardingPlanBody = {
+    /**
+     * Profile Id
+     */
+    profile_id?: string | null;
+    /**
+     * Resume Text
+     */
+    resume_text?: string | null;
+    /**
+     * Role Text
+     */
+    role_text?: string | null;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+};
+
+/**
+ * OnboardingPlanRead
+ */
+export type OnboardingPlanRead = {
+    /**
+     * Answers
+     */
+    answers?: Array<{
+        [key: string]: unknown;
+    }>;
+    basics: ResumeBasics;
+    schedule: ScheduleDefaults;
+    /**
+     * Search
+     */
+    search?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Source
+     */
+    source?: 'defaults' | 'ai';
 };
 
 /**
@@ -5715,6 +5939,54 @@ export type QuietHours = {
 };
 
 /**
+ * RecommendedSettingsRead
+ */
+export type RecommendedSettingsRead = {
+    /**
+     * Autonomy
+     */
+    autonomy: 'discover' | 'prepare' | 'assist' | 'auto_submit';
+    /**
+     * Daily Cap
+     */
+    daily_cap: number;
+    /**
+     * Minimum Match
+     */
+    minimum_match: number;
+    /**
+     * New Per Day
+     */
+    new_per_day: number;
+    /**
+     * Per Run
+     */
+    per_run: number;
+    /**
+     * Preset
+     */
+    preset: string;
+    /**
+     * Quiet Hours
+     */
+    quiet_hours: {
+        [key: string]: unknown;
+    };
+    /**
+     * Reasons
+     */
+    reasons: Array<string>;
+    /**
+     * Sources
+     */
+    sources: number;
+    /**
+     * Timezone
+     */
+    timezone: string;
+};
+
+/**
  * ReferralDraftRead
  */
 export type ReferralDraftRead = {
@@ -5857,6 +6129,32 @@ export type RenderRead = {
 };
 
 /**
+ * ReplyMatchRead
+ */
+export type ReplyMatchRead = {
+    /**
+     * Application Id
+     */
+    application_id: string;
+    /**
+     * Company Name
+     */
+    company_name: string;
+    /**
+     * Job Title
+     */
+    job_title: string;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Score
+     */
+    score: number;
+};
+
+/**
  * ResetIn
  */
 export type ResetIn = {
@@ -5950,6 +6248,36 @@ export type RestrictionRead = {
      * Score
      */
     score?: number;
+};
+
+/**
+ * ResumeBasics
+ */
+export type ResumeBasics = {
+    /**
+     * Email
+     */
+    email?: string;
+    /**
+     * Headline
+     */
+    headline?: string;
+    /**
+     * Location
+     */
+    location?: string;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Skills
+     */
+    skills?: Array<string>;
+    /**
+     * Years
+     */
+    years?: number | null;
 };
 
 /**
@@ -6313,6 +6641,30 @@ export type ScheduleCreate = {
      * Source Id
      */
     source_id?: string | null;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+};
+
+/**
+ * ScheduleDefaults
+ */
+export type ScheduleDefaults = {
+    /**
+     * Daily Cap
+     */
+    daily_cap?: number;
+    /**
+     * Preset
+     */
+    preset?: string;
+    /**
+     * Quiet Hours
+     */
+    quiet_hours?: {
+        [key: string]: string;
+    };
     /**
      * Timezone
      */
@@ -7735,6 +8087,16 @@ export type VapidPublicRead = {
 };
 
 /**
+ * VoicePresetBody
+ */
+export type VoicePresetBody = {
+    /**
+     * Preset
+     */
+    preset: 'plain' | 'warm' | 'formal';
+};
+
+/**
  * VoiceRead
  */
 export type VoiceRead = {
@@ -7849,6 +8211,10 @@ export type VoiceStyle = {
      * Openers
      */
     openers?: Array<string>;
+    /**
+     * Preset
+     */
+    preset?: string;
     /**
      * Sample Count
      */
@@ -10273,6 +10639,41 @@ export type ImportContactsApiV1ContactsImportPostResponses = {
 
 export type ImportContactsApiV1ContactsImportPostResponse = ImportContactsApiV1ContactsImportPostResponses[keyof ImportContactsApiV1ContactsImportPostResponses];
 
+export type ParseContactsApiV1ContactsParsePostData = {
+    body: ContactsParseBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/contacts/parse';
+};
+
+export type ParseContactsApiV1ContactsParsePostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ParseContactsApiV1ContactsParsePostError = ParseContactsApiV1ContactsParsePostErrors[keyof ParseContactsApiV1ContactsParsePostErrors];
+
+export type ParseContactsApiV1ContactsParsePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: ContactsParseRead;
+};
+
+export type ParseContactsApiV1ContactsParsePostResponse = ParseContactsApiV1ContactsParsePostResponses[keyof ParseContactsApiV1ContactsParsePostResponses];
+
 export type GetDiscoveryRunApiV1DiscoveryRunsRunIdGetData = {
     body?: never;
     headers?: {
@@ -11660,6 +12061,41 @@ export type PutPrefsApiV1NotificationPrefsPutResponses = {
 
 export type PutPrefsApiV1NotificationPrefsPutResponse = PutPrefsApiV1NotificationPrefsPutResponses[keyof PutPrefsApiV1NotificationPrefsPutResponses];
 
+export type ResetPrefsApiV1NotificationPrefsResetPostData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/notification-prefs/reset';
+};
+
+export type ResetPrefsApiV1NotificationPrefsResetPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ResetPrefsApiV1NotificationPrefsResetPostError = ResetPrefsApiV1NotificationPrefsResetPostErrors[keyof ResetPrefsApiV1NotificationPrefsResetPostErrors];
+
+export type ResetPrefsApiV1NotificationPrefsResetPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: PrefsMatrix;
+};
+
+export type ResetPrefsApiV1NotificationPrefsResetPostResponse = ResetPrefsApiV1NotificationPrefsResetPostResponses[keyof ResetPrefsApiV1NotificationPrefsResetPostResponses];
+
 export type UnsubscribeEmailApiV1NotificationPrefsUnsubscribeEmailPostData = {
     body?: never;
     headers?: {
@@ -11877,6 +12313,41 @@ export type MarkReadApiV1NotificationsNotificationIdReadPostResponses = {
 };
 
 export type MarkReadApiV1NotificationsNotificationIdReadPostResponse = MarkReadApiV1NotificationsNotificationIdReadPostResponses[keyof MarkReadApiV1NotificationsNotificationIdReadPostResponses];
+
+export type PlanApiV1OnboardingPlanPostData = {
+    body: OnboardingPlanBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/onboarding/plan';
+};
+
+export type PlanApiV1OnboardingPlanPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type PlanApiV1OnboardingPlanPostError = PlanApiV1OnboardingPlanPostErrors[keyof PlanApiV1OnboardingPlanPostErrors];
+
+export type PlanApiV1OnboardingPlanPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: OnboardingPlanRead;
+};
+
+export type PlanApiV1OnboardingPlanPostResponse = PlanApiV1OnboardingPlanPostResponses[keyof PlanApiV1OnboardingPlanPostResponses];
 
 export type OpsDashboardApiV1OpsDashboardGetData = {
     body?: never;
@@ -12247,6 +12718,46 @@ export type CreateAnswerApiV1ProfilesProfileIdAnswersPostResponses = {
 };
 
 export type CreateAnswerApiV1ProfilesProfileIdAnswersPostResponse = CreateAnswerApiV1ProfilesProfileIdAnswersPostResponses[keyof CreateAnswerApiV1ProfilesProfileIdAnswersPostResponses];
+
+export type DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostData = {
+    body: AnswerDraftBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/answers/draft';
+};
+
+export type DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostError = DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostErrors[keyof DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostErrors];
+
+export type DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: AnswerDraftBundle;
+};
+
+export type DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponse = DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponses[keyof DraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponses];
 
 export type ListAnswerKeysApiV1ProfilesProfileIdAnswersKeysGetData = {
     body?: never;
@@ -14505,6 +15016,46 @@ export type AnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponses = {
 
 export type AnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponse = AnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponses[keyof AnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponses];
 
+export type ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostData = {
+    body: VoicePresetBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/voice/preset';
+};
+
+export type ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostError = ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostErrors[keyof ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostErrors];
+
+export type ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: VoiceRead;
+};
+
+export type ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponse = ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponses[keyof ApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponses];
+
 export type PutVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPutData = {
     body: VoiceSamplesPut;
     headers?: {
@@ -14766,6 +15317,43 @@ export type IngestApiV1ResponsesIngestPostResponses = {
      */
     200: unknown;
 };
+
+export type MatchReplyApiV1ResponsesMatchPostData = {
+    body: MatchReplyBody;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/responses/match';
+};
+
+export type MatchReplyApiV1ResponsesMatchPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type MatchReplyApiV1ResponsesMatchPostError = MatchReplyApiV1ResponsesMatchPostErrors[keyof MatchReplyApiV1ResponsesMatchPostErrors];
+
+export type MatchReplyApiV1ResponsesMatchPostResponses = {
+    /**
+     * Response Match Reply Api V1 Responses Match Post
+     *
+     * Successful Response
+     */
+    200: ReplyMatchRead | null;
+};
+
+export type MatchReplyApiV1ResponsesMatchPostResponse = MatchReplyApiV1ResponsesMatchPostResponses[keyof MatchReplyApiV1ResponsesMatchPostResponses];
 
 export type ListProposalsApiV1ResponsesProposalsGetData = {
     body?: never;
@@ -18289,6 +18877,46 @@ export type PauseTrackApiV1TracksTrackIdPausePostResponses = {
 };
 
 export type PauseTrackApiV1TracksTrackIdPausePostResponse = PauseTrackApiV1TracksTrackIdPausePostResponses[keyof PauseTrackApiV1TracksTrackIdPausePostResponses];
+
+export type RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Track Id
+         */
+        track_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tracks/{track_id}/recommended-settings';
+};
+
+export type RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetError = RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetErrors[keyof RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetErrors];
+
+export type RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecommendedSettingsRead;
+};
+
+export type RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponse = RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponses[keyof RecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponses];
 
 export type RelaxationsApiV1TracksTrackIdRelaxationsGetData = {
     body?: never;

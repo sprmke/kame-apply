@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnEmptyState, FnInput, FnSectionCard, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -60,12 +60,14 @@ async function addProfile() {
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
-    <div class="flex flex-col gap-1">
-      <h1 class="text-3xl font-bold tracking-[-0.03em] text-ink-900">{{ t("coach.title") }}</h1>
-      <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("coach.lede") }}</p>
-    </div>
+    <PageHeader :title="t('coach.title')" :lede="t('coach.lede')" />
 
     <div v-if="coach.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
+    <FnEmptyState
+      v-else-if="!(coach.data.value ?? []).length"
+      :title="t('coach.empty')"
+      :body="t('coach.emptyBody')"
+    />
     <ul
       v-else
       class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
@@ -92,25 +94,21 @@ async function addProfile() {
           t("coach.open")
         }}</FnButton>
       </li>
-      <li v-if="!(coach.data.value ?? []).length" class="px-5 py-8 text-sm text-ink-600">
-        {{ t("coach.empty") }}
-      </li>
     </ul>
 
-    <form
-      class="flex flex-wrap gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
-      @submit.prevent="addProfile"
-    >
-      <input
-        v-model="newName"
-        type="text"
-        class="min-h-12 min-w-[12rem] flex-1 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 placeholder:text-ink-400 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-        :placeholder="t('coach.namePlaceholder')"
-        :aria-label="t('coach.namePlaceholder')"
-      />
-      <FnButton type="submit" tone="primary" :disabled="creating || !newName.trim()">{{
-        t("coach.add")
-      }}</FnButton>
-    </form>
+    <FnSectionCard :title="t('coach.add')">
+      <form class="flex flex-col gap-3 sm:flex-row" @submit.prevent="addProfile">
+        <FnInput
+          v-model="newName"
+          type="text"
+          class="flex-1"
+          :placeholder="t('coach.namePlaceholder')"
+          :aria-label="t('coach.namePlaceholder')"
+        />
+        <FnButton type="submit" tone="primary" :disabled="creating || !newName.trim()">{{
+          t("coach.add")
+        }}</FnButton>
+      </form>
+    </FnSectionCard>
   </div>
 </template>

@@ -36,12 +36,16 @@ const cls = computed(() =>
       >
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
-            <DialogTitle class="text-xl font-bold tracking-[-0.02em] text-ink-900">{{
-              title
-            }}</DialogTitle>
-            <DialogDescription v-if="description" class="text-sm text-ink-600">{{
-              description
-            }}</DialogDescription>
+            <DialogTitle class="text-xl font-bold tracking-[-0.02em] text-ink-900">
+              {{
+                title
+              }}
+            </DialogTitle>
+            <DialogDescription v-if="description" class="text-sm text-ink-600">
+              {{
+                description
+              }}
+            </DialogDescription>
             <DialogDescription v-else class="sr-only">{{ title }}</DialogDescription>
           </div>
           <DialogClose

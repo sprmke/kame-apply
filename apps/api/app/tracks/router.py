@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext, require_action
+from app.tracks import recommend as recommend_svc
 from app.tracks import schemas as s
 from app.tracks import service
 
@@ -111,6 +112,11 @@ async def suggest_criteria(
         run_structured=runner,
     )
     return s.CriteriaPlanPreview(**result)
+
+
+@router.get("/{track_id}/recommended-settings", response_model=s.RecommendedSettingsRead)
+async def recommended_settings(track_id: uuid.UUID, ctx: WorkspaceContext = Read):
+    return await recommend_svc.recommend(ctx, track_id)
 
 
 @router.get("/{track_id}", response_model=s.TrackDetail)

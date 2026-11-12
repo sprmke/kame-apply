@@ -2,7 +2,9 @@
 import { CheckboxIndicator, CheckboxRoot } from "reka-ui";
 
 const model = defineModel<boolean>({ default: false });
-defineProps<{ label: string; id?: string }>();
+withDefaults(defineProps<{ label: string; id?: string; hideLabel?: boolean }>(), {
+  hideLabel: false,
+});
 </script>
 
 <template>
@@ -14,6 +16,6 @@ defineProps<{ label: string; id?: string }>();
     >
       <CheckboxIndicator class="text-xs leading-none text-on-brand">✓</CheckboxIndicator>
     </CheckboxRoot>
-    {{ label }}
+    <span :class="hideLabel ? 'sr-only' : ''">{{ label }}</span>
   </label>
 </template>

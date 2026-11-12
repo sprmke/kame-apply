@@ -57,7 +57,7 @@ async function upload() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-6">
+  <div class="mx-auto flex w-full max-w-xl flex-col gap-5">
     <PageHeader :title="t('career.onboardingTitle')" />
     <section class="flex flex-col gap-3">
       <div
@@ -75,7 +75,7 @@ async function upload() {
         class="sr-only"
         accept=".pdf,.docx,.txt,.md,.json,application/pdf,text/plain"
         @change="onPick"
-      />
+      >
       <FnButton tone="quiet" @click="input?.click()">{{
         file ? file.name : t("career.chooseFile")
       }}</FnButton>

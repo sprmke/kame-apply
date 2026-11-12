@@ -15,7 +15,6 @@ Codex does not automatically activate Cursor .mdc rules. Before work, read the a
 | `.cursor/rules/dbos-workflows.mdc` | - apps/api/app/**/workflows.py |
 | `.cursor/rules/documentation-maintenance.mdc` | Always |
 | `.cursor/rules/fastapi-conventions.mdc` | - apps/api/** |
-| `.cursor/rules/signal-design.mdc` | - apps/web/** |
 | `.cursor/rules/git-commits.mdc` | Always |
 | `.cursor/rules/human-copy.mdc` | Always |
 | `.cursor/rules/in-app-notifications.mdc` | - apps/api/app/notifications/** |
@@ -34,6 +33,7 @@ Codex does not automatically activate Cursor .mdc rules. Before work, read the a
 | `.cursor/rules/route-guides.mdc` | Always |
 | `.cursor/rules/security.mdc` | - apps/api/app/core/** |
 | `.cursor/rules/self-review.mdc` | Task-specific; read when relevant |
+| `.cursor/rules/signal-design.mdc` | - apps/web/** |
 | `.cursor/rules/superpowers-opt-in.mdc` | Always |
 | `.cursor/rules/truthful-content.mdc` | - apps/api/app/resumes/** |
 | `.cursor/rules/ui-minimal-copy.mdc` | Always |
@@ -58,4 +58,4 @@ Existing .codex/config.toml MCP settings are preserved. Cursor MCP settings and 
 
 Configuration validation checks skill metadata and links, original command references, TOML/JSON parsing and safe hook fixtures. It does not assert the application builds or that external MCP services are authenticated.
 
-Skills available locally: 42. Command adapters: 11. Specialist definitions: 5.
+Skills available locally: 46. Command adapters: 13. Specialist definitions: 6.

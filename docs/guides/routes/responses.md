@@ -24,3 +24,14 @@ Inbox for recruiter reply classification and proposed status changes. A short le
 ## RBAC
 
 `data.read` to list; `data.write` to ingest and decide.
+
+## UX clarity (2026-11-12)
+
+- No application id field. Paste the sender, subject, and body; the page matches the application by company, title, and sender domain, and shows the guess.
+- A searchable application select is the fallback. **Read reply** does the classify call.
+- Status suggestions show as plain from → to chips with the citation.
+
+
+## Server match (2026-11-13)
+
+The page calls `POST /api/v1/responses/match` after a short pause in typing. The server compares company, title, and sender domain across the workspace and returns the best application or `null`. The browser keeps a local fallback, so the suggestion still works offline.

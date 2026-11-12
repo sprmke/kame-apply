@@ -202,7 +202,7 @@ async def home_brief(
         else:
             headline = f"{lead} {needs_n} things need you."
     elif needs_n == 0:
-        headline = "Set up a Track to start finding roles."
+        headline = "Start a search to begin finding roles."
     elif needs_n == 1:
         headline = "1 thing needs you."
     else:

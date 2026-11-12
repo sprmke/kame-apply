@@ -35,4 +35,4 @@ After clone: `pnpm run setup:ai-tooling`. Claude Code and OpenCode read the same
 | `naming-conventions.mdc` · `in-app-notifications.mdc` | as globbed |
 | `plan-mode.mdc` · `workflow-docs.mdc` · `self-review.mdc` | process (opt-in) |
 
-Skills: `.agent/skills/` (symlinked into `.claude/skills` and `.cursor/skills`; index in `.agent/skills/README.md`). Commands: `/ka-help`. Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`. OpenCode: `.opencode/README.md`.
+Skills: `.agent/skills/` (symlinked into `.claude/skills` and `.cursor/skills`; index in `.agent/skills/README.md`). Commands: `/ka-help`. Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`, `ux-reviewer`. OpenCode: `.opencode/README.md`.

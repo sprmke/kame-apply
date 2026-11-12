@@ -43,3 +43,9 @@ List from `GET /api/v1/needs-you` (tailor reviews, risk flags, failed runs, budg
 ## RBAC
 
 Any member with `data.read` / `data.write`.
+
+## UX clarity (2026-11-12)
+
+- Page title is **Inbox**. The nav item **Needs you** goes to `/needs-you`, a dedicated decision list.
+- Needs-you items are deduplicated and show a plain detail ("Caution", "Needs your decision to continue").
+- Empty inbox is one line, no paragraph.

@@ -5,7 +5,7 @@ import {
   transferOwnershipApiV1WorkspaceTransferPost,
   queries,
 } from "@kame/api-client";
-import { FnButton, FnDialog, FnField, FnInput, FnSelect, useToast } from "@kame/ui";
+import { FnButton, FnDialog, FnField, FnInput, FnSectionCard, FnSelect, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -117,43 +117,59 @@ const canRun = computed(() =>
 </script>
 
 <template>
-  <section class="flex max-w-xl flex-col gap-6">
-    <PageHeader :title="t('settings.danger')" />
-    <div v-if="isOwner" class="flex flex-col gap-2 border-t border-rule pt-4">
-      <h2 class="font-medium">{{ t("danger.exportTitle") }}</h2>
-      <p class="text-sm text-ink-600">{{ t("danger.exportBody") }}</p>
+  <section class="flex max-w-2xl flex-col gap-6">
+    <PageHeader :title="t('settings.danger')" :lede="t('danger.lede')" />
+
+    <FnSectionCard v-if="isOwner" :title="t('danger.exportTitle')" :intro="t('danger.exportBody')">
       <div>
         <FnButton :loading="exportBusy" @click="exportWorkspace">{{ t("danger.export") }}</FnButton>
       </div>
-    </div>
-    <p v-if="!isTeam" class="text-sm text-ink-600">{{ t("danger.personal") }}</p>
+    </FnSectionCard>
+
+    <FnSectionCard v-if="!isTeam" :title="t('danger.personalTitle')" :intro="t('danger.personal')">
+      <a href="mailto:privacy@kame.apply" class="text-sm font-semibold text-brand-700 underline">
+        {{ t("danger.contactSupport") }}
+      </a>
+    </FnSectionCard>
+
     <template v-else>
-      <div v-if="isOwner" class="flex flex-col gap-2 border-t border-rule pt-4">
-        <h2 class="font-medium">{{ t("danger.transferTitle") }}</h2>
-        <p class="text-sm text-ink-600">{{ t("danger.transferBody") }}</p>
+      <FnSectionCard
+        v-if="isOwner"
+        :title="t('danger.transferTitle')"
+        :intro="t('danger.transferBody')"
+      >
         <div>
           <FnButton @click="action = 'transfer'">{{ t("danger.transfer") }}</FnButton>
         </div>
-      </div>
-      <div v-if="!isOwner" class="flex flex-col gap-2 border-t border-rule pt-4">
-        <h2 class="font-medium">{{ t("danger.leaveTitle") }}</h2>
-        <p class="text-sm text-ink-600">{{ t("danger.leaveBody") }}</p>
+      </FnSectionCard>
+
+      <FnSectionCard v-if="!isOwner" :title="t('danger.leaveTitle')" :intro="t('danger.leaveBody')">
         <div>
           <FnButton tone="danger" @click="action = 'leave'">{{ t("danger.leave") }}</FnButton>
         </div>
-      </div>
-      <div v-if="isOwner" class="flex flex-col gap-2 border-t border-rule pt-4">
-        <h2 class="font-medium text-oxblood-600">{{ t("danger.deleteTitle") }}</h2>
-        <p class="text-sm text-ink-600">{{ t("danger.deleteBody") }}</p>
+      </FnSectionCard>
+
+      <FnSectionCard
+        v-if="isOwner"
+        :title="t('danger.deleteTitle')"
+        :intro="t('danger.deleteBody')"
+      >
         <div>
           <FnButton tone="danger" @click="action = 'delete'">{{ t("danger.delete") }}</FnButton>
         </div>
-      </div>
+      </FnSectionCard>
     </template>
 
     <FnDialog
       v-model:open="open"
       :title="t(`danger.${action ?? 'leave'}Title`)"
+      :description="
+        action === 'transfer'
+          ? t('danger.transferBody')
+          : action === 'delete'
+            ? t('danger.deleteBody')
+            : t('danger.leaveBody')
+      "
       :close-label="t('common.close')"
     >
       <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>

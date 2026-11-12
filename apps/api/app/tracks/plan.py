@@ -309,6 +309,9 @@ def _baseline(text: str, templates: Sequence[Any]) -> CriteriaV1:
     elif re.search(r"\b(last month|past month)\b", body):
         age = 30
 
+    visa = True if re.search(r"\b(visa|sponsor(ship|ed)?)\b", body) else None
+    relocation = True if re.search(r"\brelocat(e|ion|ing)\b", body) else None
+
     return CriteriaV1(
         titles=titles[:5],
         skills=SkillSets(must=must),
@@ -317,6 +320,8 @@ def _baseline(text: str, templates: Sequence[Any]) -> CriteriaV1:
         work_modes=work_modes,  # type: ignore[arg-type]
         remote_eligibility=RemoteEligibility(anywhere=anywhere, regions=regions),
         posting_max_age_days=age,
+        visa_sponsorship=visa,
+        relocation=relocation,
         companies=CompanyFilter(exclude_agencies=True),
     )
 
@@ -405,14 +410,17 @@ def _compose(current: CriteriaV1 | None, plan: CriteriaV1, text: str) -> Criteri
         data["work_modes"] = planned["work_modes"]
 
     remote = dict(data["remote_eligibility"])
-    if _REGION.search(text):
+    region_unset = (
+        not remote.get("anywhere") and not remote.get("regions") and not remote.get("countries")
+    )
+    if _REGION.search(text) or region_unset:
         remote["anywhere"] = planned["remote_eligibility"]["anywhere"]
         remote["regions"] = planned["remote_eligibility"]["regions"]
     data["remote_eligibility"] = remote
 
-    if _FRESHNESS.search(text):
+    if data.get("posting_max_age_days") is None or _FRESHNESS.search(text):
         data["posting_max_age_days"] = planned["posting_max_age_days"]
-    if _AGENCIES.search(text):
+    if not data["companies"].get("exclude_agencies") or _AGENCIES.search(text):
         data["companies"]["exclude_agencies"] = planned["companies"]["exclude_agencies"]
 
     # Sponsorship and relocation are personal constraints. Only override on an explicit mention.

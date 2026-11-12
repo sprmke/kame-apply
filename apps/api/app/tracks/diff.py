@@ -21,8 +21,8 @@ _HUMAN = {
     "skills.nice": "nice to have",
     "skills.exclude": "excluded skills",
     "work_modes": "work modes",
-    "employment_types": "employment",
-    "seniority": "experience",
+    "employment_types": "employment type",
+    "seniority": "experience level",
     "posting_max_age_days": "posted within",
     "remote_eligibility.regions": "region",
     "remote_eligibility.anywhere": "remote anywhere",
@@ -81,7 +81,7 @@ def diff_criteria(before: CriteriaV1, after: CriteriaV1) -> list[dict[str, Any]]
                     "path": path,
                     "before": pa,
                     "after": pb,
-                    "label": f"{_path_label(path)}: {_short(pb)}",
+                    "label": f"{_path_label(path)}: {_value_label(path, pb)}",
                 }
             )
 
@@ -101,6 +101,12 @@ def _is_empty(v: Any) -> bool:
     return False
 
 
+def _value_label(path: str, value: Any) -> str:
+    if path.endswith("posting_max_age_days") and isinstance(value, int):
+        return f"{value} days"
+    return _short(value)
+
+
 def _short(value: Any) -> str:
     if isinstance(value, list) and value and all(isinstance(x, str) for x in value):
         return ", ".join(value[:5])
@@ -117,6 +123,8 @@ def _describe(path: str, value: Any) -> str:
     leaf = path.split(".")[-1] if path else "criteria"
     if leaf == "exclude_agencies" and value is True:
         return "no agencies"
+    if leaf == "posting_max_age_days" and isinstance(value, int):
+        return f"posted within {value} days"
     if isinstance(value, list) and value and all(isinstance(x, str) for x in value):
         return f"{_path_label(path)} ({', '.join(value[:5])})"
     if isinstance(value, list) and value and isinstance(value[0], dict) and "title" in value[0]:
