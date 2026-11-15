@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import {
   getOpenSetupApiV1OnboardingSetupsGet,
-  getSetupProvenanceApiV1OnboardingSetupsProvenanceGet,
+  getProvenanceApiV1OnboardingSetupsProvenanceGet,
   revertSetupApiV1OnboardingSetupsDraftIdRevertPost,
 } from "@kame/api-client";
 import { FnButton, FnChip, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
+import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
+const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const { profileId } = useActiveProfile();
 
+const enabled = computed(() => Boolean(ws.currentId && profileId.value));
 const open = useQuery({
-  queryKey: computed(() => ["today-setup-open", profileId.value]),
+  queryKey: computed(() => ["today-setup-open", ws.currentId, profileId.value]),
   queryFn: async () => {
     if (!profileId.value) return null;
     const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
@@ -24,20 +27,19 @@ const open = useQuery({
     });
     return data;
   },
-  enabled: computed(() => Boolean(profileId.value)),
+  enabled,
 });
-
 const provenance = useQuery({
-  queryKey: computed(() => ["today-setup-provenance", profileId.value]),
+  queryKey: computed(() => ["today-setup-provenance", ws.currentId, profileId.value]),
   queryFn: async () => {
     if (!profileId.value) return null;
-    const { data } = await getSetupProvenanceApiV1OnboardingSetupsProvenanceGet({
+    const { data } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
       query: { profile_id: profileId.value },
       throwOnError: true,
     });
     return data;
   },
-  enabled: computed(() => Boolean(profileId.value)),
+  enabled,
 });
 
 const dismissed = ref(false);
@@ -48,26 +50,24 @@ const recent = computed(() => {
   const age = Date.now() - new Date(row.applied_at).getTime();
   return age <= 7 * 86_400_000 ? row : null;
 });
-
 watch(
   recent,
   (row) => {
     if (!row || !import.meta.client) return;
-    dismissed.value = localStorage.getItem(`kame.setupCard.${row.draft_id}`) === "1";
+    dismissed.value = localStorage.getItem(`kame.setupDone.${row.draft_id}`) === "1";
   },
   { immediate: true },
 );
 
 function dismiss() {
   if (!recent.value || !import.meta.client) return;
-  localStorage.setItem(`kame.setupCard.${recent.value.draft_id}`, "1");
+  localStorage.setItem(`kame.setupDone.${recent.value.draft_id}`, "1");
   dismissed.value = true;
 }
 
 async function undo() {
   const row = recent.value;
-  if (!row) return;
-  if (!window.confirm(t("setup.undoConfirm"))) return;
+  if (!row || !window.confirm(t("setup.undoConfirm"))) return;
   undoing.value = true;
   try {
     await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
@@ -88,16 +88,21 @@ async function undo() {
 <template>
   <section
     v-if="open.data.value"
-    class="flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4"
+    class="flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 md:p-5"
+    aria-labelledby="finish-setup-title"
   >
     <div class="flex flex-wrap items-center gap-2">
-      <h2 class="text-lg font-bold text-ink-900">{{ t("setup.openTitle") }}</h2>
-      <FnChip tone="accent">{{ t("setup.openChip") }}</FnChip>
+      <h2 id="finish-setup-title" class="text-lg font-bold text-ink-900">
+        {{ t("setup.finishTitle") }}
+      </h2>
+      <FnChip tone="accent">{{ t("setup.finishChip") }}</FnChip>
     </div>
-    <p class="text-sm text-ink-600">{{ t("setup.openBody") }}</p>
+    <p class="text-sm text-ink-600">{{ t("setup.finishBody") }}</p>
     <div>
-      <FnButton tone="quiet" as-child>
-        <NuxtLink :to="`/start?setup=${open.data.value.id}`">{{ t("setup.openAction") }}</NuxtLink>
+      <FnButton tone="primary" as-child>
+        <NuxtLink :to="`/start?setup=${open.data.value.id}`">{{
+          t("setup.finishAction")
+        }}</NuxtLink>
       </FnButton>
     </div>
   </section>
@@ -105,27 +110,30 @@ async function undo() {
   <section
     v-else-if="recent && !dismissed"
     class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+    aria-labelledby="setup-done-title"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-2">
-        <h2 class="text-lg font-bold text-ink-900">{{ t("setup.doneTitle") }}</h2>
+        <h2 id="setup-done-title" class="text-lg font-bold text-ink-900">
+          {{ t("setup.doneCardTitle") }}
+        </h2>
         <FnChip>{{ t("setup.doneChip") }}</FnChip>
       </div>
-      <FnButton tone="ghost" @click="dismiss">{{ t("setup.doneDismiss") }}</FnButton>
+      <FnButton tone="ghost" @click="dismiss">{{ t("setup.donePanelDismiss") }}</FnButton>
     </div>
-    <p class="text-sm text-ink-600">{{ t("setup.doneBody") }}</p>
+    <p class="text-sm text-ink-600">{{ t("setup.doneCardBody") }}</p>
     <div class="flex flex-wrap gap-2">
       <FnButton tone="quiet" as-child>
-        <NuxtLink to="/profile">{{ t("setup.doneProfile") }}</NuxtLink>
+        <NuxtLink to="/profile">{{ t("setup.donePage.profile") }}</NuxtLink>
       </FnButton>
       <FnButton tone="quiet" as-child>
-        <NuxtLink to="/profile/answers">{{ t("setup.doneAnswers") }}</NuxtLink>
+        <NuxtLink to="/profile/answers">{{ t("setup.donePage.answers") }}</NuxtLink>
       </FnButton>
       <FnButton tone="quiet" as-child>
-        <NuxtLink to="/tracks">{{ t("setup.doneSearches") }}</NuxtLink>
+        <NuxtLink to="/tracks">{{ t("setup.donePage.searches") }}</NuxtLink>
       </FnButton>
       <FnButton tone="quiet" as-child>
-        <NuxtLink to="/studio">{{ t("setup.doneStudio") }}</NuxtLink>
+        <NuxtLink to="/studio">{{ t("setup.donePage.studio") }}</NuxtLink>
       </FnButton>
       <FnButton tone="ghost" :loading="undoing" @click="undo">{{ t("setup.undo") }}</FnButton>
     </div>

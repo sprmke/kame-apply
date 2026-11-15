@@ -1674,10 +1674,10 @@
     "doneStudioControl": "Resume check",
     "doneImproveControl": "See the gaps",
     "finishCardTitle": "Finish checking your setup",
-    "finishCardBody": "We read your resume. Check what we filled before it saves.",
-    "finishCardAction": "Continue",
+    "finishCardBody": "We read your resume. Check the pages before saving.",
+    "finishCardAction": "Review",
     "doneCardTitle": "Setup done",
-    "doneCardBody": "We filled your pages. Check them, then improve them.",
+    "doneCardBody": "We filled your pages. Check them, improve them, or undo.",
     "undo": "Undo setup",
     "undoConfirm": "Undo the setup? Only untouched rows are removed.",
     "undone": "Setup undone",
@@ -1714,6 +1714,8 @@
     "todayOpenBody": "We read your resume. Check the pages before saving.",
     "todayOpenAction": "Review",
     "todayDoneTitle": "Setup done",
-    "todayDoneBody": "We filled your pages from your resume. Check them, then use each page's AI control."
+    "todayDoneBody": "We filled your pages from your resume. Check them, then use each page's AI control.",
+    "finishCardChip": "In progress",
+    "openCardChip": "In progress"
   }
 }

@@ -565,6 +565,260 @@ function dismissSetupCard() {
   setupDoneDismissed.value = true;
 }
 
+const openSetup = useQuery({
+  queryKey: computed(() => ["today-setup-open", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data: row } = await getOpenSetupApiV1OnboardingSetupsGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return row;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupProvenance = useQuery({
+  queryKey: computed(() => ["today-setup-provenance", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data: row } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return row;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupDismissed = ref(false);
+const undoing = ref(false);
+const recentSetup = computed(() => {
+  const row = setupProvenance.data.value;
+  if (!row) return null;
+  const age = Date.now() - new Date(row.applied_at).getTime();
+  return age <= 7 * 86_400_000 ? row : null;
+});
+watch(
+  recentSetup,
+  (row) => {
+    if (!row || !import.meta.client) return;
+    setupDismissed.value = localStorage.getItem(`kame.setupDone.${row.draft_id}`) === "1";
+  },
+  { immediate: true },
+);
+async function undoSetup() {
+  const row = recentSetup.value;
+  if (!row || !window.confirm(t("setup.undoConfirm"))) return;
+  undoing.value = true;
+  try {
+    await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
+      path: { draft_id: row.draft_id },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries();
+    toast.push({ title: t("setup.undone"), tone: "success" });
+    setupDismissed.value = true;
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
+  } finally {
+    undoing.value = false;
+  }
+}
+function dismissSetupCard() {
+  if (!recentSetup.value || !import.meta.client) return;
+  localStorage.setItem(`kame.setupDone.${recentSetup.value.draft_id}`, "1");
+  setupDismissed.value = true;
+}
+
+const openSetup = useQuery({
+  queryKey: computed(() => ["today-setup-open", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupProvenance = useQuery({
+  queryKey: computed(() => ["today-setup-provenance", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupDismissed = ref(false);
+const undoing = ref(false);
+const recentSetup = computed(() => {
+  const row = setupProvenance.data.value;
+  if (!row) return null;
+  const age = Date.now() - new Date(row.applied_at).getTime();
+  return age <= 7 * 86_400_000 ? row : null;
+});
+watch(
+  recentSetup,
+  (row) => {
+    if (!row || !import.meta.client) return;
+    setupDismissed.value = localStorage.getItem(`kame.setupDoneCard.${row.draft_id}`) === "1";
+  },
+  { immediate: true },
+);
+function dismissSetupCard() {
+  if (!recentSetup.value || !import.meta.client) return;
+  localStorage.setItem(`kame.setupDoneCard.${recentSetup.value.draft_id}`, "1");
+  setupDismissed.value = true;
+}
+async function undoSetup() {
+  const row = recentSetup.value;
+  if (!row || !window.confirm(t("setup.undoConfirm"))) return;
+  undoing.value = true;
+  try {
+    await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
+      path: { draft_id: row.draft_id },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries();
+    toast.push({ title: t("setup.undone"), tone: "success" });
+    dismissSetupCard();
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
+  } finally {
+    undoing.value = false;
+  }
+}
+
+const openSetup = useQuery({
+  queryKey: computed(() => ["today-open-setup", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupProvenance = useQuery({
+  queryKey: computed(() => ["today-provenance", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupDismissed = ref(false);
+const undoing = ref(false);
+const recentSetup = computed(() => {
+  const row = setupProvenance.data.value;
+  if (!row) return null;
+  const age = Date.now() - new Date(row.applied_at).getTime();
+  return age <= 7 * 86_400_000 ? row : null;
+});
+watch(
+  recentSetup,
+  (row) => {
+    if (!row || !import.meta.client) return;
+    setupDismissed.value = localStorage.getItem(`kame.setupDone.${row.draft_id}`) === "1";
+  },
+  { immediate: true },
+);
+function dismissSetup() {
+  if (!recentSetup.value || !import.meta.client) return;
+  localStorage.setItem(`kame.setupDone.${recentSetup.value.draft_id}`, "1");
+  setupDismissed.value = true;
+}
+async function undoSetup() {
+  const row = recentSetup.value;
+  if (!row || !window.confirm(t("setup.undoConfirm"))) return;
+  undoing.value = true;
+  try {
+    await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
+      path: { draft_id: row.draft_id },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries();
+    toast.push({ title: t("setup.undone"), tone: "success" });
+    setupDismissed.value = true;
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
+  } finally {
+    undoing.value = false;
+  }
+}
+
+const openSetup = useQuery({
+  queryKey: computed(() => ["today-open-setup", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupProvenance = useQuery({
+  queryKey: computed(() => ["today-provenance", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupDoneDismissed = ref(false);
+const recentSetup = computed(() => {
+  const row = setupProvenance.data.value;
+  if (!row) return null;
+  const age = Date.now() - new Date(row.applied_at).getTime();
+  return age <= 7 * 86_400_000 ? row : null;
+});
+watch(
+  recentSetup,
+  (row) => {
+    if (!row || !import.meta.client) return;
+    setupDoneDismissed.value = localStorage.getItem(`kame.setupDone.${row.draft_id}`) === "1";
+  },
+  { immediate: true },
+);
+
+async function undoSetup() {
+  const row = recentSetup.value;
+  if (!row || !window.confirm(t("setup.undoConfirm"))) return;
+  try {
+    await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
+      path: { draft_id: row.draft_id },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries();
+    toast.push({ title: t("setup.undone"), tone: "success" });
+    setupDoneDismissed.value = true;
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
+  }
+}
+
+function dismissSetupDone() {
+  if (!recentSetup.value || !import.meta.client) return;
+  localStorage.setItem(`kame.setupDone.${recentSetup.value.draft_id}`, "1");
+  setupDoneDismissed.value = true;
+}
+
 const data = computed(() => home.data.value ?? null);
 const greeting = computed(() => {
   const name = auth.user?.name?.split(" ")[0];
@@ -573,6 +827,73 @@ const greeting = computed(() => {
 const firstTrack = computed(() => data.value?.tracks?.[0] ?? null);
 const hasProfile = computed(() => Boolean(profileId.value));
 const hasTracks = computed(() => Boolean(data.value?.tracks?.length));
+
+const openSetup = useQuery({
+  queryKey: computed(() => ["today-open-setup", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+
+const setupProvenance = useQuery({
+  queryKey: computed(() => ["today-setup-provenance", ws.currentId, profileId.value]),
+  queryFn: async () => {
+    if (!profileId.value) return null;
+    const { data } = await getProvenanceApiV1OnboardingSetupsProvenanceGet({
+      query: { profile_id: profileId.value },
+      throwOnError: true,
+    });
+    return data;
+  },
+  enabled: computed(() => Boolean(ws.currentId && profileId.value)),
+});
+const setupDoneDismissed = ref(false);
+const undoingSetup = ref(false);
+const recentSetup = computed(() => {
+  const row = setupProvenance.data.value;
+  if (!row) return null;
+  return Date.now() - new Date(row.applied_at).getTime() <= 7 * 86_400_000 ? row : null;
+});
+watch(
+  recentSetup,
+  (row) => {
+    if (!row || !import.meta.client) return;
+    setupDoneDismissed.value =
+      window.localStorage.getItem(`kame.setupDoneCard.${row.draft_id}`) === "1";
+  },
+  { immediate: true },
+);
+async function undoSetup() {
+  const row = recentSetup.value;
+  if (!row) return;
+  if (!window.confirm(t("setup.undoConfirm"))) return;
+  undoingSetup.value = true;
+  try {
+    await revertSetupApiV1OnboardingSetupsDraftIdRevertPost({
+      path: { draft_id: row.draft_id },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries();
+    toast.push({ title: t("setup.undone"), tone: "success" });
+    setupDoneDismissed.value = true;
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
+  } finally {
+    undoingSetup.value = false;
+  }
+}
+function dismissSetupDone() {
+  const row = recentSetup.value;
+  if (!row || !import.meta.client) return;
+  window.localStorage.setItem(`kame.setupDoneCard.${row.draft_id}`, "1");
+  setupDoneDismissed.value = true;
+}
 
 const topJobs = useQuery({
   queryKey: computed(() => ["home-top-jobs", ws.currentId, firstTrack.value?.id]),
@@ -980,6 +1301,61 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
           t("setup.undo")
         }}</FnButton>
         <FnButton tone="ghost" @click="dismissSetupCard">{{ t("setup.gotIt") }}</FnButton>
+      </div>
+    </section>
+
+    <section
+      v-if="openSetup.data.value"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4"
+      aria-labelledby="finish-setup-title"
+    >
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 id="finish-setup-title" class="text-lg font-bold text-ink-900">
+            {{ t("setup.openCardTitle") }}
+          </h2>
+          <FnChip tone="accent">{{ t("setup.openCardChip") }}</FnChip>
+        </div>
+        <p class="text-sm text-ink-600">{{ t("setup.openCardBody") }}</p>
+      </div>
+      <FnButton tone="quiet" as-child>
+        <NuxtLink :to="`/start?setup=${openSetup.data.value.id}`">
+          {{ t("setup.openCardAction") }}
+        </NuxtLink>
+      </FnButton>
+    </section>
+
+    <section
+      v-else-if="recentSetup && !setupDismissed"
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+      aria-labelledby="setup-done-title"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 id="setup-done-title" class="text-lg font-bold text-ink-900">
+            {{ t("setup.doneCardTitle") }}
+          </h2>
+          <FnChip>{{ t("setup.doneChip") }}</FnChip>
+        </div>
+        <FnButton tone="ghost" @click="dismissSetup">{{ t("setup.donePanelDismiss") }}</FnButton>
+      </div>
+      <p class="text-sm text-ink-600">{{ t("setup.doneCardBody") }}</p>
+      <div class="flex flex-wrap gap-2">
+        <FnButton tone="quiet" as-child>
+          <NuxtLink to="/profile">{{ t("setup.donePage.profile") }}</NuxtLink>
+        </FnButton>
+        <FnButton tone="quiet" as-child>
+          <NuxtLink to="/profile/answers">{{ t("setup.donePage.answers") }}</NuxtLink>
+        </FnButton>
+        <FnButton tone="quiet" as-child>
+          <NuxtLink to="/tracks">{{ t("setup.donePage.searches") }}</NuxtLink>
+        </FnButton>
+        <FnButton tone="quiet" as-child>
+          <NuxtLink to="/studio">{{ t("setup.donePage.studio") }}</NuxtLink>
+        </FnButton>
+        <FnButton tone="ghost" :loading="undoing" @click="undoSetup">{{
+          t("setup.undo")
+        }}</FnButton>
       </div>
     </section>
 
