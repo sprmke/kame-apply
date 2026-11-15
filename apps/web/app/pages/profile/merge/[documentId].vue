@@ -13,6 +13,7 @@ const apiError = useApiError();
 const { ensureProfile, refresh } = useActiveProfile();
 const preview = ref<Record<string, unknown> | null>(null);
 const busy = ref(false);
+const merged = ref(false);
 const documentId = computed(() => String(route.params.documentId));
 
 onMounted(async () => {
@@ -48,7 +49,7 @@ async function resolveAllTakeIncoming() {
     });
     await refresh();
     toast.push({ title: t("career.merged"), tone: "success" });
-    await navigateTo("/profile");
+    merged.value = true;
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });
   } finally {
@@ -80,9 +81,25 @@ async function resolveAllTakeIncoming() {
           {{ c.label || c.id }}
         </li>
       </ul>
-      <FnButton tone="primary" :loading="busy" @click="resolveAllTakeIncoming">{{
+      <FnButton v-if="!merged" tone="primary" :loading="busy" @click="resolveAllTakeIncoming">{{
         t("career.takeIncoming")
       }}</FnButton>
+      <section
+        v-else
+        class="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4"
+      >
+        <p class="text-sm text-ink-900">{{ t("setup.mergePrompt") }}</p>
+        <div class="flex flex-wrap gap-2">
+          <FnButton
+            tone="primary"
+            @click="navigateTo(`/start?mode=update&document=${documentId}`)"
+            >{{ t("setup.mergeReview") }}</FnButton
+          >
+          <FnButton tone="quiet" @click="navigateTo('/profile')">{{
+            t("setup.mergeProfileOnly")
+          }}</FnButton>
+        </div>
+      </section>
     </template>
   </div>
 </template>

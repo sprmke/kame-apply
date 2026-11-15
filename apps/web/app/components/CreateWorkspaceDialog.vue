@@ -2,16 +2,19 @@
 import {
   addCustomPackApiV1WorkspaceIndustriesCustomPost,
   addWorkspaceIndustryApiV1WorkspaceIndustriesPost,
+  createSetupApiV1OnboardingSetupsPost,
   createWorkspaceApiV1WorkspacesPost,
   draftPackApiV1IndustriesDraftPost,
   listIndustriesApiV1IndustriesGet,
   listWorkspaceIndustriesApiV1WorkspaceIndustriesGet,
   removeWorkspaceIndustryApiV1WorkspaceIndustriesKeyDelete,
+  uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
   type CustomPackDraftRead,
   type IndustrySummary,
 } from "@kame/api-client";
 import { FnButton, FnDialog, FnField, FnInput, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
+import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useExperience } from "~/composables/useExperience";
 import { ok } from "~/lib/api";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -22,8 +25,11 @@ const ws = useWorkspaceStore();
 const exp = useExperience();
 const toast = useToast();
 const apiError = useApiError();
+const { ensureProfile } = useActiveProfile();
 const name = ref("");
-const step = ref(0);
+const file = ref<File | null>(null);
+const fileInput = ref<HTMLInputElement | null>(null);
+const step = ref<0 | 1 | 2>(0);
 const selected = ref<string[]>([]);
 const primary = ref<string | null>(null);
 const busy = ref(false);
@@ -61,6 +67,7 @@ const options = computed(() => [...customSummaries.value, ...(industries.data.va
 watch(open, (o) => {
   if (o) {
     name.value = "";
+    file.value = null;
     step.value = 0;
     selected.value = [];
     primary.value = null;
@@ -117,6 +124,15 @@ function next() {
   step.value = 1;
 }
 
+function toResume() {
+  error.value = null;
+  step.value = 2;
+}
+
+function onFile(event: Event) {
+  file.value = (event.target as HTMLInputElement).files?.[0] ?? null;
+}
+
 async function submit() {
   if (!name.value.trim()) {
     error.value = t("validation.required");
@@ -162,11 +178,34 @@ async function submit() {
     await exp.refresh();
     open.value = false;
     toast.push({ title: t("workspace.created"), tone: "success" });
-    await navigateTo("/");
+    if (!file.value) {
+      await navigateTo("/");
+      return;
+    }
+    const profileId = await ensureProfile();
+    const upload = await uploadDocumentApiV1ProfilesProfileIdDocumentsPost({
+      path: { profile_id: profileId },
+      body: { file: file.value, kind: "resume_upload" },
+      throwOnError: true,
+    });
+    if (!upload.data?.extracted_text) {
+      toast.push({ title: t("setup.fileUnreadable"), tone: "danger" });
+      await navigateTo("/start");
+      return;
+    }
+    const setup = await createSetupApiV1OnboardingSetupsPost({
+      body: {
+        document_id: upload.data.id,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      },
+      throwOnError: true,
+    });
+    await navigateTo(setup.data?.id ? `/start?setup=${setup.data.id}` : "/start");
   } catch (e) {
     error.value = apiError(e);
   } finally {
     busy.value = false;
+    if (fileInput.value) fileInput.value.value = "";
   }
 }
 </script>
@@ -178,7 +217,11 @@ async function submit() {
     size="lg"
     :close-label="t('common.close')"
   >
-    <form class="flex flex-col gap-4" novalidate @submit.prevent="step === 0 ? next() : submit()">
+    <form
+      class="flex flex-col gap-4"
+      novalidate
+      @submit.prevent="step === 0 ? next() : step === 1 ? toResume() : submit()"
+    >
       <p class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
         {{ t("workspace.step", { n: step + 1 }) }}
       </p>
@@ -199,7 +242,7 @@ async function submit() {
         </div>
       </template>
 
-      <template v-else>
+      <template v-else-if="step === 1">
         <div class="flex flex-col gap-2">
           <p class="text-sm font-semibold text-ink-900">{{ t("workspace.pickField") }}</p>
           <div v-if="industries.isPending.value" class="grid gap-2 sm:grid-cols-2">
@@ -242,7 +285,36 @@ async function submit() {
         <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
         <div class="flex flex-wrap justify-between gap-2">
           <FnButton :disabled="busy" @click="step = 0">{{ t("workspace.back") }}</FnButton>
-          <FnButton type="submit" tone="primary" :loading="busy">{{ t("common.create") }}</FnButton>
+          <FnButton type="submit" tone="primary">{{ t("workspace.next") }}</FnButton>
+        </div>
+      </template>
+
+      <template v-else>
+        <div class="flex flex-col gap-1">
+          <p class="text-sm font-semibold text-ink-900">{{ t("setup.workspaceResumeTitle") }}</p>
+          <p class="text-sm text-ink-600">{{ t("setup.workspaceResumeBody") }}</p>
+        </div>
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".pdf,.docx,.txt,.md"
+          class="sr-only"
+          @change="onFile"
+        />
+        <div class="flex flex-wrap items-center gap-2">
+          <FnButton tone="quiet" :disabled="busy" @click="fileInput?.click()">
+            {{ file ? file.name : t("setup.upload") }}
+          </FnButton>
+          <span v-if="file" class="text-sm text-ink-600">{{
+            t("setup.workspaceResumeReady")
+          }}</span>
+        </div>
+        <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
+        <div class="flex flex-wrap justify-between gap-2">
+          <FnButton :disabled="busy" @click="step = 1">{{ t("workspace.back") }}</FnButton>
+          <FnButton type="submit" tone="primary" :loading="busy">
+            {{ t("setup.workspaceCreate") }}
+          </FnButton>
         </div>
       </template>
     </form>

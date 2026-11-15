@@ -11,6 +11,7 @@ from app.applications.models import Application, TailorRun
 from app.core.security import WorkspaceContext
 from app.extension.models import ApplyCheckpoint, ApplyRun
 from app.jobs.models import DiscoveryRun, Job, TrackJob
+from app.onboarding.models import SetupDraft
 from app.safety.models import JobRisk, RiskOverride
 
 
@@ -171,6 +172,42 @@ async def list_needs_you(ctx: WorkspaceContext, *, limit: int = 40) -> dict[str,
                 "href": "/settings/ai",
                 "created_at": n.created_at,
                 "meta": {},
+            }
+        )
+
+    # Answers setup could not fill: only the person can give them.
+    setup_rows = (
+        (
+            await ctx.session.execute(
+                select(SetupDraft)
+                .where(
+                    SetupDraft.workspace_id == ctx.workspace_id,
+                    SetupDraft.status == "applied",
+                    SetupDraft.applied_at.is_not(None),
+                )
+                .order_by(SetupDraft.applied_at.desc())
+                .limit(5)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    seen_profiles: set[str] = set()
+    for row in setup_rows:
+        if str(row.profile_id) in seen_profiles:
+            continue
+        seen_profiles.add(str(row.profile_id))
+        count = int((row.result or {}).get("needs_you") or 0)
+        if count <= 0:
+            continue
+        items.append(
+            {
+                "kind": "setup_answers",
+                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
+                "detail": "Work authorization, pay, or notice",
+                "href": "/profile/answers",
+                "created_at": row.applied_at,
+                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
             }
         )
 

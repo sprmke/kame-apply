@@ -71,6 +71,16 @@ onBeforeRouteLeave(() => (form.meta.value.dirty ? window.confirm(t("common.unsav
       </form>
     </FnSectionCard>
 
+    <FnSectionCard
+      v-if="ws.role !== 'viewer'"
+      :title="t('setup.entryTitle')"
+      :intro="t('setup.entryBody')"
+    >
+      <FnButton tone="quiet" as-child>
+        <NuxtLink to="/start">{{ t("setup.entryAction") }}</NuxtLink>
+      </FnButton>
+    </FnSectionCard>
+
     <FieldsOfWorkCard />
   </section>
 </template>

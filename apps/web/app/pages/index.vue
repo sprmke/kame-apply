@@ -234,6 +234,8 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
       </p>
     </header>
 
+    <SetupTodayCard />
+
     <div v-if="home.isPending.value" class="flex flex-col gap-4">
       <FnSkeleton class="h-40 w-full" />
       <FnSkeleton class="h-24 w-full" />

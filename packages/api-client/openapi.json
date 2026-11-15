@@ -5544,6 +5544,52 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "EvidenceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "document_id": {
+            "format": "uuid",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "quote": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Quote",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          }
+        },
+        "required": [
+          "document_id",
+          "quote"
+        ],
+        "title": "EvidenceRef",
+        "type": "object"
+      },
       "ExperienceIn": {
         "properties": {
           "company": {
@@ -7671,6 +7717,33 @@
           "token"
         ],
         "title": "InviteAcceptIn",
+        "type": "object"
+      },
+      "ItemDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "default": "add",
+            "enum": [
+              "add",
+              "fill_blank",
+              "replace",
+              "keep_current",
+              "skip"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "edited": {
+            "default": false,
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "title": "ItemDecision",
         "type": "object"
       },
       "ItemPatch": {
@@ -11693,6 +11766,11 @@
       },
       "ResumeBasics": {
         "properties": {
+          "country": {
+            "default": "",
+            "title": "Country",
+            "type": "string"
+          },
           "email": {
             "default": "",
             "title": "Email",
@@ -12331,6 +12409,40 @@
         "title": "SalaryFilter",
         "type": "object"
       },
+      "SalaryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 10000000.0,
+            "title": "Amount",
+            "type": "number"
+          },
+          "currency": {
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency",
+            "type": "string"
+          },
+          "period": {
+            "default": "month",
+            "enum": [
+              "hour",
+              "day",
+              "month",
+              "year"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "title": "SalaryInput",
+        "type": "object"
+      },
       "SaveBankBody": {
         "properties": {
           "approve": {
@@ -12957,6 +13069,97 @@
         "title": "SearchPlanQuery",
         "type": "object"
       },
+      "SearchProposal": {
+        "additionalProperties": false,
+        "properties": {
+          "adjacent_titles": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Adjacent Titles",
+            "type": "array"
+          },
+          "autonomy": {
+            "default": "prepare",
+            "enum": [
+              "discover",
+              "prepare",
+              "assist"
+            ],
+            "title": "Autonomy",
+            "type": "string"
+          },
+          "blocked": {
+            "default": "ok",
+            "enum": [
+              "ok",
+              "limit",
+              "duplicate"
+            ],
+            "title": "Blocked",
+            "type": "string"
+          },
+          "criteria": {
+            "$ref": "#/components/schemas/CriteriaV1"
+          },
+          "default_on": {
+            "default": true,
+            "title": "Default On",
+            "type": "boolean"
+          },
+          "duplicate_of": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Of"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "nl_text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Nl Text",
+            "type": "string"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDefaults"
+          },
+          "summary": {
+            "default": "",
+            "title": "Summary",
+            "type": "string"
+          },
+          "variant": {
+            "enum": [
+              "you_said",
+              "same_role",
+              "step_up"
+            ],
+            "title": "Variant",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant",
+          "name",
+          "nl_text",
+          "criteria",
+          "schedule"
+        ],
+        "title": "SearchProposal",
+        "type": "object"
+      },
       "SearchQueryRead": {
         "properties": {
           "category": {
@@ -12991,6 +13194,290 @@
         "title": "SearchQueryRead",
         "type": "object"
       },
+      "SetupApplyBody": {
+        "additionalProperties": false,
+        "properties": {
+          "start_first_run": {
+            "default": true,
+            "title": "Start First Run",
+            "type": "boolean"
+          }
+        },
+        "title": "SetupApplyBody",
+        "type": "object"
+      },
+      "SetupApplyRead": {
+        "properties": {
+          "applied_at": {
+            "format": "date-time",
+            "title": "Applied At",
+            "type": "string"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "created": {
+            "additionalProperties": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Created",
+            "type": "object"
+          },
+          "draft_id": {
+            "format": "uuid",
+            "title": "Draft Id",
+            "type": "string"
+          },
+          "links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "object"
+          },
+          "profile_id": {
+            "format": "uuid",
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "updated": {
+            "additionalProperties": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Updated",
+            "type": "object"
+          }
+        },
+        "required": [
+          "draft_id",
+          "profile_id",
+          "applied_at"
+        ],
+        "title": "SetupApplyRead",
+        "type": "object"
+      },
+      "SetupBundle": {
+        "additionalProperties": false,
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SetupItem"
+            },
+            "maxItems": 600,
+            "title": "Items",
+            "type": "array"
+          },
+          "lowest_pay": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalaryInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notices": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Notices",
+            "type": "array"
+          },
+          "profile_merge": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Merge"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "searches": {
+            "items": {
+              "$ref": "#/components/schemas/SearchProposal"
+            },
+            "maxItems": 3,
+            "title": "Searches",
+            "type": "array"
+          }
+        },
+        "title": "SetupBundle",
+        "type": "object"
+      },
+      "SetupCreate": {
+        "additionalProperties": false,
+        "description": "Start a draft from an uploaded document or pasted text.\n\nA file is uploaded through `POST /profiles/{id}/documents` first; the draft takes that\ndocument id. Exactly one of `document_id` and `text` is required.",
+        "properties": {
+          "document_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "new",
+                  "update"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          },
+          "role_text": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Text"
+          },
+          "subject": {
+            "default": "self",
+            "enum": [
+              "self",
+              "other_person"
+            ],
+            "title": "Subject",
+            "type": "string"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 60000,
+                "minLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          },
+          "with_ai": {
+            "default": true,
+            "title": "With Ai",
+            "type": "boolean"
+          }
+        },
+        "title": "SetupCreate",
+        "type": "object"
+      },
+      "SetupDecisions": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ItemDecision"
+            },
+            "title": "Items",
+            "type": "object"
+          },
+          "lowest_pay": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalaryInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lowest_pay_set": {
+            "default": false,
+            "title": "Lowest Pay Set",
+            "type": "boolean"
+          },
+          "searches": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SearchProposal"
+            },
+            "title": "Searches",
+            "type": "object"
+          },
+          "seen_pages": {
+            "items": {
+              "enum": [
+                "profile",
+                "answers",
+                "writing",
+                "searches",
+                "studio",
+                "account"
+              ],
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Seen Pages",
+            "type": "array"
+          }
+        },
+        "title": "SetupDecisions",
+        "type": "object"
+      },
       "SetupGuideRead": {
         "properties": {
           "provider": {
@@ -13015,6 +13502,448 @@
           "steps"
         ],
         "title": "SetupGuideRead",
+        "type": "object"
+      },
+      "SetupItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "default": "add",
+            "enum": [
+              "add",
+              "fill_blank",
+              "replace",
+              "keep_current",
+              "skip"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "blocked": {
+            "default": "ok",
+            "enum": [
+              "ok",
+              "role",
+              "other_person",
+              "limit",
+              "duplicate"
+            ],
+            "title": "Blocked",
+            "type": "string"
+          },
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "current": {
+            "title": "Current"
+          },
+          "current_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Id"
+          },
+          "default_on": {
+            "default": true,
+            "title": "Default On",
+            "type": "boolean"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 20,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "group": {
+            "enum": [
+              "profile",
+              "answers",
+              "writing",
+              "searches",
+              "studio",
+              "account",
+              "industry"
+            ],
+            "title": "Group",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "value",
+              "list",
+              "entity",
+              "search"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "needs_you": {
+            "default": false,
+            "title": "Needs You",
+            "type": "boolean"
+          },
+          "reason_key": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Reason Key",
+            "type": "string"
+          },
+          "reason_params": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Reason Params",
+            "type": "object"
+          },
+          "source": {
+            "enum": [
+              "resume",
+              "you_said",
+              "suggested",
+              "default"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "target": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Target",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "id",
+          "group",
+          "target",
+          "kind",
+          "source",
+          "reason_key"
+        ],
+        "title": "SetupItem",
+        "type": "object"
+      },
+      "SetupProvenanceRead": {
+        "properties": {
+          "applied_at": {
+            "format": "date-time",
+            "title": "Applied At",
+            "type": "string"
+          },
+          "created": {
+            "additionalProperties": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Created",
+            "type": "object"
+          },
+          "draft_id": {
+            "format": "uuid",
+            "title": "Draft Id",
+            "type": "string"
+          },
+          "profile_id": {
+            "format": "uuid",
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "seen_pages": {
+            "items": {
+              "enum": [
+                "profile",
+                "answers",
+                "writing",
+                "searches",
+                "studio",
+                "account"
+              ],
+              "type": "string"
+            },
+            "title": "Seen Pages",
+            "type": "array"
+          },
+          "updated": {
+            "additionalProperties": {
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "Updated",
+            "type": "object"
+          }
+        },
+        "required": [
+          "draft_id",
+          "profile_id",
+          "applied_at"
+        ],
+        "title": "SetupProvenanceRead",
+        "type": "object"
+      },
+      "SetupRead": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "bundle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SetupBundle"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decisions": {
+            "$ref": "#/components/schemas/SetupDecisions"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "new",
+              "update"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "profile_id": {
+            "format": "uuid",
+            "title": "Profile Id",
+            "type": "string"
+          },
+          "role_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Text"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "ready",
+              "applying",
+              "applied",
+              "failed",
+              "cancelled",
+              "discarded",
+              "expired",
+              "reverted"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "steps": {
+            "additionalProperties": true,
+            "title": "Steps",
+            "type": "object"
+          },
+          "subject": {
+            "enum": [
+              "self",
+              "other_person"
+            ],
+            "title": "Subject",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "profile_id",
+          "document_id",
+          "subject",
+          "mode",
+          "status",
+          "role_text",
+          "expires_at",
+          "applied_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SetupRead",
+        "type": "object"
+      },
+      "SetupRetry": {
+        "additionalProperties": false,
+        "properties": {
+          "with_ai": {
+            "default": false,
+            "title": "With Ai",
+            "type": "boolean"
+          }
+        },
+        "title": "SetupRetry",
+        "type": "object"
+      },
+      "SetupRevertRead": {
+        "properties": {
+          "draft_id": {
+            "format": "uuid",
+            "title": "Draft Id",
+            "type": "string"
+          },
+          "kept": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Kept",
+            "type": "array"
+          },
+          "removed": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Removed",
+            "type": "object"
+          }
+        },
+        "required": [
+          "draft_id"
+        ],
+        "title": "SetupRevertRead",
+        "type": "object"
+      },
+      "SetupSeen": {
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "enum": [
+              "profile",
+              "answers",
+              "writing",
+              "searches",
+              "studio",
+              "account"
+            ],
+            "title": "Page",
+            "type": "string"
+          }
+        },
+        "required": [
+          "page"
+        ],
+        "title": "SetupSeen",
+        "type": "object"
+      },
+      "SetupValidateRead": {
+        "properties": {
+          "errors": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "object"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "title": "SetupValidateRead",
         "type": "object"
       },
       "SkillHit": {
@@ -23860,6 +24789,983 @@
           }
         },
         "summary": "Plan",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups": {
+      "get": {
+        "operationId": "open_setup_api_v1_onboarding_setups_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "profile_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SetupRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Open Setup Api V1 Onboarding Setups Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Open Setup",
+        "tags": [
+          "onboarding"
+        ]
+      },
+      "post": {
+        "operationId": "create_setup_api_v1_onboarding_setups_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Create Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/provenance": {
+      "get": {
+        "operationId": "get_provenance_api_v1_onboarding_setups_provenance_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "profile_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Profile Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SetupProvenanceRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Provenance Api V1 Onboarding Setups Provenance Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Get Provenance",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}": {
+      "get": {
+        "operationId": "get_setup_api_v1_onboarding_setups__draft_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Get Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/apply": {
+      "post": {
+        "operationId": "apply_setup_api_v1_onboarding_setups__draft_id__apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupApplyBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupApplyRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Apply Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/cancel": {
+      "post": {
+        "operationId": "cancel_setup_api_v1_onboarding_setups__draft_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Cancel Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/decisions": {
+      "patch": {
+        "operationId": "patch_decisions_api_v1_onboarding_setups__draft_id__decisions_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupDecisions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Patch Decisions",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/discard": {
+      "post": {
+        "operationId": "discard_setup_api_v1_onboarding_setups__draft_id__discard_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Discard Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/retry": {
+      "post": {
+        "operationId": "retry_setup_api_v1_onboarding_setups__draft_id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupRetry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Retry Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/revert": {
+      "post": {
+        "operationId": "revert_setup_api_v1_onboarding_setups__draft_id__revert_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRevertRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Revert Setup",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/seen": {
+      "post": {
+        "operationId": "mark_seen_api_v1_onboarding_setups__draft_id__seen_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupSeen"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Mark Seen",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/api/v1/onboarding/setups/{draft_id}/validate": {
+      "post": {
+        "operationId": "validate_setup_api_v1_onboarding_setups__draft_id__validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "draft_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Draft Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-workspace-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Workspace-Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupValidateRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Default Response"
+          }
+        },
+        "summary": "Validate Setup",
         "tags": [
           "onboarding"
         ]

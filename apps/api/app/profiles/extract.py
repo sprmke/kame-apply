@@ -22,6 +22,8 @@ ALLOWED_EXTENSIONS = frozenset({".pdf", ".docx", ".txt", ".md", ".json"})
 IMAGE_MIME = frozenset({"image/jpeg", "image/png", "image/webp"})
 IMAGE_EXTENSIONS = frozenset({".jpg", ".jpeg", ".png", ".webp"})
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_PDF_PAGES = 30
+MAX_DOCX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -117,6 +119,13 @@ def _pdf(data: bytes) -> ExtractResult:
 
     pages: list[str] = []
     with pdfplumber.open(io.BytesIO(data)) as pdf:
+        if len(pdf.pages) > MAX_PDF_PAGES:
+            raise AppError(
+                "too_many_pages",
+                f"PDF has more than {MAX_PDF_PAGES} pages. Upload a shorter resume.",
+                422,
+                {"max_pages": MAX_PDF_PAGES},
+            )
         for page in pdf.pages:
             pages.append(page.extract_text() or "")
     text = "\n\n".join(pages).strip()
@@ -127,6 +136,7 @@ def _pdf(data: bytes) -> ExtractResult:
 def _docx(data: bytes) -> ExtractResult:
     from docx import Document
 
+    _check_zip_bomb(data)
     doc = Document(io.BytesIO(data))
     parts = [p.text for p in doc.paragraphs if p.text and p.text.strip()]
     for table in doc.tables:
@@ -139,6 +149,24 @@ def _docx(data: bytes) -> ExtractResult:
         ocr_needed=False,
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
+
+
+def _check_zip_bomb(data: bytes) -> None:
+    """Reject a DOCX whose declared uncompressed size is unreasonable before python-docx expands it."""
+    import zipfile
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            total = sum(info.file_size for info in archive.infolist())
+    except zipfile.BadZipFile as exc:
+        raise AppError("invalid_docx", "This Word file is damaged", 422) from exc
+    if total > MAX_DOCX_UNCOMPRESSED_BYTES:
+        raise AppError(
+            "file_too_large",
+            "This Word file expands to more than 25 MB",
+            422,
+            {"max_uncompressed_bytes": MAX_DOCX_UNCOMPRESSED_BYTES},
+        )
 
 
 def _json(data: bytes) -> ExtractResult:

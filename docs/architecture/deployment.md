@@ -100,6 +100,8 @@ Prod deploys and remote migrations require the unlock word in the same command (
 
 Migrations 0003 to 0006 add auth tables, invitations, AI tables, workspace limits and OAuth identities. Migration 0008 adds career profile tables; 0009 adds `documents`; 0010 adds `answer_bank`; 0011 adds `voice_profiles`; 0012 adds `profile_proposals`. They are additive; no backfill.
 
+Migration `0043` adds `setup_drafts` (setup from a resume): workspace-scoped, forced RLS, a partial unique index for one open draft per profile, and a retention schedule. Its `down_revision` is `0042`, after the industry packs (`0040`, `0041`) and the tenant grant hardening (`0042`), so the graph keeps one head. Retention runs from the scheduler loop (`expire_setups` every tick, `clear_setup_content` daily at 03:00 UTC); no backfill. See [`setup.md`](./setup.md).
+
 ### Data lifecycle (Phase 14)
 
 | Action | Endpoint / behavior |

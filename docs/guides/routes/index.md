@@ -11,12 +11,13 @@
 | Your searches | — | — | Documented | Match and shortlist counts |
 | Needs-you | — | — | Documented | Only when a decision is waiting |
 | This week | — | — | Documented | Collapsed numbers, not a dashboard |
-| Onboarding checklist | acceptance.spec.ts | n/a | Done | When home empty |
+| Onboarding checklist | acceptance.spec.ts | n/a | Done | When home empty; links to `/start` |
+| Setup cards | setup-from-resume.spec.ts | n/a | Done | **Setup done** with Undo for 7 days, **Finish checking your setup** while a draft is open |
 | Verify banner | acceptance.spec.ts | n/a | Done | |
 
 ## Overview
 
-Guided daily brief: one next step (add resume, start a search, run the first search, or review matches), then the top three new matches, the user's searches, and Needs-you. Numbers and activity live under **This week**. Empty workspaces show the setup checklist.
+Guided daily brief: one next step (add resume, start a search, run the first search, or review matches), then the top three new matches, the user's searches, and Needs-you. Numbers and activity live under **This week**. Empty workspaces show the setup checklist. A recent setup shows **Setup done** with page links and **Undo setup**; an open draft shows **Finish checking your setup**.
 
 ## User-facing knowledge
 
@@ -35,7 +36,7 @@ The primary button always names the next action. Open a search to see its matche
 
 ## Implementation map
 
-`pages/index.vue`, `components/OnboardingChecklist.vue`, `components/VerifyEmailBanner.vue` · `apps/api/app/applications/home.py`
+`pages/index.vue`, `components/OnboardingChecklist.vue`, `components/SetupDonePanel.vue`, `components/VerifyEmailBanner.vue` · `apps/api/app/applications/home.py`, `apps/api/app/notifications/needs_you.py`
 
 ## UX clarity (2026-11-12)
 

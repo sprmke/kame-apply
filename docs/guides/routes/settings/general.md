@@ -8,15 +8,16 @@
 | --- | --- | --- | --- | --- |
 | Rename | acceptance.spec.ts | 1 to 120 plain-text characters | Done | Save stays disabled until changed; unsaved-changes guard |
 | Type | Manual | n/a | Done | Read-only chip |
+| Set up from a resume | Pending | same draft rules as `/start` | Done | Opens `/start`; update mode when the profile has facts |
 | Fields of work | manual + API | curated pack keys | Done | Owner/admin; preview before primary change |
 
 ## Overview
 
-Workspace name and type, in one section card. The intro line states the permission: only owners and admins can rename it. **Fields of work** sits under it and chooses the workspace default: the primary field for new searches and the union of fields that Profile, Answers, and Today draw from.
+Workspace name and type, in one section card. The intro line states the permission: only owners and admins can rename it. A second card opens setup from a resume. **Fields of work** sits under it and chooses the workspace default: the primary field for new searches and the union of fields that Profile, Answers, and Today draw from.
 
 ## User-facing knowledge
 
-Owners and admins can rename the workspace. Everyone else sees the name read-only and no Save button.
+Owners and admins can rename the workspace. Everyone else sees the name read-only and no Save button. Any member can start setup from a resume; a viewer is refused by the API.
 
 Owners and admins can add another curated field, remove one, or make an extra field primary. Changing the primary shows one line of consequence first ("New searches default to Hospitality and food. Shift filters appear in searches."), then confirms. Removing a field never deletes data: searches using it move to General and the person can still use General.
 
@@ -28,7 +29,7 @@ Owners and admins can add another curated field, remove one, or make an extra fi
 
 ## Form
 
-Type chip (read only), Name field, Save. Save appears disabled until the name differs from the saved value. Leaving with unsaved edits asks first. Fields of work: primary badge, Make primary, Delete, and add buttons for curated fields not yet enabled. The preview appears inline before a primary change.
+Type chip (read only), Name field, Save. Save appears disabled until the name differs from the saved value. Leaving with unsaved edits asks first. **Set up from a resume** is one line and one button. Fields of work: primary badge, Make primary, Delete, and add buttons for curated fields not yet enabled. The preview appears inline before a primary change.
 
 ## API reference
 

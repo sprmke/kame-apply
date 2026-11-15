@@ -196,6 +196,7 @@ function salaryLine(s: unknown): string {
 <template>
   <TrackShell :track-id="trackId">
     <div class="flex flex-col gap-5">
+      <SetupDonePanel :track-id="trackId" />
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0 text-sm text-ink-600">
           <template v-if="running">

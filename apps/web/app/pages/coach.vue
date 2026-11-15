@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { client } from "@kame/api-client";
+import {
+  client,
+  createSetupApiV1OnboardingSetupsPost,
+  uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
+} from "@kame/api-client";
 import { FnButton, FnEmptyState, FnInput, FnSectionCard, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
@@ -21,6 +25,8 @@ const qc = useQueryClient();
 const { selectProfile } = useActiveProfile();
 const creating = ref(false);
 const newName = ref("");
+const fileInput = ref<HTMLInputElement | null>(null);
+const resumeStarting = ref(false);
 
 const coach = useQuery({
   queryKey: computed(() => ["coach-profiles", ws.currentId]),
@@ -34,6 +40,54 @@ const coach = useQuery({
 async function openProfile(id: string) {
   selectProfile(id);
   await navigateTo("/profile");
+}
+
+async function startFromResume(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  resumeStarting.value = true;
+  let createdProfile: string | null = null;
+  try {
+    const { data: profile } = await client.post({
+      url: "/api/v1/profiles",
+      body: { display_name: "New person" },
+      throwOnError: true,
+    });
+    const profileId = (profile as { id: string }).id;
+    createdProfile = profileId;
+    const upload = await uploadDocumentApiV1ProfilesProfileIdDocumentsPost({
+      path: { profile_id: profileId },
+      body: { file, kind: "resume_upload" },
+      throwOnError: true,
+    });
+    if (!upload.data?.extracted_text) {
+      toast.push({ title: t("setup.fileUnreadable"), tone: "danger" });
+      return;
+    }
+    const setup = await createSetupApiV1OnboardingSetupsPost({
+      body: {
+        document_id: upload.data.id,
+        profile_id: profileId,
+        subject: "other_person",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries({ queryKey: ["coach-profiles", ws.currentId] });
+    await qc.invalidateQueries({ queryKey: ["profiles", ws.currentId] });
+    if (setup.data?.id) await navigateTo(`/start?setup=${setup.data.id}`);
+  } catch (e) {
+    if (createdProfile) {
+      await client
+        .delete({ url: `/api/v1/profiles/${createdProfile}`, throwOnError: true })
+        .catch(() => undefined);
+      await qc.invalidateQueries({ queryKey: ["profiles", ws.currentId] });
+    }
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    resumeStarting.value = false;
+    if (fileInput.value) fileInput.value.value = "";
+  }
 }
 
 async function addProfile() {
@@ -96,7 +150,19 @@ async function addProfile() {
       </li>
     </ul>
 
-    <FnSectionCard :title="t('coach.add')">
+    <FnSectionCard :title="t('coach.add')" :intro="t('setup.coachHint')">
+      <div class="mb-3 flex flex-wrap gap-2">
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".pdf,.docx,.txt,.md"
+          class="sr-only"
+          @change="startFromResume"
+        />
+        <FnButton tone="quiet" :loading="resumeStarting" @click="fileInput?.click()">{{
+          t("coach.startFromResume")
+        }}</FnButton>
+      </div>
       <form class="flex flex-col gap-3 sm:flex-row" @submit.prevent="addProfile">
         <FnInput
           v-model="newName"

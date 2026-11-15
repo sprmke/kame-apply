@@ -446,6 +446,7 @@ async function saveMore() {
 <template>
   <TrackShell :track-id="trackId">
     <div v-if="track" class="flex flex-col gap-5">
+      <FilledFromResume page="searches" :control="t('setup.control.searches')" />
       <FnSectionCard :title="t('tracks.whatToLookFor')" :intro="t('tracks.whatToLookForIntro')">
         <FnField v-slot="{ id }" :label="t('tracks.describe')">
           <FnTextarea :id="id" v-model="nl" :rows="4" />

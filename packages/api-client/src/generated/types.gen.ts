@@ -3058,6 +3058,28 @@ export type ErrorEnvelope = {
 };
 
 /**
+ * EvidenceRef
+ */
+export type EvidenceRef = {
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * End
+     */
+    end?: number | null;
+    /**
+     * Quote
+     */
+    quote: string;
+    /**
+     * Start
+     */
+    start?: number | null;
+};
+
+/**
  * ExperienceIn
  */
 export type ExperienceIn = {
@@ -4278,6 +4300,24 @@ export type InviteAcceptIn = {
      * Token
      */
     token: string;
+};
+
+/**
+ * ItemDecision
+ */
+export type ItemDecision = {
+    /**
+     * Action
+     */
+    action?: 'add' | 'fill_blank' | 'replace' | 'keep_current' | 'skip';
+    /**
+     * Edited
+     */
+    edited?: boolean;
+    /**
+     * Value
+     */
+    value?: unknown;
 };
 
 /**
@@ -6629,6 +6669,10 @@ export type RestrictionRead = {
  */
 export type ResumeBasics = {
     /**
+     * Country
+     */
+    country?: string;
+    /**
      * Email
      */
     email?: string;
@@ -6987,6 +7031,24 @@ export type SalaryFilter = {
 };
 
 /**
+ * SalaryInput
+ */
+export type SalaryInput = {
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Period
+     */
+    period?: 'hour' | 'day' | 'month' | 'year';
+};
+
+/**
  * SaveBankBody
  */
 export type SaveBankBody = {
@@ -7342,6 +7404,50 @@ export type SearchPlanQuery = {
 };
 
 /**
+ * SearchProposal
+ */
+export type SearchProposal = {
+    /**
+     * Adjacent Titles
+     */
+    adjacent_titles?: Array<string>;
+    /**
+     * Autonomy
+     */
+    autonomy?: 'discover' | 'prepare' | 'assist';
+    /**
+     * Blocked
+     */
+    blocked?: 'ok' | 'limit' | 'duplicate';
+    criteria: CriteriaV1;
+    /**
+     * Default On
+     */
+    default_on?: boolean;
+    /**
+     * Duplicate Of
+     */
+    duplicate_of?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Nl Text
+     */
+    nl_text: string;
+    schedule: ScheduleDefaults;
+    /**
+     * Summary
+     */
+    summary?: string;
+    /**
+     * Variant
+     */
+    variant: 'you_said' | 'same_role' | 'step_up';
+};
+
+/**
  * SearchQueryRead
  */
 export type SearchQueryRead = {
@@ -7364,6 +7470,163 @@ export type SearchQueryRead = {
 };
 
 /**
+ * SetupApplyBody
+ */
+export type SetupApplyBody = {
+    /**
+     * Start First Run
+     */
+    start_first_run?: boolean;
+};
+
+/**
+ * SetupApplyRead
+ */
+export type SetupApplyRead = {
+    /**
+     * Applied At
+     */
+    applied_at: string;
+    /**
+     * Counts
+     */
+    counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Created
+     */
+    created?: {
+        [key: string]: Array<string>;
+    };
+    /**
+     * Draft Id
+     */
+    draft_id: string;
+    /**
+     * Links
+     */
+    links?: {
+        [key: string]: string;
+    };
+    /**
+     * Profile Id
+     */
+    profile_id: string;
+    /**
+     * Updated
+     */
+    updated?: {
+        [key: string]: Array<string>;
+    };
+};
+
+/**
+ * SetupBundle
+ */
+export type SetupBundle = {
+    /**
+     * Counts
+     */
+    counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Items
+     */
+    items?: Array<SetupItem>;
+    lowest_pay?: SalaryInput | null;
+    /**
+     * Notices
+     */
+    notices?: Array<string>;
+    /**
+     * Profile Merge
+     */
+    profile_merge?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Schema Version
+     */
+    schema_version?: 1;
+    /**
+     * Searches
+     */
+    searches?: Array<SearchProposal>;
+};
+
+/**
+ * SetupCreate
+ *
+ * Start a draft from an uploaded document or pasted text.
+ *
+ * A file is uploaded through `POST /profiles/{id}/documents` first; the draft takes that
+ * document id. Exactly one of `document_id` and `text` is required.
+ */
+export type SetupCreate = {
+    /**
+     * Document Id
+     */
+    document_id?: string | null;
+    /**
+     * Mode
+     */
+    mode?: 'new' | 'update' | null;
+    /**
+     * Profile Id
+     */
+    profile_id?: string | null;
+    /**
+     * Role Text
+     */
+    role_text?: string | null;
+    /**
+     * Subject
+     */
+    subject?: 'self' | 'other_person';
+    /**
+     * Text
+     */
+    text?: string | null;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+    /**
+     * With Ai
+     */
+    with_ai?: boolean;
+};
+
+/**
+ * SetupDecisions
+ */
+export type SetupDecisions = {
+    /**
+     * Items
+     */
+    items?: {
+        [key: string]: ItemDecision;
+    };
+    lowest_pay?: SalaryInput | null;
+    /**
+     * Lowest Pay Set
+     */
+    lowest_pay_set?: boolean;
+    /**
+     * Searches
+     */
+    searches?: {
+        [key: string]: SearchProposal;
+    };
+    /**
+     * Seen Pages
+     */
+    seen_pages?: Array<'profile' | 'answers' | 'writing' | 'searches' | 'studio' | 'account'>;
+};
+
+/**
  * SetupGuideRead
  */
 export type SetupGuideRead = {
@@ -7379,6 +7642,232 @@ export type SetupGuideRead = {
      * Title
      */
     title: string;
+};
+
+/**
+ * SetupItem
+ */
+export type SetupItem = {
+    /**
+     * Action
+     */
+    action?: 'add' | 'fill_blank' | 'replace' | 'keep_current' | 'skip';
+    /**
+     * Blocked
+     */
+    blocked?: 'ok' | 'role' | 'other_person' | 'limit' | 'duplicate';
+    /**
+     * Confidence
+     */
+    confidence?: number;
+    /**
+     * Current
+     */
+    current?: unknown;
+    /**
+     * Current Id
+     */
+    current_id?: string | null;
+    /**
+     * Default On
+     */
+    default_on?: boolean;
+    /**
+     * Evidence
+     */
+    evidence?: Array<EvidenceRef>;
+    /**
+     * Group
+     */
+    group: 'profile' | 'answers' | 'writing' | 'searches' | 'studio' | 'account' | 'industry';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'value' | 'list' | 'entity' | 'search';
+    /**
+     * Needs You
+     */
+    needs_you?: boolean;
+    /**
+     * Reason Key
+     */
+    reason_key: string;
+    /**
+     * Reason Params
+     */
+    reason_params?: {
+        [key: string]: string | number;
+    };
+    /**
+     * Source
+     */
+    source: 'resume' | 'you_said' | 'suggested' | 'default';
+    /**
+     * Target
+     */
+    target: string;
+    /**
+     * Value
+     */
+    value?: unknown;
+};
+
+/**
+ * SetupProvenanceRead
+ */
+export type SetupProvenanceRead = {
+    /**
+     * Applied At
+     */
+    applied_at: string;
+    /**
+     * Created
+     */
+    created?: {
+        [key: string]: Array<string>;
+    };
+    /**
+     * Draft Id
+     */
+    draft_id: string;
+    /**
+     * Profile Id
+     */
+    profile_id: string;
+    /**
+     * Seen Pages
+     */
+    seen_pages?: Array<'profile' | 'answers' | 'writing' | 'searches' | 'studio' | 'account'>;
+    /**
+     * Updated
+     */
+    updated?: {
+        [key: string]: Array<string>;
+    };
+};
+
+/**
+ * SetupRead
+ */
+export type SetupRead = {
+    /**
+     * Applied At
+     */
+    applied_at: string | null;
+    bundle?: SetupBundle | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    decisions?: SetupDecisions;
+    /**
+     * Document Id
+     */
+    document_id: string | null;
+    /**
+     * Error Code
+     */
+    error_code?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Mode
+     */
+    mode: 'new' | 'update';
+    /**
+     * Profile Id
+     */
+    profile_id: string;
+    /**
+     * Role Text
+     */
+    role_text: string | null;
+    /**
+     * Status
+     */
+    status: 'queued' | 'running' | 'ready' | 'applying' | 'applied' | 'failed' | 'cancelled' | 'discarded' | 'expired' | 'reverted';
+    /**
+     * Steps
+     */
+    steps?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Subject
+     */
+    subject: 'self' | 'other_person';
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * SetupRetry
+ */
+export type SetupRetry = {
+    /**
+     * With Ai
+     */
+    with_ai?: boolean;
+};
+
+/**
+ * SetupRevertRead
+ */
+export type SetupRevertRead = {
+    /**
+     * Draft Id
+     */
+    draft_id: string;
+    /**
+     * Kept
+     */
+    kept?: Array<{
+        [key: string]: string;
+    }>;
+    /**
+     * Removed
+     */
+    removed?: {
+        [key: string]: number;
+    };
+};
+
+/**
+ * SetupSeen
+ */
+export type SetupSeen = {
+    /**
+     * Page
+     */
+    page: 'profile' | 'answers' | 'writing' | 'searches' | 'studio' | 'account';
+};
+
+/**
+ * SetupValidateRead
+ */
+export type SetupValidateRead = {
+    /**
+     * Errors
+     */
+    errors?: {
+        [key: string]: string;
+    };
+    /**
+     * Ok
+     */
+    ok: boolean;
 };
 
 /**
@@ -13150,6 +13639,489 @@ export type PlanApiV1OnboardingPlanPostResponses = {
 };
 
 export type PlanApiV1OnboardingPlanPostResponse = PlanApiV1OnboardingPlanPostResponses[keyof PlanApiV1OnboardingPlanPostResponses];
+
+export type OpenSetupApiV1OnboardingSetupsGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Profile Id
+         */
+        profile_id?: string | null;
+    };
+    url: '/api/v1/onboarding/setups';
+};
+
+export type OpenSetupApiV1OnboardingSetupsGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type OpenSetupApiV1OnboardingSetupsGetError = OpenSetupApiV1OnboardingSetupsGetErrors[keyof OpenSetupApiV1OnboardingSetupsGetErrors];
+
+export type OpenSetupApiV1OnboardingSetupsGetResponses = {
+    /**
+     * Response Open Setup Api V1 Onboarding Setups Get
+     *
+     * Successful Response
+     */
+    200: SetupRead | null;
+};
+
+export type OpenSetupApiV1OnboardingSetupsGetResponse = OpenSetupApiV1OnboardingSetupsGetResponses[keyof OpenSetupApiV1OnboardingSetupsGetResponses];
+
+export type CreateSetupApiV1OnboardingSetupsPostData = {
+    body: SetupCreate;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/onboarding/setups';
+};
+
+export type CreateSetupApiV1OnboardingSetupsPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type CreateSetupApiV1OnboardingSetupsPostError = CreateSetupApiV1OnboardingSetupsPostErrors[keyof CreateSetupApiV1OnboardingSetupsPostErrors];
+
+export type CreateSetupApiV1OnboardingSetupsPostResponses = {
+    /**
+     * Successful Response
+     */
+    202: SetupRead;
+};
+
+export type CreateSetupApiV1OnboardingSetupsPostResponse = CreateSetupApiV1OnboardingSetupsPostResponses[keyof CreateSetupApiV1OnboardingSetupsPostResponses];
+
+export type GetProvenanceApiV1OnboardingSetupsProvenanceGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+    };
+    url: '/api/v1/onboarding/setups/provenance';
+};
+
+export type GetProvenanceApiV1OnboardingSetupsProvenanceGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type GetProvenanceApiV1OnboardingSetupsProvenanceGetError = GetProvenanceApiV1OnboardingSetupsProvenanceGetErrors[keyof GetProvenanceApiV1OnboardingSetupsProvenanceGetErrors];
+
+export type GetProvenanceApiV1OnboardingSetupsProvenanceGetResponses = {
+    /**
+     * Response Get Provenance Api V1 Onboarding Setups Provenance Get
+     *
+     * Successful Response
+     */
+    200: SetupProvenanceRead | null;
+};
+
+export type GetProvenanceApiV1OnboardingSetupsProvenanceGetResponse = GetProvenanceApiV1OnboardingSetupsProvenanceGetResponses[keyof GetProvenanceApiV1OnboardingSetupsProvenanceGetResponses];
+
+export type GetSetupApiV1OnboardingSetupsDraftIdGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}';
+};
+
+export type GetSetupApiV1OnboardingSetupsDraftIdGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type GetSetupApiV1OnboardingSetupsDraftIdGetError = GetSetupApiV1OnboardingSetupsDraftIdGetErrors[keyof GetSetupApiV1OnboardingSetupsDraftIdGetErrors];
+
+export type GetSetupApiV1OnboardingSetupsDraftIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type GetSetupApiV1OnboardingSetupsDraftIdGetResponse = GetSetupApiV1OnboardingSetupsDraftIdGetResponses[keyof GetSetupApiV1OnboardingSetupsDraftIdGetResponses];
+
+export type ApplySetupApiV1OnboardingSetupsDraftIdApplyPostData = {
+    body: SetupApplyBody;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/apply';
+};
+
+export type ApplySetupApiV1OnboardingSetupsDraftIdApplyPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ApplySetupApiV1OnboardingSetupsDraftIdApplyPostError = ApplySetupApiV1OnboardingSetupsDraftIdApplyPostErrors[keyof ApplySetupApiV1OnboardingSetupsDraftIdApplyPostErrors];
+
+export type ApplySetupApiV1OnboardingSetupsDraftIdApplyPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupApplyRead;
+};
+
+export type ApplySetupApiV1OnboardingSetupsDraftIdApplyPostResponse = ApplySetupApiV1OnboardingSetupsDraftIdApplyPostResponses[keyof ApplySetupApiV1OnboardingSetupsDraftIdApplyPostResponses];
+
+export type CancelSetupApiV1OnboardingSetupsDraftIdCancelPostData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/cancel';
+};
+
+export type CancelSetupApiV1OnboardingSetupsDraftIdCancelPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type CancelSetupApiV1OnboardingSetupsDraftIdCancelPostError = CancelSetupApiV1OnboardingSetupsDraftIdCancelPostErrors[keyof CancelSetupApiV1OnboardingSetupsDraftIdCancelPostErrors];
+
+export type CancelSetupApiV1OnboardingSetupsDraftIdCancelPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type CancelSetupApiV1OnboardingSetupsDraftIdCancelPostResponse = CancelSetupApiV1OnboardingSetupsDraftIdCancelPostResponses[keyof CancelSetupApiV1OnboardingSetupsDraftIdCancelPostResponses];
+
+export type PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchData = {
+    body: SetupDecisions;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/decisions';
+};
+
+export type PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchError = PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchErrors[keyof PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchErrors];
+
+export type PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchResponse = PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchResponses[keyof PatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchResponses];
+
+export type DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/discard';
+};
+
+export type DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostError = DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostErrors[keyof DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostErrors];
+
+export type DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostResponse = DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostResponses[keyof DiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostResponses];
+
+export type RetrySetupApiV1OnboardingSetupsDraftIdRetryPostData = {
+    body: SetupRetry;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/retry';
+};
+
+export type RetrySetupApiV1OnboardingSetupsDraftIdRetryPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type RetrySetupApiV1OnboardingSetupsDraftIdRetryPostError = RetrySetupApiV1OnboardingSetupsDraftIdRetryPostErrors[keyof RetrySetupApiV1OnboardingSetupsDraftIdRetryPostErrors];
+
+export type RetrySetupApiV1OnboardingSetupsDraftIdRetryPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type RetrySetupApiV1OnboardingSetupsDraftIdRetryPostResponse = RetrySetupApiV1OnboardingSetupsDraftIdRetryPostResponses[keyof RetrySetupApiV1OnboardingSetupsDraftIdRetryPostResponses];
+
+export type RevertSetupApiV1OnboardingSetupsDraftIdRevertPostData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/revert';
+};
+
+export type RevertSetupApiV1OnboardingSetupsDraftIdRevertPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type RevertSetupApiV1OnboardingSetupsDraftIdRevertPostError = RevertSetupApiV1OnboardingSetupsDraftIdRevertPostErrors[keyof RevertSetupApiV1OnboardingSetupsDraftIdRevertPostErrors];
+
+export type RevertSetupApiV1OnboardingSetupsDraftIdRevertPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRevertRead;
+};
+
+export type RevertSetupApiV1OnboardingSetupsDraftIdRevertPostResponse = RevertSetupApiV1OnboardingSetupsDraftIdRevertPostResponses[keyof RevertSetupApiV1OnboardingSetupsDraftIdRevertPostResponses];
+
+export type MarkSeenApiV1OnboardingSetupsDraftIdSeenPostData = {
+    body: SetupSeen;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/seen';
+};
+
+export type MarkSeenApiV1OnboardingSetupsDraftIdSeenPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type MarkSeenApiV1OnboardingSetupsDraftIdSeenPostError = MarkSeenApiV1OnboardingSetupsDraftIdSeenPostErrors[keyof MarkSeenApiV1OnboardingSetupsDraftIdSeenPostErrors];
+
+export type MarkSeenApiV1OnboardingSetupsDraftIdSeenPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupRead;
+};
+
+export type MarkSeenApiV1OnboardingSetupsDraftIdSeenPostResponse = MarkSeenApiV1OnboardingSetupsDraftIdSeenPostResponses[keyof MarkSeenApiV1OnboardingSetupsDraftIdSeenPostResponses];
+
+export type ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Draft Id
+         */
+        draft_id: string;
+    };
+    query?: never;
+    url: '/api/v1/onboarding/setups/{draft_id}/validate';
+};
+
+export type ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostError = ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostErrors[keyof ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostErrors];
+
+export type ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetupValidateRead;
+};
+
+export type ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostResponse = ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostResponses[keyof ValidateSetupApiV1OnboardingSetupsDraftIdValidatePostResponses];
 
 export type OpsDashboardApiV1OpsDashboardGetData = {
     body?: never;

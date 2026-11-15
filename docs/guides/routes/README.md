@@ -11,7 +11,7 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/reset-password?token=` | [reset-password.md](./reset-password.md) | Documented (Phase 2) |
 | `/invite?token=` | [invite.md](./invite.md) | Documented (Phase 2) |
 | `/` (Today) | [index.md](./index.md) | Documented (UX clarity, 2026-11-12) |
-| `/start` | [start.md](./start.md) | Documented (UX clarity, 2026-11-12) |
+| `/start` | [start.md](./start.md) | Documented (setup from a resume, 2026-11-13) |
 | `/help` | [help.md](./help.md) | Documented (UX clarity, 2026-11-12) |
 | `/needs-you` | [needs-you.md](./needs-you.md) | Documented (UX clarity, 2026-11-12) |
 | `/applications` | [applications.md](./applications.md) | Documented (Phase 11) |

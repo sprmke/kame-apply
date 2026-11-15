@@ -46,7 +46,7 @@ def _reject_sensitive(text: str) -> None:
         )
 
 
-def _validate_key_country(key: str, country: str | None) -> None:
+def validate_key_country(key: str, country: str | None) -> None:
     if not _KEY_RE.match(key):
         raise AppError("invalid_key", "Answer key must be a lowercase snake_case slug", 422)
     meta = CANONICAL_BY_KEY.get(key)
@@ -202,7 +202,7 @@ async def create_answer(
     ctx: WorkspaceContext, profile_id: uuid.UUID, body: s.AnswerCreate
 ) -> m.AnswerBank:
     await _get_profile(ctx, profile_id)
-    _validate_key_country(body.key, body.country)
+    validate_key_country(body.key, body.country)
     _validate_scope(body.scope, body.track_id)
     _reject_sensitive(body.answer)
     if body.answer_json is not None:
@@ -271,7 +271,7 @@ async def update_answer(
     next_track = changes["track_id"] if "track_id" in changes else row.track_id
     next_country = changes["country"] if "country" in changes else row.country
     _validate_scope(next_scope, next_track)
-    _validate_key_country(row.key, next_country)
+    validate_key_country(row.key, next_country)
 
     if await _slot_taken(
         ctx,

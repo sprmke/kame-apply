@@ -67,6 +67,61 @@ def test_headline_within_limit_and_truthful():
     assert result.github_checklist
 
 
+def _suggestion_locations(structured: dict[str, object]) -> str:
+    result = build_suggestions(
+        track_id=uuid.uuid4(),
+        track_name="Backend",
+        structured=structured,
+        display_name="Alex",
+        headline=None,
+        summary="Backend engineer.",
+        location=None,
+        experiences=[],
+        skills=["Python"],
+    )
+    return next(line for line in result.open_to_work if line.startswith("Locations:"))
+
+
+def test_open_to_work_reads_track_location_fields():
+    """B5: LocationFilter stores `place` and `country`, not `label` or `city`."""
+    line = _suggestion_locations(
+        {"locations": [{"place": "Manila", "country": "PH", "radius_km": 40}]}
+    )
+    assert "Manila, PH" in line
+
+
+def test_open_to_work_adds_remote_from_work_modes():
+    line = _suggestion_locations(
+        {
+            "locations": [{"place": "Manila", "country": "PH"}],
+            "work_modes": ["remote", "hybrid"],
+        }
+    )
+    assert "Manila, PH" in line
+    assert "Remote" in line
+
+
+def test_open_to_work_reads_remote_eligibility_once():
+    line = _suggestion_locations(
+        {
+            "locations": [{"place": "Cebu", "country": "PH"}],
+            "work_modes": ["remote"],
+            "remote_eligibility": {"anywhere": True, "countries": ["PH"]},
+        }
+    )
+    assert line.count("Remote") == 1
+
+
+def test_open_to_work_keeps_plain_location_strings():
+    line = _suggestion_locations({"locations": ["Kuala Lumpur"]})
+    assert "Kuala Lumpur" in line
+
+
+def test_open_to_work_has_no_locations_when_criteria_are_empty():
+    line = _suggestion_locations({})
+    assert line == "Locations: your current city"
+
+
 def test_consistency_flags_missing_company():
     report = check_consistency(
         linkedin_text="Alex · Engineer at OtherCo",

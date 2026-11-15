@@ -2,6 +2,7 @@
 
 | Doc | Phase | Status | Notes |
 | --- | --- | --- | --- |
+| [setup-from-resume](./setup-from-resume.md) | Cross-cutting (S0 to S8) | In progress | One resume upload fills profile, answers, writing style, searches, Studio base resume, and gap plan. S0 to S6 done; S7 partial (evals, e2e run, manual run); S8 next, now that industry packs are on the branch |
 | [phase-03-career-profile](./phase-03-career-profile.md) | 3 | Done | Career Profile (merge) |
 | [phase-04-tracks-and-criteria](./phase-04-tracks-and-criteria.md) | 4 | Slice A | Tracks, criteria, taxonomy |
 | [ind-01-pack-foundation](./ind-01-pack-foundation.md) | IND-1 | Done | Industry pack schema, registry, resolver, workspace industries, track industry |

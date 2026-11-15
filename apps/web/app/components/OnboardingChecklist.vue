@@ -27,7 +27,7 @@ const hasProfile = computed(() => Boolean(profileId.value));
 const steps = computed(() =>
   [
     { key: "ai", done: hasKey.value, to: "/settings/ai", soon: false, show: canSeeKeys.value },
-    { key: "profile", done: hasProfile.value, to: "/profile/onboarding", soon: false, show: true },
+    { key: "profile", done: hasProfile.value, to: "/start", soon: false, show: true },
     { key: "track", done: hasTrack.value, to: "/tracks", soon: false, show: true },
   ].filter((s) => s.show),
 );

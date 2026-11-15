@@ -25,6 +25,7 @@ Per-Track Be Found: truthful LinkedIn copy with copy buttons and why text; paste
 
 `apps/web/app/pages/tracks/[id]/be-found.vue` · `apps/api/app/strategy/` · `docs/architecture/strategy.md`
 
+Location line reads the criteria the Track stores: `locations[].place` with its `country`, plus `work_modes` and `remote_eligibility` for remote. It no longer reads the unused `label` and `city` fields, so cities appear in the Open to work checklist.
 
 ## Field-aware checklist
 

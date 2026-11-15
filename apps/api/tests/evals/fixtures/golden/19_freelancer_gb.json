@@ -1,0 +1,95 @@
+{
+  "id": "19_freelancer_gb",
+  "country": "GB",
+  "role": "product designer",
+  "layout": "single",
+  "resume_text": "Priya Nair\nProduct Designer\nSelf-employed | London, UK\n2020-01 - Present\nDesign for fintech and health startups.\nStudio Nine | London, UK\n2018-01 - 2020-01\nContract product design.\nSkills: Figma, user research, prototyping",
+  "expected": {
+    "display_name": "Priya Nair",
+    "experiences": [
+      {
+        "company": "Self-employed",
+        "title": "Product Designer",
+        "start_date": "2020-01-01",
+        "end_date": null,
+        "is_current": true
+      },
+      {
+        "company": "Studio Nine",
+        "title": "Product Designer",
+        "start_date": "2018-01-01",
+        "end_date": "2020-01-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Priya Nair",
+      "confidence": 0.95,
+      "span": "Priya Nair"
+    },
+    "headline": {
+      "value": "Product Designer",
+      "confidence": 0.9,
+      "span": "Product Designer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Self-employed",
+        "title": "Product Designer",
+        "start_date": "2020-01-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Self-employed | Product Designer"
+      },
+      {
+        "company": "Studio Nine",
+        "title": "Product Designer",
+        "start_date": "2018-01-01",
+        "end_date": "2020-01-01",
+        "is_current": false,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Studio Nine | Product Designer"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "Figma",
+        "confidence": 0.8
+      },
+      {
+        "name": "user research",
+        "confidence": 0.8
+      },
+      {
+        "name": "prototyping",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

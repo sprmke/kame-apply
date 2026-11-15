@@ -1,0 +1,95 @@
+{
+  "id": "20_spanish_cv_es",
+  "country": "ES",
+  "role": "marketing manager",
+  "layout": "single",
+  "resume_text": "Lucia Moreno\nResponsable de Marketing\nAurora | Madrid\n2019-02 - Present\nGestiona campañas y contenido.\nNube | Madrid\n2016-01 - 2019-02\nMarketing digital.\nHabilidades: SEO, contenido, analítica",
+  "expected": {
+    "display_name": "Lucia Moreno",
+    "experiences": [
+      {
+        "company": "Aurora",
+        "title": "Responsable de Marketing",
+        "start_date": "2019-02-01",
+        "end_date": null,
+        "is_current": true
+      },
+      {
+        "company": "Nube",
+        "title": "Marketing Digital",
+        "start_date": "2016-01-01",
+        "end_date": "2019-02-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Lucia Moreno",
+      "confidence": 0.95,
+      "span": "Lucia Moreno"
+    },
+    "headline": {
+      "value": "Responsable de Marketing",
+      "confidence": 0.9,
+      "span": "Responsable de Marketing"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Aurora",
+        "title": "Responsable de Marketing",
+        "start_date": "2019-02-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Aurora | Responsable de Marketing"
+      },
+      {
+        "company": "Nube",
+        "title": "Marketing Digital",
+        "start_date": "2016-01-01",
+        "end_date": "2019-02-01",
+        "is_current": false,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Nube | Marketing Digital"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "SEO",
+        "confidence": 0.8
+      },
+      {
+        "name": "contenido",
+        "confidence": 0.8
+      },
+      {
+        "name": "analítica",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

@@ -21,18 +21,38 @@ def _titles_from_criteria(structured: dict[str, Any]) -> list[str]:
 
 
 def _locations_from_criteria(structured: dict[str, Any]) -> list[str]:
+    """Read the criteria shape the Track stores: `place`, `country`, `work_modes`."""
     locs: list[str] = []
     for loc in structured.get("locations") or []:
         if isinstance(loc, dict):
-            label = loc.get("label") or loc.get("city") or loc.get("country")
+            label = loc.get("place") or loc.get("label") or loc.get("city")
+            country = str(loc.get("country") or "").strip().upper()
             if label:
-                locs.append(str(label))
-        elif isinstance(loc, str):
-            locs.append(loc)
-    remote = structured.get("remote") or structured.get("work_modes") or []
-    if "remote" in remote or (isinstance(remote, dict) and remote.get("anywhere")):
+                text = str(label).strip()
+                if country and country not in text.upper():
+                    text = f"{text}, {country}"
+                locs.append(text)
+            elif country:
+                locs.append(country)
+        elif isinstance(loc, str) and loc.strip():
+            locs.append(loc.strip())
+    modes = structured.get("work_modes") or []
+    if isinstance(modes, str):
+        modes = [modes]
+    remote = any(str(mode).strip().lower() in {"remote", "anywhere"} for mode in modes)
+    eligibility = structured.get("remote_eligibility") or {}
+    if isinstance(eligibility, dict) and eligibility.get("anywhere"):
+        remote = True
+    if remote and not any(loc.casefold() == "remote" for loc in locs):
         locs.append("Remote")
-    return locs[:5]
+    seen: set[str] = set()
+    out: list[str] = []
+    for loc in locs:
+        key = loc.casefold()
+        if key and key not in seen:
+            seen.add(key)
+            out.append(loc)
+    return out[:5]
 
 
 def _skills_ordered(

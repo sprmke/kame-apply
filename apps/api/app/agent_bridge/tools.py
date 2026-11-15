@@ -96,6 +96,56 @@ def register_tools(mcp: Any, session_factory: async_sessionmaker[AsyncSession]) 
             }
             return trim_payload(data)
 
+    @mcp.tool(
+        name="get_setup_draft",
+        description=(
+            "Latest setup draft for the bound profile: status, counts, and answers only the person "
+            "can give. No resume text, values, or quotes."
+        ),
+    )
+    async def get_setup_draft() -> dict[str, Any]:
+        from sqlalchemy import select
+
+        from app.onboarding import models as setup_models
+
+        async with agent_session(session_factory, tool_name="get_setup_draft") as bridge:
+            row = (
+                await bridge.ctx.session.execute(
+                    select(setup_models.SetupDraft)
+                    .where(setup_models.SetupDraft.profile_id == bridge.profile_id)
+                    .order_by(setup_models.SetupDraft.created_at.desc())
+                    .limit(1)
+                )
+            ).scalar_one_or_none()
+            if row is None:
+                return {"draft": None}
+            bundle = row.bundle or {}
+            needs = [
+                {"id": item.get("id"), "target": item.get("target")}
+                for item in bundle.get("items") or []
+                if item.get("needs_you")
+            ]
+            return trim_payload(
+                {
+                    "id": str(row.id),
+                    "status": row.status,
+                    "mode": row.mode,
+                    "subject": row.subject,
+                    "error_code": row.error_code,
+                    "applied_at": row.applied_at.isoformat() if row.applied_at else None,
+                    "counts": bundle.get("counts") or {},
+                    "needs_you": needs,
+                    "searches": [
+                        {
+                            "variant": proposal.get("variant"),
+                            "name": proposal.get("name"),
+                            "blocked": proposal.get("blocked") or "ok",
+                        }
+                        for proposal in bundle.get("searches") or []
+                    ],
+                }
+            )
+
     @mcp.tool(name="get_answer_bank", description="Answer bank entries for the bound profile.")
     async def get_answer_bank(limit: int = 50) -> dict[str, Any]:
         from app.profiles import answers as bank

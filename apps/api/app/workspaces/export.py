@@ -70,6 +70,7 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
         "notifications",
         "resume_versions",
         "documents",
+        "setup_drafts",
     ]
     payload: dict[str, Any] = {
         "exported_at": datetime.now(UTC).isoformat(),

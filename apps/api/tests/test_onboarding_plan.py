@@ -7,7 +7,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.core.config import Settings
 from app.main import create_app
-from app.onboarding.parse import parse_resume_text
+from app.onboarding.parse import country_from_location, parse_resume_text
 from tests.conftest import TEST_DB_URL
 from tests.test_workspaces import signup
 
@@ -29,8 +29,29 @@ def test_parse_resume_reads_basics_without_ai():
     assert out["email"] == "ana.reyes@example.com"
     assert out["headline"] == "Customer Support Lead"
     assert out["location"] == "Manila, Philippines"
+    assert out["country"] == "PH"
     assert "Zendesk" in out["skills"]
     assert out["years"] and out["years"] >= 1
+
+
+@pytest.mark.parametrize(
+    ("location", "expected"),
+    [
+        ("Manila, Philippines", "PH"),
+        ("Makati, PH", "PH"),
+        ("Berlin, Germany", "DE"),
+        ("Dubai, United Arab Emirates", "AE"),
+        ("New York, NY", ""),
+        ("Austin, TX", ""),
+        ("Greater London, United Kingdom", "GB"),
+        ("Paris, FR", "FR"),
+        ("", ""),
+        ("Remote", ""),
+        ("Kuala Lumpur", ""),
+    ],
+)
+def test_country_from_location_is_a_hint_only(location, expected):
+    assert country_from_location(location) == expected
 
 
 def test_parse_resume_never_returns_sensitive_values():
@@ -65,6 +86,7 @@ async def test_plan_returns_basics_search_and_schedule(env):
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["basics"]["email"] == "ana.reyes@example.com"
+    assert body["basics"]["country"] == "PH"
     assert body["search"]["criteria"]["titles"]
     assert body["search"]["source"] in {"defaults", "ai"}
     assert body["schedule"]["preset"] == "every_4_hours"

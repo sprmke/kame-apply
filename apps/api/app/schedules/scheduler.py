@@ -96,6 +96,22 @@ async def _tick_all(app: Any, session_factory: Any, now: datetime) -> dict[str, 
     except Exception:
         log.exception("scheduler_stale_discovery_failed")
 
+    # Expire setup drafts past their 14-day window.
+    try:
+        from app.onboarding.setup_service import expire_setups
+
+        totals["setups_expired"] = await expire_setups(session_factory, now=now)
+    except Exception:
+        log.exception("scheduler_setup_expiry_failed")
+
+    # Fail setup drafts whose worker stopped reporting progress.
+    try:
+        from app.onboarding.pipeline import reap_stale_setups
+
+        totals["stale_setups"] = await reap_stale_setups(session_factory, now=now)
+    except Exception:
+        log.exception("scheduler_setup_reaper_failed")
+
     # Hard-remove workspaces past the 30-day recovery window once a day.
     if now.hour == 3 and now.minute == 0:
         try:
@@ -104,6 +120,13 @@ async def _tick_all(app: Any, session_factory: Any, now: datetime) -> dict[str, 
             totals["purged_workspaces"] = await purge_deleted_workspaces(session_factory, now=now)
         except Exception:
             log.exception("scheduler_purge_failed")
+        # Drop personal data from finished setup drafts after 30 days.
+        try:
+            from app.onboarding.setup_service import clear_setup_content
+
+            totals["setups_cleared"] = await clear_setup_content(session_factory, now=now)
+        except Exception:
+            log.exception("scheduler_setup_retention_failed")
     return totals
 
 

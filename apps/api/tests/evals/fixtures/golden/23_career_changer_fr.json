@@ -1,0 +1,78 @@
+{
+  "id": "23_career_changer_fr",
+  "country": "FR",
+  "role": "software engineer",
+  "layout": "single",
+  "resume_text": "Camille Dupont\nSous Chef\nLe Comptoir | Paris\n2017-09 - Present\nLed the kitchen brigade.\nSkills: food safety, menu costing, team leadership",
+  "expected": {
+    "display_name": "Camille Dupont",
+    "experiences": [
+      {
+        "company": "Le Comptoir",
+        "title": "Sous Chef",
+        "start_date": "2017-09-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Camille Dupont",
+      "confidence": 0.95,
+      "span": "Camille Dupont"
+    },
+    "headline": {
+      "value": "Sous Chef",
+      "confidence": 0.9,
+      "span": "Sous Chef"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Le Comptoir",
+        "title": "Sous Chef",
+        "start_date": "2017-09-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Le Comptoir | Sous Chef"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "food safety",
+        "confidence": 0.8
+      },
+      {
+        "name": "menu costing",
+        "confidence": 0.8
+      },
+      {
+        "name": "team leadership",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

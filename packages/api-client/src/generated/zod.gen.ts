@@ -1257,6 +1257,16 @@ export const zErrorEnvelope = z.object({
 });
 
 /**
+ * EvidenceRef
+ */
+export const zEvidenceRef = z.object({
+    document_id: z.string().uuid(),
+    end: z.number().int().gte(0).nullish(),
+    quote: z.string().min(1).max(200),
+    start: z.number().int().gte(0).nullish()
+});
+
+/**
  * ExperienceIn
  */
 export const zExperienceIn = z.object({
@@ -1779,6 +1789,21 @@ export const zInvitationRead = z.object({
  */
 export const zInviteAcceptIn = z.object({
     token: z.string().min(10).max(200)
+});
+
+/**
+ * ItemDecision
+ */
+export const zItemDecision = z.object({
+    action: z.enum([
+        'add',
+        'fill_blank',
+        'replace',
+        'keep_current',
+        'skip'
+    ]).optional().default('add'),
+    edited: z.boolean().optional().default(false),
+    value: z.unknown().optional()
 });
 
 /**
@@ -2795,6 +2820,7 @@ export const zRestrictionRead = z.object({
  * ResumeBasics
  */
 export const zResumeBasics = z.object({
+    country: z.string().optional().default(''),
     email: z.string().optional().default(''),
     headline: z.string().optional().default(''),
     location: z.string().optional().default(''),
@@ -2969,6 +2995,20 @@ export const zSalaryFilter = z.object({
 });
 
 /**
+ * SalaryInput
+ */
+export const zSalaryInput = z.object({
+    amount: z.number().gt(0).lte(10000000),
+    currency: z.string().length(3),
+    period: z.enum([
+        'hour',
+        'day',
+        'month',
+        'year'
+    ]).optional().default('month')
+});
+
+/**
  * SaveBankBody
  */
 export const zSaveBankBody = z.object({
@@ -3120,12 +3160,163 @@ export const zSearchQueryRead = z.object({
 });
 
 /**
+ * SetupApplyBody
+ */
+export const zSetupApplyBody = z.object({
+    start_first_run: z.boolean().optional().default(true)
+});
+
+/**
+ * SetupApplyRead
+ */
+export const zSetupApplyRead = z.object({
+    applied_at: z.string().datetime(),
+    counts: z.record(z.number().int()).optional(),
+    created: z.record(z.array(z.string().uuid())).optional(),
+    draft_id: z.string().uuid(),
+    links: z.record(z.string()).optional(),
+    profile_id: z.string().uuid(),
+    updated: z.record(z.array(z.string().uuid())).optional()
+});
+
+/**
+ * SetupCreate
+ *
+ * Start a draft from an uploaded document or pasted text.
+ *
+ * A file is uploaded through `POST /profiles/{id}/documents` first; the draft takes that
+ * document id. Exactly one of `document_id` and `text` is required.
+ */
+export const zSetupCreate = z.object({
+    document_id: z.string().uuid().nullish(),
+    mode: z.enum(['new', 'update']).nullish(),
+    profile_id: z.string().uuid().nullish(),
+    role_text: z.string().max(2000).nullish(),
+    subject: z.enum(['self', 'other_person']).optional().default('self'),
+    text: z.string().min(200).max(60000).nullish(),
+    timezone: z.string().max(64).optional().default('UTC'),
+    with_ai: z.boolean().optional().default(true)
+});
+
+/**
  * SetupGuideRead
  */
 export const zSetupGuideRead = z.object({
     provider: z.string(),
     steps: z.array(z.string()),
     title: z.string()
+});
+
+/**
+ * SetupItem
+ */
+export const zSetupItem = z.object({
+    action: z.enum([
+        'add',
+        'fill_blank',
+        'replace',
+        'keep_current',
+        'skip'
+    ]).optional().default('add'),
+    blocked: z.enum([
+        'ok',
+        'role',
+        'other_person',
+        'limit',
+        'duplicate'
+    ]).optional().default('ok'),
+    confidence: z.number().gte(0).lte(1).optional().default(1),
+    current: z.unknown().optional(),
+    current_id: z.string().uuid().nullish(),
+    default_on: z.boolean().optional().default(true),
+    evidence: z.array(zEvidenceRef).max(20).optional(),
+    group: z.enum([
+        'profile',
+        'answers',
+        'writing',
+        'searches',
+        'studio',
+        'account',
+        'industry'
+    ]),
+    id: z.string().min(1).max(200),
+    kind: z.enum([
+        'value',
+        'list',
+        'entity',
+        'search'
+    ]),
+    needs_you: z.boolean().optional().default(false),
+    reason_key: z.string().min(1).max(120),
+    reason_params: z.record(z.union([
+        z.string(),
+        z.number().int()
+    ])).optional(),
+    source: z.enum([
+        'resume',
+        'you_said',
+        'suggested',
+        'default'
+    ]),
+    target: z.string().min(1).max(200),
+    value: z.unknown().optional()
+});
+
+/**
+ * SetupProvenanceRead
+ */
+export const zSetupProvenanceRead = z.object({
+    applied_at: z.string().datetime(),
+    created: z.record(z.array(z.string().uuid())).optional(),
+    draft_id: z.string().uuid(),
+    profile_id: z.string().uuid(),
+    seen_pages: z.array(z.enum([
+        'profile',
+        'answers',
+        'writing',
+        'searches',
+        'studio',
+        'account'
+    ])).optional(),
+    updated: z.record(z.array(z.string().uuid())).optional()
+});
+
+/**
+ * SetupRetry
+ */
+export const zSetupRetry = z.object({
+    with_ai: z.boolean().optional().default(false)
+});
+
+/**
+ * SetupRevertRead
+ */
+export const zSetupRevertRead = z.object({
+    draft_id: z.string().uuid(),
+    kept: z.array(z.record(z.string())).optional(),
+    removed: z.record(z.number().int()).optional()
+});
+
+/**
+ * SetupSeen
+ */
+export const zSetupSeen = z.object({
+    page: z.enum([
+        'profile',
+        'answers',
+        'writing',
+        'searches',
+        'studio',
+        'account'
+    ])
+});
+
+/**
+ * SetupValidateRead
+ */
+export const zSetupValidateRead = z.object({
+    errors: z.record(z.string()).optional(),
+    ok: z.boolean()
 });
 
 /**
@@ -3635,6 +3826,98 @@ export const zSearchPlanOut = z.object({
     summary: z.string(),
     titles: z.array(z.string()).optional(),
     warnings: z.array(z.record(z.unknown())).optional()
+});
+
+/**
+ * SearchProposal
+ */
+export const zSearchProposal = z.object({
+    adjacent_titles: z.array(z.string()).max(10).optional(),
+    autonomy: z.enum([
+        'discover',
+        'prepare',
+        'assist'
+    ]).optional().default('prepare'),
+    blocked: z.enum([
+        'ok',
+        'limit',
+        'duplicate'
+    ]).optional().default('ok'),
+    criteria: zCriteriaV1,
+    default_on: z.boolean().optional().default(true),
+    duplicate_of: z.string().uuid().nullish(),
+    name: z.string().min(1).max(200),
+    nl_text: z.string().min(1).max(2000),
+    schedule: zScheduleDefaults,
+    summary: z.string().optional().default(''),
+    variant: z.enum([
+        'you_said',
+        'same_role',
+        'step_up'
+    ])
+});
+
+/**
+ * SetupBundle
+ */
+export const zSetupBundle = z.object({
+    counts: z.record(z.number().int()).optional(),
+    items: z.array(zSetupItem).max(600).optional(),
+    lowest_pay: zSalaryInput.nullish(),
+    notices: z.array(z.string()).max(20).optional(),
+    profile_merge: z.record(z.unknown()).nullish(),
+    schema_version: z.literal(1).optional().default(1),
+    searches: z.array(zSearchProposal).max(3).optional()
+});
+
+/**
+ * SetupDecisions
+ */
+export const zSetupDecisions = z.object({
+    items: z.record(zItemDecision).optional(),
+    lowest_pay: zSalaryInput.nullish(),
+    lowest_pay_set: z.boolean().optional().default(false),
+    searches: z.record(zSearchProposal).optional(),
+    seen_pages: z.array(z.enum([
+        'profile',
+        'answers',
+        'writing',
+        'searches',
+        'studio',
+        'account'
+    ])).max(10).optional()
+});
+
+/**
+ * SetupRead
+ */
+export const zSetupRead = z.object({
+    applied_at: z.string().datetime().nullable(),
+    bundle: zSetupBundle.nullish(),
+    created_at: z.string().datetime(),
+    decisions: zSetupDecisions.optional(),
+    document_id: z.string().uuid().nullable(),
+    error_code: z.string().nullish(),
+    expires_at: z.string().datetime().nullable(),
+    id: z.string().uuid(),
+    mode: z.enum(['new', 'update']),
+    profile_id: z.string().uuid(),
+    role_text: z.string().nullable(),
+    status: z.enum([
+        'queued',
+        'running',
+        'ready',
+        'applying',
+        'applied',
+        'failed',
+        'cancelled',
+        'discarded',
+        'expired',
+        'reverted'
+    ]),
+    steps: z.record(z.unknown()).optional(),
+    subject: z.enum(['self', 'other_person']),
+    updated_at: z.string().datetime()
 });
 
 /**
@@ -5413,6 +5696,185 @@ export const zPlanApiV1OnboardingPlanPostHeaders = z.object({
  * Successful Response
  */
 export const zPlanApiV1OnboardingPlanPostResponse = zOnboardingPlanRead;
+
+export const zOpenSetupApiV1OnboardingSetupsGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zOpenSetupApiV1OnboardingSetupsGetQuery = z.object({
+    profile_id: z.string().uuid().nullish()
+});
+
+/**
+ * Response Open Setup Api V1 Onboarding Setups Get
+ *
+ * Successful Response
+ */
+export const zOpenSetupApiV1OnboardingSetupsGetResponse = zSetupRead.nullable();
+
+export const zCreateSetupApiV1OnboardingSetupsPostBody = zSetupCreate;
+
+export const zCreateSetupApiV1OnboardingSetupsPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zCreateSetupApiV1OnboardingSetupsPostResponse = zSetupRead;
+
+export const zGetProvenanceApiV1OnboardingSetupsProvenanceGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zGetProvenanceApiV1OnboardingSetupsProvenanceGetQuery = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Response Get Provenance Api V1 Onboarding Setups Provenance Get
+ *
+ * Successful Response
+ */
+export const zGetProvenanceApiV1OnboardingSetupsProvenanceGetResponse = zSetupProvenanceRead.nullable();
+
+export const zGetSetupApiV1OnboardingSetupsDraftIdGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zGetSetupApiV1OnboardingSetupsDraftIdGetPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetSetupApiV1OnboardingSetupsDraftIdGetResponse = zSetupRead;
+
+export const zApplySetupApiV1OnboardingSetupsDraftIdApplyPostBody = zSetupApplyBody;
+
+export const zApplySetupApiV1OnboardingSetupsDraftIdApplyPostHeaders = z.object({
+    'Idempotency-Key': z.string().nullish(),
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zApplySetupApiV1OnboardingSetupsDraftIdApplyPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zApplySetupApiV1OnboardingSetupsDraftIdApplyPostResponse = zSetupApplyRead;
+
+export const zCancelSetupApiV1OnboardingSetupsDraftIdCancelPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zCancelSetupApiV1OnboardingSetupsDraftIdCancelPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zCancelSetupApiV1OnboardingSetupsDraftIdCancelPostResponse = zSetupRead;
+
+export const zPatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchBody = zSetupDecisions;
+
+export const zPatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zPatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zPatchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatchResponse = zSetupRead;
+
+export const zDiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zDiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDiscardSetupApiV1OnboardingSetupsDraftIdDiscardPostResponse = zSetupRead;
+
+export const zRetrySetupApiV1OnboardingSetupsDraftIdRetryPostBody = zSetupRetry;
+
+export const zRetrySetupApiV1OnboardingSetupsDraftIdRetryPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zRetrySetupApiV1OnboardingSetupsDraftIdRetryPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRetrySetupApiV1OnboardingSetupsDraftIdRetryPostResponse = zSetupRead;
+
+export const zRevertSetupApiV1OnboardingSetupsDraftIdRevertPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zRevertSetupApiV1OnboardingSetupsDraftIdRevertPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRevertSetupApiV1OnboardingSetupsDraftIdRevertPostResponse = zSetupRevertRead;
+
+export const zMarkSeenApiV1OnboardingSetupsDraftIdSeenPostBody = zSetupSeen;
+
+export const zMarkSeenApiV1OnboardingSetupsDraftIdSeenPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zMarkSeenApiV1OnboardingSetupsDraftIdSeenPostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zMarkSeenApiV1OnboardingSetupsDraftIdSeenPostResponse = zSetupRead;
+
+export const zValidateSetupApiV1OnboardingSetupsDraftIdValidatePostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zValidateSetupApiV1OnboardingSetupsDraftIdValidatePostPath = z.object({
+    draft_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zValidateSetupApiV1OnboardingSetupsDraftIdValidatePostResponse = zSetupValidateRead;
 
 export const zOpsDashboardApiV1OpsDashboardGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),

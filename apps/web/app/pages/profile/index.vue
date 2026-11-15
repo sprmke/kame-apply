@@ -66,6 +66,7 @@ const nextSteps = computed(() => {
       <FnSkeleton class="h-24 w-full" />
     </div>
     <template v-else-if="profile">
+      <FilledFromResume page="profile" :control="t('setup.control.profile')" />
       <section class="flex flex-col gap-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
