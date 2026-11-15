@@ -137,7 +137,7 @@ class Certification(_Section, Base):
 
     name: Mapped[str] = mapped_column(String(200))
     issuer: Mapped[str | None] = mapped_column(String(200))
-    kind: Mapped[str] = mapped_column(String(12), server_default="certification")
+    kind: Mapped[str] = mapped_column(String(16), server_default="certification")
     credential_key: Mapped[str | None] = mapped_column(String(64))
     issued_on: Mapped[date | None] = mapped_column(Date)
     expires_on: Mapped[date | None] = mapped_column(Date)

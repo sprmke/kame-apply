@@ -16,7 +16,7 @@ from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
-from app.industries.registry import get_pack
+from app.industries.service import pack_for_track
 from app.jobs.models import Job, TrackJob
 from app.matching import service as matching
 from app.profiles import models as pm
@@ -213,7 +213,11 @@ async def _execute_tailor(
         for q in quals_rows
     ]
 
-    pack = get_pack(track.industry) if track is not None else None
+    pack = (
+        await pack_for_track(ctx.session, workspace_id=ctx.workspace_id, industry=track.industry)
+        if track is not None
+        else None
+    )
 
     # Base resume: explicit version, latest track base, or build from profile
     base_row: ResumeVersion | None = None
@@ -562,7 +566,13 @@ async def _recompute_tailor_draft(ctx: WorkspaceContext, run: TailorRun) -> None
         base_content = ResumeContent.model_validate(base.content or {})
     else:
         target = job.title or (track.name if track else None)
-        pack = get_pack(track.industry) if track is not None else None
+        pack = (
+            await pack_for_track(
+                ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+            )
+            if track is not None
+            else None
+        )
         base_content = build_from_profile(facts, target_role=target, pack=pack)
 
     changes = list(

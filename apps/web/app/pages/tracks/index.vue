@@ -57,6 +57,14 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => ws.currentId,
+  () => {
+    fieldTouched.value = false;
+    industryDraft.value = "";
+  },
+);
+
 const enabledKeys = computed(
   () => new Set([...exp.enabled.value.map((item) => item.key), BASE_INDUSTRY]),
 );

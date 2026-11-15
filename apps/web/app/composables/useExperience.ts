@@ -91,6 +91,8 @@ export function useExperience() {
   }
 
   function packLabel(key: string): string {
+    const item = enabled.value.find((row) => row.key === key);
+    if (item?.label) return item.label;
     const candidate = `industry.${key}.label`;
     return te(candidate) ? t(candidate) : key;
   }

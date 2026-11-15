@@ -2417,15 +2417,21 @@ export type CritiqueRead = {
  */
 export type CustomPackAcceptIn = {
     /**
+     * Base Pack
+     */
+    base_pack?: string | null;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Is Primary
+     */
+    is_primary?: boolean;
+    /**
      * Key
      */
     key: string;
-    /**
-     * Pack
-     */
-    pack: {
-        [key: string]: unknown;
-    };
 };
 
 /**
@@ -4036,6 +4042,10 @@ export type IndustrySummary = {
      * Key
      */
     key: string;
+    /**
+     * Label
+     */
+    label?: string | null;
     /**
      * Label Key
      */
@@ -8968,6 +8978,10 @@ export type WorkspaceIndustryRead = {
      * Key
      */
     key: string;
+    /**
+     * Label
+     */
+    label?: string | null;
     /**
      * Label Key
      */

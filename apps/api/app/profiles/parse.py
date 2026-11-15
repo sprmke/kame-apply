@@ -13,6 +13,7 @@ from typing import Any
 
 from pydantic import ValidationError
 from pydantic_ai import PromptedOutput
+from sqlalchemy import select
 
 from app.ai import prompts as prompt_registry
 from app.ai import service as ai
@@ -283,6 +284,7 @@ async def confirm_document(
         "certifications": 0,
         "languages": 0,
         "skills": 0,
+        "facets": 0,
     }
     header_fields: list[str] = []
 
@@ -426,6 +428,60 @@ async def confirm_document(
             )
         )
         created["skills"] += 1
+
+    from app.industries.service import enabled_packs
+    from app.jobs.classify import classify_job
+
+    packs = await enabled_packs(ctx)
+    allowed: dict[str, set[str]] = {}
+    for pack in packs:
+        for facet in pack.facets:
+            allowed.setdefault(facet.key, set()).update(option.key for option in facet.options)
+    # Classify only the confirmed draft, never the raw document text. The draft is what the
+    # person reviewed, so a removed or edited line cannot create a facet.
+    parts: list[str] = [draft.headline.value or "", draft.summary.value or ""]
+    for experience in draft.experiences:
+        parts.extend([experience.title, experience.company, experience.description or ""])
+        parts.extend(bullet.text for bullet in experience.bullets)
+    for project in draft.projects:
+        parts.extend([project.name, project.description or ""])
+        parts.extend(bullet.text for bullet in project.bullets)
+    for certification in draft.certifications:
+        parts.extend([certification.name, certification.issuer or ""])
+    parts.extend(skill.name for skill in draft.skills)
+    text = " ".join(part for part in parts if part)
+    existing_facets = {
+        (row.facet_key, row.value)
+        for row in (
+            await ctx.session.execute(
+                select(m.ProfileFacet).where(
+                    m.ProfileFacet.profile_id == profile_id,
+                    m.ProfileFacet.workspace_id == ctx.workspace_id,
+                )
+            )
+        )
+        .scalars()
+        .all()
+    }
+    classification = classify_job(text, text)
+    seen_facets: set[tuple[str, str]] = set(existing_facets)
+    for facet_key, values in classification.facets.items():
+        if facet_key not in allowed:
+            continue
+        for value in values:
+            if value not in allowed[facet_key] or (facet_key, value) in seen_facets:
+                continue
+            seen_facets.add((facet_key, value))
+            ctx.session.add(
+                m.ProfileFacet(
+                    workspace_id=ctx.workspace_id,
+                    profile_id=profile_id,
+                    facet_key=facet_key,
+                    value=value,
+                    source="parsed",
+                )
+            )
+            created["facets"] += 1
 
     # Persist the (possibly edited) draft and mark confirmed.
     row.parsed = draft.model_dump(mode="json")

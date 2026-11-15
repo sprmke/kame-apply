@@ -12,7 +12,7 @@ from app.audit import service as audit
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
-from app.industries.registry import get_pack
+from app.industries.service import pack_for_track
 from app.profiles import models as pm
 from app.resumes.content import ResumeContent
 from app.resumes.critique import critique_resume
@@ -51,6 +51,16 @@ async def load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> di
     education = await _rows(pm.Education)
     certifications = await _rows(pm.Certification)
     languages = await _rows(pm.Language)
+    facets = list(
+        (
+            await ctx.session.execute(
+                select(pm.ProfileFacet).where(
+                    pm.ProfileFacet.profile_id == profile_id,
+                    pm.ProfileFacet.do_not_use.is_(False),
+                )
+            )
+        ).scalars()
+    )
     contact_email = (
         await ctx.session.execute(
             text("SELECT email FROM users WHERE id = CAST(:u AS uuid)"), {"u": str(ctx.user_id)}
@@ -133,6 +143,7 @@ async def load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> di
             for c in certifications
         ],
         "languages": [_d(lang, "name", "proficiency") for lang in languages],
+        "facets": [_d(facet, "facet_key", "value") for facet in facets],
     }
 
 
@@ -189,7 +200,11 @@ async def create_base(
         target = track.name
         if track.profile_id != profile_id:
             raise AppError("bad_request", "Track profile mismatch", 422)
-    pack = get_pack(track.industry) if track is not None else None
+    pack = (
+        await pack_for_track(ctx.session, workspace_id=ctx.workspace_id, industry=track.industry)
+        if track is not None
+        else None
+    )
     content = build_from_profile(facts, target_role=target, pack=pack)
     if template == "classic" and pack is not None:
         template = pack.resume.template_id
@@ -260,7 +275,13 @@ async def critique(
         target_role=content.target_role,
     )
     row_track = await ctx.session.get(track_models.Track, row.track_id) if row.track_id else None
-    pack = get_pack(row_track.industry) if row_track is not None else None
+    pack = (
+        await pack_for_track(
+            ctx.session, workspace_id=ctx.workspace_id, industry=row_track.industry
+        )
+        if row_track is not None
+        else None
+    )
     report = await enrich_critique(
         ctx,
         get_settings(),

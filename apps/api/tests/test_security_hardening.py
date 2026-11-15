@@ -1,5 +1,6 @@
 """Regression tests for the Phase 2 security review (one test per finding)."""
 
+import logging
 import uuid
 from urllib.parse import parse_qs, urlparse
 
@@ -12,6 +13,7 @@ from app.ai.providers import build_model, revalidate_base_url, validate_base_url
 from app.auth.google import GoogleProfile
 from app.core.config import Settings
 from app.core.errors import AppError
+from app.core.logging import configure_logging
 from app.core.mail import Outbox
 from app.main import create_app
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
@@ -236,6 +238,12 @@ async def test_call_time_revalidation_blocks_a_url_that_turned_private():
     with pytest.raises(AppError):
         await revalidate_base_url("http://127.0.0.1:11434/v1", allow_private=False)
     await revalidate_base_url("http://127.0.0.1:11434/v1", allow_private=True)
+
+
+def test_provider_urls_cannot_reach_http_logs():
+    configure_logging("INFO", json=True)
+    assert logging.getLogger("httpx").level >= logging.WARNING
+    assert logging.getLogger("httpcore").level >= logging.WARNING
 
 
 def test_ollama_client_does_not_follow_redirects():

@@ -4393,22 +4393,40 @@
       "CustomPackAcceptIn": {
         "additionalProperties": false,
         "properties": {
+          "base_pack": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Pack"
+          },
+          "description": {
+            "maxLength": 600,
+            "minLength": 3,
+            "title": "Description",
+            "type": "string"
+          },
+          "is_primary": {
+            "default": false,
+            "title": "Is Primary",
+            "type": "boolean"
+          },
           "key": {
             "maxLength": 48,
             "minLength": 1,
             "pattern": "^custom_[a-z0-9_]+$",
             "title": "Key",
             "type": "string"
-          },
-          "pack": {
-            "additionalProperties": true,
-            "title": "Pack",
-            "type": "object"
           }
         },
         "required": [
           "key",
-          "pack"
+          "description"
         ],
         "title": "CustomPackAcceptIn",
         "type": "object"
@@ -7286,6 +7304,17 @@
           "key": {
             "title": "Key",
             "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
           },
           "label_key": {
             "title": "Label Key",
@@ -15711,6 +15740,17 @@
           "key": {
             "title": "Key",
             "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
           },
           "label_key": {
             "title": "Label Key",

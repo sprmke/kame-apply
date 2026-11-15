@@ -27,6 +27,7 @@ async def profile_has_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> boo
         m.Certification,
         m.Language,
         m.Skill,
+        m.ProfileFacet,
     ):
         n = (
             await ctx.session.execute(
@@ -231,6 +232,24 @@ def _prepare(key: str, data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
+async def _validate_facet(ctx: WorkspaceContext, data: dict[str, Any]) -> None:
+    from app.industries.service import enabled_packs
+    from app.profiles.sanitize import strip_sensitive_numbers
+
+    facet_key = str(data.get("facet_key") or "")
+    value = str(data.get("value") or "")
+    _cleaned, kinds = strip_sensitive_numbers(value)
+    if kinds:
+        raise AppError("sensitive_field", "That value cannot be stored", 422)
+    allowed: set[str] = set()
+    for pack in await enabled_packs(ctx):
+        for facet in pack.facets:
+            if facet.key == facet_key:
+                allowed.update(option.key for option in facet.options)
+    if not allowed or value not in allowed:
+        raise AppError("invalid_facet", "Choose a value from the field list", 422)
+
+
 async def create_item(
     ctx: WorkspaceContext, profile_id: uuid.UUID, key: str, body: BaseModel
 ) -> DeclarativeBase:
@@ -238,6 +257,7 @@ async def create_item(
     sec = SECTIONS[key]
     data = _prepare(key, body.model_dump())
     if key == "facets":
+        await _validate_facet(ctx, data)
         duplicate = (
             await ctx.session.execute(
                 select(sec.model).where(
@@ -294,6 +314,8 @@ async def update_item(
         await _check_parent(ctx, profile_id, validated)
         validated = _prepare(key, validated)
         changes["evidence_strength"] = validated["evidence_strength"]
+    if key == "facets":
+        await _validate_facet(ctx, validated)
     for field in changes:
         setattr(row, field, validated.get(field, changes[field]))
     await ctx.session.flush()

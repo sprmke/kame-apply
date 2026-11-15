@@ -82,4 +82,4 @@ Deterministic verifier rejects missing evidence, fabricated numbers, and banned 
 
 ## Prompts
 
-Registry: `resume_critique`, `resume_verify`, `resume_lens`, `resume_tailor_review`, `cover_letter`. R1 primary path is deterministic; LLM prompts are registered for later depth.
+Registry: `resume_critique`, `resume_verify`, `resume_lens`, `resume_tailor_review`, `cover_letter`. The critique, lens, tailor-review, and cover-letter prompts are v2 and receive the Track pack brief plus bullet guidance. `profile_extract` is v2. R1 primary path remains deterministic; LLM output is a draft.

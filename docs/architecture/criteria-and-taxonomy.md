@@ -66,6 +66,7 @@ Match vocabulary: `taxonomy/skills.py` is a curated list of named skills and too
 | --- | --- | --- |
 | GET/POST | `/api/v1/tracks` | list / create (`industry` optional; defaults to the workspace primary) |
 | GET | `/api/v1/tracks/templates` | global templates |
+| POST | `/api/v1/tracks/plan` | pack-aware deterministic search plan |
 | POST | `/api/v1/tracks/reorder` | active Tracks only |
 | GET/PATCH | `/api/v1/tracks/{id}` | detail / metadata (`industry` change audited) |
 | PUT | `/api/v1/tracks/{id}/criteria` | structured replace |

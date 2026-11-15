@@ -1,9 +1,9 @@
 """Jooble keyword + location search API (Layer 4).
 
-Terms: https://jooble.org/api/about. The public page was unreachable from the build environment
-on 2026-11-13, so `terms_verified` stays false until a human confirms quota, attribution, and
-display rules. Fixtures are allowed for tests. Live calls require the platform terms acknowledgement
-(`SEARCH_TERMS_ACKNOWLEDGED=true`) plus JOOBLE_API_KEY. No logged-in scraping, no evasion.
+Terms: https://jooble.org/api/about and the official REST API help page. Checked 2026-11-13:
+the free plan lists 100 requests/day per regional key, and a key is valid only on the domain that
+issued it. Fixtures are allowed for tests. Live calls require the platform terms acknowledgement
+(`SEARCH_TERMS_ACKNOWLEDGED=true`) plus the regional key. No logged-in scraping, no evasion.
 """
 
 from __future__ import annotations
@@ -26,8 +26,8 @@ class JoobleSearchAdapter:
         name="Jooble search",
         layer="search",
         terms_note=(
-            "Keyword and location search API. Quota, attribution, and display terms must be "
-            "confirmed before live use (2026-11-13)."
+            "Regional REST API. Free plan lists 100 requests/day per key; a key is valid only on "
+            "its own country domain. Terms checked 2026-11-13."
         ),
         countries=(
             "PH",
@@ -50,20 +50,43 @@ class JoobleSearchAdapter:
         auth="api_key",
         rate_limit_per_minute=10,
         terms_verified=False,
-        terms_url="https://jooble.org/api/about",
+        terms_url="https://help.jooble.org/en/support/solutions/articles/60001448238-rest-api-documentation",
     )
 
-    def __init__(self, *, api_key: str | None = None, fixture_dir: Path | None = None):
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        api_keys: Mapping[str, str] | None = None,
+        fixture_dir: Path | None = None,
+    ):
         self._api_key = api_key
+        self._api_keys = {str(k).upper(): v for k, v in (api_keys or {}).items() if v}
         self._fixture_dir = fixture_dir
+
+    def _key_for(self, country: str) -> str | None:
+        if country and country in self._api_keys:
+            return self._api_keys[country]
+        # A bare jooble.org key belongs to the US domain. Never reuse it on another region.
+        if not country or country == "US":
+            return self._api_key
+        return None
 
     async def discover(self, params: Mapping[str, object]) -> AsyncIterator[RawJob]:
         query = SearchQuery.from_params(params)
         if self._fixture_dir:
             data = json.loads((self._fixture_dir / "jobs.json").read_text(encoding="utf-8"))
-        elif self._api_key:
+        else:
+            key = self._key_for(query.country.upper() if query.country else "")
+            if not key:
+                return
+            host = (
+                f"https://{query.country.lower()}.jooble.org"
+                if query.country
+                else "https://jooble.org"
+            )
             data, _, _ = await fetch_json(
-                f"https://jooble.org/api/{self._api_key}",
+                f"{host}/api/{key}",
                 method="POST",
                 json_body={
                     "keywords": query.keywords,
@@ -71,8 +94,6 @@ class JoobleSearchAdapter:
                     "page": str(max(1, query.page)),
                 },
             )
-        else:
-            return
         if not isinstance(data, dict):
             return
         for job in data.get("jobs") or []:

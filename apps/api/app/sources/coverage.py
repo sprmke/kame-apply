@@ -199,7 +199,9 @@ async def source_advice(session: AsyncSession, *, industry: str, country: str) -
         suggestions.append(
             {
                 "kind": "careers",
-                "text": f"Add a {tag} employer careers page so we can read its postings.",
+                "text": (
+                    f"Add a {tag.replace('_', ' ')} employer careers page so we can read its postings."
+                ),
             }
         )
     return {

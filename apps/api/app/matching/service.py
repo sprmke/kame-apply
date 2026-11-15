@@ -14,8 +14,7 @@ from app.audit import service as audit
 from app.companies.models import Company
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
-from app.industries.packs.general import GENERAL
-from app.industries.registry import get_pack
+from app.industries import service as industries_service
 from app.industries.schema import IndustryPack
 from app.jobs.models import Job, JobSource, TrackJob
 from app.matching.embed import (
@@ -70,7 +69,7 @@ def _job_dict(job: Job, company_name: str | None = None) -> dict[str, Any]:
 
 
 async def _profile_context(
-    ctx: WorkspaceContext, profile_id: uuid.UUID
+    ctx: WorkspaceContext, profile_id: uuid.UUID, *, pack: IndustryPack | None = None
 ) -> tuple[dict[str, Any], dict[str, Any], list[str], float]:
     profile = await ctx.session.get(profile_models.CandidateProfile, profile_id)
     if profile is None or profile.workspace_id != ctx.workspace_id:
@@ -143,6 +142,18 @@ async def _profile_context(
             credential_names.append(cert.credential_key.lower())
         if cert.name:
             credential_names.append(cert.name.lower())
+    if pack is not None:
+        known = set(credential_names)
+        for credential in pack.credentials:
+            aliases = [credential.key.replace("_", " "), *credential.aliases]
+            if any(
+                alias.lower() in name or name in alias.lower()
+                for alias in aliases
+                for name in credential_names
+                if name
+            ):
+                known.add(credential.key.lower())
+        credential_names = sorted(known)
     profile_blob = {
         "work_authorization": profile.work_authorization or {},
         "years_experience": years,
@@ -242,10 +253,14 @@ async def score_track_jobs(
     structured = (crit_row.structured if crit_row else {}) or {}
     criteria = criteria_from_dict(structured)
     settings = dict(track.settings or {})
-    pack = get_pack(track.industry) or GENERAL
+    pack = await industries_service.pack_for_track(
+        ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+    )
     weights = clamp_weights({**pack.matching.weights, **(settings.get("ranking_weights") or {})})
 
-    profile_blob, answers, skill_names, years = await _profile_context(ctx, track.profile_id)
+    profile_blob, answers, skill_names, years = await _profile_context(
+        ctx, track.profile_id, pack=pack
+    )
     hidden = {
         str(r.company_id)
         for r in (
@@ -469,6 +484,7 @@ async def _llm_fit_batch(
 ) -> None:
     """Optional structured fit for top N. Uses cheap tier; skipped if no AI."""
     from pydantic import BaseModel, Field
+    from pydantic_ai import PromptedOutput
 
     from app.ai import service as ai_service
     from app.ai.prompts import get_prompt
@@ -487,7 +503,9 @@ async def _llm_fit_batch(
     prompt_def = get_prompt("job_fit")
     from app.ai.prompts import with_pack_brief
 
-    pack = get_pack(track.industry)
+    pack = await industries_service.pack_for_track(
+        ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+    )
     for tj, _ in rows:
         job = await ctx.session.get(Job, tj.job_id)
         if job is None:
@@ -508,13 +526,15 @@ async def _llm_fit_batch(
             feature="job_fit",
             system=with_pack_brief(prompt_def.system, pack),
             prompt=prompt,
-            output_type=FitOut,
+            output_type=PromptedOutput(FitOut),
         )
         fit = dict(tj.fit or {})
         fit["llm"] = result.output.model_dump()
         tj.fit = fit
         comps = dict(tj.score_components or {})
-        weights = clamp_weights((track.settings or {}).get("ranking_weights") or {})
+        weights = clamp_weights(
+            {**pack.matching.weights, **((track.settings or {}).get("ranking_weights") or {})}
+        )
         tj.score = blend_score(
             comps, weights, semantic=comps.get("semantic"), llm=result.output.score
         )
