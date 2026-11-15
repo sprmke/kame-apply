@@ -12,7 +12,7 @@ from app.applications.models import Application
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
-from app.industries.registry import get_pack
+from app.industries.service import pack_for_track
 from app.jobs.models import Job
 from app.profiles.models import CandidateProfile, Experience, Skill
 from app.strategy import caps as caps_mod
@@ -96,7 +96,9 @@ async def optimize_linkedin(ctx: WorkspaceContext, track_id: uuid.UUID) -> Linke
         location=profile.location,
         experiences=exps,
         skills=skills,
-        pack=get_pack(track.industry),
+        pack=await pack_for_track(
+            ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+        ),
     )
     await audit.record(
         ctx,

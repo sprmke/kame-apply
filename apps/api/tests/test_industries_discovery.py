@@ -14,7 +14,7 @@ from app.sources.search_service import _cached, _hash, _store_cache, plan_querie
 from app.tracks.criteria import CriteriaV1, LocationFilter, TitleSpec
 from app.tracks.models import Track
 from kame_core.sources import get_adapter
-from tests.conftest import TEST_DB_URL
+from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
 from tests.test_ai import env  # noqa: F401
 from tests.test_workspaces import signup
 
@@ -75,6 +75,71 @@ async def test_search_adapter_fixtures_yield_jobs():
     assert adzuna_jobs[0].company_name == "Riverside Kitchen"
 
 
+async def test_jooble_uses_the_regional_domain_and_key(monkeypatch):
+    import kame_core.sources.adapters.search_jooble as jooble_module
+
+    seen: list[str] = []
+
+    async def fake_fetch(url, **kwargs):
+        seen.append(url)
+        return {"jobs": []}, 0, None
+
+    monkeypatch.setattr(jooble_module, "fetch_json", fake_fetch)
+    adapter = get_adapter("search_jooble", api_keys={"AE": "ae-key", "PH": "ph-key"})
+    assert [
+        job
+        async for job in adapter.discover(
+            {"keywords": "Sous chef", "location": "Dubai", "country": "AE"}
+        )
+    ] == []
+    assert seen == ["https://ae.jooble.org/api/ae-key"]
+
+    # A key that is not present for the country must not be reused from another region.
+    adapter = get_adapter("search_jooble", api_keys={"PH": "ph-key"})
+    assert [
+        job
+        async for job in adapter.discover(
+            {"keywords": "Sous chef", "location": "Dubai", "country": "AE"}
+        )
+    ] == []
+    assert seen == ["https://ae.jooble.org/api/ae-key"]
+
+
+def test_stale_track_sources_are_filtered_by_pack():
+    from types import SimpleNamespace
+
+    from app.sources.discover import _enabled_source_keys
+
+    def src(key, **kw):
+        base = {"key": key, "enabled_global": True, "circuit_open": False}
+        base.update(kw)
+        return SimpleNamespace(**base)
+
+    rows = [
+        (None, src("search_jooble")),
+        (None, src("greenhouse")),
+        (None, src("career_jsonld")),
+        (None, src("search_adzuna", circuit_open=True)),
+    ]
+    assert _enabled_source_keys(rows, {"search_jooble", "career_jsonld"}) == {
+        "search_jooble",
+        "career_jsonld",
+    }
+
+
+def test_adapter_country_support_filter():
+    from app.sources.search_service import _supports_country
+
+    adzuna = get_adapter("search_adzuna").meta
+    jooble = get_adapter("search_jooble").meta
+    assert _supports_country(adzuna, "GB")
+    assert not _supports_country(adzuna, "PH")
+    assert not _supports_country(adzuna, "AE")
+    assert _supports_country(jooble, "PH")
+    assert _supports_country(jooble, "AE")
+    assert _supports_country(jooble, "")
+
+
 async def test_query_cache_round_trip_and_expiry():
     engine = create_async_engine(TEST_DB_URL)
     factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -86,6 +151,10 @@ async def test_query_cache_round_trip_and_expiry():
         await session.commit()
         hit = await _cached(session, "search_jooble", key, now)
         assert hit == [{"title": "x"}]
+        empty_key = _hash({"keywords": "empty-cache-test"})
+        await _store_cache(session, "search_jooble", empty_key, [], ttl_hours=1, now=now)
+        await session.commit()
+        assert await _cached(session, "search_jooble", empty_key, now) == []
     await engine.dispose()
 
 
@@ -144,6 +213,60 @@ async def test_where_and_coverage_and_alert_guides(env):  # noqa: F811
     assert guides.status_code == 200, guides.text
     providers = {item["provider"] for item in guides.json()}
     assert {"indeed", "linkedin", "culinary_agents"} <= providers
+
+
+def test_provider_errors_never_keep_api_keys():
+    import httpx
+
+    from app.sources.search_service import _safe_error
+
+    request = httpx.Request("GET", "https://api.adzuna.com/v1/jobs?app_id=abc&app_key=secret")
+    response = httpx.Response(401, request=request)
+    error = httpx.HTTPStatusError("unauthorized", request=request, response=response)
+    stored = _safe_error(error)
+    assert "secret" not in stored
+    assert "app_key" not in stored
+    assert "401" in stored
+
+
+async def test_hospitality_track_default_sources_are_limited_to_the_pack(env):  # noqa: F811
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    assert (
+        await c.post("/api/v1/workspace/industries", json={"key": "hospitality"}, headers=h)
+    ).status_code == 200
+    profile = (await c.post("/api/v1/profiles", json={"display_name": "Ana"}, headers=h)).json()
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    from app.companies.seed import seed_sources
+
+    engine = create_async_engine(TEST_OWNER_URL)
+    factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with factory() as session:
+        await seed_sources(session)
+        await session.commit()
+    await engine.dispose()
+    track = await c.post(
+        "/api/v1/tracks",
+        json={
+            "profile_id": profile["id"],
+            "name": "Sous chef",
+            "industry": "hospitality",
+            "criteria": {
+                "titles": [{"title": "Sous chef", "synonyms": [], "exclude": False}],
+                "locations": [{"place": "Dubai", "country": "AE"}],
+            },
+        },
+        headers=h,
+    )
+    assert track.status_code == 201, track.text
+    rows = await c.get(f"/api/v1/tracks/{track.json()['id']}/sources", headers=h)
+    assert rows.status_code == 200
+    keys = {row["source_key"] for row in rows.json()}
+    assert "greenhouse" not in keys
+    assert "remotive" not in keys
+    assert {"search_jooble", "search_adzuna", "career_jsonld"} <= keys
 
 
 async def test_hospitality_search_run_ingests_and_links_chef_jobs(env, tmp_path):  # noqa: F811

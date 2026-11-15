@@ -122,10 +122,7 @@ const hiddenWithValues = computed(() => {
   if (
     stateOf("remote_eligibility") === "hidden" &&
     rem &&
-    (rem.anywhere ||
-      rem.regions?.length ||
-      rem.countries?.length ||
-      rem.timezone_overlap_hours != null)
+    (rem.anywhere || rem.regions?.length || rem.countries?.length)
   ) {
     out.push(labelFor("remote_eligibility", "tracks.tzOverlap"));
   }
@@ -531,7 +528,12 @@ async function saveMore() {
       anywhere: c.remote_eligibility?.anywhere ?? false,
       regions,
       countries: c.remote_eligibility?.countries ?? [],
-      timezone_overlap_hours: tzOverlap.value,
+      timezone_overlap_hours:
+        c.remote_eligibility?.timezone_overlap_hours != null ||
+        Boolean(regionPreset.value) ||
+        showAll.value
+          ? tzOverlap.value
+          : null,
       base_tz: c.remote_eligibility?.base_tz ?? null,
     },
     salary:

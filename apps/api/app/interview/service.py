@@ -11,7 +11,7 @@ from app.applications.models import Application
 from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
-from app.industries.registry import get_pack
+from app.industries.service import pack_for_track
 from app.interview import models as m
 from app.interview.build import build_prep
 from app.interview.schemas import InterviewPrepRead
@@ -101,7 +101,13 @@ async def generate_prep(ctx: WorkspaceContext, application_id: uuid.UUID) -> Int
         skills=skills,
         experiences=exp_dicts,
         bullets=bullet_dicts,
-        pack=get_pack(track.industry) if track is not None else None,
+        pack=(
+            await pack_for_track(
+                ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+            )
+            if track is not None
+            else None
+        ),
     )
 
     existing = (

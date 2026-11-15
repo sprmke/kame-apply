@@ -585,3 +585,76 @@ Docs per slice: `docs/architecture/industries.md` (new, the canonical pack refer
 | D6 | Workday/SuccessFactors JSON endpoints | Decide per vendor after the terms check. Default to JSON-LD only |
 | D7 | Phase numbering: new `phase-21-multi-industry.md` vs a standalone program like the UX overhaul | **New phase file**, with these slices as its checklist |
 | D8 | Sequencing against the UX overhaul | Run UX-0/UX-1 first if they're already started. Otherwise start IND-0/IND-1, which have no UI conflict |
+
+---
+
+## 17. Production review (2026-11-14)
+
+A second pass ran in an isolated worktree (`ind/production-review`) against the committed program
+branch. Full `pnpm run ci:quality` passed: 595 API tests, 14 runner tests, 21 UI, 18 web, 9
+extension, and 103 eval-lite tests (1 live skip).
+
+Security audit fixes:
+
+- Provider failures no longer persist or serve URLs/query strings with Adzuna/Jooble keys. A new
+  migration also scrubs existing `sources.last_error` rows.
+- `workspace_industries` and `profile_facets` revoke the read-only role, matching other tenant
+  tables.
+- Custom packs are re-derived server-side from `description` and `base_pack`; the brief is
+  sanitized and fenced as data. A client cannot post arbitrary prompt or safety content.
+- Facet writes are limited to enabled pack options and reject sensitive numbers.
+- Resume verification and parse confirmation include `profile_facets`; parsed facets come from
+  the confirmed draft, not raw document text.
+- Image dimensions are checked before decode, the cap is 20 MP, and re-encoding runs off the event
+  loop.
+- Manual "Run now" has a per-workspace daily cap; scheduled runs keep each schedule's cap.
+- Custom-pack updates and default track sources both emit audit rows.
+- Stored custom packs that no longer validate fall back to General instead of breaking the
+  workspace.
+
+Design review fixes:
+
+- Workspace picker tiles use the 2px brand focus outline and `edge` borders.
+- The custom field input has a real label, a short placeholder, and a stacked button.
+- Custom packs show a Draft chip and pencil text until accepted; the short label is backed by the
+  full name in the accessible label and tooltip.
+- Drafting prepends the tile, preserves existing selections, and announces when the limit is hit.
+- The "Set earlier" summary no longer reports an implicit timezone default for hidden fields.
+
+Provider terms were reviewed on 2026-11-13 from the official help pages:
+
+- Jooble: regional REST API, 100 requests/day per regional key; a key only works on the domain that
+  issued it. The adapter now uses `{country}.jooble.org` and reads `JOOBLE_API_KEY_PH` and
+  `JOOBLE_API_KEY_AE`.
+- Adzuna: 25 requests/minute, 250/day, 2,500/month free tier; attribution required and commercial
+  product use needs a licence after a 14-day evaluation. Adzuna has no PH or AE market, so those
+  searches skip it instead of sending a doomed request.
+
+Live calls are gated on the operator setting `SEARCH_TERMS_ACKNOWLEDGED=true` and keys. With the
+operator keys in place, live staging calls succeeded on 2026-11-13:
+
+- Jooble PH, Manila, `sous chef`: 5 of 5 sample jobs returned.
+- Jooble AE, Dubai, `sous chef`: 5 of 5 sample jobs returned.
+- Adzuna GB, London, `sous chef`: 5 of 5 sample jobs returned.
+
+A local Kame search then ingested 30 Jooble jobs for Dubai and 28 for Manila and scored them. The
+run exposed two discovery defects, both fixed with tests:
+
+- A stale track could keep older tech ATS source rows, and the board loop also allowed any board
+  when `career_jsonld` was enabled. Hospitality tracks could poll Greenhouse tech boards. Discovery
+  now intersects enabled sources with the pack allowlist and only polls a board whose adapter is
+  allowed.
+- `linked` stayed at 0 even when new TrackJobs were created because the counter was lost during the
+  background progress commit. The completed run now reconciles `linked` from the TrackJob count
+  delta.
+
+A local Ollama `qwen2.5:7b` call through the app's tool-less structured path returned
+`hospitality` at 0.9 confidence for a Dubai sous chef description. That exposed a provider
+compatibility issue: `job_fit` used native tool output, which the local model could not satisfy.
+It now uses `PromptedOutput`, like the resume prompts and `profile_extract`.
+
+The hospitality employer seed was checked: Accor, Compass Group, Hilton, Marriott, Carnival, Royal
+Caribbean, and Sodexo return HTTP 200 but expose no JSON-LD job postings on the landing page; Hyatt,
+IHG, and Radisson return 403 and stay candidate/unpolled. Carnival, Royal Caribbean, and Sodexo URLs
+were corrected in the seed. None were promoted to active because the JSON-LD adapter found no
+JobPosting records.

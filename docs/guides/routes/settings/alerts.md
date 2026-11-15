@@ -29,3 +29,8 @@ Private forwarding address for job-alert emails, provider setup steps, Telegram 
 ## Implementation map
 
 `apps/web/app/pages/settings/alerts.vue` · `apps/api/app/ingest/` · `docs/architecture/email-ingest.md`
+
+
+## Niche hospitality alerts
+
+The setup list includes a Culinary Agents / JobStreet / SEEK / hcareers step when the workspace's field is Hospitality. Kame offers prefilled public search links from `GET /sources/alerts/guide`; the person creates the alert and forwards it. No board is automated or signed in to.

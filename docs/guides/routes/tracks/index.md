@@ -48,3 +48,8 @@ Helper text: "This search uses the field's filters, words, and sources." No othe
 ## Implementation map
 
 `tracks/index.vue`, `useActiveProfile`, `useExperience` (field chips and labels), i18n `tracks.*` and `industry.*`.
+
+
+## Custom field
+
+**Something else** in the workspace picker drafts a field from a short description. The draft is validated and accepted as a custom pack; the workspace then sees its title and the same filters as the base pack it selected. A custom field never gets new field types or weaker safety rules.

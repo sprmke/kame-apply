@@ -118,18 +118,24 @@ salary predicate. Unknown facet keys or options return 422 with the field path.
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/api/v1/industries` | Curated packs: key, label, icon, role families. Any authenticated user. |
+| POST | `/api/v1/industries/detect` | Deterministic field detection from a title or description. |
+| POST | `/api/v1/industries/draft` | Deterministic custom pack draft; user-scoped. |
+| POST | `/api/v1/workspace/industries/custom` | Accept a custom pack draft. Body: `key`, `description`, optional `base_pack`, optional `is_primary`. The server re-derives the pack from the description; owner/admin; audited. |
 | GET | `/api/v1/workspace/industries` | The active workspace's fields plus General (always last). |
 | POST | `/api/v1/workspace/industries` | Add a field. `workspace.update` (owner/admin). |
 | PUT | `/api/v1/workspace/industries/primary` | Change the primary field. owner/admin. |
 | DELETE | `/api/v1/workspace/industries/{key}` | Remove a field. Tracks move to the remaining primary or General. owner/admin. |
 | GET | `/api/v1/workspace/experience` | Resolved global manifest plus one manifest per enabled pack. |
 | GET | `/api/v1/workspaces/{id}/experience` | Same, but the path id must equal the verified active workspace or 404. |
+| POST | `/api/v1/tracks/plan` | Pack-aware deterministic search plan and source queries. |
+| GET | `/api/v1/sources/advice` | Coverage plus alert/employer suggestions for a field and country. |
 
 Track create/update accepts `industry`. A value must be General or one of the workspace's fields
 (422 otherwise). Omitting it uses the template's pack when curated, else the workspace primary.
 
 Audit actions: `workspace.industry_added`, `workspace.industry_removed`,
-`workspace.industry_primary_changed`, `track.industry_changed`.
+`workspace.industry_primary_changed`, `workspace.custom_pack_accepted`,
+`track.industry_changed`, `track_source.defaulted`.
 
 ## 6. Data and migration
 

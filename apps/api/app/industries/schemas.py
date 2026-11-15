@@ -16,6 +16,7 @@ class RoleFamilyRead(BaseModel):
 class IndustrySummary(BaseModel):
     key: str
     label_key: str
+    label: str | None = None
     icon: str
     role_families: list[RoleFamilyRead] = Field(default_factory=list)
 
@@ -27,6 +28,7 @@ class IndustryList(BaseModel):
 class WorkspaceIndustryRead(BaseModel):
     key: str
     label_key: str
+    label: str | None = None
     icon: str
     is_primary: bool
     custom: bool = False
@@ -89,4 +91,6 @@ class CustomPackAcceptIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(min_length=1, max_length=48, pattern=r"^custom_[a-z0-9_]+$")
-    pack: dict[str, Any]
+    description: str = Field(min_length=3, max_length=600)
+    base_pack: str | None = Field(default=None, max_length=48)
+    is_primary: bool = False

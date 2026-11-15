@@ -897,8 +897,10 @@ export const zCritiqueRead = z.object({
  * CustomPackAcceptIn
  */
 export const zCustomPackAcceptIn = z.object({
-    key: z.string().min(1).max(48).regex(/^custom_[a-z0-9_]+$/),
-    pack: z.record(z.unknown())
+    base_pack: z.string().max(48).nullish(),
+    description: z.string().min(3).max(600),
+    is_primary: z.boolean().optional().default(false),
+    key: z.string().min(1).max(48).regex(/^custom_[a-z0-9_]+$/)
 });
 
 /**
@@ -2711,6 +2713,7 @@ export const zRoleFamilyRead = z.object({
 export const zIndustrySummary = z.object({
     icon: z.string(),
     key: z.string(),
+    label: z.string().nullish(),
     label_key: z.string(),
     role_families: z.array(zRoleFamilyRead).optional()
 });
@@ -3825,6 +3828,7 @@ export const zWorkspaceIndustryRead = z.object({
     icon: z.string(),
     is_primary: z.boolean(),
     key: z.string(),
+    label: z.string().nullish(),
     label_key: z.string()
 });
 

@@ -7,7 +7,7 @@ Rank Track jobs with explainable scores and triage them on the Jobs board.
 1. **Hard filters** (`matching/hard_filters.py`): compiled criteria + knockout predictor + hidden companies → `eligible` / `not_eligible`.
 2. **Rule score** (`matching/rule_score.py`): title (pack title groups and generic words), must-skills, seniority, salary, freshness (<72h), location/remote, **commute distance** when coordinates exist, **credentials** named in the posting vs profile certifications, and **shift** overlap. Unknown shifts and unknown facets stay neutral.
 3. **Semantic** (`matching/embed.py`): fastembed `bge-small-en-v1.5` (or hash embedder in tests via `MATCHING_EMBEDDER=hash`); cosine → 0–100; stored on `jobs.embedding` (pgvector HNSW).
-4. **LLM fit** (optional, top N): prompt `job_fit` via bulk tier; skipped when AI unset/budget → `ai_review_paused`.
+4. **LLM fit** (optional, top N): prompt `job_fit` v2 via bulk tier (pack brief included); skipped when AI unset/budget → `ai_review_paused`.
 
 Final score is a weighted blend. Defaults come from the Track's industry pack (`pack.matching.weights`); learned `tracks.settings.ranking_weights` override them and stay bounded (`matching/feedback.py`). Facet matches with `match.boost` add a small capped bonus. Hard filters apply pack facets marked `match.filter` only when the posting has known values, so an unknown stays eligible (P4).
 

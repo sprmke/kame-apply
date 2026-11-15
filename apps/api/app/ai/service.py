@@ -348,7 +348,7 @@ async def _invoke(
     prompt: str,
     max_out: int,
     model_factory,
-    output_type: type | None = None,
+    output_type: Any = None,
     retries: int = 0,
 ) -> tuple[Any, int, int, int]:
     api_key = None
@@ -466,7 +466,7 @@ async def run_structured(
     feature: str,
     system: str,
     prompt: str,
-    output_type: type,
+    output_type: Any,
     max_output_tokens: int | None = None,
     model_factory=build_model,
     retries: int = 1,

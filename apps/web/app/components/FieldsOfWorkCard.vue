@@ -37,7 +37,8 @@ const available = computed(() =>
   ),
 );
 
-function label(item: WorkspaceIndustryRead): string {
+function label(item: { key: string; label_key: string; label?: string | null }): string {
+  if (item.label) return item.label;
   return te(item.label_key) ? t(item.label_key) : item.key;
 }
 
@@ -50,13 +51,20 @@ function preview(key: string): string {
   const current = exp.manifestFor(exp.primary.value);
   if (!next || !current) return "";
   const bits: string[] = [];
-  const nextName = te(`industry.${key}.label`) ? t(`industry.${key}.label`) : key;
+  const nextName = exp.packLabel(key);
   bits.push(t("workspace.primaryPreview", { name: nextName }));
   if (next.states.shifts !== current.states.shifts) {
     bits.push(
       next.states.shifts === "visible"
         ? t("workspace.previewShifts")
         : t("workspace.previewShiftsHidden"),
+    );
+  }
+  if (next.states.remote_eligibility !== current.states.remote_eligibility) {
+    bits.push(
+      next.states.remote_eligibility === "hidden"
+        ? t("workspace.previewRemoteHidden")
+        : t("workspace.previewRemote"),
     );
   }
   if (next.features.github_links !== current.features.github_links) {
@@ -200,7 +208,7 @@ async function makePrimary(key: string) {
         @click="add(item.key)"
       >
         <Icon :name="item.icon" :size="16" aria-hidden="true" />
-        {{ te(item.label_key) ? t(item.label_key) : item.key }}
+        {{ label(item) }}
       </FnButton>
     </div>
     <p v-if="!ws.canManage" class="text-sm text-ink-600">{{ t("workspace.fieldsReadOnly") }}</p>

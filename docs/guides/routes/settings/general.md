@@ -41,3 +41,8 @@ Name field, Save. Leaving with unsaved edits asks first. Fields of work: primary
 ## Implementation map
 
 `pages/settings/general.vue`, `components/FieldsOfWorkCard.vue`, `useExperience`, i18n `workspace.*`.
+
+
+## Custom field
+
+A field with no curated pack can be drafted from the workspace picker's **Something else** box. `POST /industries/draft` returns a schema-valid draft, and `POST /workspace/industries/custom` accepts it. Custom packs only select existing building blocks; they cannot add a field type or weaken a safety rule. The field appears in Fields of work with its drafted name.

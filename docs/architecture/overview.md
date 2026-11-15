@@ -118,6 +118,7 @@ profile_experiences(id, profile_id, company, title, employment_type, location, s
 profile_bullets(id, experience_id|project_id, text, metrics jsonb, skills[], evidence_strength, source[parsed|interview|user])
 profile_education / profile_projects / profile_certifications / profile_languages
 profile_skills(profile_id, skill_id?, name, level, years, last_used, evidence_refs[])
+profile_facets(id, workspace_id, profile_id, facet_key, value, source, do_not_use, confidential, sort_order)
 answer_bank(id, profile_id, key, country?, question_variants[], answer, answer_json?, scope[global|track], track_id?, approved bool)
 voice_profiles(profile_id, samples jsonb, style jsonb, banned_phrases[], analyzed_at?)
 documents(id, workspace_id, profile_id, kind[resume_upload|portfolio|generated], r2_key, mime, parsed jsonb, parse_quality)
@@ -134,6 +135,8 @@ jobs(id, company_id, title, normalized_title, occupation_codes[], seniority, emp
      locations jsonb, remote_eligibility jsonb, salary jsonb, skills[], description_html, description_text,
      language, posted_at, expires_at, status[open|closed], content_hash, simhash, apply_url, canonical_url, embedding vector)
 job_sources(job_id, source_id, external_id, url, first_seen_at, last_seen_at)
+source_coverage(source_key, country, industry, coverage, note)          -- global coverage
+source_query_cache(source_key, query_hash, payload jsonb, fetched_at, expires_at)
 job_qualifications(job_id, kind[must|preferred|knockout], text, normalized jsonb)   -- extracted once, reused everywhere
 job_risk(job_id, level, score, reasons jsonb, model_version, assessed_at)          -- global signal
 track_jobs(id, workspace_id, track_id, job_id, score, fit jsonb, eligibility, status[new|shortlisted|skipped|hidden|applied...], skip_reason, seen_at)

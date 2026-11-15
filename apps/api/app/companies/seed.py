@@ -209,6 +209,10 @@ async def seed_directory(session: AsyncSession, *, target_boards: int = 5000) ->
     return {"boards": int(total), "added": added}
 
 
+# Checked 2026-11-13 with the public career-pages adapter. Accor, Compass, Hilton, Marriott,
+# Carnival, Royal Caribbean, and Sodexo return 200 but do not expose JobPosting JSON-LD on the
+# landing page. Hyatt, IHG, and Radisson return 403 and are never retried through another identity.
+# Everything stays candidate, so none is polled.
 HOSPITALITY_CAREERS: tuple[tuple[str, str], ...] = (
     ("Marriott International", "https://careers.marriott.com"),
     ("Hilton", "https://jobs.hilton.com"),
@@ -216,10 +220,10 @@ HOSPITALITY_CAREERS: tuple[tuple[str, str], ...] = (
     ("Accor", "https://careers.accor.com"),
     ("IHG Hotels & Resorts", "https://careers.ihg.com"),
     ("Radisson Hotel Group", "https://careers.radissonhotels.com"),
-    ("Carnival Corporation", "https://careers.carnivalcorp.com"),
-    ("Royal Caribbean Group", "https://www.royalcaribbeangroup.com/careers"),
+    ("Carnival Corporation", "https://jobs.carnivalcorp.com/"),
+    ("Royal Caribbean Group", "https://careers.royalcaribbeangroup.com/"),
     ("Compass Group", "https://www.compass-group.com/en/careers"),
-    ("Sodexo", "https://www.sodexo.com/careers"),
+    ("Sodexo", "https://www.sodexo.com/working-at-sodexo/find-a-job"),
 )
 
 

@@ -213,6 +213,32 @@ def build_from_profile(
             )
         )
 
+    facet_groups: dict[str, list[str]] = {}
+    for facet in profile.get("facets") or []:
+        key = str(facet.get("facet_key") or "").strip()
+        value = str(facet.get("value") or "").strip()
+        if key and value:
+            facet_groups.setdefault(key, []).append(value)
+    if facet_groups and pack is not None and "facets" in pack.resume.section_titles:
+        facet_lines = [
+            ResumeLine(
+                text=f"{key.replace('_', ' ').title()}: {', '.join(values)}",
+                evidence_refs=[
+                    str(facet["id"])
+                    for facet in profile.get("facets") or []
+                    if facet.get("facet_key") == key and facet.get("id")
+                ],
+            )
+            for key, values in facet_groups.items()
+        ]
+        sections.append(
+            ResumeSection(
+                kind="facets",
+                heading=pack.resume.section_titles["facets"],
+                lines=facet_lines,
+            )
+        )
+
     if pack is not None and pack.resume.section_order:
         order = {kind: index for index, kind in enumerate(pack.resume.section_order)}
         sections.sort(key=lambda section: order.get(section.kind, 99))

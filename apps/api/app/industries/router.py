@@ -27,6 +27,7 @@ async def list_industries(_: Principal = Depends(current_principal)):
             s.IndustrySummary(
                 key=pack.key,
                 label_key=pack.label_key,
+                label=pack.display_name or None,
                 icon=pack.icon,
                 role_families=[
                     s.RoleFamilyRead(
@@ -58,7 +59,13 @@ async def draft_pack(body: s.CustomPackDraftIn, _: Principal = Depends(current_p
 
 @workspace_router.post("/industries/custom", response_model=s.WorkspaceIndustryList)
 async def add_custom_pack(body: s.CustomPackAcceptIn, ctx: WorkspaceContext = Write):
-    items = await service.add_custom_industry(ctx, key=body.key, pack_data=body.pack)
+    items = await service.add_custom_industry(
+        ctx,
+        key=body.key,
+        description=body.description,
+        base_pack=body.base_pack,
+        is_primary=body.is_primary,
+    )
     return s.WorkspaceIndustryList(items=[s.WorkspaceIndustryRead(**item) for item in items])
 
 
