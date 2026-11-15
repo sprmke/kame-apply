@@ -1,0 +1,99 @@
+{
+  "id": "16_linkedin_pdf_us",
+  "country": "US",
+  "role": "frontend engineer",
+  "layout": "two_column",
+  "resume_text": "Jordan Blake\nSenior Frontend Engineer\nAcme | Remote\n2021-03 - Present\nBuilt design systems and led a team of five.\nBeta | New York, NY\n2018-06 - 2021-03\nShipped customer dashboards.\nSkills: React, TypeScript, CSS, accessibility",
+  "expected": {
+    "display_name": "Jordan Blake",
+    "experiences": [
+      {
+        "company": "Acme",
+        "title": "Senior Frontend Engineer",
+        "start_date": "2021-03-01",
+        "end_date": null,
+        "is_current": true
+      },
+      {
+        "company": "Beta",
+        "title": "Frontend Engineer",
+        "start_date": "2018-06-01",
+        "end_date": "2021-03-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Jordan Blake",
+      "confidence": 0.95,
+      "span": "Jordan Blake"
+    },
+    "headline": {
+      "value": "Senior Frontend Engineer",
+      "confidence": 0.9,
+      "span": "Senior Frontend Engineer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Acme",
+        "title": "Senior Frontend Engineer",
+        "start_date": "2021-03-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Acme | Senior Frontend Engineer"
+      },
+      {
+        "company": "Beta",
+        "title": "Frontend Engineer",
+        "start_date": "2018-06-01",
+        "end_date": "2021-03-01",
+        "is_current": false,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Beta | Frontend Engineer"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "React",
+        "confidence": 0.8
+      },
+      {
+        "name": "TypeScript",
+        "confidence": 0.8
+      },
+      {
+        "name": "CSS",
+        "confidence": 0.8
+      },
+      {
+        "name": "accessibility",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

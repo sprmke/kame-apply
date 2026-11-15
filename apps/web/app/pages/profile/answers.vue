@@ -164,6 +164,7 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
       <h2 class="text-xl font-bold text-ink-900">{{ t("career.tabs.answers") }}</h2>
       <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.answersLede") }}</p>
     </div>
+    <FilledFromResume page="answers" :control="t('setup.control.answers')" />
     <div class="flex flex-wrap items-center gap-2">
       <FnInput
         v-model="q"
@@ -197,13 +198,9 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
           <p v-if="item.draft" class="text-sm text-pencil">{{ item.draft }}</p>
           <p class="text-xs text-ink-600">{{ sourceLabel(item) }}</p>
           <div class="flex flex-wrap gap-2">
-            <FnButton
-              v-if="item.draft"
-              size="sm"
-              tone="primary"
-              @click="useDraft(item)"
-              >{{ t("career.useDraft") }}</FnButton
-            >
+            <FnButton v-if="item.draft" size="sm" tone="primary" @click="useDraft(item)">{{
+              t("career.useDraft")
+            }}</FnButton>
             <FnButton
               size="sm"
               tone="ghost"

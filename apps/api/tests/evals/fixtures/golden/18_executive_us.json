@@ -1,0 +1,95 @@
+{
+  "id": "18_executive_us",
+  "country": "US",
+  "role": "chief operating officer",
+  "layout": "single",
+  "resume_text": "Dana Whitfield\nChief Operating Officer\nNorthwind Group | Chicago, IL\n2019-01 - Present\nRuns operations for 1,200 people across six sites.\nPine Labs | Chicago, IL\n2012-01 - 2019-01\nLed service delivery.\nSkills: operations, P&L, transformation",
+  "expected": {
+    "display_name": "Dana Whitfield",
+    "experiences": [
+      {
+        "company": "Northwind Group",
+        "title": "Chief Operating Officer",
+        "start_date": "2019-01-01",
+        "end_date": null,
+        "is_current": true
+      },
+      {
+        "company": "Pine Labs",
+        "title": "VP Operations",
+        "start_date": "2012-01-01",
+        "end_date": "2019-01-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Dana Whitfield",
+      "confidence": 0.95,
+      "span": "Dana Whitfield"
+    },
+    "headline": {
+      "value": "Chief Operating Officer",
+      "confidence": 0.9,
+      "span": "Chief Operating Officer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Northwind Group",
+        "title": "Chief Operating Officer",
+        "start_date": "2019-01-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Northwind Group | Chief Operating Officer"
+      },
+      {
+        "company": "Pine Labs",
+        "title": "VP Operations",
+        "start_date": "2012-01-01",
+        "end_date": "2019-01-01",
+        "is_current": false,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Pine Labs | VP Operations"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "operations",
+        "confidence": 0.8
+      },
+      {
+        "name": "P&L",
+        "confidence": 0.8
+      },
+      {
+        "name": "transformation",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

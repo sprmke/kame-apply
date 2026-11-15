@@ -11,4 +11,6 @@ Uploaded resumes and pastes. A short lede explains that parsed text must be revi
 | Call | Purpose |
 | --- | --- |
 | `GET/POST .../documents` | list / upload |
+
+After a merge the page offers **Review changes** to `/start?mode=update`, so setup can update answers and searches from the same resume.
 | `DELETE .../documents/{id}` | delete |

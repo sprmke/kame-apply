@@ -75,15 +75,36 @@ export function useActiveProfile() {
     }
   }
 
+  let creating: Promise<string> | null = null;
+
   async function ensureProfile(displayName = "My profile"): Promise<string> {
     if (profileId.value) return profileId.value;
-    const { data } = await createProfileApiV1ProfilesPost({
-      body: { display_name: displayName },
-      throwOnError: true,
-    });
-    await qc.invalidateQueries({ queryKey: ["profiles", ws.currentId] });
-    if (data?.id) selectProfile(data.id);
-    return data!.id;
+    // One create at a time, after asking the server for what already exists. Without the
+    // refetch a page that mounts during a background refetch can create a duplicate profile.
+    if (creating) return creating;
+    creating = (async () => {
+      const { data: fresh } = await list.refetch();
+      const rows = fresh ?? list.data.value ?? [];
+      if (rows.length) {
+        const hit = rows.find((row) => row.is_default) ?? rows[0];
+        if (hit) {
+          selectProfile(hit.id);
+          return hit.id;
+        }
+      }
+      const { data } = await createProfileApiV1ProfilesPost({
+        body: { display_name: displayName },
+        throwOnError: true,
+      });
+      await qc.invalidateQueries({ queryKey: ["profiles", ws.currentId] });
+      if (data?.id) selectProfile(data.id);
+      return data!.id;
+    })();
+    try {
+      return await creating;
+    } finally {
+      creating = null;
+    }
   }
 
   async function refresh() {

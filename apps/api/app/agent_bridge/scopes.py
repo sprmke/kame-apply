@@ -37,6 +37,7 @@ TOOL_SCOPES: dict[str, frozenset[str]] = {
     "list_tracks": frozenset({"tracks:read", "admin"}),
     "get_track": frozenset({"tracks:read", "admin"}),
     "get_profile": frozenset({"profile:read", "admin"}),
+    "get_setup_draft": frozenset({"profile:read", "admin"}),
     "get_answer_bank": frozenset({"answers:read", "admin"}),
     "get_voice_profile": frozenset({"profile:read", "admin"}),
     "search_jobs": frozenset({"jobs:read", "admin"}),

@@ -349,3 +349,9 @@ async def test_propose_resume_changes_rejects_invented_metric():
     assert len(rejected) == 2
     assert gaps
     assert "truncated" in trim_payload({"items": list(range(500))}, max_chars=200)
+
+
+def test_setup_draft_tool_is_read_only_scoped():
+    from app.agent_bridge.scopes import TOOL_SCOPES
+
+    assert TOOL_SCOPES["get_setup_draft"] == frozenset({"profile:read", "admin"})

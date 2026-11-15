@@ -1,0 +1,82 @@
+{
+  "id": "17_student_projects_ph",
+  "country": "PH",
+  "role": "junior developer",
+  "layout": "single",
+  "resume_text": "Mika Santos\nJunior Developer\nManila, Philippines\n2026\nProjects\nCampus map app | React, Mapbox\nClass scheduler | Python, SQLite\nSkills: React, Python, SQL, Git",
+  "expected": {
+    "display_name": "Mika Santos",
+    "experiences": [
+      {
+        "company": "Campus map app",
+        "title": "Student project",
+        "start_date": "2025-06-01",
+        "end_date": "2025-12-01",
+        "is_current": false
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Mika Santos",
+      "confidence": 0.95,
+      "span": "Mika Santos"
+    },
+    "headline": {
+      "value": "Junior Developer",
+      "confidence": 0.9,
+      "span": "Junior Developer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Campus map app",
+        "title": "Student project",
+        "start_date": "2025-06-01",
+        "end_date": "2025-12-01",
+        "is_current": false,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Campus map app | Student project"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "React",
+        "confidence": 0.8
+      },
+      {
+        "name": "Python",
+        "confidence": 0.8
+      },
+      {
+        "name": "SQL",
+        "confidence": 0.8
+      },
+      {
+        "name": "Git",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

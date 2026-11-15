@@ -1,0 +1,78 @@
+{
+  "id": "24_two_column_ca",
+  "country": "CA",
+  "role": "data analyst",
+  "layout": "two_column",
+  "resume_text": "Alex Tremblay\nData Analyst\nToronto, Canada\nMaple Health | Toronto\n2021-05 - Present\nBuilds dashboards for clinical teams.\nSkills: SQL, Python, Tableau",
+  "expected": {
+    "display_name": "Alex Tremblay",
+    "experiences": [
+      {
+        "company": "Maple Health",
+        "title": "Data Analyst",
+        "start_date": "2021-05-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Alex Tremblay",
+      "confidence": 0.95,
+      "span": "Alex Tremblay"
+    },
+    "headline": {
+      "value": "Data Analyst",
+      "confidence": 0.9,
+      "span": "Data Analyst"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Maple Health",
+        "title": "Data Analyst",
+        "start_date": "2021-05-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Maple Health | Data Analyst"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "SQL",
+        "confidence": 0.8
+      },
+      {
+        "name": "Python",
+        "confidence": 0.8
+      },
+      {
+        "name": "Tableau",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

@@ -388,6 +388,83 @@ const opts = [
           </FnEmptyState>
         </div>
       </section>
+
+      <section aria-labelledby="d-setup" class="flex flex-col gap-4">
+        <h2 id="d-setup" class="text-xl font-bold">Setup review</h2>
+
+        <div
+          class="flex flex-wrap items-center gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-sm text-ink-600"
+        >
+          <span class="min-w-0 flex-1">
+            Filled from your resume. Check it, then use Strengthen your profile to improve it.
+          </span>
+          <FnButton tone="ghost" size="sm">Got it</FnButton>
+        </div>
+
+        <div class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              id="d-setup-skill"
+              type="checkbox"
+              checked
+              class="size-5 rounded border-edge text-brand-600"
+            />
+            <label for="d-setup-skill" class="text-sm font-semibold text-ink-900">Skill</label>
+            <FnChip>From your resume</FnChip>
+            <FnChip tone="neutral">Already there</FnChip>
+          </div>
+          <FnPencilText class="text-sm" draft-label="">Zendesk · 6 yrs</FnPencilText>
+          <details class="text-xs text-ink-600">
+            <summary class="cursor-pointer">Where this came from</summary>
+            <p class="mt-1 border-l-2 border-rule pl-2 italic">
+              "2020 - 2025 Support Lead at Acme"
+            </p>
+          </details>
+
+          <div class="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
+            <input
+              id="d-setup-auth"
+              type="checkbox"
+              checked
+              class="size-5 rounded border-edge text-brand-600"
+            />
+            <label for="d-setup-auth" class="text-sm font-semibold text-ink-900">
+              Work authorization (PH)
+            </label>
+            <FnChip tone="accent">Only you can answer this</FnChip>
+          </div>
+          <FnInput
+            placeholder="Job forms ask this. We never guess it."
+            aria-label="Work authorization"
+          />
+
+          <div class="flex flex-wrap gap-2 border-t border-rule pt-3">
+            <FnChip>From your resume</FnChip>
+            <FnChip>You said</FnChip>
+            <FnChip>Suggested</FnChip>
+            <FnChip>Recommended</FnChip>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2 rounded-xl border border-rule bg-paper-1 p-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <input
+              id="d-setup-search"
+              type="checkbox"
+              checked
+              class="size-5 rounded border-edge text-brand-600"
+            />
+            <label for="d-setup-search" class="text-sm font-semibold text-ink-900">
+              Frontend engineer, Manila or remote
+            </label>
+            <FnChip tone="accent">Edited</FnChip>
+            <FnButton tone="ghost" size="sm" class="ml-auto">Edit</FnButton>
+          </div>
+          <p class="text-sm text-ink-600">
+            Frontend engineer, UI engineer · React, TypeScript · Manila · remote
+          </p>
+        </div>
+      </section>
     </div>
     <FnToaster />
   </div>

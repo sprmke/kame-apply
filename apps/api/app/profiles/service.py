@@ -14,6 +14,7 @@ from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.profiles import models as m
 from app.profiles import schemas as s
+from app.taxonomy.aliases import canonicalize_skill
 
 PROFILE_LIMIT = 10  # profile selector exists from day one; coach workspaces raise this later
 
@@ -220,6 +221,9 @@ async def _check_parent(ctx: WorkspaceContext, profile_id: uuid.UUID, data: dict
 def _prepare(key: str, data: dict[str, Any]) -> dict[str, Any]:
     if key == "bullets":
         data["evidence_strength"] = evidence_strength(data["text"], data.get("metrics", []))
+    if key == "skills":
+        # Store the canonical label ("JS" -> "JavaScript") so duplicates never split a skill.
+        data["name"] = canonicalize_skill(data["name"])
     return data
 
 
@@ -274,6 +278,9 @@ async def update_item(
         await _check_parent(ctx, profile_id, validated)
         validated = _prepare(key, validated)
         changes["evidence_strength"] = validated["evidence_strength"]
+    elif key == "skills" and "name" in changes:
+        validated = _prepare(key, validated)
+        changes["name"] = validated["name"]
     for field in changes:
         setattr(row, field, validated.get(field, changes[field]))
     await ctx.session.flush()

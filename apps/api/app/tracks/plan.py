@@ -326,6 +326,16 @@ def _baseline(text: str, templates: Sequence[Any]) -> CriteriaV1:
     )
 
 
+def baseline_plan(text: str, templates: Sequence[Any] = ()) -> CriteriaV1:
+    """Public deterministic plan. Setup reuses it for every search variant."""
+    return _baseline(text, templates)
+
+
+def plan_from_model(plan: SearchPlanOut, *, base: CriteriaV1) -> CriteriaV1:
+    """Public model→criteria mapping, with the deterministic base as the floor."""
+    return _from_model(plan, base=base)
+
+
 def _from_model(plan: SearchPlanOut, *, base: CriteriaV1) -> CriteriaV1:
     """Map model output onto CriteriaV1, falling back to the deterministic base when thin."""
     titles: list[TitleSpec] = []

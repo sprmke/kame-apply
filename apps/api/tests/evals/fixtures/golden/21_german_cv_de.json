@@ -1,0 +1,78 @@
+{
+  "id": "21_german_cv_de",
+  "country": "DE",
+  "role": "software engineer",
+  "layout": "single",
+  "resume_text": "Lena Hoffmann\nSoftware Engineer\nGeburtsdatum: 14.02.1988\nBerlin, Deutschland\nKernwerk | Berlin\n2018-04 - Present\nBackend services in Python.\nSkills: Python, PostgreSQL, AWS",
+  "expected": {
+    "display_name": "Lena Hoffmann",
+    "experiences": [
+      {
+        "company": "Kernwerk",
+        "title": "Software Engineer",
+        "start_date": "2018-04-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Lena Hoffmann",
+      "confidence": 0.95,
+      "span": "Lena Hoffmann"
+    },
+    "headline": {
+      "value": "Software Engineer",
+      "confidence": 0.9,
+      "span": "Software Engineer"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Kernwerk",
+        "title": "Software Engineer",
+        "start_date": "2018-04-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Kernwerk | Software Engineer"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "Python",
+        "confidence": 0.8
+      },
+      {
+        "name": "PostgreSQL",
+        "confidence": 0.8
+      },
+      {
+        "name": "AWS",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

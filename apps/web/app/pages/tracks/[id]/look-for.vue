@@ -382,6 +382,7 @@ async function saveMore() {
 <template>
   <TrackShell :track-id="trackId">
     <div v-if="track" class="flex flex-col gap-5">
+      <FilledFromResume page="searches" :control="t('setup.control.searches')" />
       <FnSectionCard :title="t('tracks.whatToLookFor')" :intro="t('tracks.whatToLookForIntro')">
         <FnField v-slot="{ id }" :label="t('tracks.describe')">
           <FnTextarea :id="id" v-model="nl" :rows="4" />
@@ -522,7 +523,7 @@ async function saveMore() {
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="workModes.includes(m)"
                 @change="toggleMode(m)"
-              >
+              />
               {{ t(`tracks.mode_${m}`) }}
             </label>
           </fieldset>
@@ -540,7 +541,7 @@ async function saveMore() {
                 class="size-5 rounded border-rule accent-brand-600"
                 :checked="employmentTypes.includes(e)"
                 @change="toggleEmployment(e)"
-              >
+              />
               {{ t(`tracks.emp_${e}`) }}
             </label>
           </fieldset>
@@ -564,7 +565,7 @@ async function saveMore() {
               min="0"
               max="12"
               class="min-h-11 w-full accent-brand-600"
-            >
+            />
             <span class="text-sm tabular-nums text-ink-600">{{ tzOverlap }}h</span>
           </label>
           <label class="flex min-h-11 items-center gap-3 text-sm text-ink-900">
@@ -572,7 +573,7 @@ async function saveMore() {
               v-model="visa"
               type="checkbox"
               class="size-5 rounded border-rule accent-brand-600"
-            >
+            />
             {{ t("tracks.visa") }}
           </label>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-2">

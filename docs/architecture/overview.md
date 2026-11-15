@@ -67,7 +67,7 @@ External: Cloudflare R2 (files) · Resend (email out) · CF Email Routing→Work
 | `interview` | Per-application interview prep (truthful, cited). |
 | `gaps` | Track skill gap plans. |
 | `referrals` | Contacts import + outreach drafts (user sends). |
-| `onboarding` | Read-only setup plan from resume text and a role sentence. Owns no tables. |
+| `onboarding` | Setup from a resume: persisted draft, review bundle, apply through existing services, retention. Details: [`setup.md`](./setup.md). |
 | `notifications` | In-app, email, web push, Telegram; preferences; digests. Details: [`automation.md`](./automation.md). |
 | `ai` | Provider router, model tiers, prompt registry, cost metering, budget enforcement, eval hooks. |
 | `audit` | `activity_log`, admin views. |

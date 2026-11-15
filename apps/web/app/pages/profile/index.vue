@@ -52,7 +52,8 @@ const nextSteps = computed(() => {
   const out: { label: string; to: string }[] = [];
   if (!p.headline) out.push({ label: t("career.addHeadline"), to: "/start" });
   if (!p.location) out.push({ label: t("career.addLocation"), to: "/start" });
-  if (!p.experiences?.length) out.push({ label: t("career.addExperience"), to: "/profile/onboarding" });
+  if (!p.experiences?.length)
+    out.push({ label: t("career.addExperience"), to: "/profile/onboarding" });
   if (!p.skills?.length) out.push({ label: t("career.addSkills"), to: "/profile/onboarding" });
   return out.slice(0, 3);
 });
@@ -65,6 +66,7 @@ const nextSteps = computed(() => {
       <FnSkeleton class="h-24 w-full" />
     </div>
     <template v-else-if="profile">
+      <FilledFromResume page="profile" :control="t('setup.control.profile')" />
       <section class="flex flex-col gap-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
@@ -129,11 +131,9 @@ const nextSteps = computed(() => {
               :key="b.id"
               class="flex items-start gap-2 text-sm"
             >
-              <FnChip
-                :tone="chipTone(b.evidence_strength ?? 'weak')"
-                class="mt-0.5 shrink-0"
-                >{{ proofLabel(b.evidence_strength) }}</FnChip
-              >
+              <FnChip :tone="chipTone(b.evidence_strength ?? 'weak')" class="mt-0.5 shrink-0">{{
+                proofLabel(b.evidence_strength)
+              }}</FnChip>
               <span :class="b.do_not_use ? 'text-ink-600 line-through' : 'text-ink-900'">{{
                 b.text
               }}</span>

@@ -118,6 +118,21 @@ async def test_every_simple_section_supports_crud(env):  # noqa: F811
         assert (await c.delete(f"{base}/{item_id}", headers=h)).status_code == 404
 
 
+async def test_skills_are_stored_with_canonical_names(env):  # noqa: F811
+    """`/start` sends whatever the user typed; aliases must not split one skill into two rows."""
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    p = await make_profile(c, me)
+    base = f"{P}/{p['id']}/skills"
+    created = await c.post(base, json={"name": "js"}, headers=h)
+    assert created.status_code == 201, created.text
+    assert created.json()["name"] == "JavaScript"
+    patched = await c.patch(f"{base}/{created.json()['id']}", json={"name": "k8s"}, headers=h)
+    assert patched.status_code == 200, patched.text
+    assert patched.json()["name"] == "Kubernetes"
+
+
 async def test_certification_accepts_the_default_kind(env):  # noqa: F811
     """The column is sized for the longest allowed value, not just 'license'.
 

@@ -1,0 +1,78 @@
+{
+  "id": "22_ph_ids_salary_ph",
+  "country": "PH",
+  "role": "support lead",
+  "layout": "single",
+  "resume_text": "Ana Reyes\nSupport Lead\nManila, Philippines\nSSS No: 12-3456789-0\nTIN: 123-456-789\nExpected salary: PHP 60,000 per month\nAcme | Manila\n2020-01 - Present\nLeads a support team of eight.\nSkills: Zendesk, SQL, team leadership",
+  "expected": {
+    "display_name": "Ana Reyes",
+    "experiences": [
+      {
+        "company": "Acme",
+        "title": "Support Lead",
+        "start_date": "2020-01-01",
+        "end_date": null,
+        "is_current": true
+      }
+    ]
+  },
+  "recorded_draft": {
+    "display_name": {
+      "value": "Ana Reyes",
+      "confidence": 0.95,
+      "span": "Ana Reyes"
+    },
+    "headline": {
+      "value": "Support Lead",
+      "confidence": 0.9,
+      "span": "Support Lead"
+    },
+    "summary": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "location": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "timezone": {
+      "value": null,
+      "confidence": 0.1
+    },
+    "language": {
+      "value": "en",
+      "confidence": 0.5
+    },
+    "links": [],
+    "experiences": [
+      {
+        "company": "Acme",
+        "title": "Support Lead",
+        "start_date": "2020-01-01",
+        "end_date": null,
+        "is_current": true,
+        "bullets": [],
+        "confidence": 0.9,
+        "span": "Acme | Support Lead"
+      }
+    ],
+    "projects": [],
+    "education": [],
+    "certifications": [],
+    "languages": [],
+    "skills": [
+      {
+        "name": "Zendesk",
+        "confidence": 0.8
+      },
+      {
+        "name": "SQL",
+        "confidence": 0.8
+      },
+      {
+        "name": "team leadership",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

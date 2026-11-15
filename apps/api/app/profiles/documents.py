@@ -6,6 +6,7 @@ file bytes or resume text.
 
 from __future__ import annotations
 
+import asyncio
 import re
 import uuid
 from typing import Any
@@ -30,6 +31,7 @@ from app.profiles.service import _get_profile
 from app.workspaces import limits as workspace_limits
 
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
+EXTRACT_TIMEOUT_SECONDS = 10
 
 
 def _object_key(
@@ -127,7 +129,9 @@ async def _process_bytes(
 ) -> m.Document:
     scan_bytes(data)
     try:
-        extracted = extract_text(data, mime)
+        extracted = await asyncio.wait_for(
+            asyncio.to_thread(extract_text, data, mime), timeout=EXTRACT_TIMEOUT_SECONDS
+        )
         cleaned = sanitize_untrusted_text(extracted.text)
         row.extracted_text = cleaned.text
         row.ocr_used = extracted.ocr_needed
@@ -144,6 +148,22 @@ async def _process_bytes(
         row.warnings = [{"code": "extract_failed", "message": "Could not read this file"}]
         await ctx.session.flush()
         raise
+    except TimeoutError:
+        row.status = "failed"
+        row.warnings = [{"code": "extract_timeout", "message": "Reading this file took too long"}]
+        await ctx.session.flush()
+        await audit.record(
+            ctx,
+            action="document.failed",
+            target_type="document",
+            target_id=str(row.id),
+            after={"profile_id": str(row.profile_id), "code": "extract_timeout"},
+        )
+        raise AppError(
+            "extract_timeout",
+            "Reading this file took too long. Paste the text instead.",
+            422,
+        ) from None
     except Exception:
         row.status = "failed"
         row.warnings = [{"code": "extract_failed", "message": "Could not read this file"}]
@@ -222,6 +242,58 @@ async def upload_document(
         after={"profile_id": str(profile_id), "kind": kind, "mime": mime},
     )
     return await _process_bytes(ctx, row, data, mime, storage)
+
+
+async def create_text_document(
+    ctx: WorkspaceContext,
+    profile_id: uuid.UUID,
+    text: str,
+    storage: ObjectStorage,
+    *,
+    kind: s.DocumentKind = "paste",
+) -> m.Document:
+    """Store pasted resume text through the same extract → sanitize pipeline as an upload.
+
+    Used by setup drafts and `/start` paste. The sanitizer strips injection lines, hidden text,
+    and sensitive numbers before anything reaches a model.
+    """
+    await _get_profile(ctx, profile_id)
+    data = (text or "").encode("utf-8")
+    if not data.strip():
+        raise AppError("empty_text", "Paste some resume text first", 422)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise AppError(
+            "file_too_large",
+            "Pasted text must be 10 MB or smaller",
+            422,
+            {"max_bytes": MAX_UPLOAD_BYTES},
+        )
+    await _require_storage_room(ctx, len(data))
+
+    doc_id = uuid.uuid4()
+    key = _object_key(ctx.workspace_id, profile_id, doc_id, "pasted-resume.txt")
+    row = m.Document(
+        id=doc_id,
+        workspace_id=ctx.workspace_id,
+        profile_id=profile_id,
+        kind=kind,
+        r2_key=key,
+        filename="pasted-resume.txt",
+        mime="text/plain",
+        size_bytes=len(data),
+        status="pending",
+        created_by=ctx.user_id,
+    )
+    ctx.session.add(row)
+    await ctx.session.flush()
+    await audit.record(
+        ctx,
+        action="document.created",
+        target_type="document",
+        target_id=str(row.id),
+        after={"profile_id": str(profile_id), "kind": kind, "mime": "text/plain"},
+    )
+    return await _process_bytes(ctx, row, data, "text/plain", storage)
 
 
 async def presign_upload(
