@@ -12,53 +12,11 @@ from app.core.security import WorkspaceContext
 from app.extension.models import ApplyCheckpoint, ApplyRun
 from app.jobs.models import DiscoveryRun, Job, TrackJob
 from app.onboarding.models import SetupDraft
-from app.onboarding.models import SetupDraft
-from app.onboarding.models import SetupDraft
-from app.onboarding.models import SetupDraft
 from app.safety.models import JobRisk, RiskOverride
 
 
 async def list_needs_you(ctx: WorkspaceContext, *, limit: int = 40) -> dict[str, Any]:
     items: list[dict[str, Any]] = []
-
-    # Setup left answers only the person can give. One nudge per profile for 30 days.
-    from datetime import timedelta
-
-    cutoff = datetime.now(UTC) - timedelta(days=30)
-    setup_rows = (
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                    SetupDraft.applied_at >= cutoff,
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(10)
-            )
-        )
-        .scalars()
-        .all()
-    )
-    seen_profiles: set[Any] = set()
-    for row in setup_rows:
-        if row.profile_id in seen_profiles:
-            continue
-        seen_profiles.add(row.profile_id)
-        count = int(((row.result or {}).get("counts") or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answers only you can give",
-                "detail": "Open Answers and fill them in.",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
 
     # Open apply-run checkpoints (Phase 15)
     open_cps = (
@@ -90,280 +48,6 @@ async def list_needs_you(ctx: WorkspaceContext, *, limit: int = 40) -> dict[str,
                     "checkpoint_id": str(cp.id),
                     "kind": cp.kind,
                 },
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        ).scalars()
-    )
-    for row in setup_rows:
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        ).scalars()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        ).scalars()
-    )
-    for row in setup_rows:
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        ).scalars()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers that setup left for the person: eligibility, pay, or notice.
-    from app.onboarding.models import SetupDraft
-
-    setup_rows = (
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        )
-        .scalars()
-        .all()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        )
-        .scalars()
-        .all()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = (
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        )
-        .scalars()
-        .all()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id)},
-            }
-        )
-
-    # Answers setup could not fill: only the person can give them.
-    setup_rows = list(
-        (
-            await ctx.session.execute(
-                select(SetupDraft)
-                .where(
-                    SetupDraft.workspace_id == ctx.workspace_id,
-                    SetupDraft.status == "applied",
-                    SetupDraft.applied_at.is_not(None),
-                )
-                .order_by(SetupDraft.applied_at.desc())
-                .limit(5)
-            )
-        )
-        .scalars()
-        .all()
-    )
-    seen_profiles: set[str] = set()
-    for row in setup_rows:
-        if str(row.profile_id) in seen_profiles:
-            continue
-        seen_profiles.add(str(row.profile_id))
-        count = int((row.result or {}).get("needs_you") or 0)
-        if count <= 0:
-            continue
-        items.append(
-            {
-                "kind": "setup_answers",
-                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
-                "detail": "Work authorization, pay, or notice",
-                "href": "/profile/answers",
-                "created_at": row.applied_at,
-                "meta": {"draft_id": str(row.id)},
             }
         )
 
@@ -488,6 +172,42 @@ async def list_needs_you(ctx: WorkspaceContext, *, limit: int = 40) -> dict[str,
                 "href": "/settings/ai",
                 "created_at": n.created_at,
                 "meta": {},
+            }
+        )
+
+    # Answers setup could not fill: only the person can give them.
+    setup_rows = (
+        (
+            await ctx.session.execute(
+                select(SetupDraft)
+                .where(
+                    SetupDraft.workspace_id == ctx.workspace_id,
+                    SetupDraft.status == "applied",
+                    SetupDraft.applied_at.is_not(None),
+                )
+                .order_by(SetupDraft.applied_at.desc())
+                .limit(5)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    seen_profiles: set[str] = set()
+    for row in setup_rows:
+        if str(row.profile_id) in seen_profiles:
+            continue
+        seen_profiles.add(str(row.profile_id))
+        count = int((row.result or {}).get("needs_you") or 0)
+        if count <= 0:
+            continue
+        items.append(
+            {
+                "kind": "setup_answers",
+                "title": f"{count} answer{'s' if count != 1 else ''} only you can give",
+                "detail": "Work authorization, pay, or notice",
+                "href": "/profile/answers",
+                "created_at": row.applied_at,
+                "meta": {"draft_id": str(row.id), "profile_id": str(row.profile_id)},
             }
         )
 

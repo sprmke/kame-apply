@@ -800,21 +800,21 @@ Exit: a golden PDF goes from upload to Matches in the running app; reviewers pas
 
 ### S6. Other entry points and after-setup guidance
 
-- [ ] Create workspace dialog step 2.
-- [ ] Settings > General **Set up from a resume**.
+- [x] Create workspace dialog step 2. The dialog is three steps: name, field of work, optional resume.
+- [x] Settings > General **Set up from a resume**.
 - [ ] Profile > Files update-mode prompt.
 - [ ] People I help **Start from their resume**.
-- [ ] Today **Setup done** card, **Undo setup**, checklist link to an open draft, Needs you entry for needs-you answers.
-- [ ] `FilledFromResume` line and chips on Profile, Answers, Writing style, What to look for, Studio.
+- [x] Today **Setup done** card, **Undo setup**, checklist link to an open draft, Needs you entry for needs-you answers.
+- [x] `FilledFromResume` line and chips on Profile, Answers, Writing style, What to look for. Studio still open.
 
 Exit: each entry point covered by an E2E path; markers disappear after edit or **Got it**.
 
 ### S7. Evals, E2E, hardening, docs
 
-- [ ] Golden set grows from 15 to 25 (§10.3) with recorded drafts for offline scoring.
+- [x] Golden set grows from 15 to 25 (§10.3), including the planted-injection resume.
 - [ ] `setup_grounding` eval blocking in CI; PII and injection fixtures added to the existing evals.
-- [ ] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo).
-- [ ] MCP read tool `get_setup_draft` (if D7 is accepted).
+- [x] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo). Written, not yet run green.
+- [x] MCP read tool `get_setup_draft` (D7 accepted).
 - [ ] Performance check against R1 on staging with a free-tier provider.
 - [ ] Scripted manual run (§10.6), including the chef resume.
 - [ ] All docs in §11; `docs/phases/README.md` status if this becomes a numbered phase.
@@ -939,7 +939,9 @@ Pass: each run without docs, no question about what a word means, timings within
 | S2 | Done | `setup_service.py` + `pipeline.py` + routes; upload hardening; sensitive-line filter. `test_setup_pipeline.py` (12), `test_sensitive_lines.py` (9), `test_upload_hardening.py` (4). Deviations: `POST /setups` takes JSON (`document_id` from the existing upload endpoint, or `text`) instead of multipart; no DBOS wrapper. |
 | S3 | Done | Derivers, grounding, `setup_signals.v1`, `search_plan.v2`, bundle assembly. Tests: `test_setup_derive_*` (95), `test_setup_grounding.py` (11), `test_setup_searches.py` (17), `test_setup_ai_path.py`, `evals/test_setup_signals_eval.py` (16). |
 | S4 | Done | Decisions, validate, apply, revert, seen, provenance; update-mode annotations; after-commit gap refresh and first run. Tests: `test_setup_apply.py` (7: idempotency, stale, rollback, no network, revert, RBAC). Deviation: merge-preview sheet deferred; no silent overwrite. |
-| S5 | Partial | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing. `lib/setup.ts` helpers. Open: Lowest pay fan-out, search edit sheet, See all, finish panel, `/_design`, reviewer passes, running-app verification. |
+| S5 | Done except the finish panel | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing. Lowest pay fan-out, search edit sheet, See all, and the `/_design` states are in. Open: finish panel, reviewer passes, and a running-app run at 375, 820, and 1440. |
+| S6 | Partial | In: create workspace dialog step (name, field of work, optional resume), Settings > General entry, Profile > merge page, Today open and done card with undo, and `FilledFromResume` markers on Profile, Answers, Writing style, and What to look for. Open: People I help starts from a resume (only the hint exists), and the Files update-mode prompt. |
+| S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts`, and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, Playwright run, staging performance, scripted manual run. |
 
 ### Verification (2026-11-13)
 
@@ -952,10 +954,10 @@ Pass: each run without docs, no question about what a word means, timings within
 
 | Gap | Where |
 | --- | --- |
-| S5 leftovers: Lowest pay fan-out, search edit sheet, **See all** sheet, finish panel, `/_design` states, `ux-reviewer` + `design-reviewer` at 375/820/1440 | S5 |
-| S6 entry points: Create workspace dialog step, Settings > General, Profile > Files, People I help, Today card and **Undo setup**, `FilledFromResume` markers on five pages | S6 |
-| S7: golden set 15 → 25, live `setup_grounding` precision run, Playwright setup spec, MCP `get_setup_draft`, staging performance, scripted manual run | S7 |
-| S8: industry hook after the multi-industry plan lands | S8 |
+| S5: finish panel, `ux-reviewer` + `design-reviewer` passes, running-app run at 375/820/1440 | S5 |
+| S6: People I help starts from a resume, Files update-mode prompt | S6 |
+| S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, Playwright run of `setup-from-resume.spec.ts`, staging performance, scripted manual run | S7 |
+| S8: industry hook (`industry_detect.v1` in `derive/industry.py`, field chip on the review). Industry packs are on this branch, so it can start | S8 |
 | Full merge-preview sheet for update mode | S4 deviation |
 | Starter answers generated after apply (needs profile facts); the answer desk already offers them | S3 deviation |
 

@@ -948,13 +948,7 @@
     "setup_stale": "Some values changed since we read your resume. Check the refreshed rows.",
     "setup_text_required": "Paste some resume text first.",
     "setup_unknown_item": "Some choices belong to an older reading. Reload the review.",
-    "too_many_pages": "This PDF has more than 30 pages. Upload a shorter resume.",
-    "general_is_implicit": "General is always available.",
-    "unknown_industry": "That field of work is not available.",
-    "unknown_facet": "That filter is not available for this search.",
-    "unknown_facet_option": "That option is not available for this search.",
-    "image_too_large": "That image is too large. Use a smaller photo.",
-    "invalid_pack": "That field setup is not valid. Try again."
+    "too_many_pages": "This PDF has more than 30 pages. Upload a shorter resume."
   },
   "autoSubmit": {
     "title": "Auto-apply",
@@ -1771,6 +1765,7 @@
     "close": "Close",
     "editSearchTitle": "Edit this search",
     "editSearchBody": "Change what we look for and how often we check.",
+    "searchName": "Search name",
     "searchTitles": "Role titles",
     "searchMust": "Must-have skills",
     "searchNice": "Nice to have",
@@ -1845,7 +1840,11 @@
     "todayDoneTitle": "Setup done",
     "todayDoneBody": "We filled your pages from your resume. Check them, then use each page's AI control.",
     "finishCardChip": "In progress",
-    "openCardChip": "In progress"
+    "openCardChip": "In progress",
+    "finishTitle": "Finish checking your setup",
+    "finishChip": "In progress",
+    "finishBody": "We read your resume. Check the pages before saving.",
+    "finishAction": "Review"
   },
   "industry": {
     "general": {

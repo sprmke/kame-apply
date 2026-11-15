@@ -655,11 +655,9 @@ async def apply_setup(
             "created": {key: [str(i) for i in ids] for key, ids in outcome.created.items()},
             "updated": {key: [str(i) for i in ids] for key, ids in outcome.updated.items()},
             "counts": outcome.counts,
-            "needs_you": int(((draft.bundle or {}).get("counts") or {}).get("needs_you", 0)),
             "links": outcome.links,
             "before": outcome.before,
             "written": outcome.written,
-            "needs_you": int((draft.bundle or {}).get("counts", {}).get("needs_you", 0)),
         }
         draft.result = result
         draft.apply_key = apply_key

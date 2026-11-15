@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  getOpenSetupApiV1OnboardingSetupsGet,
+  openSetupApiV1OnboardingSetupsGet,
   getProvenanceApiV1OnboardingSetupsProvenanceGet,
   revertSetupApiV1OnboardingSetupsDraftIdRevertPost,
 } from "@kame/api-client";
@@ -19,7 +19,7 @@ const { profileId } = useActiveProfile();
 const openDraft = useQuery({
   queryKey: computed(() => ["today-setup-open", ws.currentId, profileId.value]),
   queryFn: async () => {
-    const { data } = await getOpenSetupApiV1OnboardingSetupsGet({
+    const { data } = await openSetupApiV1OnboardingSetupsGet({
       query: { profile_id: profileId.value! },
       throwOnError: true,
     });
