@@ -12,6 +12,7 @@ from app.audit import service as audit
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
+from app.industries.registry import get_pack
 from app.profiles import models as pm
 from app.resumes.content import ResumeContent
 from app.resumes.critique import critique_resume
@@ -49,6 +50,7 @@ async def load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> di
     skills = await _rows(pm.Skill)
     education = await _rows(pm.Education)
     certifications = await _rows(pm.Certification)
+    languages = await _rows(pm.Language)
     contact_email = (
         await ctx.session.execute(
             text("SELECT email FROM users WHERE id = CAST(:u AS uuid)"), {"u": str(ctx.user_id)}
@@ -126,7 +128,11 @@ async def load_profile_facts(ctx: WorkspaceContext, profile_id: uuid.UUID) -> di
         "education": [
             _d(e, "institution", "degree", "field", "start_date", "end_date") for e in education
         ],
-        "certifications": [_d(c, "name", "issuer", "kind", "issued_on") for c in certifications],
+        "certifications": [
+            _d(c, "name", "issuer", "kind", "credential_key", "issued_on", "expires_on")
+            for c in certifications
+        ],
+        "languages": [_d(lang, "name", "proficiency") for lang in languages],
     }
 
 
@@ -175,6 +181,7 @@ async def create_base(
 ) -> dict[str, Any]:
     facts = await load_profile_facts(ctx, profile_id)
     target = None
+    track = None
     if track_id:
         track = await ctx.session.get(track_models.Track, track_id)
         if track is None or track.workspace_id != ctx.workspace_id:
@@ -182,7 +189,10 @@ async def create_base(
         target = track.name
         if track.profile_id != profile_id:
             raise AppError("bad_request", "Track profile mismatch", 422)
-    content = build_from_profile(facts, target_role=target)
+    pack = get_pack(track.industry) if track is not None else None
+    content = build_from_profile(facts, target_role=target, pack=pack)
+    if template == "classic" and pack is not None:
+        template = pack.resume.template_id
     vr = verify_content(content, facts)
     if not vr.ok:
         # Drop lines that fail rather than inventing; keep structure
@@ -249,6 +259,8 @@ async def critique(
         market_skills=(insights or {}).get("skills"),
         target_role=content.target_role,
     )
+    row_track = await ctx.session.get(track_models.Track, row.track_id) if row.track_id else None
+    pack = get_pack(row_track.industry) if row_track is not None else None
     report = await enrich_critique(
         ctx,
         get_settings(),
@@ -256,6 +268,7 @@ async def critique(
         content=content,
         market_skills=(insights or {}).get("skills"),
         target_role=content.target_role,
+        pack=pack,
         run_structured=run_structured,
         model_factory=model_factory,
     )

@@ -10,13 +10,39 @@ One JSON document is the source of truth for a Track's search. Shape: `apps/api/
 | Summary sentence | `tracks/summary.py` (deterministic) |
 | Diff / merge / invent-guard | `tracks/diff.py`, `merge.py`, `invent_guard.py` |
 | NL compile | `tracks/compile_nl.py` (`criteria_compile.v1`, PromptedOutput) |
+| Search plan | `tracks/plan.py` (`search_plan.v1`; role-typical titles, skills, filters) |
 | Compiled predicates | `tracks/compile_filter.py` (versioned JSON for Phase 6; no raw SQL) |
 | Validate | `tracks/validate.py` (warnings, keyword boolean syntax) |
 | FX / period | `tracks/currency.py` + `currency_rates` table |
 | Geocode | `tracks/geocode.py` + `geocode_cache` (Nominatim, 1 req/s, UA) |
+| Industry pack | `industries/` (schema, packs, resolver). Details: [`industries.md`](./industries.md) |
 
 `track_criteria.version` increments on every structured write. Preview count stays "Preview available after first discovery" until Phase 5.
 
+## Search plan (defaults + AI)
+
+A new search should work before the user touches a filter. `POST /tracks/plan` and `POST /tracks/{id}/criteria/suggest` return a full plan:
+
+- **Role-shaped fields** come from the plan: titles and synonyms, must/nice skills, seniority, employment types, shifts, work modes, remote regions, posting age, agency exclusion, and facets the field of work defines.
+- **Personal filters** stay as the user set them on refine: locations, countries, timezone base, salary, company lists, caps, visa, relocation, match floor. A field is only replaced when the description mentions it, or when it is still unset and the plan has a default (freshness, agencies, region, work mode).
+- **Deterministic baseline** always exists: title from the first role phrase, the field of work's titles and default work modes, shifts, employment types, salary period and posting age, the nearest curated template for skills, parsed work modes/employment/seniority, `exclude_agencies=true`, `posting_max_age_days=21`, 7 for "last week" and 30 for "last month".
+- **AI is optional.** No key, budget stop, or provider error falls back to the baseline and returns `source="defaults"` + `ai_error`, never a failed search (P7). The plan is a suggestion until the user accepts it.
+- **Safety.** The description is delimited untrusted data, the call is tool-less (P6), and the model may not propose salary, visa, cities, companies, education, or clearance. Those stay user-owned.
+
+`Create` with `suggest: true` plans before insert, so a text-created Track lands with usable titles and skills. `duplicate` keeps the stored criteria untouched.
+## Industry-aware fields (IND-1)
+
+These are additive and optional, so existing criteria documents stay valid (`schema_version` 1).
+
+| Field | Shape | Notes |
+| --- | --- | --- |
+| `shifts` | `list[Shift]` | `morning`, `afternoon`, `evening`, `night`, `weekend`, `split`, `rotating`. Common outside tech. |
+| `facets` | `dict[str, list[str] | bool | int]` | Keys exist in the Track's industry pack; unknown keys return 422. |
+| `salary.includes` | `list[SalaryInclude]` | `accommodation`, `meals`, `tips`, `service_charge`, `transport`. |
+| `employment_types` | added `casual`, `seasonal` | AU/NZ/UK hospitality and cruise work. |
+
+`track_templates.industry` maps to a curated pack when one exists (`technology`), otherwise the
+track starts in `general` until its pack ships.
 ## Taxonomy (global)
 
 Tables (no RLS; app role SELECT-only except `geocode_cache` INSERT):
@@ -32,23 +58,41 @@ Full dumps: `uv run python scripts/taxonomy/refresh.py --esco-dir … --onet-dir
 
 Normalizers: trigram + aliases on the request path (`taxonomy/normalize.py`); optional LLM tiebreak later. `POST /taxonomy/profiles/{id}/skills/backfill` links `profile_skills.skill_id`.
 
+Match vocabulary: `taxonomy/skills.py` is a curated list of named skills and tools used only for inline posting highlights (`match_terms`). It is not the stored catalogue and does not need a seed. `taxonomy/aliases.py` owns the shared `skill_key` / `same_skill` comparison helpers used by verdicts and highlights.
+
 ## HTTP
 
 | Method | Path | Notes |
 | --- | --- | --- |
-| GET/POST | `/api/v1/tracks` | list / create |
+| GET/POST | `/api/v1/tracks` | list / create (`industry` optional; defaults to the workspace primary) |
 | GET | `/api/v1/tracks/templates` | global templates |
 | POST | `/api/v1/tracks/reorder` | active Tracks only |
-| GET/PATCH | `/api/v1/tracks/{id}` | detail / metadata |
+| GET/PATCH | `/api/v1/tracks/{id}` | detail / metadata (`industry` change audited) |
 | PUT | `/api/v1/tracks/{id}/criteria` | structured replace |
 | POST | `/api/v1/tracks/{id}/criteria/compile` | NL → patch (+ optional apply) |
+| POST | `/api/v1/tracks/plan` | Full search plan for a role text, nothing saved |
+| POST | `/api/v1/tracks/{id}/criteria/suggest` | Plan merged into a Track (`apply` optional) |
 | POST | `/api/v1/tracks/{id}/duplicate` \| `/archive` | |
 | GET | `/api/v1/tracks/geo/lookup?place=` | Nominatim via cache |
 | GET | `/api/v1/taxonomy/occupations/normalize` | |
 | GET | `/api/v1/taxonomy/skills/normalize` | |
 
-Audit actions: `track.created`, `track.updated`, `track.criteria_updated`, `track.duplicated`, `track.archived`, `track.reordered`.
+Audit actions: `track.created`, `track.updated`, `track.criteria_updated`, `track.duplicated`, `track.archived`, `track.reordered`, `track.industry_changed`.
 
 ## Evals
 
 `apps/api/tests/evals/fixtures/criteria/` (≥60 descriptions). Offline: merge + invent-guard + title accuracy ≥90%. Live LLM: inject `run_structured` or `RUN_LIVE_AI=1` when quota allows.
+
+Search plan: `apps/api/tests/evals/test_search_plan_eval.py` runs the deterministic baseline over every fixture (role signal present, real filters, no invented salary/visa/location) plus English title accuracy ≥85%. The AI path is covered by `tests/test_tracks.py` with an injected runner.
+
+## Product defaults (2026-11-12)
+
+- New searches start at **prepare** (`autonomy = "prepare"`, shown as **Find and prepare**), so shortlisted jobs get a draft without spending budget on every posting. Existing searches keep their saved value.
+- The web client adds one recommended schedule when a search is created: `every_4_hours`, quiet `22:00` to `07:00`, `daily_cap = 12`, timezone from the device. It is a normal `POST /tracks/{id}/schedules` call and is audit-logged by the schedule service.
+- Onboarding (`/start`) creates the profile, seeds canonical answers, creates the search with the user's chosen autonomy, then adds the same schedule.
+
+
+## Recommendation and onboarding (2026-11-13)
+
+- `GET /api/v1/tracks/{id}/recommended-settings` returns autonomy, schedule preset, quiet hours, daily cap, minimum match, source count, recent new-per-day, and up to three plain reasons. Rules only, no LLM. Applying uses the normal track and schedule endpoints.
+- `POST /api/v1/onboarding/plan` wraps the same plan with resume basics and answer drafts. See `profile.md`.

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import {
+  applyVoicePresetApiV1ProfilesProfileIdVoicePresetPost,
   getVoiceApiV1ProfilesProfileIdVoiceGet,
   putVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPut,
   updateVoiceApiV1ProfilesProfileIdVoicePatch,
   type VoiceRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnChoiceCards, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 
 const { t } = useI18n();
@@ -49,6 +50,35 @@ watch(
   },
   { immediate: true },
 );
+
+const presetOptions = computed(() => [
+  {
+    value: "plain",
+    title: t("career.presetPlain"),
+    effect: t("career.presetPlainEffect"),
+    badge: t("tracks.recommended"),
+  },
+  { value: "warm", title: t("career.presetWarm"), effect: t("career.presetWarmEffect") },
+  { value: "formal", title: t("career.presetFormal"), effect: t("career.presetFormalEffect") },
+]);
+
+async function applyPreset(value: string) {
+  if (!profileId.value || !value) return;
+  busy.value = true;
+  try {
+    await applyVoicePresetApiV1ProfilesProfileIdVoicePresetPost({
+      path: { profile_id: profileId.value },
+      body: { preset: value as "plain" | "warm" | "formal" },
+      throwOnError: true,
+    });
+    await qc.invalidateQueries({ queryKey: ["voice", profileId.value] });
+    toast.push({ title: t("common.saved"), tone: "success" });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    busy.value = false;
+  }
+}
 
 async function saveSamples() {
   if (!profileId.value) return;
@@ -107,6 +137,21 @@ async function saveMeta() {
       <h2 class="text-xl font-bold text-ink-900">{{ t("career.tabs.voice") }}</h2>
       <p class="max-w-2xl text-sm leading-6 text-ink-600">{{ t("career.voiceLede") }}</p>
     </div>
+
+    <section
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+    >
+      <div class="flex flex-col gap-1">
+        <h3 class="text-base font-bold text-ink-900">{{ t("career.voicePresetTitle") }}</h3>
+        <p class="text-sm leading-6 text-ink-600">{{ t("career.voicePresetIntro") }}</p>
+      </div>
+      <FnChoiceCards
+        :model-value="voiceData?.style?.preset || ''"
+        :options="presetOptions"
+        :label="t('career.voicePresetTitle')"
+        @update:model-value="applyPreset"
+      />
+    </section>
 
     <section class="flex flex-col gap-3">
       <div class="flex flex-col gap-1">

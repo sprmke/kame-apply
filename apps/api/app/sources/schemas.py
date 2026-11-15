@@ -118,3 +118,63 @@ class DirectoryStatsRead(BaseModel):
     boards_candidate: int = 0
     companies: int
     sources: int
+
+
+class CoverageSourceRead(BaseModel):
+    source_key: str
+    coverage: str
+    note: str
+
+
+class CoverageRead(BaseModel):
+    industry: str
+    country: str
+    level: str
+    sources: list[CoverageSourceRead]
+    note: str
+
+
+class SearchAdapterRead(BaseModel):
+    key: str
+    name: str
+    terms_note: str
+    terms_url: str
+    configured: bool
+    countries: list[str]
+
+
+class SearchQueryRead(BaseModel):
+    keywords: str
+    location: str
+    country: str
+    category: str | None = None
+
+
+class WhereLookRead(BaseModel):
+    industry: str
+    queries: list[SearchQueryRead]
+    adapters: list[SearchAdapterRead]
+    employer_tags: list[str]
+    alerts: list[str]
+
+
+class AlertGuideRead(BaseModel):
+    provider: str
+    label: str
+    url: str
+    note: str
+
+
+class SourceAdviceItem(BaseModel):
+    kind: str
+    text: str
+    provider: str | None = None
+
+
+class SourceAdviceRead(BaseModel):
+    industry: str
+    country: str
+    coverage: str
+    employer_tags: list[str]
+    alert_sources: list[str]
+    suggestions: list[SourceAdviceItem]

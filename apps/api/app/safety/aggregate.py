@@ -9,6 +9,22 @@ from app.safety.rules_engine import thresholds
 
 RiskLevel = Literal["green", "yellow", "red"]
 MODEL_VERSION = "safety_v1"
+ML_CLASSIFIER_EVIDENCE = "Wording resembles known scam postings"
+
+
+def reasons_for_display(reasons: list[Any] | None) -> list[Any]:
+    """Reasons as the UI should render them.
+
+    Stored rows from older assessments hold raw model tokens as evidence, which
+    read as broken words. Swap those for a sentence on read.
+    """
+    out: list[Any] = []
+    for r in reasons or []:
+        if isinstance(r, dict) and r.get("signal") == "ml_classifier":
+            out.append({**r, "evidence": ML_CLASSIFIER_EVIDENCE})
+        else:
+            out.append(r)
+    return out
 
 
 @dataclass
@@ -101,13 +117,14 @@ def aggregate(
         "delta": delta5,
     }
     if delta5 >= 12:
+        # `top_terms` are model tokens, not a sentence: they stay in layers for
+        # diagnostics and never reach the reasons the UI renders.
         reasons.append(
             {
                 "signal": "ml_classifier",
                 "layer": "L5",
                 "weight": delta5,
-                "evidence": ", ".join(getattr(ml, "top_terms", [])[:5])
-                or "elevated scam probability",
+                "evidence": ML_CLASSIFIER_EVIDENCE,
             }
         )
 

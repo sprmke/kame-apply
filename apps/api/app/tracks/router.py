@@ -10,8 +10,10 @@ from fastapi import APIRouter, Depends, Query, Request
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext, require_action
+from app.tracks import recommend as recommend_svc
 from app.tracks import schemas as s
 from app.tracks import service
+from app.tracks.plan import SearchPlanIn, SearchPlanOut
 
 router = APIRouter(prefix="/tracks", tags=["tracks"])
 Read = Depends(require_action("data.read"))
@@ -38,8 +40,14 @@ async def list_tracks(
 
 
 @router.post("", response_model=s.TrackDetail, status_code=201)
-async def create_track(body: s.TrackCreate, ctx: WorkspaceContext = Write):
-    detail = await service.create_track(ctx, body)
+async def create_track(
+    body: s.TrackCreate,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    detail = await service.create_track(ctx, body, settings=settings, run_structured=runner)
     return s.TrackDetail(
         **_track_read(detail["track"]).model_dump(),
         criteria=s.TrackCriteriaRead.model_validate(detail["criteria"]),
@@ -73,6 +81,49 @@ async def geo_lookup(
         display_name=hit.display_name,
         cached=hit.cached,
     )
+
+
+@router.post("/plan", response_model=SearchPlanOut)
+async def plan_search(
+    body: SearchPlanIn,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    result = await service.plan_search(
+        ctx,
+        settings,
+        text=body.text,
+        industry=body.industry,
+        run_structured=runner,
+    )
+    return SearchPlanOut(**result)
+
+
+@router.post("/{track_id}/criteria/suggest", response_model=s.CriteriaPlanPreview)
+async def suggest_criteria(
+    track_id: uuid.UUID,
+    body: s.CriteriaSuggestRequest,
+    request: Request,
+    settings: SettingsDep,
+    ctx: WorkspaceContext = Write,
+):
+    runner = getattr(request.app.state, "run_structured", None)
+    result = await service.suggest_criteria(
+        ctx,
+        settings,
+        track_id,
+        text=body.text,
+        apply=body.apply,
+        run_structured=runner,
+    )
+    return s.CriteriaPlanPreview(**result)
+
+
+@router.get("/{track_id}/recommended-settings", response_model=s.RecommendedSettingsRead)
+async def recommended_settings(track_id: uuid.UUID, ctx: WorkspaceContext = Read):
+    return await recommend_svc.recommend(ctx, track_id)
 
 
 @router.get("/{track_id}", response_model=s.TrackDetail)

@@ -15,13 +15,16 @@ const props = defineProps<{
   title: string;
   description?: string;
   variant?: "dialog" | "sheet";
+  size?: "md" | "lg";
   closeLabel?: string;
 }>();
 
 const cls = computed(() =>
   props.variant === "sheet"
     ? "fixed inset-x-0 bottom-0 max-h-[88dvh] rounded-t-2xl md:inset-y-0 md:right-0 md:left-auto md:max-h-none md:w-[440px] md:rounded-none md:rounded-l-2xl"
-    : "fixed top-1/2 left-1/2 max-h-[88dvh] w-[calc(100vw-32px)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl",
+    : `fixed top-1/2 left-1/2 max-h-[88dvh] w-[calc(100vw-32px)] ${
+        props.size === "lg" ? "max-w-2xl" : "max-w-lg"
+      } -translate-x-1/2 -translate-y-1/2 rounded-2xl`,
 );
 </script>
 
@@ -36,12 +39,12 @@ const cls = computed(() =>
       >
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-1">
-            <DialogTitle class="text-xl font-bold tracking-[-0.02em] text-ink-900">{{
-              title
-            }}</DialogTitle>
-            <DialogDescription v-if="description" class="text-sm text-ink-600">{{
-              description
-            }}</DialogDescription>
+            <DialogTitle class="text-xl font-bold tracking-[-0.02em] text-ink-900">
+              {{ title }}
+            </DialogTitle>
+            <DialogDescription v-if="description" class="text-sm text-ink-600">
+              {{ description }}
+            </DialogDescription>
             <DialogDescription v-else class="sr-only">{{ title }}</DialogDescription>
           </div>
           <DialogClose

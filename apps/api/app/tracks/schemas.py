@@ -21,10 +21,13 @@ class TrackCreate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     icon: str = Field(default="ph:path", max_length=64)
     color_hue: int = Field(default=1, ge=1, le=8)
-    autonomy: Autonomy = "discover"
+    autonomy: Autonomy = "prepare"
     nl_text: str = Field(default="", max_length=8000)
     criteria: CriteriaV1 | None = None
     template_slug: str | None = Field(default=None, max_length=80)
+    # Build a full role-based search setup from nl_text (falls back to deterministic defaults).
+    suggest: bool = False
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackUpdate(BaseModel):
@@ -35,6 +38,7 @@ class TrackUpdate(BaseModel):
     color_hue: int | None = Field(default=None, ge=1, le=8)
     autonomy: Autonomy | None = None
     settings: dict[str, Any] | None = None
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackReorder(BaseModel):
@@ -65,6 +69,27 @@ class CriteriaCompilePreview(BaseModel):
     invented_fields: list[str] = Field(default_factory=list)
 
 
+class CriteriaPlanRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=8000)
+
+
+class CriteriaPlanPreview(BaseModel):
+    criteria: CriteriaV1
+    summary: str
+    diff: list[dict[str, Any]]
+    warnings: list[dict[str, Any]]
+    source: Literal["ai", "defaults"] = "defaults"
+    ai_error: str | None = None
+    name: str = ""
+    applied: bool = False
+
+
+class CriteriaSuggestRequest(CriteriaPlanRequest):
+    apply: bool = False
+
+
 class TrackCriteriaRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -91,6 +116,8 @@ class TrackRead(BaseModel):
     summary: str
     settings: dict[str, Any]
     template_slug: str | None
+    industry: str
+    industry_version: int
     created_at: datetime
     updated_at: datetime
     archived_at: datetime | None
@@ -125,3 +152,16 @@ class GeocodeRead(BaseModel):
     country: str | None
     display_name: str
     cached: bool
+
+
+class RecommendedSettingsRead(BaseModel):
+    autonomy: Autonomy
+    preset: str
+    timezone: str
+    quiet_hours: dict[str, Any]
+    daily_cap: int
+    minimum_match: int
+    sources: int
+    new_per_day: float
+    per_run: int
+    reasons: list[str]

@@ -130,6 +130,20 @@ async def test_score_board_triage_csv_relax(env_m):
     assert body["qualifications"]
     assert body["title"]
 
+    # Inline highlights: a profile skill mentioned in the posting is marked met.
+    profiles = (await c.get("/api/v1/profiles", headers=h)).json()
+    skill = await c.post(
+        f"/api/v1/profiles/{profiles[0]['id']}/skills",
+        json={"name": "Python"},
+        headers=h,
+    )
+    assert skill.status_code == 201, skill.text
+    detail = await c.get(f"/api/v1/track-jobs/{tj_id}", headers=h)
+    assert detail.status_code == 200, detail.text
+    terms = [t for t in detail.json()["match_terms"] if t["label"] == "Python"]
+    assert terms and terms[0]["verdict"] == "met"
+    assert terms[0]["patterns"]
+
     tri = await c.post(
         f"/api/v1/track-jobs/{tj_id}/triage",
         json={"action": "skip", "skip_reason": "too junior"},

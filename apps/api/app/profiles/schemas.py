@@ -145,6 +145,7 @@ class CertificationIn(Flags):
     name: str = Field(min_length=1, max_length=200)
     issuer: str | None = Field(default=None, max_length=200)
     kind: Literal["certification", "license"] = "certification"
+    credential_key: str | None = Field(default=None, max_length=64)
     issued_on: date | None = None
     expires_on: date | None = None
     jurisdiction: str | None = Field(default=None, max_length=120)
@@ -153,6 +154,11 @@ class CertificationIn(Flags):
     def _check(self):
         _dates_ok(self.issued_on, self.expires_on)
         return self
+
+
+class FacetIn(Flags):
+    facet_key: str = Field(min_length=1, max_length=48, pattern=r"^[a-z][a-z0-9_]*$")
+    value: str = Field(min_length=1, max_length=200)
 
 
 class LanguageIn(Flags):
@@ -194,6 +200,7 @@ EducationRead = _read("EducationRead", EducationIn)
 CertificationRead = _read("CertificationRead", CertificationIn)
 LanguageRead = _read("LanguageRead", LanguageIn)
 SkillRead = _read("SkillRead", SkillIn)
+FacetRead = _read("FacetRead", FacetIn)
 
 ExperiencePatch = _patch("ExperiencePatch", ExperienceIn)
 ProjectPatch = _patch("ProjectPatch", ProjectIn)
@@ -202,6 +209,7 @@ EducationPatch = _patch("EducationPatch", EducationIn)
 CertificationPatch = _patch("CertificationPatch", CertificationIn)
 LanguagePatch = _patch("LanguagePatch", LanguageIn)
 SkillPatch = _patch("SkillPatch", SkillIn)
+FacetPatch = _patch("FacetPatch", FacetIn)
 
 
 class ProfileFull(ProfileRead):
@@ -212,6 +220,7 @@ class ProfileFull(ProfileRead):
     certifications: list[CertificationRead]  # type: ignore[valid-type]
     languages: list[LanguageRead]  # type: ignore[valid-type]
     skills: list[SkillRead]  # type: ignore[valid-type]
+    facets: list[FacetRead]  # type: ignore[valid-type]
 
 
 class OkRead(BaseModel):
@@ -344,6 +353,7 @@ class CanonicalKeyRead(BaseModel):
     default_variants: list[str]
     default_answer: str
     json_hint: str | None = None
+    packs: list[str] = Field(default_factory=list)
 
 
 class AnswerCreate(BaseModel):
@@ -453,6 +463,7 @@ class VoiceSampleRead(BaseModel):
 
 class VoiceStyle(BaseModel):
     summary: str = ""
+    preset: str = ""
     avg_sentence_length: float = 0.0
     formality: float = Field(default=0.5, ge=0, le=1)
     contraction_rate: float = Field(default=0.0, ge=0, le=1)
@@ -537,3 +548,28 @@ class ProposalRead(BaseModel):
 class InterviewTurnRead(BaseModel):
     proposal: ProposalRead
     next_gap: InterviewGapRead | None = None
+
+
+class AnswerDraftRead(BaseModel):
+    key: str
+    country: str | None = None
+    label: str
+    question: str
+    draft: str
+    source: Literal["profile", "default", "needs_story"]
+    evidence_refs: list[str] = Field(default_factory=list)
+    message: str = ""
+
+
+class AnswerDraftBody(BaseModel):
+    keys: list[str] | None = Field(default=None, max_length=20)
+    include_existing: bool = False
+
+
+class AnswerDraftBundle(BaseModel):
+    items: list[AnswerDraftRead]
+    existing: int = 0
+
+
+class VoicePresetBody(BaseModel):
+    preset: Literal["plain", "warm", "formal"]

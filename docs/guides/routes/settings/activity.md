@@ -22,7 +22,7 @@ Shows what changed and when: renames, member changes, invitations, AI key change
 
 ## List
 
-Newest first with a filter; times in your timezone. Load more uses a `(created_at, id)` cursor, so events written in the same transaction (identical timestamps) are never skipped.
+Newest first with a filter; times in your timezone. Event names are shown in user words ("Workspace · Renamed", "Profile · Created") instead of the raw action key. Under 640px each row stacks into label and value lines instead of a cramped three-column table. Load more uses a `(created_at, id)` cursor, so events written in the same transaction (identical timestamps) are never skipped.
 
 ## API reference
 

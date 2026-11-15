@@ -61,6 +61,47 @@ def test_hard_filter_title_and_exclude_skill():
     assert any("exclude_skill" in x for x in detail["failed"])
 
 
+def test_hard_filter_employment_type_contract():
+    crit = {
+        "schema_version": 1,
+        "titles": [{"title": "Software Engineer", "synonyms": [], "exclude": False}],
+        "employment_types": ["full_time"],
+    }
+    job = {
+        "title": "Software Engineer",
+        "normalized_title": "software engineer",
+        "employment_type": "contract",
+        "work_mode": "remote",
+    }
+    elig, detail = hard_filter(job, crit)
+    assert elig == "not_eligible"
+    assert "employment_type" in detail["failed"]
+
+    job["employment_type"] = "full_time"
+    elig, _ = hard_filter(job, crit)
+    assert elig == "eligible"
+
+    job.pop("employment_type")
+    elig, _ = hard_filter(job, crit)
+    assert elig == "eligible", "unknown posting type must not be dropped"
+
+
+def test_hard_filter_posting_age():
+    crit = {
+        "schema_version": 1,
+        "titles": [{"title": "Software Engineer", "synonyms": [], "exclude": False}],
+        "posting_max_age_days": 7,
+    }
+    job = {
+        "title": "Software Engineer",
+        "normalized_title": "software engineer",
+        "posted_at": "2020-01-01T00:00:00Z",
+    }
+    elig, detail = hard_filter(job, crit)
+    assert elig == "not_eligible"
+    assert "posting_age" in detail["failed"]
+
+
 def test_hard_filter_ignores_generic_title_words():
     crit = {
         "schema_version": 1,

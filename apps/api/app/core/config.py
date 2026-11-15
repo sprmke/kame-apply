@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     # prod refuses it. Generate: python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"
     master_kek: str = "ZGV2LW9ubHktbWFzdGVyLWtleS0wMTIzNDU2Nzg5YWI="
     ai_max_output_tokens: int = 1024
+    # Retries for transient upstream answers (429/5xx). Attempts = retries + 1; backoff doubles.
+    ai_transient_retries: int = 2
+    ai_retry_base_seconds: float = 0.6
 
     # Mail: SMTP (Mailpit locally) or Resend when RESEND_API_KEY is set.
     mail_from: str = "Kame Apply <no-reply@kame-apply.local>"
@@ -78,6 +81,16 @@ class Settings(BaseSettings):
     # Phase 17: inbound email alerts, web push, Telegram
     inbound_email_domain: str = "in.kameapply.local"
     inbound_webhook_secret: str | None = None
+
+    # Layer 4 keyword + location job search. Keys are platform-level, never user-supplied.
+    search_sources_enabled: bool = True
+    # A human must confirm each search provider's terms before live calls. Fixtures are exempt.
+    search_terms_acknowledged: bool = False
+    jooble_api_key: str | None = None
+    adzuna_app_id: str | None = None
+    adzuna_app_key: str | None = None
+    source_query_ttl_hours: int = Field(default=6, ge=1, le=168)
+    search_queries_per_track: int = Field(default=6, ge=1, le=24)
     vapid_public_key: str | None = None
     vapid_private_key: str | None = None
     vapid_subject: str = "mailto:ops@kameapply.local"

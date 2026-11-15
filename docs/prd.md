@@ -43,8 +43,8 @@ Help a job seeker land more interviews by doing the boring 80% of a job search a
 | Term | Meaning |
 | --- | --- |
 | **Career Profile** | The single source of truth for a candidate: experience, education, projects, skills, certifications, links, work authorization, location, salary expectations, writing voice, answer bank. Built from uploaded resumes + interview-style Q&A. |
-| **Track** | The "folder/module per role" the user asked for, e.g. *Software Developer*, *AI Engineer*, *Product Manager*. Each Track has its own search criteria, sources, schedule, autonomy level, resume variant, answer overrides, and pipeline. All features work per Track. |
-| **Criteria** | The structured definition of what a Track looks for (titles, occupations, skills, seniority, location/remote, countries, eligibility, salary, company filters, exclusions...). Edited through natural language or structured controls. |
+| **Track** | The "folder/module per role" the user asked for, e.g. *Software Developer*, *AI Engineer*, *Product Manager*. Each Track has its own search criteria, sources, schedule, autonomy level, resume variant, answer overrides, and pipeline. All features work per Track. A Track belongs to one **field of work** (Technology, Hospitality and food, General...), which sets its defaults, labels, sources, and scoring. |
+| **Criteria** | The structured definition of what a Track looks for (titles, occupations, skills, seniority, location/remote, countries, eligibility, salary, shifts, industry facets, company filters, exclusions...). Edited through natural language or structured controls. |
 | **Source** | Where jobs come from (ATS API, job board API, RSS, email alerts, browser-extension clips, company career pages). |
 | **Job** | A normalized, deduplicated posting (global). A **Track Job** is that job seen through one Track (match score, risk, status). |
 | **Application** | The user's application to a Track Job, with its resume version, cover letter, answers, run history, and status timeline. |
@@ -61,7 +61,8 @@ Feature IDs are referenced by phase files. Priority: **P0** = MVP, **P1** = v1, 
 - Upload existing resume(s) (PDF, DOCX, TXT, LinkedIn PDF export) and portfolio. Parse into structured facts with per-field confidence. The user confirms or corrects every field.
 - Guided "profile interview" (chat) to fill gaps: metrics behind bullets, tools used, team size, scope, outcomes.
 - **Answer bank:** reusable facts for forms (work authorization, notice period, salary expectations, relocation, pronouns optional, EEO answers optional and default "prefer not to say", how-did-you-hear defaults, links).
-- **Writing voice:** user pastes 2–5 samples of their own writing (emails, Slack messages, cover letters). The system extracts a style profile (sentence length, formality, vocabulary, banned phrases) used for all free-text answers.
+- **Writing voice:** user pastes 2–5 samples of their own writing (emails, Slack messages, cover letters). The system extracts a style profile (sentence length, formality, vocabulary, banned phrases) used for all free-text answers. A user with no samples can pick a preset (plain, warm, formal) instead; samples stay optional.
+- **Guided setup:** a six-step flow reads a resume (in the browser when AI is off), confirms basics, seeds common answers, creates the first search from one sentence, chooses how much the app does, and offers AI as an optional last step. Every step has a recommended path and a skip.
 - Sensitive data (government IDs, bank) is **never** stored in the profile.
 
 ### F2. Tracks: role folders (P0)
@@ -79,7 +80,7 @@ The UX decision (detailed in [`design/ux-blueprint.md`](./design/ux-blueprint.md
 3. **Live preview**: an estimated match count and sample matches update as criteria change, so the user sees the effect of each filter.
 4. **"Improve my criteria"**: AI suggests synonyms/adjacent titles ("Frontend Engineer", "UI Engineer"), skill expansions, and filters that remove noise, based on the jobs already seen.
 
-Criteria dimensions (all optional): job titles + synonyms; occupation codes (ESCO/O*NET/ISCO); must-have / nice-to-have / excluded skills; seniority; employment type (full-time, part-time, contract, freelance, internship, temporary); work mode (remote, hybrid, on-site); remote eligibility (worldwide, region, country list, timezone overlap window); locations with radius; visa sponsorship / relocation; salary min/max, currency, period, "hide if unspecified"; company include/exclude lists, size, industry, funding stage, public/private; recruiters/agencies allowed or not; posting age; language requirements; education requirements; security clearance; keywords include/exclude (boolean expressions); minimum match score; maximum applications per day.
+Criteria dimensions (all optional): job titles + synonyms; occupation codes (ESCO/O*NET/ISCO); must-have / nice-to-have / excluded skills; seniority; employment type (full-time, part-time, contract, freelance, internship, temporary, casual, seasonal); work mode (remote, hybrid, on-site); shifts (morning, afternoon, evening, night, weekend, split, rotating); remote eligibility (worldwide, region, country list, timezone overlap window); locations with radius; visa sponsorship / relocation; salary min/max, currency, period, pay includes (accommodation, meals, tips, service charge, transport), "hide if unspecified"; company include/exclude lists, size, industry, funding stage, public/private; recruiters/agencies allowed or not; posting age; language requirements; education requirements; security clearance; keywords include/exclude (boolean expressions); minimum match score; maximum applications per day. Industry-specific facets (cuisine, station, kitchen type) come from the Track's **industry pack**; the pack also decides which controls are shown, tucked under More options, or hidden. Hiding is UX only: saved values stay and the API still accepts them. Docs: [`architecture/industries.md`](./architecture/industries.md).
 
 ### F4. Job discovery engine (P0)
 
@@ -136,6 +137,7 @@ For sites where nothing can be automated:
 
 - Paste one or many questions (or capture them from the page with the extension). AI drafts answers in the user's voice using only Profile facts; each has a one-click copy, character counter, and "shorter / more specific / more casual" controls.
 - Answers can be saved back to the answer bank so the next form reuses them.
+- The answer bank can draft values from profile facts (work authorization, salary floor, links, EEO declines). Eligibility claims are never guessed; the user answers those.
 - Answers are written in the user's voice: plain, specific, no stock AI phrases (banned-phrase list + style profile). The goal is that answers sound like the user because they are grounded in the user's real facts and real writing. We do **not** try to defeat AI detectors, and questions about AI use are answered truthfully.
 - If a question says "do not use AI", the Answer Desk does not draft it. It shows the question with relevant profile facts as notes so the user can write it themselves.
 

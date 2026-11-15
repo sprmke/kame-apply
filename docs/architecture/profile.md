@@ -15,6 +15,10 @@ The candidate's single source of truth. Every later AI output cites facts stored
 - `minimization` on the profile (photo, date of birth, full address) defaults to all off.
 - Skill names are stored raw; mapping to the taxonomy lands in Phase 4.
 
+### Profile facets (migration 0041)
+
+`profile_facets(workspace_id, profile_id, facet_key, value, source, do_not_use, confidential, sort_order)` stores industry facts such as cuisine, station, and kitchen type as one row per value, so tailoring can cite `facet:<id>`. Tenant RLS and a cross-tenant test. CRUD is the standard section quartet at `/api/v1/profiles/{id}/facets`; audit actions are `profile.facets.created|updated|deleted`. The profile page shows the workspace's enabled facet definitions and lets the person add or remove values.
+
 ### Documents (migration 0009)
 
 `documents` stores upload metadata and cleaned extracted text. File bytes live in object storage under `ws/<workspace_id>/profiles/<profile_id>/documents/<id>/...` (never in Postgres).
@@ -29,6 +33,8 @@ The candidate's single source of truth. Every later AI output cites facts stored
 | `warnings` | Codes: `sensitive_numbers_stripped`, `injection_lines_removed`, `needs_ocr`, `extract_failed`, `text_truncated`, `low_confidence_fields` |
 
 Upload limits: PDF / DOCX / TXT / MD / JSON, max 10 MB. Workspace `max_storage_mb` is enforced on upload. ClamAV is a no-op stub until the worker lands; Tesseract is not required yet (empty PDF text layer sets `needs_ocr`).
+
+Portfolio images: `kind=portfolio` accepts JPG, PNG, and WebP up to 10 MB. The upload pipeline re-encodes the image to strip EXIF, GPS, and text chunks before storing it in R2. EXIF is never persisted or logged.
 
 ### Answer bank (migration 0010)
 
@@ -122,3 +128,16 @@ Events: `profile.created|updated|deleted`, `profile.<section>.created|updated|de
 | `S3_REGION` | `auto` | |
 
 Tests use an in-memory store (`ENVIRONMENT=test`).
+
+
+## Drafts, presets, and onboarding plans (2026-11-13)
+
+| Call | Purpose |
+| --- | --- |
+| `POST /api/v1/profiles/{id}/answers/draft` | Draft answer-bank values from profile facts. Body `{ keys?, include_existing? }`. Read-only; accept through the normal answer endpoints. |
+| `POST /api/v1/profiles/{id}/voice/preset` | Apply `plain`, `warm`, or `formal` when there are no samples. Keeps samples if present. |
+| `POST /api/v1/onboarding/plan` | Read-only setup bundle: rule-based resume basics, answer drafts, a search plan, and recommended schedule. Optional AI for the search plan. |
+
+Drafts only use facts the user entered. Eligibility claims are returned as `needs_story` with an empty draft. Sensitive classes are never read or returned. Accepting any draft writes through the normal endpoints, so the existing audit events cover it. The plan endpoint writes nothing; AI usage is recorded by the AI service.
+
+New audit event: `voice.preset_applied` (`profile_id`, `preset`).

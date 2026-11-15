@@ -6,7 +6,16 @@ import {
   queries,
   updateMeApiV1MePatch,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnField, FnInput, FnSelect, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnDialog,
+  FnField,
+  FnInput,
+  FnSectionCard,
+  FnSelect,
+  useToast,
+} from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 
@@ -33,15 +42,20 @@ const zones = computed(() => {
 
 const name = ref("");
 const timezone = ref("UTC");
+const saved = ref("");
 watch(
   () => me.data.value,
   (m) => {
     if (m) {
       name.value = m.name ?? "";
       timezone.value = m.timezone;
+      saved.value = JSON.stringify({ name: name.value, timezone: timezone.value });
     }
   },
   { immediate: true },
+);
+const dirty = computed(
+  () => JSON.stringify({ name: name.value, timezone: timezone.value }) !== saved.value,
 );
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -54,6 +68,7 @@ async function save() {
       updateMeApiV1MePatch({ body: { name: name.value, timezone: timezone.value } }),
     );
     if (auth.user) auth.user = { ...auth.user, name: data.name, timezone: data.timezone };
+    saved.value = JSON.stringify({ name: data.name, timezone: data.timezone });
     toast.push({ title: t("common.saved"), tone: "success" });
     await qc.invalidateQueries();
   } catch (e) {
@@ -64,6 +79,7 @@ async function save() {
 }
 
 const hasGoogle = computed(() => me.data.value?.providers.includes("google"));
+const unlinkOpen = ref(false);
 async function linkGoogle() {
   try {
     const data = await ok(googleLinkApiV1AuthGoogleLinkPost());
@@ -75,6 +91,7 @@ async function linkGoogle() {
 async function unlinkGoogle() {
   try {
     await googleUnlinkApiV1AuthGoogleLinkDelete();
+    unlinkOpen.value = false;
     toast.push({ title: t("profile.unlinked"), tone: "success" });
     await qc.invalidateQueries();
   } catch (e) {
@@ -92,44 +109,50 @@ const themes = computed(() =>
 </script>
 
 <template>
-  <section class="flex max-w-md flex-col gap-8">
+  <section class="flex max-w-xl flex-col gap-6">
     <PageHeader :title="t('settings.profile')" />
-    <form class="flex flex-col gap-4" novalidate @submit.prevent="save">
-      <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
-      <FnField v-slot="{ id }" :label="t('auth.email')"
-        ><FnInput :id="id" :model-value="auth.user?.email ?? ''" disabled
-      /></FnField>
-      <FnField v-slot="{ id }" :label="t('auth.name')"
-        ><FnInput :id="id" v-model="name" autocomplete="name"
-      /></FnField>
-      <FnField v-slot="{ id }" :label="t('profile.timezone')" :hint="t('profile.timezoneHint')"
-        ><FnSelect :id="id" v-model="timezone" :options="zones"
-      /></FnField>
-      <div>
-        <FnButton type="submit" tone="primary" :loading="saving">{{ t("common.save") }}</FnButton>
-      </div>
-    </form>
 
-    <FnField v-slot="{ id }" :label="t('theme.label')">
-      <FnSelect
-        :id="id"
-        :model-value="choice"
-        :options="themes"
-        @update:model-value="(v) => v && set(v as 'system' | 'light' | 'dark')"
-      />
-    </FnField>
+    <FnSectionCard :title="t('profile.detailsTitle')">
+      <form class="flex flex-col gap-4" novalidate @submit.prevent="save">
+        <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
+        <FnField v-slot="{ id }" :label="t('auth.email')"
+          ><FnInput :id="id" :model-value="auth.user?.email ?? ''" disabled
+        /></FnField>
+        <FnField v-slot="{ id }" :label="t('auth.name')"
+          ><FnInput :id="id" v-model="name" autocomplete="name"
+        /></FnField>
+        <FnField v-slot="{ id }" :label="t('profile.timezone')" :hint="t('profile.timezoneHint')"
+          ><FnSelect :id="id" v-model="timezone" :options="zones"
+        /></FnField>
+        <div class="border-t border-rule pt-4">
+          <FnButton type="submit" tone="primary" :disabled="!dirty" :loading="saving">{{
+            t("common.save")
+          }}</FnButton>
+        </div>
+      </form>
+    </FnSectionCard>
 
-    <div class="flex flex-col gap-2 border-t border-rule pt-4">
-      <h2 class="font-medium">{{ t("profile.connected") }}</h2>
-      <div class="flex items-center gap-3">
-        <NavIcon name="ph:google-logo" />
-        <span>Google</span>
+    <FnSectionCard :title="t('profile.appearanceTitle')">
+      <FnField v-slot="{ id }" :label="t('theme.label')">
+        <FnSelect
+          :id="id"
+          :model-value="choice"
+          :options="themes"
+          @update:model-value="(v) => v && set(v as 'system' | 'light' | 'dark')"
+        />
+      </FnField>
+    </FnSectionCard>
+
+    <FnSectionCard :title="t('profile.connected')">
+      <div class="flex flex-wrap items-center gap-3">
+        <NavIcon name="ph:google-logo" :size="20" />
+        <span class="flex-1 font-medium text-ink-900">Google</span>
         <template v-if="hasGoogle">
-          <FnChip
-            ><span class="text-fern-600" aria-hidden="true">✓</span>
-            {{ t("profile.linkedState") }}</FnChip
-          >
-          <FnButton size="sm" tone="ghost" @click="unlinkGoogle">{{
+          <FnChip tone="accent">
+            <span aria-hidden="true">✓</span>
+            {{ t("profile.linkedState") }}
+          </FnChip>
+          <FnButton size="sm" tone="ghost" @click="unlinkOpen = true">{{
             t("profile.unlink")
           }}</FnButton>
         </template>
@@ -138,6 +161,18 @@ const themes = computed(() =>
         }}</FnButton>
         <span v-else class="text-sm text-ink-600">{{ t("profile.notAvailable") }}</span>
       </div>
-    </div>
+    </FnSectionCard>
+
+    <FnDialog
+      v-model:open="unlinkOpen"
+      :title="t('profile.unlinkTitle')"
+      :description="t('profile.unlinkBody')"
+      :close-label="t('common.close')"
+    >
+      <div class="flex justify-end gap-2">
+        <FnButton @click="unlinkOpen = false">{{ t("common.cancel") }}</FnButton>
+        <FnButton tone="danger" @click="unlinkGoogle">{{ t("profile.unlink") }}</FnButton>
+      </div>
+    </FnDialog>
   </section>
 </template>

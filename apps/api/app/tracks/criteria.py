@@ -29,9 +29,15 @@ EmploymentType = Literal[
     "freelance",
     "internship",
     "temporary",
+    "casual",
+    "seasonal",
 ]
 WorkMode = Literal["remote", "hybrid", "on_site"]
 SalaryPeriod = Literal["hour", "day", "month", "year"]
+Shift = Literal["morning", "afternoon", "evening", "night", "weekend", "split", "rotating"]
+SalaryInclude = Literal["accommodation", "meals", "tips", "service_charge", "transport"]
+# Facet keys are validated against the Track's industry pack in the service layer.
+FacetValue = list[str] | bool | int
 CompanySize = Literal["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001+"]
 CompanyStage = Literal[
     "bootstrapped",
@@ -96,6 +102,7 @@ class SalaryFilter(BaseModel):
     max: float | None = Field(default=None, ge=0)
     currency: str = Field(default="USD", min_length=3, max_length=3)
     period: SalaryPeriod = "month"
+    includes: list[SalaryInclude] = Field(default_factory=list)
     hide_unspecified: bool = False
     # Filled by currency normalizer; excluded from filters when rate missing.
     min_monthly_usd: float | None = None
@@ -140,6 +147,7 @@ class CriteriaV1(BaseModel):
     seniority: list[Seniority] = Field(default_factory=list)
     employment_types: list[EmploymentType] = Field(default_factory=list)
     work_modes: list[WorkMode] = Field(default_factory=list)
+    shifts: list[Shift] = Field(default_factory=list)
     remote_eligibility: RemoteEligibility = Field(default_factory=RemoteEligibility)
     locations: list[LocationFilter] = Field(default_factory=list)
     visa_sponsorship: bool | None = None
@@ -153,6 +161,26 @@ class CriteriaV1(BaseModel):
     keywords: KeywordFilter = Field(default_factory=KeywordFilter)
     min_match_score: int | None = Field(default=None, ge=0, le=100)
     caps: CapsFilter = Field(default_factory=CapsFilter)
+    # Industry-specific dimensions (cuisine, station, kitchen type). Keys come from the pack.
+    facets: dict[str, FacetValue] = Field(default_factory=dict)
+
+    @field_validator("facets")
+    @classmethod
+    def _facet_shape(cls, v: dict[str, FacetValue]) -> dict[str, FacetValue]:
+        if len(v) > 30:
+            raise ValueError("too many facet keys")
+        for key, value in v.items():
+            if not key or len(key) > 48 or not key.replace("_", "").isalnum():
+                raise ValueError(f"invalid facet key: {key!r}")
+            if isinstance(value, list):
+                if len(value) > 50 or any(not item or len(item) > 80 for item in value):
+                    raise ValueError(f"invalid facet values for {key!r}")
+            elif isinstance(value, int) and not isinstance(value, bool):
+                if value < 0 or value > 1_000_000:
+                    raise ValueError(f"invalid facet number for {key!r}")
+            elif not isinstance(value, bool):
+                raise ValueError(f"invalid facet value for {key!r}")
+        return v
 
     @field_validator("languages")
     @classmethod

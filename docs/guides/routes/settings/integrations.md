@@ -64,3 +64,14 @@ Equivalent MCP tools for workspace data; REST is for humans (consent, revoke, ro
 ## User-facing knowledge
 
 Connect your Claude and your browser extension to this workspace. Both can draft and fill; you still click Submit and type anything sensitive.
+
+## UX clarity (2026-11-12)
+
+- Plain words: Connection link, Requests for your Claude, Connected apps, Permissions, Apply helper, one-time code.
+- Feature routing is folded into a disclosure; feature names are title-cased.
+- Long commands wrap inside the card at 375 instead of overflowing.
+
+
+## Tabs (2026-11-13)
+
+Four tabs keep one route: **Browser extension**, **Claude**, **Apply helper**, and **More** (feature routing and site autofill). Deep links are unchanged. Each tab states its purpose in one line.

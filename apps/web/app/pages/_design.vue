@@ -3,22 +3,29 @@ import {
   FnButton,
   FnCheckbox,
   FnChip,
+  FnChoiceCards,
   FnCommandBar,
   FnDialog,
+  FnEmptyState,
   FnField,
   FnFolderTab,
   FnGradeRing,
   FnInput,
   FnMenu,
+  FnMoreOptions,
   FnPencilText,
   FnPopover,
   FnProofMark,
   FnRiskSeal,
   FnRouteLine,
+  FnSectionCard,
   FnSelect,
   FnSkeleton,
+  FnStepper,
+  FnSummaryLine,
   FnTable,
   FnTabs,
+  FnTerm,
   FnTextarea,
   FnToaster,
   FnTooltip,
@@ -40,6 +47,38 @@ const sel = ref("b");
 const checked = ref(true);
 const text = ref("Hello");
 const draftAccepted = ref(false);
+const autonomy = ref("prepare");
+const step = ref("resume");
+const choices = [
+  {
+    value: "find",
+    title: "Find only",
+    effect: "We find and score jobs. You do the rest.",
+  },
+  {
+    value: "prepare",
+    title: "Find and prepare",
+    effect: "We also draft a resume and letter for jobs you shortlist.",
+    badge: "Recommended",
+  },
+  {
+    value: "fill",
+    title: "Fill forms for me",
+    effect: "We fill application forms. You review and click Submit.",
+  },
+  {
+    value: "auto",
+    title: "Apply for me",
+    effect: "We submit jobs that pass every check. Starts with 3 practice runs.",
+    badge: "Advanced",
+  },
+];
+const steps = [
+  { key: "resume", label: "Your resume" },
+  { key: "basics", label: "Check the basics" },
+  { key: "answers", label: "Quick answers" },
+  { key: "search", label: "Your first search" },
+];
 
 const swatches = [
   ["paper-0", "bg-paper-0"],
@@ -159,7 +198,12 @@ const opts = [
       <section aria-labelledby="d-forms" class="flex flex-col gap-4">
         <h2 id="d-forms" class="text-xl font-bold">Forms</h2>
         <div class="grid gap-4 md:grid-cols-2">
-          <FnField v-slot="{ id, describedby, invalid }" label="Text" hint="A short hint">
+          <FnField
+            v-slot="{ id, describedby, invalid }"
+            label="Minimum match"
+            help="Only jobs scoring at least this high are considered."
+            hint="A short hint"
+          >
             <FnInput
               :id="id"
               v-model="text"
@@ -300,6 +344,48 @@ const opts = [
           <FnFolderTab :hue="1" active>Platform engineer</FnFolderTab
           ><FnFolderTab :hue="5">Data roles</FnFolderTab
           ><FnFolderTab :hue="7">Remote only</FnFolderTab>
+        </div>
+      </section>
+      <section aria-labelledby="d-clarity" class="flex flex-col gap-5">
+        <h2 id="d-clarity" class="text-xl font-bold">Clarity blocks</h2>
+        <FnStepper v-model="step" :steps="steps" label="Setup steps" clickable class="min-w-0" />
+        <FnSectionCard
+          title="How much we do"
+          intro="How far we go on each match before we stop for you."
+          :summary="'We find and score jobs, then draft a resume for the ones you shortlist. Nothing is sent.'"
+        >
+          <FnChoiceCards v-model="autonomy" :options="choices" label="How much we do" />
+          <template #more>
+            <FnSummaryLine text="Practice runs: 2 of 3 left. Nothing is sent during practice." />
+          </template>
+        </FnSectionCard>
+        <FnSectionCard
+          title="When we search"
+          intro="We check every four hours, then rest overnight."
+        >
+          <p class="text-sm text-ink-600">
+            Read
+            <FnTerm term="minimum match" definition="Only jobs scoring at least this high." />
+            before you change it.
+          </p>
+          <FnSummaryLine text="Checks 14 sources every 4 hours, 7 am to 10 pm Manila time." />
+          <template #more>
+            <FnMoreOptions label="Advanced schedule">
+              <p class="text-sm text-ink-600">Quiet hours, daily limit, and timezone.</p>
+            </FnMoreOptions>
+          </template>
+        </FnSectionCard>
+        <div class="grid gap-3 md:grid-cols-2">
+          <FnEmptyState title="No searches yet" body="Start with the role you want.">
+            <FnButton tone="primary" size="sm">New search</FnButton>
+          </FnEmptyState>
+          <FnEmptyState
+            title="Source paused by us"
+            body="We stopped checking after errors."
+            tone="danger"
+          >
+            <FnButton size="sm">Check again</FnButton>
+          </FnEmptyState>
         </div>
       </section>
     </div>

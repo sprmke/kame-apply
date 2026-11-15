@@ -2,11 +2,34 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
+from app.industries.schema import IndustryPack
 from app.jobs.normalize import normalize_title
-from app.matching.rule_score import title_tokens
+from app.matching.rule_score import same_title_group, title_tokens
 from app.tracks.criteria import CriteriaV1, criteria_from_dict
+
+# A posting's coarse employment label → the CriteriaV1 types it satisfies.
+_EMPLOYMENT = {
+    "full_time": {"full_time"},
+    "part_time": {"part_time"},
+    "contract": {"contract", "freelance", "temporary"},
+    "intern": {"internship"},
+}
+
+
+def _posted_before(value: Any, days: int) -> bool:
+    if not value:
+        return False
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return False
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return (datetime.now(UTC) - value).days > days
 
 
 def hard_filter(
@@ -15,10 +38,12 @@ def hard_filter(
     *,
     knockout_hits: list[dict[str, Any]] | None = None,
     hidden_company_ids: set[str] | None = None,
+    pack: IndustryPack | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """Return (eligibility, detail). eligibility: eligible | not_eligible | unknown."""
     c = structured if isinstance(structured, CriteriaV1) else criteria_from_dict(structured)
     detail: dict[str, Any] = {"failed": []}
+    generic = set(pack.matching.generic_title_words) if pack else None
 
     if (
         hidden_company_ids
@@ -49,7 +74,9 @@ def hard_filter(
             else:
                 # Ignore generic words such as "lead" and "engineer"; a marketing lead is not a
                 # support role just because both titles contain "lead".
-                if title_tokens(norm) & title_tokens(nt):
+                if pack is not None and same_title_group(pack, nt, norm):
+                    ok = True
+                elif title_tokens(norm, generic) & title_tokens(nt, generic):
                     ok = True
         if not ok and any(not t.exclude for t in c.titles):
             detail["failed"].append("title")
@@ -69,6 +96,16 @@ def hard_filter(
             detail["failed"].append("work_mode")
             return "not_eligible", detail
 
+    if c.employment_types and job.get("employment_type"):
+        allowed = _EMPLOYMENT.get(job["employment_type"], set())
+        if allowed and not allowed & set(c.employment_types):
+            detail["failed"].append("employment_type")
+            return "not_eligible", detail
+
+    if c.posting_max_age_days and _posted_before(job.get("posted_at"), c.posting_max_age_days):
+        detail["failed"].append("posting_age")
+        return "not_eligible", detail
+
     if c.salary and c.salary.hide_unspecified:
         sal = job.get("salary") or {}
         if sal.get("min") is None and sal.get("max") is None:
@@ -80,5 +117,19 @@ def hard_filter(
         if any(x in name for x in ("staffing", "recruiting agency", "talent partner")):
             detail["failed"].append("agency")
             return "not_eligible", detail
+
+    if pack is not None and c.facets:
+        job_facets = job.get("facets") or {}
+        for facet in pack.facets:
+            if not facet.match.filter:
+                continue
+            wanted = c.facets.get(facet.key)
+            wanted_values = set(wanted) if isinstance(wanted, list) else set()
+            if not wanted_values:
+                continue
+            job_values = set(job_facets.get(facet.key) or [])
+            if job_values and not (wanted_values & job_values):
+                detail["failed"].append(f"facet:{facet.key}")
+                return "not_eligible", detail
 
     return "eligible", detail

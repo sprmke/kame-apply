@@ -148,3 +148,28 @@ def test_aggregate_domain_age_alone_caps_yellow():
     )
     assert a.level in {"green", "yellow"}
     assert a.level != "red"
+
+
+def test_ml_reason_evidence_is_a_sentence():
+    from app.safety.aggregate import (
+        ML_CLASSIFIER_EVIDENCE,
+        aggregate,
+        reasons_for_display,
+    )
+    from app.safety.domain_intel import DomainIntel
+    from app.safety.links import LinkIntel
+    from app.safety.ml_classifier import MlVerdict
+    from app.safety.source_trust import SourceTrust
+
+    a = aggregate(
+        content_hits=[],
+        source=SourceTrust(0, "unknown", False, ""),
+        domain=DomainIntel(),
+        links=LinkIntel(),
+        ml=MlVerdict(0.9, 20, ["the", "your", "python", "years", "with"], True),
+    )
+    ml = [r for r in a.reasons if r.get("signal") == "ml_classifier"]
+    assert ml and ml[0]["evidence"] == ML_CLASSIFIER_EVIDENCE
+
+    stored = [{"signal": "ml_classifier", "layer": "L5", "evidence": "the, your, python"}]
+    assert reasons_for_display(stored)[0]["evidence"] == ML_CLASSIFIER_EVIDENCE

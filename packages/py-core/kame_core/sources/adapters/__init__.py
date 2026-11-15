@@ -13,6 +13,8 @@ from kame_core.sources.adapters import board_muse as board_muse
 from kame_core.sources.adapters import board_remoteok as board_remoteok
 from kame_core.sources.adapters import board_remotive as board_remotive
 from kame_core.sources.adapters import career_jsonld as career_jsonld
+from kame_core.sources.adapters import search_adzuna as search_adzuna
+from kame_core.sources.adapters import search_jooble as search_jooble
 
 __all__ = [
     "ats_ashby",
@@ -28,4 +30,6 @@ __all__ = [
     "board_remoteok",
     "board_remotive",
     "career_jsonld",
+    "search_adzuna",
+    "search_jooble",
 ]

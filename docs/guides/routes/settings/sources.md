@@ -4,7 +4,14 @@
 
 ## Overview
 
-Per-adapter health (success, errors, latency, circuit, blocks) and directory board count. The page lede frames this as the health of the boards and career pages used by searches. Add a careers URL to grow the global board directory.
+Per-adapter health (success, errors, latency, circuit, blocks) and the number of job boards checked. The lede frames the page as where searches look and whether each site is answering. Add a company career site link to grow the global board directory.
+
+## Sections
+
+- **Directory line.** "64 job boards checked."
+- **Legend.** One sentence on what "Paused by us" means.
+- **Add a company career site.** Labelled field plus Add. The site is detected and stored; success is a toast.
+- **Health list.** One row per source: name, kind, state, jobs found, errors, response time, blocks.
 
 ## Save paths
 

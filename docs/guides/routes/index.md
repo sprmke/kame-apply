@@ -36,3 +36,10 @@ The primary button always names the next action. Open a search to see its matche
 ## Implementation map
 
 `pages/index.vue`, `components/OnboardingChecklist.vue`, `components/VerifyEmailBanner.vue` · `apps/api/app/applications/home.py`
+
+## UX clarity (2026-11-12)
+
+- One next step card, then **Needs you** (deduplicated, link to `/needs-you`), then **Top matches**, then your searches.
+- Top matches show the score as a small tabular badge, the company and work mode, one reason, and a risk seal only when it matters.
+- Every number links to its filtered list. **This week** is a collapsed summary with full labels, not trailing fragments.
+- First search after setup lands on the search's Matches tab rather than an empty Today.

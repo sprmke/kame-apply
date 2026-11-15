@@ -7,6 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, Query
 
 from app.core.security import WorkspaceContext, require_action
+from app.responses import match as matching
 from app.responses import schemas as s
 from app.responses import service
 
@@ -26,6 +27,14 @@ async def ingest(body: s.IngestReplyBody, ctx: WorkspaceContext = Write):
         body_text=body.body_text,
     )
     return {"message": msg, "proposal": proposal}
+
+
+@router.post("/responses/match", response_model=s.ReplyMatchRead | None)
+async def match_reply(body: s.MatchReplyBody, ctx: WorkspaceContext = Read):
+    hit = await matching.match_application(
+        ctx, sender=body.sender, subject=body.subject, body_text=body.body_text
+    )
+    return s.ReplyMatchRead.model_validate(hit) if hit else None
 
 
 @router.get("/responses", response_model=list[s.ResponseMessageRead])

@@ -53,6 +53,16 @@ export const zAgentTaskCreate = z.object({
 });
 
 /**
+ * AlertGuideRead
+ */
+export const zAlertGuideRead = z.object({
+    label: z.string(),
+    note: z.string(),
+    provider: z.string(),
+    url: z.string()
+});
+
+/**
  * AnomalyStatusRead
  */
 export const zAnomalyStatusRead = z.object({
@@ -75,6 +85,40 @@ export const zAnswerCreate = z.object({
     scope: z.enum(['global', 'track']).optional().default('global'),
     sort_order: z.number().int().gte(0).lte(10000).optional().default(0),
     track_id: z.string().uuid().nullish()
+});
+
+/**
+ * AnswerDraftBody
+ */
+export const zAnswerDraftBody = z.object({
+    include_existing: z.boolean().optional().default(false),
+    keys: z.array(z.string()).max(20).nullish()
+});
+
+/**
+ * AnswerDraftRead
+ */
+export const zAnswerDraftRead = z.object({
+    country: z.string().nullish(),
+    draft: z.string(),
+    evidence_refs: z.array(z.string()).optional(),
+    key: z.string(),
+    label: z.string(),
+    message: z.string().optional().default(''),
+    question: z.string(),
+    source: z.enum([
+        'profile',
+        'default',
+        'needs_story'
+    ])
+});
+
+/**
+ * AnswerDraftBundle
+ */
+export const zAnswerDraftBundle = z.object({
+    existing: z.number().int().optional().default(0),
+    items: z.array(zAnswerDraftRead)
 });
 
 /**
@@ -472,7 +516,8 @@ export const zCanonicalKeyRead = z.object({
     ]),
     json_hint: z.string().nullish(),
     key: z.string(),
-    label: z.string()
+    label: z.string(),
+    packs: z.array(z.string()).optional()
 });
 
 /**
@@ -501,6 +546,7 @@ export const zCapsFilter = z.object({
  */
 export const zCertificationIn = z.object({
     confidential: z.boolean().optional().default(false),
+    credential_key: z.string().max(64).nullish(),
     do_not_use: z.boolean().optional().default(false),
     expires_on: z.string().date().nullish(),
     issued_on: z.string().date().nullish(),
@@ -521,6 +567,7 @@ export const zCertificationIn = z.object({
  */
 export const zCertificationPatch = z.object({
     confidential: z.boolean().nullish(),
+    credential_key: z.string().nullish(),
     do_not_use: z.boolean().nullish(),
     expires_on: z.string().date().nullish(),
     issued_on: z.string().date().nullish(),
@@ -542,6 +589,7 @@ export const zCertificationPatch = z.object({
 export const zCertificationRead = z.object({
     confidential: z.boolean().optional().default(false),
     created_at: z.string().datetime(),
+    credential_key: z.string().max(64).nullish(),
     do_not_use: z.boolean().optional().default(false),
     expires_on: z.string().date().nullish(),
     id: z.string().uuid(),
@@ -781,6 +829,16 @@ export const zContactCreate = z.object({
 });
 
 /**
+ * ContactDraftRead
+ */
+export const zContactDraftRead = z.object({
+    company: z.string().optional().default(''),
+    email: z.string().optional().default(''),
+    name: z.string().optional().default(''),
+    title: z.string().optional().default('')
+});
+
+/**
  * ContactImportBody
  */
 export const zContactImportBody = z.object({
@@ -806,6 +864,42 @@ export const zContactRead = z.object({
     name: z.string(),
     source: z.string(),
     title: z.string()
+});
+
+/**
+ * ContactsParseBody
+ */
+export const zContactsParseBody = z.object({
+    text: z.string().min(1).max(20000)
+});
+
+/**
+ * ContactsParseRead
+ */
+export const zContactsParseRead = z.object({
+    ai_error: z.string().nullish(),
+    items: z.array(zContactDraftRead),
+    source: z.string()
+});
+
+/**
+ * CoverageSourceRead
+ */
+export const zCoverageSourceRead = z.object({
+    coverage: z.string(),
+    note: z.string(),
+    source_key: z.string()
+});
+
+/**
+ * CoverageRead
+ */
+export const zCoverageRead = z.object({
+    country: z.string(),
+    industry: z.string(),
+    level: z.string(),
+    note: z.string(),
+    sources: z.array(zCoverageSourceRead)
 });
 
 /**
@@ -849,6 +943,14 @@ export const zCriteriaCompileRequest = z.object({
 });
 
 /**
+ * CriteriaSuggestRequest
+ */
+export const zCriteriaSuggestRequest = z.object({
+    apply: z.boolean().optional().default(false),
+    text: z.string().min(1).max(8000)
+});
+
+/**
  * CritiqueRead
  */
 export const zCritiqueRead = z.object({
@@ -857,6 +959,32 @@ export const zCritiqueRead = z.object({
     findings: z.array(z.unknown()).optional(),
     skim_zone: z.record(z.unknown()).optional(),
     top_fixes: z.array(z.unknown()).optional()
+});
+
+/**
+ * CustomPackAcceptIn
+ */
+export const zCustomPackAcceptIn = z.object({
+    key: z.string().min(1).max(48).regex(/^custom_[a-z0-9_]+$/),
+    pack: z.record(z.unknown())
+});
+
+/**
+ * CustomPackDraftIn
+ */
+export const zCustomPackDraftIn = z.object({
+    base_pack: z.string().max(48).nullish(),
+    description: z.string().min(3).max(600)
+});
+
+/**
+ * CustomPackDraftRead
+ */
+export const zCustomPackDraftRead = z.object({
+    base_pack: z.string(),
+    key: z.string(),
+    pack: z.record(z.unknown()),
+    role_family: z.string().nullable()
 });
 
 /**
@@ -1245,6 +1373,58 @@ export const zExtractedField = z.object({
 });
 
 /**
+ * FacetIn
+ */
+export const zFacetIn = z.object({
+    confidential: z.boolean().optional().default(false),
+    do_not_use: z.boolean().optional().default(false),
+    facet_key: z.string().min(1).max(48).regex(/^[a-z][a-z0-9_]*$/),
+    sort_order: z.number().int().gte(0).lte(10000).optional().default(0),
+    source: z.enum([
+        'parsed',
+        'interview',
+        'user'
+    ]).optional().default('user'),
+    value: z.string().min(1).max(200)
+});
+
+/**
+ * FacetPatch
+ */
+export const zFacetPatch = z.object({
+    confidential: z.boolean().nullish(),
+    do_not_use: z.boolean().nullish(),
+    facet_key: z.string().nullish(),
+    sort_order: z.number().int().nullish(),
+    source: z.enum([
+        'parsed',
+        'interview',
+        'user'
+    ]).nullish(),
+    value: z.string().nullish()
+});
+
+/**
+ * FacetRead
+ */
+export const zFacetRead = z.object({
+    confidential: z.boolean().optional().default(false),
+    created_at: z.string().datetime(),
+    do_not_use: z.boolean().optional().default(false),
+    facet_key: z.string().min(1).max(48).regex(/^[a-z][a-z0-9_]*$/),
+    id: z.string().uuid(),
+    profile_id: z.string().uuid(),
+    sort_order: z.number().int().gte(0).lte(10000).optional().default(0),
+    source: z.enum([
+        'parsed',
+        'interview',
+        'user'
+    ]).optional().default('user'),
+    updated_at: z.string().datetime(),
+    value: z.string().min(1).max(200)
+});
+
+/**
  * FeedbackCreate
  */
 export const zFeedbackCreate = z.object({
@@ -1464,6 +1644,38 @@ export const zInboxStatus = z.object({
     last_picked_up_at: z.string().nullable(),
     leased: z.number().int(),
     waiting: z.number().int()
+});
+
+/**
+ * IndustryAdd
+ */
+export const zIndustryAdd = z.object({
+    is_primary: z.boolean().optional().default(false),
+    key: z.string().min(1).max(48)
+});
+
+/**
+ * IndustryDetectIn
+ */
+export const zIndustryDetectIn = z.object({
+    text: z.string().min(1).max(4000)
+});
+
+/**
+ * IndustryDetectRead
+ */
+export const zIndustryDetectRead = z.object({
+    confidence: z.number(),
+    pack_key: z.string(),
+    reasons: z.array(z.string()).optional(),
+    role_family: z.string().nullable()
+});
+
+/**
+ * IndustryPrimaryIn
+ */
+export const zIndustryPrimaryIn = z.object({
+    key: z.string().min(1).max(48)
 });
 
 /**
@@ -1807,6 +2019,35 @@ export const zMatchRead = z.object({
 });
 
 /**
+ * MatchReplyBody
+ */
+export const zMatchReplyBody = z.object({
+    body_text: z.string().max(50000).optional().default(''),
+    sender: z.string().max(500).optional().default(''),
+    subject: z.string().max(500).optional().default('')
+});
+
+/**
+ * MatchTermRead
+ *
+ * One named skill found in the posting, with the user's evidence verdict.
+ */
+export const zMatchTermRead = z.object({
+    blocked_after: z.array(z.string()).optional(),
+    case_sensitive: z.boolean().optional().default(false),
+    evidence: z.string().nullish(),
+    key: z.string(),
+    label: z.string(),
+    mentions: z.number().int().optional().default(1),
+    patterns: z.array(z.string()).optional(),
+    verdict: z.enum([
+        'met',
+        'partial',
+        'gap'
+    ])
+});
+
+/**
  * MeRead
  */
 export const zMeRead = z.object({
@@ -2000,6 +2241,16 @@ export const zOkRead = z.object({
 });
 
 /**
+ * OnboardingPlanBody
+ */
+export const zOnboardingPlanBody = z.object({
+    profile_id: z.string().nullish(),
+    resume_text: z.string().max(20000).nullish(),
+    role_text: z.string().max(8000).nullish(),
+    timezone: z.string().max(64).optional().default('UTC')
+});
+
+/**
  * OtherRoleRead
  */
 export const zOtherRoleRead = z.object({
@@ -2027,6 +2278,7 @@ export const zJobDetailRead = z.object({
     id: z.string().uuid(),
     job_id: z.string().uuid(),
     locations: z.array(z.unknown()).optional(),
+    match_terms: z.array(zMatchTermRead).optional(),
     other_roles: z.array(zOtherRoleRead).optional(),
     posted_at: z.string().datetime().nullish(),
     qualifications: z.array(z.record(z.unknown())).optional(),
@@ -2402,6 +2654,27 @@ export const zQuietHours = z.object({
 });
 
 /**
+ * RecommendedSettingsRead
+ */
+export const zRecommendedSettingsRead = z.object({
+    autonomy: z.enum([
+        'discover',
+        'prepare',
+        'assist',
+        'auto_submit'
+    ]),
+    daily_cap: z.number().int(),
+    minimum_match: z.number().int(),
+    new_per_day: z.number(),
+    per_run: z.number().int(),
+    preset: z.string(),
+    quiet_hours: z.record(z.unknown()),
+    reasons: z.array(z.string()),
+    sources: z.number().int(),
+    timezone: z.string()
+});
+
+/**
  * ReferralDraftRead
  */
 export const zReferralDraftRead = z.object({
@@ -2464,6 +2737,17 @@ export const zRenderRead = z.object({
 });
 
 /**
+ * ReplyMatchRead
+ */
+export const zReplyMatchRead = z.object({
+    application_id: z.string().uuid(),
+    company_name: z.string(),
+    job_title: z.string(),
+    reason: z.string(),
+    score: z.number()
+});
+
+/**
  * ResetIn
  */
 export const zResetIn = z.object({
@@ -2503,6 +2787,18 @@ export const zRestrictionRead = z.object({
     page_level: z.boolean(),
     restricted: z.boolean(),
     score: z.number().optional().default(0)
+});
+
+/**
+ * ResumeBasics
+ */
+export const zResumeBasics = z.object({
+    email: z.string().optional().default(''),
+    headline: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    name: z.string().optional().default(''),
+    skills: z.array(z.string()).optional(),
+    years: z.number().int().nullish()
 });
 
 /**
@@ -2550,6 +2846,32 @@ export const zRiskDecisionBody = z.object({
         'not_scam'
     ]),
     note: z.string().max(500).optional().default('')
+});
+
+/**
+ * RoleFamilyRead
+ */
+export const zRoleFamilyRead = z.object({
+    key: z.string(),
+    label_key: z.string(),
+    titles: z.array(z.string()).optional()
+});
+
+/**
+ * IndustrySummary
+ */
+export const zIndustrySummary = z.object({
+    icon: z.string(),
+    key: z.string(),
+    label_key: z.string(),
+    role_families: z.array(zRoleFamilyRead).optional()
+});
+
+/**
+ * IndustryList
+ */
+export const zIndustryList = z.object({
+    items: z.array(zIndustrySummary)
 });
 
 /**
@@ -2606,8 +2928,10 @@ export const zSalaryAdviceRead = z.object({
     currency: z.string(),
     market_p50: z.number().nullable(),
     posting_currency: z.string().nullable(),
+    posting_includes: z.array(z.string()).optional(),
     posting_max: z.number().nullable(),
     posting_min: z.number().nullable(),
+    posting_period: z.string().nullish(),
     rationale: z.string(),
     suggested_max: z.number().nullable(),
     suggested_min: z.number().nullable(),
@@ -2621,6 +2945,13 @@ export const zSalaryAdviceRead = z.object({
 export const zSalaryFilter = z.object({
     currency: z.string().length(3).optional().default('USD'),
     hide_unspecified: z.boolean().optional().default(false),
+    includes: z.array(z.enum([
+        'accommodation',
+        'meals',
+        'tips',
+        'service_charge',
+        'transport'
+    ])).optional(),
     max: z.number().gte(0).nullish(),
     max_monthly_usd: z.number().nullish(),
     min: z.number().gte(0).nullish(),
@@ -2672,6 +3003,27 @@ export const zScheduleCreate = z.object({
 });
 
 /**
+ * ScheduleDefaults
+ */
+export const zScheduleDefaults = z.object({
+    daily_cap: z.number().int().optional().default(12),
+    preset: z.string().optional().default('every_4_hours'),
+    quiet_hours: z.record(z.string()).optional(),
+    timezone: z.string().optional().default('UTC')
+});
+
+/**
+ * OnboardingPlanRead
+ */
+export const zOnboardingPlanRead = z.object({
+    answers: z.array(z.record(z.unknown())).optional(),
+    basics: zResumeBasics,
+    schedule: zScheduleDefaults,
+    search: z.record(z.unknown()).nullish(),
+    source: z.enum(['defaults', 'ai']).optional().default('defaults')
+});
+
+/**
  * ScheduleRead
  */
 export const zScheduleRead = z.object({
@@ -2720,6 +3072,48 @@ export const zScheduleUpdate = z.object({
 export const zScoreResultRead = z.object({
     eligible: z.number().int(),
     scored: z.number().int()
+});
+
+/**
+ * SearchAdapterRead
+ */
+export const zSearchAdapterRead = z.object({
+    configured: z.boolean(),
+    countries: z.array(z.string()),
+    key: z.string(),
+    name: z.string(),
+    terms_note: z.string(),
+    terms_url: z.string()
+});
+
+/**
+ * SearchPlanIn
+ *
+ * Request body for a plan. Industry is optional: it is detected when omitted.
+ */
+export const zSearchPlanIn = z.object({
+    industry: z.string().max(48).nullish(),
+    text: z.string().min(1).max(8000)
+});
+
+/**
+ * SearchPlanQuery
+ */
+export const zSearchPlanQuery = z.object({
+    category: z.string().nullish(),
+    country: z.string().optional().default(''),
+    keywords: z.string(),
+    location: z.string().optional().default('')
+});
+
+/**
+ * SearchQueryRead
+ */
+export const zSearchQueryRead = z.object({
+    category: z.string().nullish(),
+    country: z.string(),
+    keywords: z.string(),
+    location: z.string()
 });
 
 /**
@@ -2819,6 +3213,7 @@ export const zProfileFull = z.object({
     display_name: z.string(),
     education: z.array(zEducationRead),
     experiences: z.array(zExperienceRead),
+    facets: z.array(zFacetRead),
     headline: z.string().nullable(),
     id: z.string().uuid(),
     is_default: z.boolean(),
@@ -2843,6 +3238,27 @@ export const zSkillSets = z.object({
     exclude: z.array(z.string()).optional(),
     must: z.array(z.string()).optional(),
     nice: z.array(z.string()).optional()
+});
+
+/**
+ * SourceAdviceItem
+ */
+export const zSourceAdviceItem = z.object({
+    kind: z.string(),
+    provider: z.string().nullish(),
+    text: z.string()
+});
+
+/**
+ * SourceAdviceRead
+ */
+export const zSourceAdviceRead = z.object({
+    alert_sources: z.array(z.string()),
+    country: z.string(),
+    coverage: z.string(),
+    employer_tags: z.array(z.string()),
+    industry: z.string(),
+    suggestions: z.array(zSourceAdviceItem)
 });
 
 /**
@@ -3110,7 +3526,14 @@ export const zCriteriaV1 = z.object({
         'contract',
         'freelance',
         'internship',
-        'temporary'
+        'temporary',
+        'casual',
+        'seasonal'
+    ])).optional(),
+    facets: z.record(z.union([
+        z.array(z.string()),
+        z.boolean(),
+        z.number().int()
     ])).optional(),
     keywords: zKeywordFilter.optional(),
     languages: z.array(z.string()).optional(),
@@ -3134,6 +3557,15 @@ export const zCriteriaV1 = z.object({
         'director',
         'executive'
     ])).optional(),
+    shifts: z.array(z.enum([
+        'morning',
+        'afternoon',
+        'evening',
+        'night',
+        'weekend',
+        'split',
+        'rotating'
+    ])).optional(),
     skills: zSkillSets.optional(),
     titles: z.array(zTitleSpec).optional(),
     visa_sponsorship: z.boolean().nullish(),
@@ -3156,11 +3588,50 @@ export const zCriteriaCompilePreview = z.object({
 });
 
 /**
+ * CriteriaPlanPreview
+ */
+export const zCriteriaPlanPreview = z.object({
+    ai_error: z.string().nullish(),
+    applied: z.boolean().optional().default(false),
+    criteria: zCriteriaV1,
+    diff: z.array(z.record(z.unknown())),
+    name: z.string().optional().default(''),
+    source: z.enum(['ai', 'defaults']).optional().default('defaults'),
+    summary: z.string(),
+    warnings: z.array(z.record(z.unknown()))
+});
+
+/**
  * CriteriaPut
  */
 export const zCriteriaPut = z.object({
     criteria: zCriteriaV1,
     nl_text: z.string().max(8000).nullish()
+});
+
+/**
+ * SearchPlanOut
+ *
+ * Draft search setup plus the pack it was built for and the queries it will run.
+ */
+export const zSearchPlanOut = z.object({
+    ai_error: z.string().nullish(),
+    confidence: z.number().optional().default(0),
+    criteria: zCriteriaV1,
+    diff: z.array(z.record(z.unknown())).optional(),
+    industry: z.string().optional().default('general'),
+    industry_version: z.number().int().optional().default(1),
+    model: z.string().nullish(),
+    name: z.string().optional().default(''),
+    prompt_version: z.string().optional().default(''),
+    provider: z.string().nullish(),
+    reasons: z.array(z.string()).optional(),
+    role_family: z.string().nullish(),
+    source: z.enum(['ai', 'defaults']).optional().default('defaults'),
+    source_queries: z.array(zSearchPlanQuery).optional(),
+    summary: z.string(),
+    titles: z.array(z.string()).optional(),
+    warnings: z.array(z.record(z.unknown())).optional()
 });
 
 /**
@@ -3205,13 +3676,15 @@ export const zTrackCreate = z.object({
         'prepare',
         'assist',
         'auto_submit'
-    ]).optional().default('discover'),
+    ]).optional().default('prepare'),
     color_hue: z.number().int().gte(1).lte(8).optional().default(1),
     criteria: zCriteriaV1.nullish(),
     icon: z.string().max(64).optional().default('ph:path'),
+    industry: z.string().max(48).nullish(),
     name: z.string().min(1).max(200).nullish(),
     nl_text: z.string().max(8000).optional().default(''),
     profile_id: z.string().uuid(),
+    suggest: z.boolean().optional().default(false),
     template_slug: z.string().max(80).nullish()
 });
 
@@ -3243,6 +3716,8 @@ export const zTrackDetail = z.object({
     criteria: zTrackCriteriaRead,
     icon: z.string(),
     id: z.string().uuid(),
+    industry: z.string(),
+    industry_version: z.number().int(),
     name: z.string(),
     preview_message: z.string().optional().default('Preview available after first discovery'),
     profile_id: z.string().uuid(),
@@ -3289,6 +3764,8 @@ export const zTrackRead = z.object({
     created_at: z.string().datetime(),
     icon: z.string(),
     id: z.string().uuid(),
+    industry: z.string(),
+    industry_version: z.number().int(),
     name: z.string(),
     preview_message: z.string().optional().default('Preview available after first discovery'),
     profile_id: z.string().uuid(),
@@ -3357,6 +3834,7 @@ export const zTrackUpdate = z.object({
     ]).nullish(),
     color_hue: z.number().int().gte(1).lte(8).nullish(),
     icon: z.string().max(64).nullish(),
+    industry: z.string().max(48).nullish(),
     name: z.string().min(1).max(200).nullish(),
     settings: z.record(z.unknown()).nullish()
 });
@@ -3442,6 +3920,17 @@ export const zVapidPublicRead = z.object({
 });
 
 /**
+ * VoicePresetBody
+ */
+export const zVoicePresetBody = z.object({
+    preset: z.enum([
+        'plain',
+        'warm',
+        'formal'
+    ])
+});
+
+/**
  * VoiceSampleIn
  */
 export const zVoiceSampleIn = z.object({
@@ -3478,6 +3967,7 @@ export const zVoiceStyle = z.object({
     contraction_rate: z.number().gte(0).lte(1).optional().default(0),
     formality: z.number().gte(0).lte(1).optional().default(0.5),
     openers: z.array(z.string()).optional(),
+    preset: z.string().optional().default(''),
     sample_count: z.number().int().optional().default(0),
     summary: z.string().optional().default(''),
     vocabulary_level: z.enum([
@@ -3522,10 +4012,51 @@ export const zWebhookAck = z.object({
 });
 
 /**
+ * WhereLookRead
+ */
+export const zWhereLookRead = z.object({
+    adapters: z.array(zSearchAdapterRead),
+    alerts: z.array(z.string()),
+    employer_tags: z.array(z.string()),
+    industry: z.string(),
+    queries: z.array(zSearchQueryRead)
+});
+
+/**
  * WorkspaceCreate
  */
 export const zWorkspaceCreate = z.object({
     name: z.string().min(1).max(120)
+});
+
+/**
+ * WorkspaceIndustryRead
+ */
+export const zWorkspaceIndustryRead = z.object({
+    custom: z.boolean().optional().default(false),
+    icon: z.string(),
+    is_primary: z.boolean(),
+    key: z.string(),
+    label_key: z.string()
+});
+
+/**
+ * IndustryExperienceRead
+ *
+ * Global manifest plus one manifest per enabled pack for per-search pages.
+ */
+export const zIndustryExperienceRead = z.object({
+    enabled: z.array(zWorkspaceIndustryRead),
+    manifest: z.record(z.unknown()),
+    packs: z.record(z.record(z.unknown())),
+    primary: z.string()
+});
+
+/**
+ * WorkspaceIndustryList
+ */
+export const zWorkspaceIndustryList = z.object({
+    items: z.array(zWorkspaceIndustryRead)
 });
 
 /**
@@ -4302,6 +4833,18 @@ export const zImportContactsApiV1ContactsImportPostHeaders = z.object({
  */
 export const zImportContactsApiV1ContactsImportPostResponse = zContactImportResult;
 
+export const zParseContactsApiV1ContactsParsePostBody = zContactsParseBody;
+
+export const zParseContactsApiV1ContactsParsePostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zParseContactsApiV1ContactsParsePostResponse = zContactsParseRead;
+
 export const zGetDiscoveryRunApiV1DiscoveryRunsRunIdGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -4573,6 +5116,37 @@ export const zMessagesApiV1InboundMessagesGetHeaders = z.object({
  */
 export const zMessagesApiV1InboundMessagesGetResponse = z.array(zInboundMessageRead);
 
+export const zListIndustriesApiV1IndustriesGetHeaders = z.object({
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zListIndustriesApiV1IndustriesGetResponse = zIndustryList;
+
+export const zDetectApiV1IndustriesDetectPostBody = zIndustryDetectIn;
+
+export const zDetectApiV1IndustriesDetectPostHeaders = z.object({
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zDetectApiV1IndustriesDetectPostResponse = zIndustryDetectRead;
+
+export const zDraftPackApiV1IndustriesDraftPostBody = zCustomPackDraftIn;
+
+export const zDraftPackApiV1IndustriesDraftPostHeaders = z.object({
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zDraftPackApiV1IndustriesDraftPostResponse = zCustomPackDraftRead;
+
 export const zAcceptInvitationApiV1InvitationsAcceptPostBody = zInviteAcceptIn;
 
 export const zAcceptInvitationApiV1InvitationsAcceptPostHeaders = z.object({
@@ -4763,6 +5337,16 @@ export const zPutPrefsApiV1NotificationPrefsPutHeaders = z.object({
  */
 export const zPutPrefsApiV1NotificationPrefsPutResponse = zPrefsMatrix;
 
+export const zResetPrefsApiV1NotificationPrefsResetPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zResetPrefsApiV1NotificationPrefsResetPostResponse = zPrefsMatrix;
+
 export const zUnsubscribeEmailApiV1NotificationPrefsUnsubscribeEmailPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -4813,6 +5397,18 @@ export const zMarkReadApiV1NotificationsNotificationIdReadPostPath = z.object({
  * Successful Response
  */
 export const zMarkReadApiV1NotificationsNotificationIdReadPostResponse = zNotificationRead;
+
+export const zPlanApiV1OnboardingPlanPostBody = zOnboardingPlanBody;
+
+export const zPlanApiV1OnboardingPlanPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zPlanApiV1OnboardingPlanPostResponse = zOnboardingPlanRead;
 
 export const zOpsDashboardApiV1OpsDashboardGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -4938,6 +5534,22 @@ export const zCreateAnswerApiV1ProfilesProfileIdAnswersPostPath = z.object({
  * Successful Response
  */
 export const zCreateAnswerApiV1ProfilesProfileIdAnswersPostResponse = zAnswerRead;
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostBody = zAnswerDraftBody;
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDraftAnswersApiV1ProfilesProfileIdAnswersDraftPostResponse = zAnswerDraftBundle;
 
 export const zListAnswerKeysApiV1ProfilesProfileIdAnswersKeysGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -5448,6 +6060,70 @@ export const zUpdateProfileExperiencePath = z.object({
  */
 export const zUpdateProfileExperienceResponse = zExperienceRead;
 
+export const zListProfileFacetsHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zListProfileFacetsPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Response List Profile Facets
+ *
+ * Successful Response
+ */
+export const zListProfileFacetsResponse = z.array(zFacetRead);
+
+export const zCreateProfileFacetBody = zFacetIn;
+
+export const zCreateProfileFacetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zCreateProfileFacetPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zCreateProfileFacetResponse = zFacetRead;
+
+export const zDeleteProfileFacetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zDeleteProfileFacetPath = z.object({
+    profile_id: z.string().uuid(),
+    item_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zDeleteProfileFacetResponse = zOkRead;
+
+export const zUpdateProfileFacetBody = zFacetPatch;
+
+export const zUpdateProfileFacetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zUpdateProfileFacetPath = z.object({
+    profile_id: z.string().uuid(),
+    item_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zUpdateProfileFacetResponse = zFacetRead;
+
 export const zListInterviewGapsApiV1ProfilesProfileIdInterviewGapsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -5779,6 +6455,22 @@ export const zAnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostPath = z.object(
  */
 export const zAnalyzeVoiceApiV1ProfilesProfileIdVoiceAnalyzePostResponse = zVoiceRead;
 
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostBody = zVoicePresetBody;
+
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostPath = z.object({
+    profile_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zApplyVoicePresetApiV1ProfilesProfileIdVoicePresetPostResponse = zVoiceRead;
+
 export const zPutVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPutBody = zVoiceSamplesPut;
 
 export const zPutVoiceSamplesApiV1ProfilesProfileIdVoiceSamplesPutHeaders = z.object({
@@ -5865,6 +6557,20 @@ export const zIngestApiV1ResponsesIngestPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
 });
+
+export const zMatchReplyApiV1ResponsesMatchPostBody = zMatchReplyBody;
+
+export const zMatchReplyApiV1ResponsesMatchPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Response Match Reply Api V1 Responses Match Post
+ *
+ * Successful Response
+ */
+export const zMatchReplyApiV1ResponsesMatchPostResponse = zReplyMatchRead.nullable();
 
 export const zListProposalsApiV1ResponsesProposalsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -6520,6 +7226,40 @@ export const zUpdateScheduleApiV1SchedulesScheduleIdPatchPath = z.object({
  */
 export const zUpdateScheduleApiV1SchedulesScheduleIdPatchResponse = zScheduleRead;
 
+export const zSourceAdviceApiV1SourcesAdviceGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zSourceAdviceApiV1SourcesAdviceGetQuery = z.object({
+    industry: z.string().max(48).optional().default('general'),
+    country: z.string().max(8).optional().default('')
+});
+
+/**
+ * Successful Response
+ */
+export const zSourceAdviceApiV1SourcesAdviceGetResponse = zSourceAdviceRead;
+
+export const zAlertGuideApiV1SourcesAlertsGuideGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zAlertGuideApiV1SourcesAlertsGuideGetQuery = z.object({
+    industry: z.string().max(48).optional().default('general'),
+    country: z.string().max(8).optional().default(''),
+    q: z.string().max(200).optional().default(''),
+    location: z.string().max(200).optional().default('')
+});
+
+/**
+ * Response Alert Guide Api V1 Sources Alerts Guide Get
+ *
+ * Successful Response
+ */
+export const zAlertGuideApiV1SourcesAlertsGuideGetResponse = z.array(zAlertGuideRead);
+
 export const zAddCareersApiV1SourcesCareersPostBody = zAddCareersIn;
 
 export const zAddCareersApiV1SourcesCareersPostHeaders = z.object({
@@ -6531,6 +7271,21 @@ export const zAddCareersApiV1SourcesCareersPostHeaders = z.object({
  * Successful Response
  */
 export const zAddCareersApiV1SourcesCareersPostResponse = zCompanyBoardRead;
+
+export const zSourceCoverageApiV1SourcesCoverageGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zSourceCoverageApiV1SourcesCoverageGetQuery = z.object({
+    industry: z.string().min(1).max(48),
+    country: z.string().min(2).max(8)
+});
+
+/**
+ * Successful Response
+ */
+export const zSourceCoverageApiV1SourcesCoverageGetResponse = zCoverageRead;
 
 export const zDirectoryStatsApiV1SourcesDirectoryStatsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -6819,6 +7574,18 @@ export const zGeoLookupApiV1TracksGeoLookupGetQuery = z.object({
  */
 export const zGeoLookupApiV1TracksGeoLookupGetResponse = zGeocodeRead;
 
+export const zPlanSearchApiV1TracksPlanPostBody = zSearchPlanIn;
+
+export const zPlanSearchApiV1TracksPlanPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zPlanSearchApiV1TracksPlanPostResponse = zSearchPlanOut;
+
 export const zReorderApiV1TracksReorderPostBody = zTrackReorder;
 
 export const zReorderApiV1TracksReorderPostHeaders = z.object({
@@ -6981,6 +7748,22 @@ export const zCompileCriteriaApiV1TracksTrackIdCriteriaCompilePostPath = z.objec
  */
 export const zCompileCriteriaApiV1TracksTrackIdCriteriaCompilePostResponse = zCriteriaCompilePreview;
 
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostBody = zCriteriaSuggestRequest;
+
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostPath = z.object({
+    track_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zSuggestCriteriaApiV1TracksTrackIdCriteriaSuggestPostResponse = zCriteriaPlanPreview;
+
 export const zDiscoverNowApiV1TracksTrackIdDiscoverPostHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -7121,6 +7904,20 @@ export const zPauseTrackApiV1TracksTrackIdPausePostPath = z.object({
  */
 export const zPauseTrackApiV1TracksTrackIdPausePostResponse = zTrackRead;
 
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetPath = z.object({
+    track_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zRecommendedSettingsApiV1TracksTrackIdRecommendedSettingsGetResponse = zRecommendedSettingsRead;
+
 export const zRelaxationsApiV1TracksTrackIdRelaxationsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
@@ -7246,6 +8043,20 @@ export const zPatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchPath = z.obj
  */
 export const zPatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchResponse = zTrackSourceRead;
 
+export const zWhereWeLookApiV1TracksTrackIdWhereGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zWhereWeLookApiV1TracksTrackIdWhereGetPath = z.object({
+    track_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zWhereWeLookApiV1TracksTrackIdWhereGetResponse = zWhereLookRead;
+
 export const zInboundEmailWebhookApiV1WebhooksInboundEmailPostHeaders = z.object({
     'x-kame-signature': z.string().nullish(),
     'x-inbound-token': z.string().nullish()
@@ -7293,10 +8104,80 @@ export const zRenameWorkspaceApiV1WorkspacePatchHeaders = z.object({
  */
 export const zRenameWorkspaceApiV1WorkspacePatchResponse = zWorkspaceRead;
 
+export const zGetExperienceApiV1WorkspaceExperienceGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetExperienceApiV1WorkspaceExperienceGetResponse = zIndustryExperienceRead;
+
 export const zExportWorkspaceApiV1WorkspaceExportGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
     authorization: z.string().nullish()
 });
+
+export const zListWorkspaceIndustriesApiV1WorkspaceIndustriesGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zListWorkspaceIndustriesApiV1WorkspaceIndustriesGetResponse = zWorkspaceIndustryList;
+
+export const zAddWorkspaceIndustryApiV1WorkspaceIndustriesPostBody = zIndustryAdd;
+
+export const zAddWorkspaceIndustryApiV1WorkspaceIndustriesPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zAddWorkspaceIndustryApiV1WorkspaceIndustriesPostResponse = zWorkspaceIndustryList;
+
+export const zAddCustomPackApiV1WorkspaceIndustriesCustomPostBody = zCustomPackAcceptIn;
+
+export const zAddCustomPackApiV1WorkspaceIndustriesCustomPostHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zAddCustomPackApiV1WorkspaceIndustriesCustomPostResponse = zWorkspaceIndustryList;
+
+export const zSetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutBody = zIndustryPrimaryIn;
+
+export const zSetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+/**
+ * Successful Response
+ */
+export const zSetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutResponse = zWorkspaceIndustryList;
+
+export const zRemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zRemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeletePath = z.object({
+    key: z.string()
+});
+
+/**
+ * Successful Response
+ */
+export const zRemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteResponse = zWorkspaceIndustryList;
 
 export const zListInvitationsApiV1WorkspaceInvitationsGetHeaders = z.object({
     'x-workspace-id': z.string().nullish(),
@@ -7443,6 +8324,20 @@ export const zWorkspaceKillApiV1WorkspacesAutoSubmitKillPostHeaders = z.object({
  * Successful Response
  */
 export const zWorkspaceKillApiV1WorkspacesAutoSubmitKillPostResponse = zBatchApproveRead;
+
+export const zGetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetHeaders = z.object({
+    'x-workspace-id': z.string().nullish(),
+    authorization: z.string().nullish()
+});
+
+export const zGetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetPath = z.object({
+    workspace_id: z.string().uuid()
+});
+
+/**
+ * Successful Response
+ */
+export const zGetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetResponse = zIndustryExperienceRead;
 
 /**
  * Successful Response

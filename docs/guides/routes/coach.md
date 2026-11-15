@@ -23,3 +23,8 @@ Coach/agency view of candidate profiles in the workspace. A short lede explains 
 ## RBAC
 
 `data.read` / `data.write` as for profiles.
+
+## UX clarity (2026-11-12)
+
+- The nav item and page title both say **People I help**.
+- The page explains the feature in one line and offers **Add person** in a normal section.

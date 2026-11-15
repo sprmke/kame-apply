@@ -13,6 +13,10 @@ Paste (or extension-captured) form text → split into questions → resolve eac
 
 Tone controls re-run the drafter (`shorter` / `more_specific` / `more_casual` / `more_formal`). Save to bank stores an approved row for the next similar question.
 
+## Industry filtering
+
+`CanonicalKey.packs` marks the fields that add a key. `GET /profiles/{id}/answers/keys` returns the catalog for the workspace's enabled packs, combining each pack's `answer_keys.add` and `answer_keys.hide`. A Technology workspace keeps GitHub; a Hospitality-only workspace hides it and adds food safety, availability, shift, transport, accommodation, knife kit, and trial shift keys. A two-field workspace keeps GitHub because Technology adds it. Quick setup seeds only visible keys.
+
 ## Tables
 
 | Table | Role |
@@ -43,3 +47,8 @@ RLS on `workspace_id`.
 ## Mutations → audit
 
 `answer_desk.parsed`, `answer_desk.saved_to_bank`, `answer_desk.stance_updated`.
+
+
+## Bank drafts from the profile (2026-11-13)
+
+`POST /profiles/{id}/answers/draft` returns per-key drafts with `source` = `profile`, `default`, or `needs_story`. The rule reads work authorization, salary floor, and profile links; EEO keys default to decline. Existing rows are skipped unless `include_existing` is true. The web bank shows them in pencil with **Use this** and **Dismiss**; accepting calls `POST /answers` or `PATCH /answers/{id}`, so the write is audited.

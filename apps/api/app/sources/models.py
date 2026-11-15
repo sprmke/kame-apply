@@ -6,7 +6,18 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -66,7 +77,6 @@ class TrackSource(Base):
 
 class CountrySourceRegistry(Base):
     __tablename__ = "country_source_registry"
-
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid()
     )
@@ -74,3 +84,39 @@ class CountrySourceRegistry(Base):
     source_key: Mapped[str] = mapped_column(String(64), nullable=False)
     coverage: Mapped[str] = mapped_column(String(32), server_default="partial")
     note: Mapped[str] = mapped_column(Text, server_default="")
+
+
+class SourceCoverage(Base):
+    """Global honesty table for how well a source covers (industry, country)."""
+
+    __tablename__ = "source_coverage"
+    __table_args__ = (
+        CheckConstraint(
+            "coverage IN ('strong','partial','thin','none')", name="ck_source_coverage_level"
+        ),
+    )
+
+    source_key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    country: Mapped[str] = mapped_column(String(8), primary_key=True)
+    industry: Mapped[str] = mapped_column(String(48), primary_key=True)
+    coverage: Mapped[str] = mapped_column(String(16), server_default="thin")
+    note: Mapped[str] = mapped_column(Text, server_default="")
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class SourceQueryCache(Base):
+    """Shared cache for keyword + location search calls. Global, no tenant data."""
+
+    __tablename__ = "source_query_cache"
+    __table_args__ = (UniqueConstraint("source_key", "query_hash", name="uq_source_query_cache"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid()
+    )
+    source_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    query_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, server_default="[]")
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

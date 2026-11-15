@@ -8,6 +8,7 @@ Rules enforced here (docs/architecture, untrusted-content, truthful-content):
 """
 
 import asyncio
+import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -39,6 +40,9 @@ log = structlog.get_logger()
 
 CALL_TIMEOUT_SECONDS = 60
 MICROS_PER_CENT = 10_000
+# Upstream "try again later" answers. Overloaded providers (Gemini 503 in particular) recover on
+# their own, so one call is not evidence the feature is broken.
+TRANSIENT_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
 
 
 def _kek(settings: Settings) -> bytes:
@@ -303,6 +307,10 @@ def _is_auth_failure(e: ModelHTTPError) -> bool:
     return e.status_code == 400 and "api_key_invalid" in str(e.body).lower().replace(" ", "_")
 
 
+def _is_transient(e: ModelHTTPError) -> bool:
+    return e.status_code in TRANSIENT_STATUSES
+
+
 def _estimate(provider: str, model: str, system: str, prompt: str, max_out: int) -> int:
     approx_in = (len(system) + len(prompt)) // 3 + 1  # pessimistic chars-per-token
     return cost_micros(provider, model, approx_in, max_out)
@@ -368,36 +376,55 @@ async def _invoke(
         agent_kwargs["output_type"] = output_type
         agent_kwargs["retries"] = retries
     agent = Agent(model, **agent_kwargs)
-    try:
-        run = await asyncio.wait_for(
-            agent.run(prompt, model_settings={"max_tokens": max_out}), CALL_TIMEOUT_SECONDS
-        )
-    except ModelHTTPError as e:
-        if _is_auth_failure(e):
-            cred.status = "invalid"
-            cred.last_tested_at = datetime.now(UTC)
-            await ctx.session.flush()
-            raise AppError(
-                "ai_credential_invalid", "The AI provider rejected this key", 409
-            ) from None
-        log.warning("ai_provider_http_error", provider=cred.provider, status=e.status_code)
-        raise AppError("ai_provider_error", "The AI provider returned an error", 502) from None
-    except TimeoutError:
-        raise AppError("ai_provider_error", "The AI provider timed out", 504) from None
-    except Exception as e:
-        # Structured-output validation failures after retries surface here.
-        name = type(e).__name__
-        if output_type is not None and (
-            "Validation" in name or "UnexpectedModelBehavior" in name or "AgentRun" in name
-        ):
-            log.warning("ai_structured_invalid", provider=cred.provider, error=name)
-            raise AppError(
-                "ai_output_invalid",
-                "The model returned a draft that could not be validated",
-                502,
-            ) from None
-        log.warning("ai_call_failed", provider=cred.provider, exc_info=True)
-        raise AppError("ai_provider_error", "The AI provider call failed", 502) from None
+    attempts = max(0, settings.ai_transient_retries) + 1
+    run = None
+    for attempt in range(attempts):
+        try:
+            run = await asyncio.wait_for(
+                agent.run(prompt, model_settings={"max_tokens": max_out}), CALL_TIMEOUT_SECONDS
+            )
+            break
+        except ModelHTTPError as e:
+            if _is_auth_failure(e):
+                cred.status = "invalid"
+                cred.last_tested_at = datetime.now(UTC)
+                await ctx.session.flush()
+                raise AppError(
+                    "ai_credential_invalid", "The AI provider rejected this key", 409
+                ) from None
+            if _is_transient(e) and attempt + 1 < attempts:
+                # Jitter keeps concurrent calls from retrying in lockstep.
+                jitter = 1 + secrets.randbelow(500) / 1000  # 1.0..1.5
+                delay = settings.ai_retry_base_seconds * (2**attempt) * jitter
+                log.warning(
+                    "ai_provider_retry",
+                    provider=cred.provider,
+                    status=e.status_code,
+                    attempt=attempt + 1,
+                    delay_ms=int(delay * 1000),
+                )
+                if delay > 0:
+                    await asyncio.sleep(delay)
+                continue
+            log.warning("ai_provider_http_error", provider=cred.provider, status=e.status_code)
+            raise AppError("ai_provider_error", "The AI provider returned an error", 502) from None
+        except TimeoutError:
+            raise AppError("ai_provider_error", "The AI provider timed out", 504) from None
+        except Exception as e:
+            # Structured-output validation failures after retries surface here.
+            name = type(e).__name__
+            if output_type is not None and (
+                "Validation" in name or "UnexpectedModelBehavior" in name or "AgentRun" in name
+            ):
+                log.warning("ai_structured_invalid", provider=cred.provider, error=name)
+                raise AppError(
+                    "ai_output_invalid",
+                    "The model returned a draft that could not be validated",
+                    502,
+                ) from None
+            log.warning("ai_call_failed", provider=cred.provider, exc_info=True)
+            raise AppError("ai_provider_error", "The AI provider call failed", 502) from None
+    assert run is not None
     usage = run.usage
     in_t, out_t = usage.input_tokens or 0, usage.output_tokens or 0
     cost = cost_micros(cred.provider, model_name, in_t, out_t)
@@ -451,7 +478,8 @@ async def run_text(
             )
             return AiResult(str(output), cred.provider, model_name, in_t, out_t, cost)
         except AppError as e:
-            if e.code != "ai_credential_invalid":
+            # A dead key or an outage on the primary: the next eligible provider may still answer.
+            if e.code not in {"ai_credential_invalid", "ai_provider_error"}:
                 raise
             last = e
     assert last is not None
@@ -495,7 +523,8 @@ async def run_structured(
             )
             return StructuredAiResult(output, cred.provider, model_name, in_t, out_t, cost)
         except AppError as e:
-            if e.code != "ai_credential_invalid":
+            # A dead key or an outage on the primary: the next eligible provider may still answer.
+            if e.code not in {"ai_credential_invalid", "ai_provider_error"}:
                 raise
             last = e
     assert last is not None

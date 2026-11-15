@@ -70,7 +70,7 @@ const needsYou = computed(() => needsQuery.data.value ?? 0);
       <main
         id="main"
         tabindex="-1"
-        class="flex-1 px-4 pt-8 pb-28 focus:outline-none md:px-10 md:pb-12"
+        class="min-w-0 flex-1 px-4 pt-6 pb-28 focus:outline-none sm:px-6 sm:pt-8 md:px-8 md:pb-12 lg:px-10"
       >
         <slot />
       </main>

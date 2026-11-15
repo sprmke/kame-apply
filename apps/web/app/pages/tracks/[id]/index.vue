@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import {
-  compileCriteriaApiV1TracksTrackIdCriteriaCompilePost,
+  client,
   discoverNowApiV1TracksTrackIdDiscoverPost,
   getDiscoveryRunApiV1DiscoveryRunsRunIdGet,
   getTrackApiV1TracksTrackIdGet,
   listJobsApiV1JobsGet,
-  putCriteriaApiV1TracksTrackIdCriteriaPut,
   runHistoryApiV1TracksTrackIdRunsGet,
-  triageJobApiV1TrackJobsTrackJobIdTriagePost,
   type BoardJobRead,
   type CriteriaV1,
   type DiscoveryRunHistoryRead,
   type DiscoveryRunRead,
   type TrackDetail,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnFolderTab, FnPencilText, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnEmptyState, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const route = useRoute();
@@ -25,32 +24,28 @@ const apiError = useApiError();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
 const fmt = useFormat();
+const exp = useExperience();
 
 const trackId = computed(() => String(route.params.id));
-const nl = ref("");
-const saving = ref(false);
-const compiling = ref(false);
-const moreOpen = ref(false);
-const diff = ref<{ label?: string; op?: string }[]>([]);
-const preview = ref<CriteriaV1 | null>(null);
 const running = ref(false);
 const runProgress = ref<DiscoveryRunRead["progress"] | null>(null);
 const runSeconds = ref(0);
 let runTimer: ReturnType<typeof setInterval> | null = null;
 
-const place = ref("");
-const radiusKm = ref(25);
-const regionPreset = ref("");
-const visa = ref(false);
-const salaryMin = ref<number | null>(null);
-const salaryCurrency = ref("USD");
-const salaryPeriod = ref<"hour" | "day" | "month" | "year">("month");
-const includeExpr = ref("");
-const excludeExpr = ref("");
-const companiesInclude = ref("");
-const companiesExclude = ref("");
-const tzOverlap = ref(4);
-const workModes = ref<string[]>([]);
+const runs = useQuery({
+  queryKey: computed(() => ["track-runs", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await runHistoryApiV1TracksTrackIdRunsGet({
+      path: { track_id: trackId.value },
+      throwOnError: true,
+    });
+    return (data ?? []) as DiscoveryRunHistoryRead[];
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+  refetchInterval: computed(() => (running.value ? 5000 : 30_000)),
+});
+const lastRun = computed(() => runs.data.value?.[0] ?? null);
+const lastRunNew = computed(() => Number(lastRun.value?.progress?.linked ?? 0));
 
 const detail = useQuery({
   queryKey: computed(() => ["track", ws.currentId, trackId.value]),
@@ -63,53 +58,56 @@ const detail = useQuery({
   },
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
+const industry = computed(() => detail.data.value?.industry || exp.primary.value);
+const criteria = computed(() => detail.data.value?.criteria.structured as CriteriaV1 | undefined);
+const coverageCountry = computed(
+  () => criteria.value?.locations?.[0]?.country?.toUpperCase() ?? "",
+);
+const coveragePlace = computed(
+  () => criteria.value?.locations?.[0]?.place || coverageCountry.value,
+);
 
-watch(
-  () => detail.data.value,
-  (d) => {
-    if (!d) return;
-    nl.value = d.criteria.nl_text || "";
-    const c = d.criteria.structured as CriteriaV1;
-    place.value = c.locations?.[0]?.place ?? "";
-    radiusKm.value = c.locations?.[0]?.radius_km ?? 25;
-    regionPreset.value = c.remote_eligibility?.regions?.[0] ?? "";
-    visa.value = c.visa_sponsorship === true;
-    salaryMin.value = c.salary?.min ?? null;
-    salaryCurrency.value = c.salary?.currency ?? "USD";
-    salaryPeriod.value = (c.salary?.period as typeof salaryPeriod.value) ?? "month";
-    includeExpr.value = c.keywords?.include_expr ?? "";
-    excludeExpr.value = c.keywords?.exclude_expr ?? "";
-    companiesInclude.value = (c.companies?.include ?? []).join(", ");
-    companiesExclude.value = (c.companies?.exclude ?? []).join(", ");
-    tzOverlap.value = c.remote_eligibility?.timezone_overlap_hours ?? 4;
-    workModes.value = [...(c.work_modes ?? [])];
+type Coverage = { level: "strong" | "partial" | "thin" | "none" };
+type WhereLook = {
+  queries: { keywords: string; location: string; country: string; category: string | null }[];
+  adapters: { key: string; name: string; configured: boolean; terms_note: string }[];
+  alerts: string[];
+};
+
+const coverage = useQuery({
+  queryKey: computed(() => ["coverage", industry.value, coverageCountry.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: "/api/v1/sources/coverage",
+      query: { industry: industry.value, country: coverageCountry.value },
+      throwOnError: true,
+    });
+    return data as Coverage;
   },
-  { immediate: true },
-);
+  enabled: computed(() => Boolean(ws.currentId && coverageCountry.value && industry.value)),
+});
 
-function splitCsv(raw: string): string[] {
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+const whereLook = useQuery({
+  queryKey: computed(() => ["track-where", ws.currentId, trackId.value]),
+  queryFn: async () => {
+    const { data } = await client.get({
+      url: `/api/v1/tracks/${trackId.value}/where`,
+      throwOnError: true,
+    });
+    return data as WhereLook;
+  },
+  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
+});
 
-const track = computed(() => detail.data.value ?? null);
-const criteria = computed(() => track.value?.criteria.structured as CriteriaV1 | undefined);
-const loading = computed(
-  () => !ws.loaded || detail.isPending.value || (detail.isFetching.value && !track.value),
-);
-const loadError = computed(() => detail.error.value);
-
-const matched = useQuery({
-  queryKey: computed(() => ["track-jobs", ws.currentId, trackId.value]),
+const jobs = useQuery({
+  queryKey: computed(() => ["track-match-preview", ws.currentId, trackId.value]),
   queryFn: async () => {
     const { data } = await listJobsApiV1JobsGet({
       query: {
         track_id: trackId.value,
         include_not_eligible: false,
         sort: "score",
-        limit: 10,
+        limit: 12,
       },
       throwOnError: true,
     });
@@ -117,21 +115,6 @@ const matched = useQuery({
   },
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
-const matchedJobs = computed(() => matched.data.value ?? []);
-
-const runs = useQuery({
-  queryKey: computed(() => ["track-runs", ws.currentId, trackId.value]),
-  queryFn: async () => {
-    const { data } = await runHistoryApiV1TracksTrackIdRunsGet({
-      path: { track_id: trackId.value },
-      throwOnError: true,
-    });
-    return (data ?? []) as DiscoveryRunHistoryRead[];
-  },
-  enabled: computed(() => Boolean(ws.currentId && trackId.value)),
-  refetchInterval: computed(() => (running.value ? 5000 : 30000)),
-});
-const lastRun = computed(() => runs.data.value?.[0] ?? null);
 
 watch(running, (value) => {
   if (runTimer) clearInterval(runTimer);
@@ -147,74 +130,6 @@ onUnmounted(() => {
   if (runTimer) clearInterval(runTimer);
 });
 
-const STOP_REASONS = new Set([
-  "a",
-  "an",
-  "and",
-  "are",
-  "as",
-  "at",
-  "be",
-  "but",
-  "by",
-  "can",
-  "for",
-  "from",
-  "has",
-  "have",
-  "in",
-  "is",
-  "it",
-  "not",
-  "of",
-  "on",
-  "or",
-  "our",
-  "that",
-  "the",
-  "their",
-  "they",
-  "this",
-  "to",
-  "we",
-  "will",
-  "with",
-  "you",
-  "your",
-]);
-const REASON_COPY: Record<string, string> = {
-  "Posted < 72h": "Posted recently",
-  "Posted < 7d": "Posted this week",
-};
-function reasonText(reason: unknown): string {
-  const text =
-    typeof reason === "string"
-      ? reason
-      : reason && typeof reason === "object"
-        ? String(
-            (reason as { evidence?: string; signal?: string }).evidence ||
-              (reason as { signal?: string }).signal ||
-              "",
-          )
-        : "";
-  const clean = text.trim();
-  return STOP_REASONS.has(clean.toLowerCase()) ? "" : (REASON_COPY[clean] ?? clean);
-}
-
-async function triageMatch(id: string, action: "shortlist" | "skip") {
-  try {
-    await triageJobApiV1TrackJobsTrackJobIdTriagePost({
-      path: { track_job_id: id },
-      body: { action, skip_reason: action === "skip" ? "not a fit" : undefined },
-      throwOnError: true,
-    });
-    await qc.invalidateQueries({ queryKey: ["track-jobs", ws.currentId, trackId.value] });
-    await qc.invalidateQueries({ queryKey: ["home", ws.currentId] });
-  } catch (e) {
-    toast.push({ title: apiError(e), tone: "danger" });
-  }
-}
-
 async function runNow() {
   running.value = true;
   runProgress.value = null;
@@ -224,7 +139,6 @@ async function runNow() {
       throwOnError: true,
     });
     runProgress.value = data?.progress ?? null;
-    // Deployed runs are queued and finish in a worker; poll until it stops changing.
     if (data && (data.status === "queued" || data.status === "running")) {
       for (let i = 0; i < 60; i += 1) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -240,8 +154,8 @@ async function runNow() {
         }
       }
     }
-    await qc.invalidateQueries({ queryKey: ["track-jobs", ws.currentId, trackId.value] });
     await qc.invalidateQueries({ queryKey: ["track-runs", ws.currentId, trackId.value] });
+    await qc.invalidateQueries({ queryKey: ["track-match-preview", ws.currentId, trackId.value] });
   } catch (e) {
     toast.push({ title: apiError(e), tone: "danger" });
   } finally {
@@ -249,495 +163,186 @@ async function runNow() {
   }
 }
 
-function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
-  return Math.min(8, Math.max(1, n || 1)) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+const rows = computed(() => jobs.data.value ?? []);
+const thinCoverage = computed(() =>
+  Boolean(coverage.data.value && coverage.data.value.level !== "strong" && rows.value.length < 5),
+);
+
+function workModeLabel(mode: string | null | undefined): string {
+  return mode ? t(`tracks.mode_${mode}`) : "";
 }
 
-async function invalidate() {
-  await qc.invalidateQueries({ queryKey: ["track", ws.currentId, trackId.value] });
-  await qc.invalidateQueries({ queryKey: ["tracks", ws.currentId] });
+function sealLevel(level: string | null | undefined): "clear" | "caution" | "danger" {
+  if (level === "red") return "danger";
+  if (level === "yellow") return "caution";
+  return "clear";
 }
 
-async function saveCriteria(next: CriteriaV1) {
-  saving.value = true;
-  try {
-    await putCriteriaApiV1TracksTrackIdCriteriaPut({
-      path: { track_id: trackId.value },
-      body: { criteria: next, nl_text: nl.value },
-      throwOnError: true,
-    });
-    await invalidate();
-  } catch (e) {
-    toast.push({ title: apiError(e), tone: "danger" });
-  } finally {
-    saving.value = false;
-  }
+function sealLabel(level: string | null | undefined): string {
+  if (level === "red") return t("jobs.highRisk");
+  if (level === "yellow") return t("jobs.caution");
+  return t("jobs.clear");
 }
 
-async function compile(apply: boolean) {
-  if (!nl.value.trim()) return;
-  compiling.value = true;
-  try {
-    const { data } = await compileCriteriaApiV1TracksTrackIdCriteriaCompilePost({
-      path: { track_id: trackId.value },
-      body: { text: nl.value, apply },
-      throwOnError: true,
-    });
-    diff.value = data?.diff ?? [];
-    preview.value = data?.criteria ?? null;
-    if (apply) {
-      await invalidate();
-      toast.push({ title: t("common.saved"), tone: "neutral" });
-    }
-  } catch (e) {
-    toast.push({ title: apiError(e), tone: "danger" });
-  } finally {
-    compiling.value = false;
-  }
-}
-
-async function removeMustSkill(skill: string) {
-  const c = criteria.value;
-  if (!c) return;
-  await saveCriteria({
-    ...c,
-    skills: {
-      must: (c.skills?.must ?? []).filter((s) => s !== skill),
-      nice: c.skills?.nice ?? [],
-      exclude: c.skills?.exclude ?? [],
-    },
-  });
-}
-
-async function toggleAgencies() {
-  const c = criteria.value;
-  if (!c) return;
-  await saveCriteria({
-    ...c,
-    companies: {
-      include: c.companies?.include ?? [],
-      exclude: c.companies?.exclude ?? [],
-      sizes: c.companies?.sizes ?? [],
-      industries: c.companies?.industries ?? [],
-      stages: c.companies?.stages ?? [],
-      exclude_agencies: !c.companies?.exclude_agencies,
-    },
-  });
-}
-
-function toggleMode(mode: string) {
-  if (workModes.value.includes(mode)) {
-    workModes.value = workModes.value.filter((m) => m !== mode);
-  } else {
-    workModes.value = [...workModes.value, mode];
-  }
-}
-
-async function saveMore() {
-  const c = criteria.value;
-  if (!c) return;
-  const regions = regionPreset.value ? [regionPreset.value] : (c.remote_eligibility?.regions ?? []);
-  const locations = place.value.trim()
-    ? [{ place: place.value.trim(), radius_km: radiusKm.value || null }]
-    : [];
-  await saveCriteria({
-    ...c,
-    work_modes: workModes.value as CriteriaV1["work_modes"],
-    visa_sponsorship: visa.value ? true : null,
-    locations,
-    remote_eligibility: {
-      anywhere: c.remote_eligibility?.anywhere ?? false,
-      regions,
-      countries: c.remote_eligibility?.countries ?? [],
-      timezone_overlap_hours: tzOverlap.value,
-      base_tz: c.remote_eligibility?.base_tz ?? null,
-    },
-    salary:
-      salaryMin.value != null
-        ? {
-            min: salaryMin.value,
-            max: null,
-            currency: salaryCurrency.value,
-            period: salaryPeriod.value,
-            hide_unspecified: c.salary?.hide_unspecified ?? false,
-          }
-        : null,
-    keywords: {
-      include_expr: includeExpr.value.trim() || null,
-      exclude_expr: excludeExpr.value.trim() || null,
-    },
-    companies: {
-      include: splitCsv(companiesInclude.value),
-      exclude: splitCsv(companiesExclude.value),
-      sizes: c.companies?.sizes ?? [],
-      industries: c.companies?.industries ?? [],
-      stages: c.companies?.stages ?? [],
-      exclude_agencies: c.companies?.exclude_agencies ?? false,
-    },
-  });
-  toast.push({ title: t("common.saved"), tone: "neutral" });
+function salaryLine(s: unknown): string {
+  if (!s || typeof s !== "object") return "";
+  const row = s as { min?: number | null; max?: number | null; currency?: string; period?: string };
+  if (row.min == null) return "";
+  const range = row.max != null ? `${row.min}-${row.max}` : `${row.min}`;
+  return [row.currency, range, row.period ? `/ ${row.period}` : ""].filter(Boolean).join(" ");
 }
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 md:px-6">
-    <div v-if="loading" class="flex flex-col gap-3">
-      <FnSkeleton class="h-10 w-64" />
-      <FnSkeleton class="h-40 w-full" />
-    </div>
-    <p v-else-if="loadError" class="text-sm text-ink-600">{{ apiError(loadError) }}</p>
-    <template v-else-if="track">
-      <div
-        class="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-rule bg-paper-1 p-6 shadow-[var(--shadow-card)]"
-      >
-        <div class="min-w-0 flex-1">
-          <FnFolderTab :hue="hue(track.color_hue)" active>{{ track.name }}</FnFolderTab>
+  <TrackShell :track-id="trackId">
+    <div class="flex flex-col gap-5">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0 text-sm text-ink-600">
+          <template v-if="running">
+            <span class="inline-flex items-center gap-2">
+              <span class="size-2 animate-pulse rounded-full bg-ink-600" aria-hidden="true" />
+              {{ t("tracks.searchingBoards") }} · {{ runSeconds }}s
+            </span>
+            <span v-if="runProgress" class="mt-1 block">
+              {{
+                t("tracks.runProgress", {
+                  boards: runProgress.boards_checked ?? 0,
+                  found: runProgress.jobs_found ?? 0,
+                  new: runProgress.jobs_new ?? 0,
+                  linked: runProgress.linked ?? 0,
+                })
+              }}
+            </span>
+          </template>
+          <span v-else-if="lastRun">
+            {{
+              t("tracks.lastSearch", {
+                when: fmt.dateTime(lastRun.started_at || lastRun.created_at),
+              })
+            }}
+            · {{ t("tracks.newMatches", lastRunNew) }}
+          </span>
+          <span v-else>{{ t("tracks.neverRun") }}</span>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <FnButton tone="primary" :disabled="running" @click="runNow">{{
-            running ? t("tracks.running") : t("tracks.runNow")
-          }}</FnButton>
-          <NuxtLink
-            :to="`/jobs?track=${trackId}`"
-            class="inline-flex min-h-11 items-center rounded-md border border-rule bg-paper-1 px-4 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)] transition-colors hover:border-brand-200 hover:bg-brand-50"
-            >{{ t("tracks.viewMatches") }}</NuxtLink
-          >
-          <details class="relative text-sm">
-            <summary
-              class="flex min-h-11 cursor-pointer list-none items-center px-3 text-ink-600 hover:text-ink-900"
-            >
-              {{ t("tracks.moreTools") }}
-            </summary>
-            <div
-              class="absolute right-0 z-10 mt-1 flex min-w-40 flex-col rounded-md border border-rule bg-paper-1 p-1 shadow-[var(--shadow-float)]"
-            >
-              <NuxtLink
-                :to="`/tracks/${trackId}/be-found`"
-                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
-                >{{ t("beFound.title") }}</NuxtLink
-              >
-              <NuxtLink
-                :to="`/tracks/${trackId}/gaps`"
-                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
-                >{{ t("gaps.title") }}</NuxtLink
-              >
-              <NuxtLink
-                :to="`/tracks/${trackId}/settings`"
-                class="flex min-h-11 items-center rounded-sm px-3 hover:bg-paper-2"
-                >{{ t("tracks.settings") }}</NuxtLink
-              >
-            </div>
-          </details>
+        <div class="flex flex-wrap items-center gap-2 sm:shrink-0">
+          <FnChip v-if="industry && industry !== 'general'" tone="neutral">{{
+            exp.packLabel(industry)
+          }}</FnChip>
+          <FnButton tone="primary" :disabled="running" @click="runNow">
+            {{ running ? t("tracks.running") : t("jobs.findNow") }}
+          </FnButton>
+          <FnButton as-child tone="quiet">
+            <NuxtLink :to="`/jobs?track=${trackId}`">{{ t("tracks.viewMatches") }}</NuxtLink>
+          </FnButton>
         </div>
       </div>
-      <div v-if="running" class="flex flex-col gap-1" role="status">
-        <p class="flex items-center gap-2 text-sm text-ink-600">
-          <span class="size-2 animate-pulse rounded-full bg-ink-600" aria-hidden="true" />
-          Searching company boards · {{ runSeconds }}s
-        </p>
-        <p v-if="runProgress" class="text-sm text-ink-600">
+
+      <div v-if="jobs.isPending.value" class="flex flex-col gap-3">
+        <FnSkeleton class="h-20 w-full" />
+        <FnSkeleton class="h-20 w-full" />
+      </div>
+
+      <div
+        v-if="thinCoverage"
+        class="flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm"
+      >
+        <p class="font-semibold text-ink-900">
           {{
-            t("tracks.runProgress", {
-              boards: runProgress.boards_checked ?? 0,
-              found: runProgress.jobs_found ?? 0,
-              new: runProgress.jobs_new ?? 0,
-              linked: runProgress.linked ?? 0,
+            t("tracks.coverageTitle", {
+              field: exp.packLabel(industry),
+              country: coveragePlace,
             })
           }}
         </p>
+        <p class="text-ink-600">{{ t("tracks.coverageBody") }}</p>
+        <NuxtLink
+          to="/settings/alerts"
+          class="font-semibold text-brand-700 underline underline-offset-2"
+          >{{ t("tracks.addAlert") }}</NuxtLink
+        >
       </div>
-      <div v-else-if="lastRun" class="flex flex-wrap items-center gap-2 text-sm text-ink-600">
-        <span>
-          Last search {{ fmt.dateTime(lastRun.started_at || lastRun.created_at) }} ·
-          {{ lastRun.progress?.linked ? `${lastRun.progress.linked} new` : t("tracks.noNewJobs") }}
-        </span>
-        <NuxtLink :to="`/tracks/${trackId}/runs`" class="text-brand-700 underline">{{
-          t("tracks.runHistory")
-        }}</NuxtLink>
-      </div>
-      <section
-        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
-        :aria-label="t('tracks.matchedJobs')"
+
+      <FnEmptyState
+        v-else-if="!rows.length"
+        :title="t('tracks.noMatchesYet')"
+        :body="t('tracks.noMatchesBody')"
       >
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-            {{ t("tracks.matchedJobs") }}
-          </h2>
+        <FnButton tone="primary" :disabled="running" @click="runNow">
+          {{ t("jobs.findNow") }}
+        </FnButton>
+      </FnEmptyState>
+
+      <ul v-else class="flex flex-col gap-2">
+        <li v-for="job in rows" :key="job.id">
           <NuxtLink
-            :to="`/jobs?track=${trackId}`"
-            class="text-sm text-ink-600 underline-offset-2 hover:underline"
-            >{{ t("today.viewAll") }}</NuxtLink
+            :to="`/jobs?track=${trackId}&job=${job.id}`"
+            class="flex items-start gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] transition-colors hover:border-brand-200 hover:bg-brand-50"
           >
-        </div>
-        <p v-if="!matchedJobs.length" class="text-sm text-ink-600">{{ t("tracks.noJobs") }}</p>
-        <ul v-else class="divide-y divide-rule border-y border-rule">
-          <li
-            v-for="j in matchedJobs"
-            :key="j.id"
-            class="flex flex-wrap items-center gap-2 py-3 text-sm"
-          >
-            <span class="font-mono text-xs tabular-nums text-brand-700">{{
-              j.score != null ? Math.round(j.score) : "-"
-            }}</span>
-            <div class="min-w-0 flex-1">
-              <p class="font-medium text-ink-900">{{ j.title }}</p>
-              <p class="text-ink-600">
-                {{ j.company_name }}
-                <span
-                  v-for="r in (j.reasons || []).slice(0, 2)"
-                  :key="String(r)"
-                  class="ml-1 text-ink-400"
-                  >· {{ reasonText(r) }}</span
-                >
-              </p>
-            </div>
-            <div class="flex items-center gap-1">
-              <FnButton size="sm" tone="quiet" @click="triageMatch(j.id, 'shortlist')"
-                >Shortlist</FnButton
-              >
-              <FnButton size="sm" tone="ghost" @click="triageMatch(j.id, 'skip')">Skip</FnButton>
-              <a
-                v-if="j.apply_url"
-                :href="j.apply_url"
-                class="min-h-11 px-2 text-sm text-ink-900 underline-offset-2 hover:underline"
-                rel="noopener noreferrer"
-                target="_blank"
-                >{{ t("applications.openPosting") }}</a
-              >
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <nav
-        class="flex flex-wrap gap-1 rounded-lg bg-paper-2 p-1"
-        :aria-label="t('tracks.sections')"
-      >
-        <span
-          class="rounded-md bg-paper-1 px-4 py-2 text-sm font-semibold text-brand-700 shadow-[var(--shadow-card)]"
-          >{{ t("tracks.criteria") }}</span
-        >
-        <NuxtLink
-          :to="`/tracks/${trackId}/runs`"
-          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-          >{{ t("tracks.runHistory") }}</NuxtLink
-        >
-        <NuxtLink
-          :to="`/tracks/${trackId}/settings`"
-          class="rounded-md px-4 py-2 text-sm font-semibold text-ink-600 hover:text-ink-900"
-          >{{ t("tracks.settings") }}</NuxtLink
-        >
-      </nav>
-
-      <section
-        class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
-      >
-        <label class="flex flex-col gap-1 text-sm">
-          <span class="text-ink-600">{{ t("tracks.describe") }}</span>
-          <textarea
-            v-model="nl"
-            class="min-h-28 border border-rule bg-paper-0 px-3 py-2 text-ink-900"
-            maxlength="8000"
-          ></textarea>
-        </label>
-        <div class="flex flex-wrap gap-2">
-          <FnButton tone="primary" :disabled="compiling" @click="compile(false)">{{
-            t("tracks.update")
-          }}</FnButton>
-          <FnButton v-if="preview" tone="ghost" :disabled="compiling" @click="compile(true)">{{
-            t("tracks.applyDiff")
-          }}</FnButton>
-        </div>
-        <ul v-if="diff.length" class="flex flex-col gap-1 text-sm">
-          <li v-for="(d, i) in diff" :key="i">
-            <FnPencilText>{{ d.label || d.op }}</FnPencilText>
-          </li>
-        </ul>
-      </section>
-
-      <section class="flex flex-col gap-3" :aria-label="t('tracks.chips')">
-        <div class="flex flex-wrap gap-2">
-          <FnChip
-            v-for="title in criteria?.titles?.filter((x) => !x.exclude) ?? []"
-            :key="title.title"
-            tone="accent"
-            >{{ title.title }}</FnChip
-          >
-          <FnChip
-            v-for="s in criteria?.skills?.must ?? []"
-            :key="`m-${s}`"
-            tone="neutral"
-            removable
-            :remove-label="t('tracks.removeChip')"
-            @remove="removeMustSkill(s)"
-            >{{ s }}</FnChip
-          >
-          <FnChip v-for="s in criteria?.skills?.nice ?? []" :key="`n-${s}`" tone="pencil">{{
-            s
-          }}</FnChip>
-          <FnChip
-            v-if="criteria?.companies?.exclude_agencies"
-            tone="neutral"
-            removable
-            :remove-label="t('tracks.removeChip')"
-            @remove="toggleAgencies"
-            >{{ t("tracks.noAgencies") }}</FnChip
-          >
-          <FnButton v-else size="sm" tone="quiet" @click="toggleAgencies">{{
-            t("tracks.noAgencies")
-          }}</FnButton>
-        </div>
-        <p class="text-sm text-ink-600">{{ t("tracks.criteriaHint") }}</p>
-      </section>
-
-      <section class="flex flex-col gap-3 border-t border-rule pt-4">
-        <FnButton
-          size="sm"
-          tone="quiet"
-          class="self-start"
-          :aria-expanded="moreOpen"
-          @click="moreOpen = !moreOpen"
-          >{{ moreOpen ? t("tracks.hideFilters") : t("tracks.moreFilters") }}</FnButton
-        >
-        <div v-if="moreOpen" class="grid gap-4 md:grid-cols-2">
-          <fieldset class="flex flex-col gap-2">
-            <legend class="text-sm text-ink-600">{{ t("tracks.workModes") }}</legend>
-            <label
-              v-for="m in ['remote', 'hybrid', 'on_site']"
-              :key="m"
-              class="flex min-h-11 items-center gap-2 text-sm"
+            <span
+              class="grid min-w-10 place-items-center rounded-md bg-paper-2 px-1.5 py-1 text-sm font-bold tabular-nums text-brand-700"
+              >{{ job.score != null ? Math.round(job.score) : "-" }}</span
             >
-              <input type="checkbox" :checked="workModes.includes(m)" @change="toggleMode(m)" />
-              {{ t(`tracks.mode_${m}`) }}
-            </label>
-          </fieldset>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.location") }}</span>
-            <input
-              v-model="place"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="200"
+            <span class="min-w-0 flex-1">
+              <span class="block font-semibold text-ink-900">{{ job.title }}</span>
+              <span class="block text-sm text-ink-600">
+                {{ job.company_name }}
+                <span v-if="job.work_mode"> · {{ workModeLabel(job.work_mode) }}</span>
+                <span v-if="salaryLine(job.salary)"> · {{ salaryLine(job.salary) }}</span>
+              </span>
+            </span>
+            <FnRiskSeal
+              v-if="job.risk_level === 'yellow' || job.risk_level === 'red'"
+              :level="sealLevel(job.risk_level)"
+              :label="sealLabel(job.risk_level)"
             />
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.radius") }}</span>
-            <input
-              v-model.number="radiusKm"
-              type="number"
-              min="1"
-              max="500"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.region") }}</span>
-            <select
-              v-model="regionPreset"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+            <NavIcon name="ph:caret-right" :size="16" class="mt-1 shrink-0 text-ink-400" />
+          </NuxtLink>
+        </li>
+      </ul>
+
+      <details
+        class="rounded-xl border border-rule bg-paper-1 p-4 text-sm shadow-[var(--shadow-card)]"
+      >
+        <summary
+          class="flex min-h-11 cursor-pointer list-none items-center font-semibold text-ink-900"
+        >
+          {{ t("tracks.whereWeLook") }}
+        </summary>
+        <div v-if="whereLook.data.value" class="mt-3 flex flex-col gap-4">
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.searchTerms") }}
+            </p>
+            <ul
+              v-if="whereLook.data.value.queries.length"
+              class="mt-1 flex flex-col gap-1 text-ink-600"
             >
-              <option value="">{{ t("tracks.regionAny") }}</option>
-              <option
-                v-for="r in ['APAC', 'EU', 'LATAM', 'MENA', 'NA', 'AFRICA']"
-                :key="r"
-                :value="r"
-              >
-                {{ r }}
-              </option>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.tzOverlap") }}</span>
-            <input
-              v-model.number="tzOverlap"
-              type="range"
-              min="0"
-              max="12"
-              class="min-h-11 w-full accent-brand-600"
-            />
-            <span class="text-xs tabular-nums text-ink-600">{{ tzOverlap }}h</span>
-          </label>
-          <label class="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              v-model="visa"
-              type="checkbox"
-              class="size-5 rounded border-rule accent-brand-600"
-            />
-            {{ t("tracks.visa") }}
-          </label>
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="text-ink-600">{{ t("tracks.salaryMin") }}</span>
-            <input
-              v-model.number="salaryMin"
-              type="number"
-              min="0"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-            />
-          </label>
-          <div class="flex gap-2">
-            <label class="flex flex-1 flex-col gap-1 text-sm">
-              <span class="text-ink-600">{{ t("tracks.currency") }}</span>
-              <input
-                v-model="salaryCurrency"
-                type="text"
-                maxlength="3"
-                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm uppercase text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              />
-            </label>
-            <label class="flex flex-1 flex-col gap-1 text-sm">
-              <span class="text-ink-600">{{ t("tracks.period") }}</span>
-              <select
-                v-model="salaryPeriod"
-                class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              >
-                <option value="hour">hour</option>
-                <option value="day">day</option>
-                <option value="month">month</option>
-                <option value="year">year</option>
-              </select>
-            </label>
+              <li v-for="(query, i) in whereLook.data.value.queries" :key="i">
+                {{ query.keywords }}
+                <template v-if="query.location">in {{ query.location }}</template>
+              </li>
+            </ul>
+            <p v-else class="mt-1 text-ink-600">{{ t("tracks.noSearchTerms") }}</p>
           </div>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.keywordsInclude") }}</span>
-            <input
-              v-model="includeExpr"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.keywordsExclude") }}</span>
-            <input
-              v-model="excludeExpr"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm tabular-nums text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.companiesInclude") }}</span>
-            <input
-              v-model="companiesInclude"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-sm md:col-span-2">
-            <span class="text-ink-600">{{ t("tracks.companiesExclude") }}</span>
-            <input
-              v-model="companiesExclude"
-              type="text"
-              class="min-h-12 rounded-md border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
-              maxlength="2000"
-            />
-          </label>
-          <FnButton tone="primary" class="self-start" :disabled="saving" @click="saveMore">{{
-            t("common.save")
-          }}</FnButton>
+          <div>
+            <p class="text-xs font-semibold tracking-wide text-ink-400 uppercase">
+              {{ t("tracks.sources") }}
+            </p>
+            <ul class="mt-1 flex flex-col gap-1">
+              <li
+                v-for="adapter in whereLook.data.value.adapters"
+                :key="adapter.key"
+                class="flex flex-wrap items-center gap-2 text-ink-600"
+              >
+                <span class="text-ink-900">{{ adapter.name }}</span>
+                <span class="text-xs">{{
+                  adapter.configured ? t("tracks.ready") : t("tracks.setupNeeded")
+                }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
-      </section>
-    </template>
-  </div>
+      </details>
+    </div>
+  </TrackShell>
 </template>

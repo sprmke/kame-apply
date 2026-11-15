@@ -156,6 +156,7 @@ async def seed_sources(session: AsyncSession) -> int:
 
 async def seed_directory(session: AsyncSession, *, target_boards: int = 5000) -> dict[str, int]:
     await seed_sources(session)
+    await seed_hospitality_careers(session)
     count = (await session.execute(select(func.count()).select_from(CompanyBoard))).scalar_one()
     if count >= target_boards:
         return {"boards": int(count), "added": 0}
@@ -206,3 +207,59 @@ async def seed_directory(session: AsyncSession, *, target_boards: int = 5000) ->
     await session.flush()
     total = (await session.execute(select(func.count()).select_from(CompanyBoard))).scalar_one()
     return {"boards": int(total), "added": added}
+
+
+HOSPITALITY_CAREERS: tuple[tuple[str, str], ...] = (
+    ("Marriott International", "https://careers.marriott.com"),
+    ("Hilton", "https://jobs.hilton.com"),
+    ("Hyatt", "https://careers.hyatt.com"),
+    ("Accor", "https://careers.accor.com"),
+    ("IHG Hotels & Resorts", "https://careers.ihg.com"),
+    ("Radisson Hotel Group", "https://careers.radissonhotels.com"),
+    ("Carnival Corporation", "https://careers.carnivalcorp.com"),
+    ("Royal Caribbean Group", "https://www.royalcaribbeangroup.com/careers"),
+    ("Compass Group", "https://www.compass-group.com/en/careers"),
+    ("Sodexo", "https://www.sodexo.com/careers"),
+)
+
+
+async def seed_hospitality_careers(session: AsyncSession) -> int:
+    """Candidate employer career pages. Candidates are listed but not polled until validated."""
+    added = 0
+    for name, url in HOSPITALITY_CAREERS:
+        norm = name.strip().lower()
+        company = (
+            await session.execute(select(Company).where(Company.normalized_name == norm))
+        ).scalar_one_or_none()
+        if company is None:
+            company = Company(name=name, normalized_name=norm, industries=["hospitality"])
+            session.add(company)
+            await session.flush()
+        elif "hospitality" not in (company.industries or []):
+            company.industries = sorted(set(company.industries or []) | {"hospitality"})
+        slug = url.split("://", 1)[-1].replace("/", "-")[:180]
+        exists = (
+            await session.execute(
+                select(CompanyBoard).where(
+                    CompanyBoard.company_id == company.id,
+                    CompanyBoard.url == url,
+                )
+            )
+        ).scalar_one_or_none()
+        if exists is not None:
+            continue
+        session.add(
+            CompanyBoard(
+                company_id=company.id,
+                ats="career_jsonld",
+                slug=slug,
+                url=url,
+                status="candidate",
+                poll_tier="cold",
+                validation_method="seed_unverified",
+                industries=["hospitality"],
+            )
+        )
+        added += 1
+    await session.flush()
+    return added

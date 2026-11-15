@@ -185,7 +185,7 @@ async def test_parse_stores_draft_with_low_confidence_paths(env_parse):
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["parsed"]["display_name"]["value"] == "Ana Reyes"
-    assert body["parse_quality"]["prompt_version"] == "profile_extract.v1"
+    assert body["parse_quality"]["prompt_version"] == "profile_extract.v2"
     assert "experiences.0.bullets.1" in body["parse_quality"]["low_confidence_paths"]
     codes = {w["code"] for w in body["warnings"]}
     assert "low_confidence_fields" in codes

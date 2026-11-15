@@ -6,23 +6,30 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| List and revoke | acceptance.spec.ts | n/a | Done |  |
+| Device list | acceptance.spec.ts | n/a | Done | Card with one row per session |
+| Sign out another device | Manual | confirm dialog | Done | Access stops immediately |
+| Load and error states | Manual | — | Done | Retry on failure |
 
 ## Overview
 
-Devices signed in to your account.
+Devices signed in to your account, newest activity first, in one section card.
 
 ## User-facing knowledge
 
-Sign out any device you do not recognise. The current device is marked.
+Sign out any device you do not recognise. The current device is marked and has no sign-out control.
 
 **Common user questions**
 
 - **What happens when I sign a device out?** Its access stops immediately, not when its token expires.
+- **Why does the address say "This network"?** Local and loopback addresses are shown as the network instead of a number.
 
 ## List
 
-Browser and OS, IP, last used; Sign out on other devices.
+Browser and OS, current badge, address (or "This network"), last used. Sign out is a quiet button that opens a confirm dialog, so one stray click cannot drop a session.
+
+## States
+
+Loading: skeleton. Empty and error: one line plus the next action (retry on error).
 
 ## API reference
 
@@ -32,4 +39,4 @@ Browser and OS, IP, last used; Sign out on other devices.
 
 ## Implementation map
 
-`pages/settings/sessions.vue`; i18n `sessions.*`.
+`pages/settings/sessions.vue`; i18n `sessions.*`; `FnSectionCard`.

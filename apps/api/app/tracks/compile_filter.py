@@ -62,6 +62,8 @@ def compile_filter(criteria: CriteriaV1) -> dict[str, Any]:
         predicates.append({"op": "employment_type_any", "values": list(c.employment_types)})
     if c.work_modes:
         predicates.append({"op": "work_mode_any", "values": list(c.work_modes)})
+    if c.shifts:
+        predicates.append({"op": "shift_any", "values": list(c.shifts)})
 
     rem = c.remote_eligibility
     if rem.anywhere or rem.regions or rem.countries or rem.timezone_overlap_hours is not None:
@@ -107,6 +109,7 @@ def compile_filter(criteria: CriteriaV1) -> dict[str, Any]:
                 "max": s.max,
                 "currency": s.currency,
                 "period": s.period,
+                "includes": list(s.includes),
                 "hide_unspecified": s.hide_unspecified,
                 "min_monthly_usd": s.min_monthly_usd,
                 "max_monthly_usd": s.max_monthly_usd,
@@ -142,6 +145,8 @@ def compile_filter(criteria: CriteriaV1) -> dict[str, Any]:
         predicates.append({"op": "keyword_exclude", "expr": c.keywords.exclude_expr})
     if c.min_match_score is not None:
         predicates.append({"op": "min_match_score", "value": c.min_match_score})
+    if c.facets:
+        predicates.append({"op": "facets", "values": dict(c.facets)})
     if c.caps.per_day is not None or c.caps.per_company is not None:
         predicates.append(
             {"op": "caps", "per_day": c.caps.per_day, "per_company": c.caps.per_company}

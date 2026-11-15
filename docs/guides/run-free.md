@@ -39,6 +39,12 @@ Local defaults are already free:
 
 If a port is already in use by another project, stop that project or run Kame Apply on different ports. In this workspace, ports `3100` and `8100` were previously occupied by a different app.
 
+When Nuxt cannot take 3100 it falls back to the next free port (e.g. `3000`). The web app still loads, but every API call fails with `Cannot reach the server` until the new origin is allowed. Add it to `CORS_ORIGINS` in `apps/api/.env` and restart the API:
+
+```bash
+CORS_ORIGINS=["http://localhost:3100","http://localhost:3000"]
+```
+
 Reset local data:
 
 ```bash

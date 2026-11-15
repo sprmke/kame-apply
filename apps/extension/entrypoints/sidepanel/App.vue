@@ -138,7 +138,7 @@ onMounted(refresh);
 
     <template v-else>
       <div class="flex flex-col gap-2">
-        <FnSelect v-model="trackId" :options="trackOptions" placeholder="Track" />
+        <FnSelect v-model="trackId" :options="trackOptions" placeholder="Search" />
         <FnSelect v-model="profileId" :options="profileOptions" placeholder="Profile" />
       </div>
 
@@ -151,7 +151,7 @@ onMounted(refresh);
       </div>
 
       <div class="flex flex-col gap-2">
-        <FnButton tone="primary" :disabled="busy" @click="run('clip')">Save to Track</FnButton>
+        <FnButton tone="primary" :disabled="busy" @click="run('clip')">Save to search</FnButton>
         <FnButton :disabled="busy" @click="run('autofill')">Autofill</FnButton>
         <FnButton tone="ghost" :disabled="busy" @click="run('answerInsert')">Answer</FnButton>
         <FnButton tone="ghost" :disabled="busy" @click="run('logApplied')">I applied</FnButton>

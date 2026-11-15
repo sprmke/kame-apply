@@ -48,6 +48,7 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
     tables_star = [
         "tracks",
         "track_criteria",
+        "workspace_industries",
         "schedules",
         "candidate_profiles",
         "profile_experiences",

@@ -101,6 +101,14 @@ SECTIONS: dict[str, Section] = {
             _order(m.Language),
         ),
         Section("skills", m.Skill, s.SkillIn, s.SkillPatch, s.SkillRead, _order(m.Skill)),
+        Section(
+            "facets",
+            m.ProfileFacet,
+            s.FacetIn,
+            s.FacetPatch,
+            s.FacetRead,
+            _order(m.ProfileFacet),
+        ),
     )
 }
 
@@ -229,6 +237,18 @@ async def create_item(
     await _get_profile(ctx, profile_id)
     sec = SECTIONS[key]
     data = _prepare(key, body.model_dump())
+    if key == "facets":
+        duplicate = (
+            await ctx.session.execute(
+                select(sec.model).where(
+                    sec.model.profile_id == profile_id,  # type: ignore[attr-defined]
+                    sec.model.facet_key == data["facet_key"],  # type: ignore[attr-defined]
+                    sec.model.value == data["value"],  # type: ignore[attr-defined]
+                )
+            )
+        ).scalar_one_or_none()
+        if duplicate is not None:
+            raise AppError("conflict", "That value is already added", 409)
     if key == "bullets":
         await _check_parent(ctx, profile_id, data)
     row = sec.model(workspace_id=ctx.workspace_id, profile_id=profile_id, **data)

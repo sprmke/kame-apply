@@ -47,7 +47,7 @@ async def list_track_sources(ctx: WorkspaceContext, track_id: uuid.UUID) -> list
         sources = (
             await ctx.session.execute(
                 select(Source).where(
-                    Source.enabled_global.is_(True), Source.kind.in_(("ats", "board"))
+                    Source.enabled_global.is_(True), Source.kind.in_(("ats", "board", "search"))
                 )
             )
         ).scalars()

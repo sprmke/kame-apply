@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnDialog,
+  FnEmptyState,
+  FnSectionCard,
+  FnSkeleton,
+  useToast,
+} from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -9,8 +17,10 @@ definePageMeta({ layout: "default" });
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
+const fmt = useFormat();
 const ws = useWorkspaceStore();
 const qc = useQueryClient();
+const newOpen = ref(false);
 
 type Addr = {
   id: string;
@@ -89,8 +99,9 @@ const rotate = useMutation({
     await client.post({ url: "/api/v1/inbound/address/rotate", throwOnError: true });
   },
   onSuccess: async () => {
+    newOpen.value = false;
     await qc.invalidateQueries({ queryKey: ["inbound-address", ws.currentId] });
-    toast.push({ title: t("common.saved") });
+    toast.push({ title: t("alerts.newAddressDone"), tone: "success" });
   },
   onError: (e) => toast.push({ title: apiError(e), tone: "danger" }),
 });
@@ -115,7 +126,7 @@ const unlinkTg = useMutation({
   },
   onSuccess: async () => {
     await qc.invalidateQueries({ queryKey: ["telegram-link", ws.currentId] });
-    toast.push({ title: t("common.saved") });
+    toast.push({ title: t("alerts.telegramUnlinked"), tone: "success" });
   },
   onError: (e) => toast.push({ title: apiError(e), tone: "danger" }),
 });
@@ -125,7 +136,7 @@ async function copy(text: string) {
     await navigator.clipboard.writeText(text);
     toast.push({ title: t("common.copied") });
   } catch {
-    toast.push({ title: t("common.copy"), tone: "danger" });
+    toast.push({ title: t("common.copyFailed"), tone: "danger" });
   }
 }
 
@@ -135,62 +146,85 @@ const tgDeepLink = computed(() => {
   if (!bot || !code) return "";
   return `https://t.me/${bot}?start=${code}`;
 });
+
+const STATE: Record<string, { key: string; tone: "neutral" | "accent" }> = {
+  parsed: { key: "added", tone: "accent" },
+  needs_review: { key: "needsLook", tone: "neutral" },
+  ignored: { key: "skipped", tone: "neutral" },
+  received: { key: "reading", tone: "neutral" },
+};
+function stateOf(status: string) {
+  return STATE[status] ?? { key: "reading", tone: "neutral" as const };
+}
+const rows = computed(() => messages.data.value ?? []);
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
+  <section class="flex max-w-2xl flex-col gap-6">
     <PageHeader :title="t('settings.alerts')" :lede="t('settings.alertsLede')" />
 
-    <section v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("alerts.address") }}</h2>
+    <FnSectionCard
+      v-if="ws.canManage"
+      :title="t('alerts.address')"
+      :intro="t('alerts.addressIntro')"
+    >
       <FnSkeleton v-if="addr.isPending.value" class="h-10 w-full" />
-      <div v-else class="flex flex-wrap items-center gap-2">
-        <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
-          addr.data.value?.address
-        }}</code>
-        <FnButton size="sm" tone="ghost" @click="copy(addr.data.value?.address || '')">{{
-          t("common.copy")
-        }}</FnButton>
-        <FnButton
-          size="sm"
-          tone="quiet"
-          :disabled="rotate.isPending.value"
-          @click="rotate.mutate()"
-          >{{ t("alerts.rotate") }}</FnButton
-        >
+      <div v-else-if="addr.data.value" class="flex flex-col gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <code
+            class="max-w-full rounded-lg border border-rule bg-paper-2 px-3 py-2 font-mono text-xs break-all text-ink-900"
+            >{{ addr.data.value.address }}</code
+          >
+          <FnButton size="sm" tone="primary" @click="copy(addr.data.value.address)">
+            {{ t("alerts.copyAddress") }}
+          </FnButton>
+        </div>
+        <div>
+          <FnButton size="sm" tone="ghost" @click="newOpen = true">
+            {{ t("alerts.newAddress") }}
+          </FnButton>
+        </div>
       </div>
-    </section>
+    </FnSectionCard>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("alerts.setup") }}</h2>
-      <ul class="flex flex-col gap-4">
-        <li v-for="g in guides.data.value ?? []" :key="g.provider" class="flex flex-col gap-1">
-          <p class="text-sm font-medium text-ink-900">{{ g.title }}</p>
-          <ol class="list-decimal pl-5 text-sm text-ink-600">
-            <li v-for="(step, i) in g.steps" :key="i">{{ step }}</li>
-          </ol>
-        </li>
-      </ul>
-    </section>
+    <FnSectionCard
+      :title="t('alerts.setup')"
+      :intro="t('alerts.setupIntro')"
+      :more-label="t('alerts.setupMore')"
+    >
+      <template #more>
+        <p v-if="guides.isError.value" role="alert" class="text-sm text-oxblood-600">
+          {{ apiError(guides.error.value) }}
+        </p>
+        <ul v-else class="flex flex-col gap-4">
+          <li v-for="g in guides.data.value ?? []" :key="g.provider" class="flex flex-col gap-1">
+            <p class="text-sm font-semibold text-ink-900">{{ g.title }}</p>
+            <ol class="flex list-decimal flex-col gap-1 pl-5 text-sm text-ink-600">
+              <li v-for="(step, i) in g.steps" :key="i">{{ step }}</li>
+            </ol>
+          </li>
+        </ul>
+      </template>
+    </FnSectionCard>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("alerts.telegram") }}</h2>
-      <p v-if="telegram.data.value?.linked" class="text-sm text-ink-600">
-        {{ t("alerts.telegramLinked") }}
-      </p>
+    <FnSectionCard :title="t('alerts.telegram')" :intro="t('alerts.telegramIntro')">
       <div class="flex flex-wrap items-center gap-2">
+        <FnChip v-if="telegram.data.value?.linked" tone="accent">
+          {{ t("alerts.telegramLinked") }}
+        </FnChip>
         <FnButton
           v-if="!telegram.data.value?.linked"
           size="sm"
-          :disabled="startTg.isPending.value"
+          tone="quiet"
+          :loading="startTg.isPending.value"
           @click="startTg.mutate()"
           >{{ t("alerts.telegramLink") }}</FnButton
         >
         <FnButton
           v-else
           size="sm"
-          tone="quiet"
-          :disabled="unlinkTg.isPending.value"
+          tone="ghost"
+          :loading="unlinkTg.isPending.value"
           @click="unlinkTg.mutate()"
           >{{ t("alerts.telegramUnlink") }}</FnButton
         >
@@ -199,37 +233,68 @@ const tgDeepLink = computed(() => {
           :href="tgDeepLink"
           target="_blank"
           rel="noopener"
-          class="text-sm text-brand-700 underline"
+          class="text-sm font-semibold text-brand-700 underline"
           >{{ t("alerts.openBot") }}</a
         >
       </div>
       <code
         v-if="telegram.data.value?.link_code"
-        class="w-fit rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs"
+        class="w-fit rounded-lg border border-rule bg-paper-2 px-3 py-2 font-mono text-xs text-ink-900"
         >{{ telegram.data.value.link_code }}</code
       >
-    </section>
+    </FnSectionCard>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("alerts.recent") }}</h2>
-      <ul class="divide-y divide-rule border border-rule">
+    <FnSectionCard :title="t('alerts.recent')" :intro="t('alerts.recentIntro')">
+      <FnSkeleton v-if="messages.isPending.value" :lines="3" />
+      <FnEmptyState
+        v-else-if="messages.isError.value"
+        :title="t('alerts.loadError')"
+        :body="apiError(messages.error.value)"
+        tone="danger"
+      >
+        <FnButton size="sm" @click="messages.refetch()">{{ t("common.retry") }}</FnButton>
+      </FnEmptyState>
+      <div v-else-if="!rows.length" class="flex flex-col gap-1">
+        <p class="font-semibold text-ink-900">{{ t("alerts.empty") }}</p>
+        <p class="text-sm text-ink-600">{{ t("alerts.emptyBody") }}</p>
+      </div>
+      <ul v-else class="flex flex-col divide-y divide-rule">
         <li
-          v-for="m in messages.data.value ?? []"
+          v-for="m in rows"
           :key="m.id"
-          class="flex flex-col gap-1 px-3 py-3 text-sm"
+          class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-3 text-sm"
         >
-          <div class="flex flex-wrap justify-between gap-2">
-            <span class="font-medium text-ink-900">{{ m.subject || m.provider }}</span>
-            <span class="font-mono text-[0.6875rem] text-ink-600">{{ m.status }}</span>
+          <div class="flex min-w-0 flex-col gap-0.5">
+            <p class="font-medium text-ink-900">{{ m.subject || m.sender }}</p>
+            <p class="text-ink-600">
+              {{ m.provider
+              }}<span v-if="m.jobs_created">
+                · {{ t("alerts.jobsAdded", { n: m.jobs_created }) }}</span
+              >
+            </p>
           </div>
-          <span class="text-ink-600"
-            >{{ m.provider }} · {{ m.jobs_created }} jobs · {{ m.sender }}</span
-          >
-        </li>
-        <li v-if="!(messages.data.value ?? []).length" class="px-3 py-4 text-sm text-ink-600">
-          {{ t("alerts.empty") }}
+          <div class="flex shrink-0 items-center gap-2">
+            <FnChip :tone="stateOf(m.status).tone">{{
+              t(`alerts.state_${stateOf(m.status).key}`)
+            }}</FnChip>
+            <span class="text-xs text-ink-400">{{ fmt.dateTime(m.created_at) }}</span>
+          </div>
         </li>
       </ul>
-    </section>
-  </div>
+    </FnSectionCard>
+
+    <FnDialog
+      v-model:open="newOpen"
+      :title="t('alerts.newAddressTitle')"
+      :description="t('alerts.newAddressBody')"
+      :close-label="t('common.close')"
+    >
+      <div class="flex justify-end gap-2">
+        <FnButton @click="newOpen = false">{{ t("common.cancel") }}</FnButton>
+        <FnButton tone="danger" :loading="rotate.isPending.value" @click="rotate.mutate()">
+          {{ t("alerts.newAddress") }}
+        </FnButton>
+      </div>
+    </FnDialog>
+  </section>
 </template>

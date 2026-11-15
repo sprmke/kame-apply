@@ -59,6 +59,7 @@ def extract_rule_based(
     title: str,
     description: str,
     skills: list[str] | None = None,
+    credentials: list[tuple[str, tuple[str, ...]]] | None = None,
 ) -> tuple[list[ExtractedQual], bool]:
     """Deterministic extraction for CI and as LLM fallback. Returns (quals, few_stated)."""
     text = (description or "").strip()
@@ -137,6 +138,21 @@ def extract_rule_based(
             )
         )
         break
+
+    lowered = text.lower()
+    for key, aliases in credentials or []:
+        names = [key.replace("_", " "), *aliases]
+        hit = next((name for name in names if name and name.lower() in lowered), None)
+        if hit is None:
+            continue
+        quals.append(
+            ExtractedQual(
+                kind="preferred",
+                text=f"Credential: {key}",
+                quote=hit,
+                normalized={"type": "credential", "key": key, "name": hit},
+            )
+        )
 
     # Deduplicate by (kind, text)
     uniq: dict[tuple[str, str], ExtractedQual] = {}

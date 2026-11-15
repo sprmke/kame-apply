@@ -7,7 +7,7 @@ import {
   type NeedsYouItem,
   type NotificationRead,
 } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnEmptyState, FnSkeleton, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -39,7 +39,15 @@ const needs = useQuery({
 });
 
 const rows = computed(() => notes.data.value ?? []);
-const needItems = computed(() => (needs.data.value?.items ?? []) as NeedsYouItem[]);
+const needItems = computed(() => {
+  const seen = new Set<string>();
+  return ((needs.data.value?.items ?? []) as NeedsYouItem[]).filter((item) => {
+    const key = `${item.kind}:${item.href}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+});
 
 async function markOne(id: string) {
   try {
@@ -76,9 +84,14 @@ async function markAll() {
     </PageHeader>
 
     <section v-if="needItems.length" class="flex flex-col gap-2">
-      <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
-        {{ t("shell.needsYou") }}
-      </h2>
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
+          {{ t("shell.needsYou") }}
+        </h2>
+        <NuxtLink to="/needs-you" class="text-sm font-semibold text-brand-700 underline">{{
+          t("today.viewAll")
+        }}</NuxtLink>
+      </div>
       <ul class="divide-y divide-rule border-y border-rule">
         <li v-for="(item, i) in needItems" :key="`${item.kind}-${i}`">
           <NuxtLink
@@ -93,11 +106,11 @@ async function markAll() {
     </section>
 
     <section class="flex flex-col gap-2">
-      <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
+      <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
         {{ t("notifications.inbox") }}
       </h2>
       <div v-if="notes.isPending.value"><FnSkeleton class="h-24 w-full" /></div>
-      <p v-else-if="!rows.length" class="text-sm text-ink-600">{{ t("notifications.empty") }}</p>
+      <FnEmptyState v-else-if="!rows.length" :title="t('notifications.empty')" />
       <ul v-else class="divide-y divide-rule border-y border-rule">
         <li
           v-for="n in rows"
@@ -108,9 +121,7 @@ async function markAll() {
           <div class="flex min-w-0 flex-col gap-0.5">
             <span class="font-medium text-ink-900">{{ n.title }}</span>
             <span v-if="n.body" class="text-ink-600">{{ n.body }}</span>
-            <span class="font-mono text-[0.6875rem] text-ink-600">{{
-              fmt.dateTime(n.created_at)
-            }}</span>
+            <span class="text-xs text-ink-600">{{ fmt.dateTime(n.created_at) }}</span>
           </div>
           <FnButton v-if="!n.read_at" tone="quiet" size="sm" @click="markOne(String(n.id))">{{
             t("notifications.markRead")

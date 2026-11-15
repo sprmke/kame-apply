@@ -1,7 +1,7 @@
 # Kame Apply: documentation index
 
 **Status:** Eng phases 0–20 complete; operator leftovers in [`phases/REMAINING.md`](./phases/REMAINING.md).
-**Last updated:** 2026-11-02
+**Last updated:** 2026-11-12
 
 Portfolio README (features, screenshots, quick start): [`../README.md`](../README.md). Screenshot set: [`screenshots/`](./screenshots/).
 
@@ -18,12 +18,14 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 5 | [`architecture/overview.md`](./architecture/overview.md) | Services, data flow, multi-tenancy, data model, durable workflows. |
 | 5b | [`architecture/configuration.md`](./architecture/configuration.md) | Every environment variable, credential, and the first dev/prod deploy runbook. |
 | 5c | [`guides/run-free.md`](./guides/run-free.md) | 100% free paths: local mode, free DuckDNS single-VM mode, paid-service audit, and Oracle signup fixes. |
+| 5d | [`architecture/industries.md`](./architecture/industries.md) | Industry packs: how one field of work changes filters, sources, scoring, profile, AI, and visibility without branching the UI. |
 | 6 | [`research/03-apply-engine-and-live-view.md`](./research/03-apply-engine-and-live-view.md) | How forms get filled (extension, cloud runner, agent fallback), pause/resume, live preview + takeover. |
 | 7 | [`research/04-trust-safety-and-scam-detection.md`](./research/04-trust-safety-and-scam-detection.md) | Scam/phishing scoring, PII guard, prompt-injection defense, AI-answer policy. |
 | 8 | [`research/05-resume-intelligence.md`](./research/05-resume-intelligence.md) | Parsing, critique rubric, market skill research, tailoring, rendering. |
 | 8b | [`research/07-how-recruiters-find-and-screen.md`](./research/07-how-recruiters-find-and-screen.md) | How recruiters and their AI (Workday HiredScore, Greenhouse, LinkedIn Recruiter) find and screen candidates, and how every Kame output is built to pass both AI and human review. |
 | 8c | [`research/08-bring-your-own-claude.md`](./research/08-bring-your-own-claude.md) | Using your own Claude Code / Claude subscription on Kame Apply data (MCP server, plugin, agent inbox, Claude in Chrome) within Anthropic's terms. |
 | 9a | [`design/design-system.md`](./design/design-system.md) | The new "Signal" visual identity (color, type, icons, signature components, layouts, motion), deliberately distinct from other Kame apps. |
+| 9b | [`design/glossary.md`](./design/glossary.md) | The user words the app uses, the banned internal terms, and how to add one. |
 | 9 | [`design/ux-blueprint.md`](./design/ux-blueprint.md) | Information architecture, screens, key flows, the criteria-builder decision, responsive rules. |
 | 10 | [`research/06-agentic-workflow.md`](./research/06-agentic-workflow.md) | How we build it with AI agents: what we port from kame-desk / kame-homes / kame-hunt, external skills to install. |
 | 11 | [`phases/README.md`](./phases/README.md) | **The build plan.** Ordered phases, one at a time, each with exit criteria. |

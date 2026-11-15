@@ -118,6 +118,23 @@ async def test_every_simple_section_supports_crud(env):  # noqa: F811
         assert (await c.delete(f"{base}/{item_id}", headers=h)).status_code == 404
 
 
+async def test_certification_accepts_the_default_kind(env):  # noqa: F811
+    """The column is sized for the longest allowed value, not just 'license'.
+
+    Regression: `kind` was varchar(12) while the schema default and the check constraint both use
+    'certification' (13 characters), so creating a certification without an explicit kind failed.
+    """
+    c, _ = env
+    me = await signup(c)
+    p = await make_profile(c, me)
+    base = f"{P}/{p['id']}/certifications"
+    created = await c.post(base, json={"name": "AWS Certified"}, headers=me.h(me.personal))
+    assert created.status_code == 201, created.text
+    assert created.json()["kind"] == "certification"
+    licensed = await c.post(base, json={"name": "RN", "kind": "license"}, headers=me.h(me.personal))
+    assert licensed.status_code == 201 and licensed.json()["kind"] == "license"
+
+
 @pytest.mark.parametrize(
     "section,body",
     [

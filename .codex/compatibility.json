@@ -15,6 +15,7 @@
     "fix-migration-issues",
     "git-commits",
     "human-copy",
+    "industry-pack",
     "karpathy-guidelines",
     "live-view",
     "minimal-ui-copy",
@@ -29,14 +30,19 @@
     "source-command-ka-create-new-ticket",
     "source-command-ka-design-review",
     "source-command-ka-help",
+    "source-command-ka-new-industry-pack",
     "source-command-ka-pull-new-changes",
     "source-command-ka-start-app",
     "source-command-ka-start-work",
     "source-command-ka-submit-for-review",
+    "source-command-ka-ux-preview",
+    "source-command-ka-ux-review",
     "source-command-workflow-done",
     "source-command-workflow-start",
     "source-command-workflow-wont-do",
     "tanstack-table-vue",
+    "ux-clarity-review",
+    "ux-preview",
     "vee-validate-forms",
     "vue-query-data",
     "workflow",
@@ -48,15 +54,19 @@
     "ka-create-new-ticket": ".cursor/commands/ka-create-new-ticket.md",
     "ka-design-review": ".cursor/commands/ka-design-review.md",
     "ka-help": ".cursor/commands/ka-help.md",
+    "ka-new-industry-pack": ".cursor/commands/ka-new-industry-pack.md",
     "ka-pull-new-changes": ".cursor/commands/ka-pull-new-changes.md",
     "ka-start-app": ".cursor/commands/ka-start-app.md",
     "ka-start-work": ".cursor/commands/ka-start-work.md",
     "ka-submit-for-review": ".cursor/commands/ka-submit-for-review.md",
+    "ka-ux-preview": ".cursor/commands/ka-ux-preview.md",
+    "ka-ux-review": ".cursor/commands/ka-ux-review.md",
     "workflow-done": ".cursor/commands/workflow-done.md",
     "workflow-start": ".cursor/commands/workflow-start.md",
     "workflow-wont-do": ".cursor/commands/workflow-wont-do.md"
   },
   "agents": [
+    "ux-reviewer.toml",
     "verifier.toml",
     "design-reviewer.toml",
     "security-auditor.toml",
@@ -100,11 +110,6 @@
       "scope": "- apps/api/**"
     },
     {
-      "path": ".cursor/rules/field-notes-design.mdc",
-      "always": false,
-      "scope": "- apps/web/**"
-    },
-    {
       "path": ".cursor/rules/git-commits.mdc",
       "always": true,
       "scope": "Task-specific; read when relevant"
@@ -118,6 +123,11 @@
       "path": ".cursor/rules/in-app-notifications.mdc",
       "always": false,
       "scope": "- apps/api/app/notifications/**"
+    },
+    {
+      "path": ".cursor/rules/industry-packs.mdc",
+      "always": false,
+      "scope": "- apps/api/app/industries/**"
     },
     {
       "path": ".cursor/rules/job-site-access.mdc",
@@ -193,6 +203,11 @@
       "path": ".cursor/rules/self-review.mdc",
       "always": false,
       "scope": "Task-specific; read when relevant"
+    },
+    {
+      "path": ".cursor/rules/signal-design.mdc",
+      "always": false,
+      "scope": "- apps/web/**"
     },
     {
       "path": ".cursor/rules/superpowers-opt-in.mdc",

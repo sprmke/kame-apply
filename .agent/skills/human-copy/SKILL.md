@@ -20,6 +20,10 @@ Mirrors always-on Cursor rule **`.cursor/rules/human-copy.mdc`**. Claude Code an
 - Production-grade product English (job-seeker workbench UI)
 - Never "AI-looking"
 
+## Glossary first
+
+`docs/design/glossary.md` is the single source of user words. Use its right-hand column, never the internal name: Search (not Track), How much we do (not Autonomy), Practice run (not dry run), Company career site (not ATS), Answer help and answer bank (not Answer Desk). Buttons are verb + object: "Find jobs now", "Tailor resume", "Use these edits". The button keeps its name through the flow. A number always has a short explanation behind a tap.
+
 ## Hard ban: dashes as clause breaks
 
 **Never** insert Unicode em dash `—` (U+2014) or en dash `–` (U+2013) in new product strings.
@@ -107,4 +111,5 @@ toast.message('Track updated');
 
 - `.cursor/rules/human-copy.mdc`
 - `.cursor/rules/ui-minimal-copy.mdc` + skill `minimal-ui-copy`
+- `docs/design/glossary.md` (the words)
 - `accessibility` (required labels stay short)

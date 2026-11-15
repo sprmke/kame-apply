@@ -113,7 +113,7 @@ async function approve() {
       <FnSelect
         v-model="profileId"
         :options="profileOptions"
-        :ariaLabel="t('integrations.profile')"
+        :aria-label="t('integrations.profile')"
       />
       <fieldset class="flex flex-col gap-2">
         <legend class="text-sm text-ink-900">{{ t("integrations.scopes") }}</legend>

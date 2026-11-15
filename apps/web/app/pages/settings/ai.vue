@@ -5,8 +5,10 @@ import {
   FnChip,
   FnCheckbox,
   FnDialog,
+  FnChoiceCards,
   FnField,
   FnInput,
+  FnSectionCard,
   FnSelect,
   FnSkeleton,
   FnTable,
@@ -65,12 +67,11 @@ const addError = ref<string | null>(null);
 const needsKey = computed(
   () => providers.data.value?.find((p) => p.id === provider.value)?.needs_key ?? true,
 );
-watch(addOpen, (o) => {
-  if (o) {
-    form.resetForm({ values: { provider: "gemini", api_key: "", label: "", base_url: "" } });
-    addError.value = null;
-  }
-});
+function openAdd(preset: string = "gemini") {
+  addError.value = null;
+  form.resetForm({ values: { provider: preset, api_key: "", label: "", base_url: "" } });
+  addOpen.value = true;
+}
 const submitAdd = form.handleSubmit(async (v) => {
   addError.value = null;
   if (needsKey.value && !v.api_key) {
@@ -205,34 +206,61 @@ const credRows = computed(() =>
 );
 const providerLabel = (id: string) => providers.data.value?.find((p) => p.id === id)?.label ?? id;
 const statusGlyph = { valid: "✓", invalid: "✕", untested: "•" } as const;
+
+const connectPath = ref("");
+const connectOptions = computed(() => [
+  {
+    value: "free",
+    title: t("ai.freeTitle"),
+    effect: t("ai.freeEffect"),
+    badge: t("ai.freeBadge"),
+  },
+  { value: "own", title: t("ai.ownKeyTitle"), effect: t("ai.ownKeyEffect") },
+  { value: "claude", title: t("ai.claudeTitle"), effect: t("ai.claudeEffect") },
+]);
+
+function startConnect(path: string) {
+  if (!path) return;
+  if (path === "claude") {
+    connectPath.value = "";
+    void navigateTo("/settings/integrations");
+    return;
+  }
+  connectPath.value = "";
+  openAdd(path === "free" ? "openrouter" : "gemini");
+}
+
+watch(connectPath, (value) => startConnect(value));
 </script>
 
 <template>
-  <section class="flex flex-col gap-10">
-    <PageHeader :title="t('settings.ai')" :lede="t('ai.lede')" />
-
-    <div class="flex flex-col gap-3">
-      <h2 class="font-serif text-lg font-semibold">{{ t("ai.usageTitle") }}</h2>
-      <FnSkeleton v-if="usage.isPending.value" :lines="3" />
-      <template v-else-if="usage.data.value">
-        <UsageMeter
-          :spent-micros="usage.data.value.spent_micros"
-          :budget-cents="usage.data.value.budget_cents"
-        />
-        <UsageChart :days="usage.data.value.by_day" :caption="t('usage.thisMonth')" />
-      </template>
-    </div>
+  <section class="flex flex-col gap-6">
+    <PageHeader :title="t('ai.connectTitle')" :lede="t('ai.lede')" />
 
     <p v-if="!manage" class="text-sm text-ink-600">{{ t("ai.ownersOnly") }}</p>
+
     <template v-else>
-      <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class="font-serif text-lg font-semibold">{{ t("ai.keysTitle") }}</h2>
-          <FnButton tone="primary" @click="addOpen = true">{{ t("ai.addKey") }}</FnButton>
-        </div>
+      <FnSectionCard
+        v-if="!(creds.data.value ?? []).length"
+        :title="t('ai.chooseTitle')"
+        :intro="t('ai.chooseIntro')"
+      >
+        <FnChoiceCards
+          v-model="connectPath"
+          :options="connectOptions"
+          :label="t('ai.connectTitle')"
+        />
+        <p class="text-sm text-ink-600">{{ t("ai.noKeys") }}</p>
+      </FnSectionCard>
+
+      <FnSectionCard :title="t('ai.keysTitle')">
+        <template #actions>
+          <FnButton size="sm" tone="quiet" @click="openAdd()">{{ t("ai.addKey") }}</FnButton>
+        </template>
         <FnSkeleton v-if="creds.isPending.value" :lines="3" />
         <FnTable
           v-else
+          stack
           :columns="credColumns"
           :rows="credRows"
           row-key="id"
@@ -250,7 +278,7 @@ const statusGlyph = { valid: "✓", invalid: "✕", untested: "•" } as const;
             ><span class="font-mono text-xs">{{ row.key }}</span></template
           >
           <template #cell-status="{ row }">
-            <FnChip :tone="row.status === 'invalid' ? 'neutral' : 'neutral'">
+            <FnChip>
               <span
                 aria-hidden="true"
                 :class="
@@ -282,59 +310,72 @@ const statusGlyph = { valid: "✓", invalid: "✕", untested: "•" } as const;
             </div>
           </template>
         </FnTable>
-      </div>
+      </FnSectionCard>
 
-      <form class="flex max-w-xs flex-col gap-3" novalidate @submit.prevent="saveBudget">
-        <h2 class="font-serif text-lg font-semibold">{{ t("ai.budgetTitle") }}</h2>
-        <FnField
-          v-slot="{ id, describedby, invalid }"
-          :label="t('ai.budget')"
-          :hint="t('ai.budgetHint')"
-          :error="budgetError"
-        >
-          <FnInput
-            :id="id"
-            v-model="budget"
-            inputmode="decimal"
-            :describedby="describedby"
-            :invalid="invalid"
-          />
-        </FnField>
-        <div>
-          <FnButton type="submit" :loading="saveSettings.isPending.value">{{
-            t("common.save")
-          }}</FnButton>
+      <FnSectionCard :title="t('ai.budgetTitle')" :intro="t('ai.budgetHint')">
+        <div class="flex flex-col gap-4">
+          <FnSkeleton v-if="usage.isPending.value" :lines="3" />
+          <template v-else-if="usage.data.value">
+            <UsageMeter
+              :spent-micros="usage.data.value.spent_micros"
+              :budget-cents="usage.data.value.budget_cents"
+            />
+            <UsageChart :days="usage.data.value.by_day" :caption="t('usage.thisMonth')" />
+          </template>
+          <form class="flex max-w-xs flex-col gap-3" novalidate @submit.prevent="saveBudget">
+            <FnField
+              v-slot="{ id, describedby, invalid }"
+              :label="t('ai.budget')"
+              :error="budgetError"
+            >
+              <FnInput
+                :id="id"
+                v-model="budget"
+                inputmode="decimal"
+                :describedby="describedby"
+                :invalid="invalid"
+              />
+            </FnField>
+            <div>
+              <FnButton type="submit" :loading="saveSettings.isPending.value">{{
+                t("common.save")
+              }}</FnButton>
+            </div>
+          </form>
         </div>
-      </form>
+      </FnSectionCard>
 
-      <form class="flex flex-col gap-3" novalidate @submit.prevent="saveTiers">
-        <h2 class="font-serif text-lg font-semibold">{{ t("ai.tiersTitle") }}</h2>
-        <p class="text-sm text-ink-600">{{ t("ai.tiersLede") }}</p>
-        <p v-if="tierError" role="alert" class="text-sm text-oxblood-600">{{ tierError }}</p>
-        <div
-          v-for="tier in TIERS"
-          :key="tier"
-          class="grid items-end gap-3 sm:grid-cols-[8rem_1fr_1fr]"
-        >
-          <span class="pb-3 text-sm font-medium">{{ t(`ai.tier_${tier}`) }}</span>
-          <FnField v-slot="{ id }" :label="t('ai.provider')"
-            ><FnSelect :id="id" v-model="tierProvider[tier]" :options="providerOptions"
-          /></FnField>
-          <FnField v-slot="{ id }" :label="t('ai.model')"
-            ><FnInput
-              :id="id"
-              v-model="tierModel[tier]"
-              :disabled="tierProvider[tier] === 'auto'"
-              autocomplete="off"
-          /></FnField>
-        </div>
-        <FnCheckbox v-model="fallback" :label="t('ai.fallback')" />
-        <div>
-          <FnButton type="submit" :loading="saveSettings.isPending.value">{{
-            t("common.save")
-          }}</FnButton>
-        </div>
-      </form>
+      <FnSectionCard :title="t('ai.tiersTitle')" :intro="t('ai.tiersLede')">
+        <template #more>
+          <form class="flex flex-col gap-3" novalidate @submit.prevent="saveTiers">
+            <p v-if="tierError" role="alert" class="text-sm text-oxblood-600">{{ tierError }}</p>
+            <div
+              v-for="tier in TIERS"
+              :key="tier"
+              class="grid items-end gap-3 sm:grid-cols-[8rem_1fr_1fr]"
+            >
+              <span class="pb-3 text-sm font-medium">{{ t(`ai.tier_${tier}`) }}</span>
+              <FnField v-slot="{ id }" :label="t('ai.provider')"
+                ><FnSelect :id="id" v-model="tierProvider[tier]" :options="providerOptions"
+              /></FnField>
+              <FnField v-slot="{ id }" :label="t('ai.model')"
+                ><FnInput
+                  :id="id"
+                  v-model="tierModel[tier]"
+                  :disabled="tierProvider[tier] === 'auto'"
+                  autocomplete="off"
+              /></FnField>
+            </div>
+            <FnCheckbox v-model="fallback" :label="t('ai.fallback')" />
+            <div>
+              <FnButton type="submit" :loading="saveSettings.isPending.value">{{
+                t("common.save")
+              }}</FnButton>
+            </div>
+          </form>
+        </template>
+        <p class="text-sm text-ink-600">{{ t("ai.autoNote") }}</p>
+      </FnSectionCard>
     </template>
 
     <FnDialog

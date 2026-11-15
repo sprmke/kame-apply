@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import {
+  createAnswerApiV1ProfilesProfileIdAnswersPost,
+  draftAnswersApiV1ProfilesProfileIdAnswersDraftPost,
   listAnswersApiV1ProfilesProfileIdAnswersGet,
   listAnswerKeysApiV1ProfilesProfileIdAnswersKeysGet,
   setupAnswersApiV1ProfilesProfileIdAnswersSetupPost,
   updateAnswerApiV1ProfilesProfileIdAnswersAnswerIdPatch,
+  type AnswerDraftRead,
   type AnswerRead,
   type CanonicalKeyRead,
 } from "@kame/api-client";
@@ -18,6 +21,8 @@ const qc = useQueryClient();
 const { profileId, ensureProfile, loading: profileLoading } = useActiveProfile();
 const q = ref("");
 const busy = ref(false);
+const drafting = ref(false);
+const drafts = ref<AnswerDraftRead[]>([]);
 
 onMounted(() => ensureProfile().catch((e) => toast.push({ title: apiError(e), tone: "danger" })));
 
@@ -92,6 +97,51 @@ async function runSetup() {
   }
 }
 
+function sourceLabel(item: AnswerDraftRead): string {
+  if (item.source === "profile") return t("career.draftFromProfile");
+  if (item.source === "default") return t("career.draftDefault");
+  return item.message || t("career.draftNeedsYou");
+}
+
+async function draftFromProfile() {
+  if (!profileId.value) return;
+  drafting.value = true;
+  try {
+    const { data } = await draftAnswersApiV1ProfilesProfileIdAnswersDraftPost({
+      path: { profile_id: profileId.value },
+      body: {},
+      throwOnError: true,
+    });
+    drafts.value = (data?.items ?? []) as AnswerDraftRead[];
+    if (!drafts.value.length) toast.push({ title: t("career.draftNone"), tone: "neutral" });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  } finally {
+    drafting.value = false;
+  }
+}
+
+async function useDraft(item: AnswerDraftRead) {
+  if (!profileId.value || !item.draft) return;
+  try {
+    await createAnswerApiV1ProfilesProfileIdAnswersPost({
+      path: { profile_id: profileId.value },
+      body: {
+        key: item.key,
+        country: item.country ?? null,
+        answer: item.draft,
+        approved: true,
+      },
+      throwOnError: true,
+    });
+    drafts.value = drafts.value.filter((row) => row !== item);
+    await qc.invalidateQueries({ queryKey: ["answers", profileId.value] });
+    toast.push({ title: t("common.saved"), tone: "success" });
+  } catch (e) {
+    toast.push({ title: apiError(e), tone: "danger" });
+  }
+}
+
 async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
   if (!profileId.value) return;
   try {
@@ -124,8 +174,44 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
       <FnButton tone="primary" :loading="busy" @click="runSetup">{{
         t("career.quickSetup")
       }}</FnButton>
+      <FnButton tone="quiet" :loading="drafting" @click="draftFromProfile">{{
+        t("career.draftAnswers")
+      }}</FnButton>
     </div>
     <p class="-mt-3 text-sm text-ink-600">{{ t("career.quickSetupHint") }}</p>
+
+    <section v-if="drafts.length" class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
+        {{ t("career.draftTitle") }}
+      </h3>
+      <ul class="flex flex-col gap-2">
+        <li
+          v-for="item in drafts"
+          :key="`${item.key}-${item.country}`"
+          class="flex flex-col gap-2 rounded-lg border border-dashed border-pencil bg-paper-0 p-3"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-medium text-ink-900">{{ item.label }}</span>
+            <span v-if="item.country" class="text-xs text-ink-600">{{ item.country }}</span>
+          </div>
+          <p v-if="item.draft" class="text-sm text-pencil">{{ item.draft }}</p>
+          <p class="text-xs text-ink-600">{{ sourceLabel(item) }}</p>
+          <div class="flex flex-wrap gap-2">
+            <FnButton v-if="item.draft" size="sm" tone="primary" @click="useDraft(item)">{{
+              t("career.useDraft")
+            }}</FnButton>
+            <FnButton
+              size="sm"
+              tone="ghost"
+              @click="drafts = drafts.filter((row) => row !== item)"
+              >{{ t("common.dismiss") }}</FnButton
+            >
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <p v-if="drafting" class="text-sm text-ink-600">{{ t("career.drafting") }}</p>
     <div v-if="answersLoading" class="flex flex-col gap-2">
       <FnSkeleton class="h-16 w-full" />
       <FnSkeleton class="h-16 w-full" />

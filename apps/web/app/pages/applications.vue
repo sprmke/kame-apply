@@ -11,7 +11,8 @@ import {
   type ApplicationStatusBody,
   type TrackRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnInput, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnEmptyState, FnInput, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import { useMediaQuery } from "@vueuse/core";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -72,11 +73,17 @@ const statusOptions = computed(() => [
   ...STATUSES.map((value) => ({ value, label: labelize(value) })),
 ]);
 const statusChoices = computed(() => STATUSES.map((value) => ({ value, label: labelize(value) })));
+const METHOD_LABELS: Record<string, string> = {
+  manual: "Logged by hand",
+  extension: "Browser extension",
+  runner: "Apply helper",
+  answer_desk: "Answer help",
+};
 const methodOptions = computed(() => [
   { value: ALL, label: t("applications.any") },
   ...["manual", "extension", "runner", "answer_desk"].map((value) => ({
     value,
-    label: labelize(value),
+    label: METHOD_LABELS[value] ?? labelize(value),
   })),
 ]);
 const trackFilter = computed({
@@ -177,6 +184,11 @@ const metrics = useQuery({
 const items = computed(() => (list.data.value?.items ?? []) as ApplicationRead[]);
 const loading = computed(
   () => !ws.loaded || list.isPending.value || (list.isFetching.value && !list.data.value),
+);
+const filtersOpen = ref(false);
+const isDesktop = useMediaQuery("(min-width: 1024px)");
+const hasFilters = computed(() =>
+  Boolean(trackId.value || status.value || method.value || q.value),
 );
 
 const byStatus = computed(() => {
@@ -360,7 +372,19 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
       </template>
     </PageHeader>
 
+    <button
+      v-if="!isDesktop && !loading && (items.length || hasFilters)"
+      type="button"
+      class="flex min-h-11 items-center justify-between gap-2 rounded-xl border border-rule bg-paper-1 px-4 text-sm font-semibold text-ink-900 shadow-[var(--shadow-card)]"
+      :aria-expanded="filtersOpen"
+      @click="filtersOpen = !filtersOpen"
+    >
+      {{ t("applications.filters") }}
+      <span aria-hidden="true" class="text-ink-600">{{ filtersOpen ? "−" : "+" }}</span>
+    </button>
+
     <section
+      v-if="(filtersOpen || isDesktop) && !loading && (items.length || hasFilters)"
       class="grid gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_auto_auto] lg:items-end"
     >
       <div class="flex flex-col gap-2">
@@ -368,7 +392,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
         <FnSelect
           v-model="trackFilter"
           :options="trackOptions"
-          :ariaLabel="t('applications.track')"
+          :aria-label="t('applications.track')"
         />
       </div>
       <div class="flex flex-col gap-2">
@@ -376,7 +400,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
         <FnSelect
           v-model="statusFilter"
           :options="statusOptions"
-          :ariaLabel="t('applications.status')"
+          :aria-label="t('applications.status')"
         />
       </div>
       <div class="flex flex-col gap-2">
@@ -384,7 +408,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
         <FnSelect
           v-model="methodFilter"
           :options="methodOptions"
-          :ariaLabel="t('applications.method')"
+          :aria-label="t('applications.method')"
         />
       </div>
       <div class="flex flex-col gap-2">
@@ -443,6 +467,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     </div>
 
     <section
+      v-if="!loading && (items.length || hasFilters)"
       class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
     >
       <div class="flex flex-wrap items-center gap-2">
@@ -450,7 +475,11 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           {{ t("applications.funnel") }}
         </h2>
         <div class="w-40">
-          <FnSelect v-model="periodValue" :options="periodOptions" :ariaLabel="t('today.period')" />
+          <FnSelect
+            v-model="periodValue"
+            :options="periodOptions"
+            :aria-label="t('today.period')"
+          />
         </div>
       </div>
       <p class="text-sm leading-6 text-ink-600">{{ t("applications.funnelHint") }}</p>
@@ -470,15 +499,30 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
     <div v-if="loading"><FnSkeleton class="h-40 w-full" /></div>
 
     <template v-else-if="view === 'table'">
-      <div
+      <FnEmptyState
         v-if="!items.length"
-        class="flex flex-col items-start gap-3 rounded-xl border border-dashed border-rule bg-paper-1 p-6"
+        :title="hasFilters ? t('applications.emptyFiltered') : t('applications.emptyTitle')"
+        :body="hasFilters ? t('applications.emptyFilteredBody') : t('applications.emptyBody')"
       >
-        <p class="text-sm text-ink-600">{{ t("applications.empty") }}</p>
-        <FnButton as-child tone="primary">
-          <NuxtLink to="/jobs">{{ t("applications.browseJobs") }}</NuxtLink>
+        <FnButton
+          v-if="hasFilters"
+          tone="quiet"
+          @click="
+            trackId = '';
+            status = '';
+            method = '';
+            q = '';
+          "
+        >
+          {{ t("applications.clearFilters") }}
         </FnButton>
-      </div>
+        <template v-else>
+          <FnButton tone="primary" @click="manualOpen = true">{{ t("applications.log") }}</FnButton>
+          <FnButton as-child tone="quiet">
+            <NuxtLink to="/jobs">{{ t("applications.browseJobs") }}</NuxtLink>
+          </FnButton>
+        </template>
+      </FnEmptyState>
       <div
         v-else
         class="overflow-x-auto rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
@@ -508,7 +552,7 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
                   <FnSelect
                     :model-value="a.status"
                     :options="statusChoices"
-                    :ariaLabel="t('applications.status')"
+                    :aria-label="t('applications.status')"
                     @update:model-value="moveStatus(a.id, $event)"
                   />
                 </div>

@@ -13,3 +13,8 @@ Paste 2 or 3 writing samples, analyze style, edit the summary, and maintain bann
 | `GET .../voice` | get or create |
 | `PUT .../voice/samples` | replace + analyze |
 | `PATCH .../voice` | summary / banned list |
+
+
+## UX clarity (2026-11-13)
+
+**Writing style** opens with three preset cards: Plain and direct (Recommended), Warm and human, Formal and precise. Choosing one calls `POST /profiles/{id}/voice/preset`. Samples stay optional and make the style more precise.

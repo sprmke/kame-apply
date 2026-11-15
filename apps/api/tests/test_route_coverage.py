@@ -32,6 +32,9 @@ PUBLIC_OR_USER_SCOPED: dict[str, str] = {
 USER_SCOPED_EXACT: dict[str, str] = {
     "/api/v1/workspaces": "lists and creates the caller's own workspaces; no active workspace yet",
     "/api/v1/invitations/accept": "the invitee has no workspace until the token is accepted",
+    "/api/v1/industries": "curated pack catalog is global; workspace choices live under /api/v1/workspace",
+    "/api/v1/industries/detect": "deterministic field detection is user-scoped; no workspace data",
+    "/api/v1/industries/draft": "custom pack draft is user-scoped; acceptance is workspace-scoped",
 }
 
 

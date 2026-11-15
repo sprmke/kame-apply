@@ -58,7 +58,7 @@ async function resolveAllTakeIncoming() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-5">
     <PageHeader :title="t('career.mergeTitle')" />
     <div v-if="!preview">
       <FnSkeleton class="h-32 w-full" />

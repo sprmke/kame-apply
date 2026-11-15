@@ -103,12 +103,6 @@ async function onRevoke(id: string) {
   await refreshAll();
 }
 
-const columns = computed(() => [
-  { key: "who", label: t("members.member") },
-  { key: "role", label: t("members.role") },
-  { key: "joined", label: t("members.joined") },
-  { key: "actions", label: "" },
-]);
 const rows = computed(() =>
   (members.data.value ?? []).map((m) => ({
     ...m,
@@ -117,6 +111,15 @@ const rows = computed(() =>
     joined: fmt.date(m.joined_at),
   })),
 );
+const columns = computed(() => {
+  const cols = [
+    { key: "who", label: t("members.member") },
+    { key: "role", label: t("members.role") },
+    { key: "joined", label: t("members.joined") },
+  ];
+  if (rows.value.some((m) => manageable(m))) cols.push({ key: "actions", label: "" });
+  return cols;
+});
 </script>
 
 <template>
@@ -146,6 +149,7 @@ const rows = computed(() =>
       :columns="columns"
       :rows="rows"
       row-key="id"
+      stack
       :caption="t('settings.members')"
       :empty="t('members.empty')"
     >
@@ -179,9 +183,15 @@ const rows = computed(() =>
       </template>
     </FnTable>
 
-    <div v-if="ws.canManage && (invites.data.value?.length ?? 0) > 0" class="flex flex-col gap-2">
-      <h2 class="font-serif text-lg font-semibold">{{ t("members.pending") }}</h2>
-      <ul class="flex flex-col divide-y divide-rule border-y border-rule">
+    <div
+      v-if="ws.canManage && (invites.isError.value || (invites.data.value?.length ?? 0) > 0)"
+      class="flex flex-col gap-2"
+    >
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("members.pending") }}</h2>
+      <p v-if="invites.isError.value" role="alert" class="text-sm text-oxblood-600">
+        {{ apiError(invites.error.value) }}
+      </p>
+      <ul v-else class="flex flex-col divide-y divide-rule border-y border-rule">
         <li
           v-for="i in invites.data.value"
           :key="i.id"

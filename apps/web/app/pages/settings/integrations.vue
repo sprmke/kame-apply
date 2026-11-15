@@ -272,35 +272,80 @@ async function connectExtension() {
     connecting.value = false;
   }
 }
+
+const tab = ref<"browser" | "claude" | "helper" | "advanced">("browser");
+
+const FEATURE_LABELS: Record<string, string> = {
+  resume_tailoring: "Resume tailoring",
+  resume_critique: "Resume check",
+  cover_letter: "Cover letters",
+  answer_draft: "Answer drafts",
+  search_plan: "Search setup",
+  reply_classify: "Reading replies",
+  contacts_parse: "Reading contacts",
+};
+
+function featureLabel(feature: string): string {
+  return FEATURE_LABELS[feature] ?? feature.replaceAll("_", " ");
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-8">
     <PageHeader :title="t('settings.integrations')" :lede="t('settings.integrationsLede')" />
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.claude") }}</h2>
+    <p class="text-sm leading-6 text-ink-600">{{ t(`integrations.tabIntro.${tab}`) }}</p>
+
+    <div class="flex gap-1 overflow-x-auto rounded-lg bg-paper-2 p-1" role="tablist">
+      <button
+        v-for="item in [
+          ['browser', t('integrations.tabExtension')],
+          ['claude', t('integrations.claude')],
+          ['helper', t('integrations.runner')],
+          ['advanced', t('integrations.advanced')],
+        ] as const"
+        :key="item[0]"
+        type="button"
+        role="tab"
+        class="min-h-11 shrink-0 rounded-md px-2 text-xs font-semibold whitespace-nowrap sm:px-3 sm:text-sm"
+        :class="
+          tab === item[0] ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'
+        "
+        :aria-selected="tab === item[0]"
+        @click="tab = item[0]"
+      >
+        {{ item[1] }}
+      </button>
+    </div>
+
+    <section v-show="tab === 'claude'" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.claude") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.claudeHint") }}</p>
       <div class="flex flex-col gap-2">
         <label class="text-sm text-ink-600">{{ t("integrations.mcpUrl") }}</label>
         <div class="flex flex-wrap items-center gap-2">
-          <code class="rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{ mcpUrl }}</code>
+          <code
+            class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs sm:w-auto"
+            >{{ mcpUrl }}</code
+          >
           <FnButton size="sm" tone="ghost" @click="copy(mcpUrl)">{{ t("common.copy") }}</FnButton>
         </div>
       </div>
       <div class="flex flex-col gap-2">
-        <label class="text-sm text-ink-600">Claude Code</label>
+        <label class="text-sm text-ink-600">{{ t("integrations.commandLine") }}</label>
         <div class="flex flex-wrap items-center gap-2">
-          <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
+          <code class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             setupCmd
           }}</code>
           <FnButton size="sm" tone="ghost" @click="copy(setupCmd)">{{ t("common.copy") }}</FnButton>
         </div>
       </div>
       <div class="flex flex-col gap-2">
-        <label class="text-sm text-ink-600">Plugin</label>
+        <label class="text-sm text-ink-600">{{ t("integrations.plugin") }}</label>
         <div class="flex flex-wrap items-center gap-2">
-          <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
+          <code class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
             pluginCmd
           }}</code>
           <FnButton size="sm" tone="ghost" @click="copy(pluginCmd)">{{
@@ -310,15 +355,17 @@ async function connectExtension() {
       </div>
     </section>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.inbox") }}</h2>
+    <section v-show="tab === 'claude'" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.inbox") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.inboxHint") }}</p>
       <FnSkeleton v-if="inbox.isPending.value" class="h-10 w-64" />
       <p v-else class="text-sm text-ink-600">
         {{
           t("integrations.inboxStatus", {
             waiting: inbox.data.value?.waiting ?? 0,
-            leased: inbox.data.value?.leased ?? 0,
+            active: inbox.data.value?.leased ?? 0,
           })
         }}
       </p>
@@ -328,8 +375,10 @@ async function connectExtension() {
       </div>
     </section>
 
-    <section v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.agents") }}</h2>
+    <section v-show="tab === 'claude'" v-if="ws.canManage" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.agents") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.agentsHint") }}</p>
       <FnSkeleton v-if="tokens.isPending.value" class="h-24 w-full" />
       <ul v-else class="divide-y divide-rule border border-rule">
@@ -359,8 +408,16 @@ async function connectExtension() {
       </ul>
     </section>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.routing") }}</h2>
+    <details
+      v-show="tab === 'advanced'"
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4"
+    >
+      <summary
+        class="flex min-h-11 cursor-pointer list-none items-center text-sm font-semibold text-ink-600"
+      >
+        {{ t("integrations.routing") }}
+      </summary>
+      <h2 class="sr-only">{{ t("integrations.routing") }}</h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.routingHint") }}</p>
       <ul class="flex flex-col gap-3">
         <li
@@ -368,7 +425,7 @@ async function connectExtension() {
           :key="row.feature"
           class="flex flex-wrap items-center gap-3"
         >
-          <span class="min-w-40 text-sm text-ink-900">{{ row.feature }}</span>
+          <span class="min-w-40 text-sm text-ink-900">{{ featureLabel(row.feature) }}</span>
           <FnSelect
             :model-value="row.route"
             :options="routeOptions"
@@ -381,11 +438,12 @@ async function connectExtension() {
           />
         </li>
       </ul>
-    </section>
+    </details>
 
-    <section class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.extension") }}</h2>
-      <p class="text-sm leading-6 text-ink-600">{{ t("integrations.extensionHint") }}</p>
+    <section v-show="tab === 'browser'" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.extension") }}
+      </h2>
       <FnButton
         size="sm"
         tone="primary"
@@ -395,15 +453,17 @@ async function connectExtension() {
       >
     </section>
 
-    <section v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.runner") }}</h2>
+    <section v-show="tab === 'helper'" v-if="ws.canManage" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.runner") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.runnerHint") }}</p>
       <div class="flex flex-wrap items-center gap-2">
         <div class="w-36">
           <FnSelect
             v-model="runnerModeValue"
             :options="runnerOptions"
-            :ariaLabel="t('integrations.runner')"
+            :aria-label="t('integrations.runner')"
           />
         </div>
         <FnButton
@@ -414,7 +474,7 @@ async function connectExtension() {
         >
       </div>
       <div v-if="newRunnerToken" class="flex flex-wrap items-center gap-2">
-        <code class="max-w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
+        <code class="w-full break-all rounded-sm bg-paper-2 px-2 py-1 font-mono text-xs">{{
           newRunnerToken
         }}</code>
         <FnButton size="sm" tone="ghost" @click="copy(newRunnerToken)">{{
@@ -446,8 +506,10 @@ async function connectExtension() {
       </ul>
     </section>
 
-    <section v-if="ws.canManage" class="flex flex-col gap-3">
-      <h2 class="font-display text-lg text-ink-900">{{ t("integrations.platforms") }}</h2>
+    <section v-show="tab === 'advanced'" v-if="ws.canManage" class="flex flex-col gap-3">
+      <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+        {{ t("integrations.platforms") }}
+      </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.platformsHint") }}</p>
       <ul class="divide-y divide-rule border border-rule">
         <li

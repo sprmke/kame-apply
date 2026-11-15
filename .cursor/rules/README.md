@@ -28,6 +28,7 @@ After clone: `pnpm run setup:ai-tooling`. Claude Code and OpenCode read the same
 | `untrusted-content.mdc` | jobs, safety, ingest, runs, runner, extension (P6) |
 | `apply-engine.mdc` | sources, runs, runner, extension |
 | `dbos-workflows.mdc` | `**/workflows.py` |
+| `industry-packs.mdc` | `app/industries/**`, tracks, pack-aware UI |
 | `pydantic-ai.mdc` | `app/ai/**`, prompts |
 | `fastapi-conventions.mdc` · `migrations.mdc` · `security.mdc` | `apps/api/**` |
 | `nuxt-conventions.mdc` · `vue-components.mdc` | `apps/web`, `apps/extension`, `packages/ui` |
@@ -35,4 +36,4 @@ After clone: `pnpm run setup:ai-tooling`. Claude Code and OpenCode read the same
 | `naming-conventions.mdc` · `in-app-notifications.mdc` | as globbed |
 | `plan-mode.mdc` · `workflow-docs.mdc` · `self-review.mdc` | process (opt-in) |
 
-Skills: `.agent/skills/` (symlinked into `.claude/skills` and `.cursor/skills`; index in `.agent/skills/README.md`). Commands: `/ka-help`. Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`. OpenCode: `.opencode/README.md`.
+Skills: `.agent/skills/` (symlinked into `.claude/skills` and `.cursor/skills`; index in `.agent/skills/README.md`). Commands: `/ka-help`. Subagents: `debugger`, `security-auditor`, `test-runner`, `verifier`, `design-reviewer`, `ux-reviewer`. OpenCode: `.opencode/README.md`.

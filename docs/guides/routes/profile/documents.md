@@ -12,3 +12,8 @@ Uploaded resumes and pastes. A short lede explains that parsed text must be revi
 | --- | --- |
 | `GET/POST .../documents` | list / upload |
 | `DELETE .../documents/{id}` | delete |
+
+
+## Portfolio photos
+
+When the workspace's field pack enables portfolio images, **Add dish photo** accepts JPG, PNG, or WebP up to 10 MB for `kind=portfolio`. The server re-encodes the image to strip EXIF, GPS, and text chunks before storing it in R2. Other document kinds keep the PDF/DOCX/TXT/MD/JSON allowlist.

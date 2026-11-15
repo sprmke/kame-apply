@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { renameWorkspaceApiV1WorkspacePatch, schemas } from "@kame/api-client";
-import { FnButton, FnChip, FnField, FnInput, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnField, FnInput, FnSectionCard, useToast } from "@kame/ui";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t } = useI18n();
@@ -32,36 +32,45 @@ onBeforeRouteLeave(() => (form.meta.value.dirty ? window.confirm(t("common.unsav
 </script>
 
 <template>
-  <section class="flex max-w-md flex-col gap-4">
-    <PageHeader :title="t('settings.general')" :lede="t('settings.generalLede')" />
-    <p class="flex items-center gap-2 text-sm text-ink-600">
-      {{ t("workspace.kind") }}
-      <FnChip>{{
-        ws.current?.kind === "personal" ? t("workspace.personal") : t("workspace.team")
-      }}</FnChip>
-    </p>
-    <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <p v-if="formError" role="alert" class="text-sm text-oxblood-600">{{ formError }}</p>
-      <FnField
-        v-slot="{ id, describedby, invalid }"
-        :label="t('workspace.name')"
-        :error="err('name')"
-      >
-        <FnInput
-          :id="id"
-          v-model="name"
-          v-bind="nameAttrs"
-          :disabled="!ws.canManage"
-          :describedby="describedby"
-          :invalid="invalid"
-        />
-      </FnField>
-      <div v-if="ws.canManage">
-        <FnButton type="submit" tone="primary" :loading="form.isSubmitting.value">{{
-          t("common.save")
-        }}</FnButton>
-      </div>
-      <p v-else class="text-sm text-ink-600">{{ t("workspace.readOnly") }}</p>
-    </form>
+  <section class="flex max-w-xl flex-col gap-6">
+    <PageHeader :title="t('settings.general')" />
+
+    <FnSectionCard :title="t('settings.generalTitle')" :intro="t('settings.generalLede')">
+      <form class="flex flex-col gap-5" novalidate @submit.prevent="submit">
+        <p v-if="formError" role="alert" class="text-sm text-oxblood-600">{{ formError }}</p>
+        <p class="flex items-center gap-2 text-sm text-ink-600">
+          {{ t("workspace.kind") }}
+          <FnChip>{{
+            ws.current?.kind === "personal" ? t("workspace.personal") : t("workspace.team")
+          }}</FnChip>
+        </p>
+        <FnField
+          v-slot="{ id, describedby, invalid }"
+          :label="t('workspace.name')"
+          :error="err('name')"
+        >
+          <FnInput
+            :id="id"
+            v-model="name"
+            v-bind="nameAttrs"
+            :disabled="!ws.canManage"
+            :describedby="describedby"
+            :invalid="invalid"
+          />
+        </FnField>
+        <div v-if="ws.canManage" class="border-t border-rule pt-4">
+          <FnButton
+            type="submit"
+            tone="primary"
+            :disabled="!form.meta.value.dirty"
+            :loading="form.isSubmitting.value"
+            >{{ t("common.save") }}</FnButton
+          >
+        </div>
+        <p v-else class="text-sm text-ink-600">{{ t("workspace.readOnly") }}</p>
+      </form>
+    </FnSectionCard>
+
+    <FieldsOfWorkCard />
   </section>
 </template>

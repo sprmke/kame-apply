@@ -121,6 +121,7 @@ async def enrich_critique(
     content: ResumeContent,
     market_skills: list[dict[str, Any]] | None = None,
     target_role: str | None = None,
+    pack: Any = None,
     run_structured: StructuredRunner | None = None,
     model_factory: Any = None,
 ) -> dict[str, Any]:
@@ -130,7 +131,7 @@ async def enrich_critique(
         settings,
         tier=TIER,
         feature=FEATURE,
-        system=prompts.RESUME_CRITIQUE.system,
+        system=prompts.with_pack_brief(prompts.RESUME_CRITIQUE.system, pack),
         prompt=_prompt(content, target_role=target_role, market_skills=market_skills),
         output_type=PromptedOutput(AiCritique),
         max_output_tokens=MAX_OUT,

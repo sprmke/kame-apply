@@ -1,38 +1,51 @@
 ---
-description: Default to no extra UI prose — labels, buttons, errors only unless really needed
+description: Clear and short UI copy — one line where the screen needs it, no filler
 alwaysApply: true
 ---
 
-# UI minimal copy
+# UI copy: clear and short
 
-**Default:** do not add UI text. Extra labels, subtitles, helper paragraphs, and explanatory banners make a job-search workbench noisy and slower to scan.
+**Default:** no filler. **Also required:** one short line where a screen would otherwise be unclear. A screen nobody understands is not minimal, it is unfinished.
 
-Unless the user asks for copy or it is **really needed**, add **no** new text.
+The old "add no text unless asked" rule is retired. It blocked the one sentence that explains a section, and it pointed at a `?` tooltip that `FnField` did not have. Both are fixed: `FnField` has a `help` prop, and this rule allows the limited copy below.
 
-## Really needed (allowed)
+## Allowed
 
-- **Form field labels** — short; required for usability and WCAG.
-- **Primary actions** — short button text (`Save`, `Send`, `Cancel`, `Confirm`).
-- **Errors / validation** — only when something failed or input is invalid.
-- **Destructive confirms** — one short line stating what will happen (e.g. withdrawing an application, deleting a resume version).
-- **Legal/consent text**: only when required (consent capture, terms of source sites, data-use notices).
-- **Icon-only controls** — `aria-label` / `title` (short, not a paragraph).
-- **AI assistant confirm cards** — the action being proposed, stated plainly; no extra framing.
+| Allowed | Limit | Where |
+| --- | --- | --- |
+| Section intro line | About 12 words, plain | Under a section title whose meaning is not obvious |
+| Field help | 1 sentence | `?` tooltip on the label (`FnField` `help`) |
+| Consequence or summary line | 1 sentence, generated from current values | End of a settings block, before an automatic action |
+| Empty state | 1 line + 1 action (+ optional templates) | Any empty list or panel |
+| First-run hint | 1 line, dismissible, once per user | Patterns such as keyboard shortcuts or swipe |
+| Number explanation | 1 sentence | Popover on any score, count, or status |
 
-## Do not add unless asked
+## Banned
 
-- Page or section subtitles under an already-clear title.
-- `CardDescription`, helper text under fields, "tip" callouts.
-- Empty-state essays — prefer icon + one short line, or nothing.
-- Inline "this lets you…" explanations.
-- Duplicating data already visible (dates, names, status badges).
-- Marketing-style microcopy anywhere in the dashboard — this is operational software, not a landing page.
+- Page or section subtitles that restate the title (an anti-slop B7 fail).
+- Paragraphs, marketing, tutorial voice ("This lets you…", "Simply…").
+- Helper text under every field. Use `help` only when it prevents a real mistake.
+- Em dashes, exclamation marks, emoji in chrome (`human-copy.mdc`).
+- Internal words from the banned list (`docs/design/glossary.md`).
 
-## When building or editing UI
+## Before shipping a string
 
-1. Ship layout, hierarchy, icons, and data first.
-2. Add text only where the screen would be unusable without it.
-3. If unsure, **omit** — the user will ask for copy when they want it.
-4. When text _is_ required, follow **`human-copy.mdc`**.
+1. Would a careful human write this, or does it read like model default prose?
+2. Can it be cut by 30% without losing meaning?
+3. Does it use a glossary word? If not, replace it.
+4. Does it contain an em dash or a banned word? Rewrite.
 
-This rule wins the old `design-system.md` §12 requirement that every page carry a description. `PageHeader` `description` is optional. A description that restates the title or nav label is an anti-slop **B7** fail.
+If a section title is a single internal noun ("Autonomy", "Sources", "Schedule"), rename it to the user's question ("How much we do", "Where we look", "When we search").
+
+## Components
+
+- `FnSectionCard` carries `title`, `intro`, `summary`, and a `More options` fold.
+- `FnField` `help` renders a `?` tooltip; `hint` stays for a line that must stay visible.
+- `FnSummaryLine` renders the consequence sentence from live values.
+- `FnEmptyState` is one line plus one action.
+
+## Related
+
+- `.cursor/rules/human-copy.mdc`: how the text sounds
+- `docs/design/glossary.md`: the words to use
+- `.agent/skills/minimal-ui-copy/SKILL.md`: the long form of this rule

@@ -19,7 +19,7 @@ from app.profiles import schemas as s
 from app.profiles.banned_phrases import DEFAULT_BANNED_PHRASES
 from app.profiles.sanitize import strip_sensitive_numbers
 from app.profiles.service import _get_profile
-from app.profiles.voice_style import analyze_samples
+from app.profiles.voice_style import VOICE_PRESETS, analyze_samples
 
 
 def _reject_sensitive(text: str) -> None:
@@ -153,6 +153,38 @@ async def analyze_voice(ctx: WorkspaceContext, profile_id: uuid.UUID) -> s.Voice
             "sample_count": (row.style or {}).get("sample_count", 0),
             "word_count": (row.style or {}).get("word_count", 0),
         },
+    )
+    return _to_read(row)
+
+
+async def apply_preset(
+    ctx: WorkspaceContext, profile_id: uuid.UUID, body: s.VoicePresetBody
+) -> s.VoiceRead:
+    row = await _get_or_create(ctx, profile_id)
+    preset = VOICE_PRESETS[body.preset]
+    style = dict(row.style or {})
+    style.update(
+        {
+            "summary": preset["summary"],
+            "avg_sentence_length": preset["avg_sentence_length"],
+            "formality": preset["formality"],
+            "contraction_rate": preset["contraction_rate"],
+            "vocabulary_level": preset["vocabulary_level"],
+            "sample_count": 0,
+            "word_count": 0,
+            "preset": body.preset,
+        }
+    )
+    row.style = style
+    row.analyzed_at = datetime.now(UTC)
+    await ctx.session.flush()
+    await ctx.session.refresh(row)
+    await audit.record(
+        ctx,
+        action="voice.preset_applied",
+        target_type="voice",
+        target_id=str(row.id),
+        after={"profile_id": str(profile_id), "preset": body.preset},
     )
     return _to_read(row)
 

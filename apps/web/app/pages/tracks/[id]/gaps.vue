@@ -67,7 +67,7 @@ async function setStatus(id: string, status: string) {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <NuxtLink :to="`/tracks/${trackId}`" class="text-sm text-brand-700 underline">{{
