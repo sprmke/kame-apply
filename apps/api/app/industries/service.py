@@ -54,6 +54,7 @@ def _summary(pack: IndustryPack, *, is_primary: bool, custom: bool = False) -> d
     return {
         "key": pack.key,
         "label_key": pack.label_key,
+        "label": pack.display_name or None,
         "icon": pack.icon,
         "is_primary": is_primary,
         "custom": custom,
@@ -221,7 +222,9 @@ async def set_primary(ctx: WorkspaceContext, key: str) -> list[dict[str, Any]]:
         return await list_for_workspace(ctx)
     before = _primary_key(rows)
     for row in rows:
-        row.is_primary = row.industry_key == key
+        row.is_primary = False
+    await ctx.session.flush()
+    target.is_primary = True
     await ctx.session.flush()
     await audit.record(
         ctx,
@@ -285,13 +288,25 @@ async def validate_facets(ctx: WorkspaceContext, criteria: CriteriaV1, industry:
 
 
 async def add_custom_industry(
-    ctx: WorkspaceContext, *, key: str, pack_data: dict[str, Any]
+    ctx: WorkspaceContext,
+    *,
+    key: str,
+    description: str,
+    base_pack: str | None = None,
+    is_primary: bool = False,
 ) -> list[dict[str, Any]]:
+    from app.industries.detect import draft_custom_pack
     from app.industries.schema import IndustryPack
 
-    pack = IndustryPack.model_validate(pack_data)
+    draft = draft_custom_pack(description, base_pack=base_pack)
+    pack = IndustryPack.model_validate(draft["pack"])
+    pack_data = pack.model_dump(mode="json")
     if pack.key != key:
-        raise AppError("invalid_pack", "Pack key does not match", 422)
+        raise AppError(
+            "draft_changed",
+            "That description no longer matches the draft. Draft the field again.",
+            409,
+        )
     rows = await _rows(ctx.session, ctx.workspace_id)
     existing = next((row for row in rows if row.industry_key == key), None)
     if existing is not None:
@@ -299,12 +314,18 @@ async def add_custom_industry(
             raise AppError("conflict", "That field already exists", 409)
         existing.custom_pack = pack_data
         await ctx.session.flush()
+        if is_primary:
+            await set_primary(ctx, key)
     else:
+        if is_primary:
+            for row in rows:
+                row.is_primary = False
+            await ctx.session.flush()
         ctx.session.add(
             m.WorkspaceIndustry(
                 workspace_id=ctx.workspace_id,
                 industry_key=key,
-                is_primary=not rows,
+                is_primary=is_primary or not rows,
                 custom_pack=pack_data,
             )
         )
@@ -317,3 +338,23 @@ async def add_custom_industry(
         after={"industry": key, "base": pack.sources.adapters[:3]},
     )
     return await list_for_workspace(ctx)
+
+
+async def pack_for_track(
+    session: AsyncSession, *, workspace_id: uuid.UUID, industry: str
+) -> IndustryPack:
+    """Resolve a curated pack or an accepted custom pack for a Track."""
+    known = get_pack(industry)
+    if known is not None:
+        return known
+    row = (
+        await session.execute(
+            select(m.WorkspaceIndustry).where(
+                m.WorkspaceIndustry.workspace_id == workspace_id,
+                m.WorkspaceIndustry.industry_key == industry,
+            )
+        )
+    ).scalar_one_or_none()
+    if row is not None and row.custom_pack:
+        return get_pack(industry, custom=row.custom_pack) or GENERAL
+    return GENERAL

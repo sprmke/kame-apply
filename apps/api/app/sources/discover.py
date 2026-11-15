@@ -5,11 +5,12 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit import service as audit
@@ -17,8 +18,7 @@ from app.companies.models import CompanyBoard
 from app.core.errors import AppError
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
-from app.industries.packs.general import GENERAL
-from app.industries.registry import get_pack
+from app.industries import service as industries_service
 from app.industries.schema import IndustryPack
 from app.jobs.ingest import mark_missed_jobs, upsert_raw_job
 from app.jobs.link import rule_match
@@ -29,6 +29,17 @@ from kame_core.sources import get_adapter
 from kame_core.sources.http import BlockSignalError, fetch_json
 
 logger = logging.getLogger(__name__)
+
+
+def _enabled_source_keys(
+    track_sources: Iterable[tuple[object, Any]], allowed: set[str]
+) -> set[str]:
+    """Enabled track sources that the field pack can actually use."""
+    return {
+        source.key
+        for _, source in track_sources
+        if source.enabled_global and not source.circuit_open and source.key in allowed
+    }
 
 
 async def _boards_for_run(
@@ -83,7 +94,9 @@ async def run_discover_track(
             )
         )
     ).scalar_one()
-    pack = get_pack(track.industry) or GENERAL
+    pack = await industries_service.pack_for_track(
+        ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+    )
 
     run = None
     if run_id:
@@ -105,6 +118,13 @@ async def run_discover_track(
         run.progress = {"boards_checked": 0, "jobs_found": 0, "jobs_new": 0, "linked": 0}
 
     progress = dict(run.progress or {})
+    linked_before = int(
+        (
+            await ctx.session.execute(
+                select(func.count()).select_from(TrackJob).where(TrackJob.track_id == track_id)
+            )
+        ).scalar_one()
+    )
 
     async def publish_progress() -> None:
         """Flush progress; in the background path commit so pollers see counts mid-run."""
@@ -127,9 +147,11 @@ async def run_discover_track(
                 .where(TrackSource.track_id == track_id, TrackSource.enabled.is_(True))
             )
         ).all()
-        adapter_keys = {s.key for _, s in track_sources if s.enabled_global and not s.circuit_open}
+        allowed = set(pack.sources.adapters)
+        # A track created before pack-scoped defaults may still carry older source rows. Keep
+        # only sources this field can use, so a hospitality track never polls tech boards.
+        adapter_keys = _enabled_source_keys(track_sources, allowed)
         if not adapter_keys:
-            allowed = set(pack.sources.adapters)
             adapter_keys = {
                 s.key
                 for s in (
@@ -137,7 +159,7 @@ async def run_discover_track(
                         select(Source).where(
                             Source.enabled_global.is_(True),
                             Source.circuit_open.is_(False),
-                            Source.kind.in_(("ats", "board", "search")),
+                            Source.kind.in_(("ats", "board", "search", "career_page")),
                         )
                     )
                 ).scalars()
@@ -146,10 +168,8 @@ async def run_discover_track(
 
         boards = await _boards_for_run(ctx.session, limit=board_limit, pack=pack)
         for board in boards:
-            if board.ats not in adapter_keys and "career_jsonld" not in adapter_keys:
-                # still allow matching ATS key
-                if board.ats not in adapter_keys:
-                    continue
+            if board.ats not in adapter_keys:
+                continue
             source = (
                 await ctx.session.execute(select(Source).where(Source.key == board.ats))
             ).scalar_one_or_none()
@@ -343,6 +363,14 @@ async def run_discover_track(
         except Exception as score_exc:
             progress["score_error"] = str(score_exc)[:200]
 
+        linked_after = int(
+            (
+                await ctx.session.execute(
+                    select(func.count()).select_from(TrackJob).where(TrackJob.track_id == track_id)
+                )
+            ).scalar_one()
+        )
+        progress["linked"] = max(int(progress.get("linked") or 0), linked_after - linked_before)
         run.status = "succeeded"
         run.finished_at = datetime.now(UTC)
         run.progress = progress

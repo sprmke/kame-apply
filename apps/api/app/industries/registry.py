@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import ValidationError
+
 from app.industries.packs.extra import EXTRA_PACKS
 from app.industries.packs.general import GENERAL
 from app.industries.packs.hospitality import HOSPITALITY
@@ -27,6 +29,7 @@ _TEMPLATE_PACKS = {
     "finance": "finance",
     "sales": "sales_marketing",
     "marketing": "sales_marketing",
+    "design": "creative",
 }
 
 
@@ -36,7 +39,10 @@ def get_pack(key: str, *, custom: dict[str, Any] | None = None) -> IndustryPack 
         return _BY_KEY[key]
     if custom is None:
         return None
-    pack = IndustryPack.model_validate(custom)
+    try:
+        pack = IndustryPack.model_validate(custom)
+    except ValidationError:
+        return None
     if pack.key != key:
         return None
     return pack

@@ -169,6 +169,34 @@ async def test_members_cannot_change_fields_and_viewers_can_read(ws_env):  # noq
     assert general.status_code == 422
 
 
+async def test_switching_primary_between_two_fields(env):  # noqa: F811
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    assert (
+        await c.post("/api/v1/workspace/industries", json={"key": "hospitality"}, headers=h)
+    ).status_code == 200
+    switched = await c.put(
+        "/api/v1/workspace/industries/primary",
+        json={"key": "hospitality"},
+        headers=h,
+    )
+    assert switched.status_code == 200, switched.text
+    items = switched.json()["items"]
+    assert next(item for item in items if item["key"] == "hospitality")["is_primary"] is True
+    assert next(item for item in items if item["key"] == "technology")["is_primary"] is False
+
+    back = await c.put(
+        "/api/v1/workspace/industries/primary",
+        json={"key": "technology"},
+        headers=h,
+    )
+    assert back.status_code == 200, back.text
+    assert (await c.get("/api/v1/workspace/experience", headers=h)).json()[
+        "primary"
+    ] == "technology"
+
+
 async def test_removing_the_primary_field_moves_tracks_and_falls_back(env, seeded_templates):  # noqa: F811
     c, _ = env
     me = await signup(c)

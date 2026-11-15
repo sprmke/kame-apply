@@ -76,7 +76,11 @@ def classify_job(title: str, description: str = "") -> JobClassification:
         if pack.key == GENERAL.key:
             continue
         score = _pack_score(pack, title_l, blob)
-        if pack.key == "hospitality" and not strong_kitchen:
+        if (
+            pack.key == "hospitality"
+            and not strong_kitchen
+            and any(term in title_l for term in ("server", "host", "barista", "waiter", "waitress"))
+        ):
             # Do not turn "server engineer" or "host platform" into hospitality.
             score = min(score, 2)
         if score:

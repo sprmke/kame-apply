@@ -13,6 +13,17 @@ const busy = ref(false);
 const draft = ref<Record<string, string>>({});
 
 const facetDefs = computed(() => exp.manifest.value?.facets ?? []);
+watch(
+  facetDefs,
+  (defs) => {
+    const next = { ...draft.value };
+    for (const facet of defs) {
+      if (next[facet.key] == null) next[facet.key] = "";
+    }
+    draft.value = next;
+  },
+  { immediate: true },
+);
 const saved = computed(() => {
   const rows = (
     profile.value as unknown as { facets?: { id: string; facet_key: string; value: string }[] }
@@ -95,7 +106,7 @@ async function remove(id: string) {
         <template v-if="optionsFor(facet.key).length">
           <select
             v-model="draft[facet.key]"
-            class="min-h-11 rounded-lg border border-rule bg-paper-0 px-3 text-sm text-ink-900 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none"
+            class="min-h-11 rounded-lg border border-edge bg-paper-0 px-3 text-sm text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             :aria-label="exp.facetLabel(facet)"
           >
             <option value="">{{ t("career.addFacet") }}</option>

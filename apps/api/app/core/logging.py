@@ -33,6 +33,10 @@ def _redact(_logger: object, _method: str, event_dict: structlog.typing.EventDic
 
 
 def configure_logging(level: str = "INFO", json: bool = True) -> None:
+    # httpx logs full request URLs at INFO. Adzuna puts app_id/app_key in the query string and
+    # Jooble puts the key in the path, so those lines would leak platform credentials.
+    for noisy in ("httpx", "httpcore"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,

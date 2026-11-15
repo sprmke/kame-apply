@@ -100,7 +100,15 @@ def _profile_header_text(facts: dict[str, Any]) -> str:
 
 def _profile_blob(facts: dict[str, Any]) -> str:
     parts: list[str] = [_profile_header_text(facts)]
-    for key in ("experiences", "projects", "bullets", "skills", "education", "certifications"):
+    for key in (
+        "experiences",
+        "projects",
+        "bullets",
+        "skills",
+        "education",
+        "certifications",
+        "facets",
+    ):
         for row in facts.get(key) or []:
             if isinstance(row, dict):
                 parts.append(" ".join(str(v) for v in row.values() if v))
@@ -115,7 +123,15 @@ def _evidence_texts(facts: dict[str, Any], refs: list[str]) -> str:
     by_id: dict[str, str] = {}
     if facts.get("id"):
         by_id[str(facts["id"])] = _profile_header_text(facts)
-    for key in ("experiences", "projects", "bullets", "skills", "education", "certifications"):
+    for key in (
+        "experiences",
+        "projects",
+        "bullets",
+        "skills",
+        "education",
+        "certifications",
+        "facets",
+    ):
         for row in facts.get(key) or []:
             if isinstance(row, dict) and row.get("id"):
                 by_id[str(row["id"])] = " ".join(str(v) for v in row.values() if v)

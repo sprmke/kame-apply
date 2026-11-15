@@ -54,3 +54,11 @@ UI: `/settings/sources`, Track settings Sources toggles, Track detail **Run now*
 ## Fixtures
 
 Recorded responses under `apps/api/tests/fixtures/sources/<adapter>/` (CI never calls live boards).
+
+
+## Provider terms checked (2026-11-13)
+
+- **Jooble.** Regional REST API: `POST https://{region}.jooble.org/api/{key}`. A key is valid only for the domain that issued it, so PH and AE need their own keys (`JOOBLE_API_KEY_PH`, `JOOBLE_API_KEY_AE`). The official help center lists 100 requests per day per key on the free plan. The adapter uses the regional host and will not reuse a US key on another region.
+- **Adzuna.** `GET https://api.adzuna.com/v1/api/jobs/{country}/search/{page}` with `app_id` and `app_key`. The free tier is 25 requests/minute, 250/day, and 2,500/month. Personal job search and publishing listings are permitted with attribution; a commercial product is limited to a 14-day evaluation and needs a written licence after that. Adzuna does not cover the Philippines or the UAE, so PH/AE searches use Jooble, employer pages, and alerts.
+
+Live calls still require the operator to set `SEARCH_TERMS_ACKNOWLEDGED=true` and provider keys. A block signal disables the source; it is never retried through another identity.

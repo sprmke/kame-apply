@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncIterator, Mapping
 from pathlib import Path
+from urllib.parse import urlencode
 
 from kame_core.sources.base import AdapterMeta, RawJob, SourceHealth
 from kame_core.sources.http import fetch_json
@@ -25,8 +26,9 @@ class AdzunaSearchAdapter:
         name="Adzuna search",
         layer="search",
         terms_note=(
-            "Keyword and location search API with category tags. Free-tier quota, attribution, "
-            "and display rules must be confirmed before live use (2026-11-13)."
+            "Search API. Free tier lists 25 requests/minute, 250/day, 2,500/month; attribution "
+            "required and commercial product use needs a licence after a 14-day evaluation. "
+            "Terms checked 2026-11-13. No PH or AE market."
         ),
         countries=(
             "GB",
@@ -52,7 +54,7 @@ class AdzunaSearchAdapter:
         auth="api_key",
         rate_limit_per_minute=10,
         terms_verified=False,
-        terms_url="https://developer.adzuna.com/terms",
+        terms_url="https://developer.adzuna.com/docs/terms_of_service",
     )
 
     def __init__(
@@ -73,19 +75,21 @@ class AdzunaSearchAdapter:
         elif self._app_id and self._app_key and query.country:
             country = query.country.lower()
             page = max(1, query.page)
-            url = (
-                f"https://api.adzuna.com/v1/api/jobs/{country}/search/{page}"
-                f"?app_id={self._app_id}&app_key={self._app_key}"
-                "&results_per_page=50&content-type=application/json"
-            )
+            params = {
+                "app_id": self._app_id,
+                "app_key": self._app_key,
+                "results_per_page": 50,
+                "content-type": "application/json",
+            }
             if query.keywords:
-                url += f"&what={query.keywords}"
+                params["what"] = query.keywords
             if query.location:
-                url += f"&where={query.location}"
+                params["where"] = query.location
             if query.category:
-                url += f"&category={query.category}"
+                params["category"] = query.category
             if query.posted_within_days:
-                url += f"&max_days_old={query.posted_within_days}"
+                params["max_days_old"] = query.posted_within_days
+            url = f"https://api.adzuna.com/v1/api/jobs/{country}/search/{page}?{urlencode(params)}"
             data, _, _ = await fetch_json(url)
         else:
             return

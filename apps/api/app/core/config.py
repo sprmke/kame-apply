@@ -87,10 +87,14 @@ class Settings(BaseSettings):
     # A human must confirm each search provider's terms before live calls. Fixtures are exempt.
     search_terms_acknowledged: bool = False
     jooble_api_key: str | None = None
+    jooble_api_key_ph: str | None = None
+    jooble_api_key_ae: str | None = None
     adzuna_app_id: str | None = None
     adzuna_app_key: str | None = None
     source_query_ttl_hours: int = Field(default=6, ge=1, le=168)
     search_queries_per_track: int = Field(default=6, ge=1, le=24)
+    # Manual "Run now" is capped per workspace so a member cannot drain a shared provider quota.
+    manual_discovery_daily_cap: int = Field(default=6, ge=1, le=50)
     vapid_public_key: str | None = None
     vapid_private_key: str | None = None
     vapid_subject: str = "mailto:ops@kameapply.local"
