@@ -30,7 +30,8 @@ The init SQL runs only on a **fresh volume**. If the volume predates a change to
 - The test suite uses the `kame_apply_test` database and runs `downgrade base` then `upgrade head` at session start, so the downgrade path is exercised on every run.
 - **Migration 0040 (industry packs, IND-1).** Adds `workspace_industries` (RLS, one primary per workspace) and `tracks.industry` / `industry_version`. Backfill: every live workspace gets `technology` as primary; tracks built from a technology template stay `technology`, tracks from any other template move to `general` until that curated pack ships. The backfill is idempotent (`ON CONFLICT DO NOTHING`). See [`industries.md`](./industries.md).
 - **Migration 0041 (multi-industry discovery, IND-4/5/6).** Adds `companies.industries`, `company_boards.industries`, `jobs.industry_hints`, `jobs.occupation_code`, `jobs.facets`, `profile_certifications.credential_key`, `source_coverage`, `source_query_cache`, and tenant table `profile_facets` (RLS). Extends `ck_sources_kind` with `search`. Backfills existing companies, boards, and jobs to `technology`. Seed coverage rows for Technology, Hospitality PH/AE, and the new search providers. Existing portfolio documents are untouched; new image uploads are allowed only for `kind=portfolio`.
-- **Migration chain.** `0039` is included from the UX branch so `0040` and `0041` form one head.
+- **Migration 0042 (tenant grant hardening, security pass).** Revokes read-only role access from `workspace_industries` and `profile_facets`; scrubs provider keys from existing `sources.last_error` values.
+- **Migration chain.** `0039` is included from the UX branch so `0040`, `0041`, and `0042` form one head.
 - Taxonomy seed (curated occupations/skills + 40+ Track templates + FX fallback): `pnpm run db:seed` (`scripts/taxonomy/refresh.py --seed --fx`). Full ESCO/O*NET dumps: same script with `--esco-dir` / `--onet-dir` (owner DB role). See [`criteria-and-taxonomy.md`](./criteria-and-taxonomy.md).
 - Prod migrations and deploys require the unlock word (`no-prod-deploy.mdc`).
 
@@ -99,7 +100,7 @@ Prod deploys and remote migrations require the unlock word in the same command (
 
 Migrations 0003 to 0006 add auth tables, invitations, AI tables, workspace limits and OAuth identities. Migration 0008 adds career profile tables; 0009 adds `documents`; 0010 adds `answer_bank`; 0011 adds `voice_profiles`; 0012 adds `profile_proposals`. They are additive; no backfill.
 
-Migration `0042` adds `setup_drafts` (setup from a resume): workspace-scoped, forced RLS, a partial unique index for one open draft per profile, and a retention schedule. Its `down_revision` is `0039`. The multi-industry work uses `0040` and `0041`; if that lands first, re-point `down_revision` at `0041` in the same change that resolves the merge so the graph keeps one head. Retention runs from the scheduler loop (`expire_setups` every tick, `clear_setup_content` daily at 03:00 UTC); no backfill. See [`setup.md`](./setup.md).
+Migration `0043` adds `setup_drafts` (setup from a resume): workspace-scoped, forced RLS, a partial unique index for one open draft per profile, and a retention schedule. Its `down_revision` is `0042`, after the industry packs (`0040`, `0041`) and the tenant grant hardening (`0042`), so the graph keeps one head. Retention runs from the scheduler loop (`expire_setups` every tick, `clear_setup_content` daily at 03:00 UTC); no backfill. See [`setup.md`](./setup.md).
 
 ### Data lifecycle (Phase 14)
 

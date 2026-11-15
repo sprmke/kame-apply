@@ -34,6 +34,8 @@ The candidate's single source of truth. Every later AI output cites facts stored
 
 Upload limits: PDF / DOCX / TXT / MD / JSON, max 10 MB. Workspace `max_storage_mb` is enforced on upload. ClamAV is a no-op stub until the worker lands; Tesseract is not required yet (empty PDF text layer sets `needs_ocr`).
 
+`profile_extract` v2 receives the workspace pack brief. On confirm it also runs the deterministic field classifier over the resume text and writes matching cuisine, kitchen type, and station values as `profile_facets(source=parsed)` when the option exists in an enabled pack.
+
 Portfolio images: `kind=portfolio` accepts JPG, PNG, and WebP up to 10 MB. The upload pipeline re-encodes the image to strip EXIF, GPS, and text chunks before storing it in R2. EXIF is never persisted or logged.
 
 ### Answer bank (migration 0010)
@@ -77,7 +79,7 @@ One `voice_profiles` row per profile. Pasted writing samples live in `samples` J
 
 ## Parse and confirm
 
-1. `POST .../documents/{id}/parse` runs `run_structured` with prompt `profile_extract.v1` (tool-less). Resume text is wrapped in `<<<UNTRUSTED_RESUME_TEXT>>>` delimiters. Output is validated as `ProfileExtract`, scrubbed again for sensitive numbers and injection phrases, then stored in `documents.parsed`. Long text is truncated at 60k characters with a warning. Requires a ready document, non-empty extract, an AI credential, and no prior confirm.
+1. `POST .../documents/{id}/parse` runs `run_structured` with prompt `profile_extract.v2` (tool-less). Resume text is wrapped in `<<<UNTRUSTED_RESUME_TEXT>>>` delimiters. Output is validated as `ProfileExtract`, scrubbed again for sensitive numbers and injection phrases, then stored in `documents.parsed`. Long text is truncated at 60k characters with a warning. Requires a ready document, non-empty extract, an AI credential, and no prior confirm.
 2. Review UI (slice 8) edits the draft client-side. Low-confidence paths (`confidence < 0.6`) are listed in `parse_quality.low_confidence_paths`.
 3. `POST .../documents/{id}/confirm` applies the draft when the profile has **no** section facts yet. If the profile already has facts, confirm returns `409 merge_required`.
 4. **Merge (second resume):** `GET .../documents/{id}/merge` previews matches, field conflicts, additions, and header conflicts. Matching is deterministic (normalized org/title, fuzzy similarity, date overlap; org containment for short vs long names). Blank fields auto-fill; differing values become conflicts. `POST .../documents/{id}/merge` applies resolutions (`keep_existing` | `take_incoming` | `merge` with per-field actions), addition add/skip, and bullet add/skip, then marks the document confirmed (`parse_quality.merged`).

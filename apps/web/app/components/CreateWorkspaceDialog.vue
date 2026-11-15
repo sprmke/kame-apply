@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import {
+  addCustomPackApiV1WorkspaceIndustriesCustomPost,
   addWorkspaceIndustryApiV1WorkspaceIndustriesPost,
   createSetupApiV1OnboardingSetupsPost,
   createWorkspaceApiV1WorkspacesPost,
+  draftPackApiV1IndustriesDraftPost,
   listIndustriesApiV1IndustriesGet,
   listWorkspaceIndustriesApiV1WorkspaceIndustriesGet,
   removeWorkspaceIndustryApiV1WorkspaceIndustriesKeyDelete,
   uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
+  type CustomPackDraftRead,
   type IndustrySummary,
 } from "@kame/api-client";
 import { FnButton, FnDialog, FnField, FnInput, FnSkeleton, useToast } from "@kame/ui";
@@ -31,6 +34,12 @@ const selected = ref<string[]>([]);
 const primary = ref<string | null>(null);
 const busy = ref(false);
 const error = ref<string | null>(null);
+const elseText = ref("");
+const elseBusy = ref(false);
+const elseError = ref<string | null>(null);
+const elseStatus = ref<string | null>(null);
+const customPacks = ref<Record<string, CustomPackDraftRead>>({});
+const customDescriptions = ref<Record<string, string>>({});
 
 const industries = useQuery({
   queryKey: ["industries"],
@@ -40,7 +49,20 @@ const industries = useQuery({
   },
   enabled: computed(() => open.value),
 });
-const options = computed(() => industries.data.value ?? []);
+const customSummaries = computed<IndustrySummary[]>(() =>
+  Object.values(customPacks.value).map(
+    (draft) =>
+      ({
+        key: draft.key,
+        label_key: draft.pack.label_key,
+        label: draft.pack.display_name || draft.key,
+        icon: draft.pack.icon,
+        role_families: [],
+        draft: true,
+      }) as unknown as IndustrySummary & { draft: boolean },
+  ),
+);
+const options = computed(() => [...customSummaries.value, ...(industries.data.value ?? [])]);
 
 watch(open, (o) => {
   if (o) {
@@ -50,8 +72,48 @@ watch(open, (o) => {
     selected.value = [];
     primary.value = null;
     error.value = null;
+    elseText.value = "";
+    elseError.value = null;
+    elseStatus.value = null;
+    customPacks.value = {};
+    customDescriptions.value = {};
   }
 });
+
+async function draftElse() {
+  if (!elseText.value.trim()) {
+    elseError.value = t("workspace.somethingElseRequired");
+    return;
+  }
+  elseBusy.value = true;
+  elseError.value = null;
+  elseStatus.value = null;
+  try {
+    const { data } = await draftPackApiV1IndustriesDraftPost({
+      body: { description: elseText.value.trim() },
+      throwOnError: true,
+    });
+    if (!data) return;
+    customPacks.value = { ...customPacks.value, [data.key]: data };
+    customDescriptions.value = {
+      ...customDescriptions.value,
+      [data.key]: elseText.value.trim(),
+    };
+    if (selected.value.includes(data.key)) {
+      elseStatus.value = t("workspace.draftReady");
+    } else if (selected.value.length >= 2) {
+      elseError.value = t("workspace.limitTwo");
+    } else {
+      selected.value = [...selected.value, data.key];
+      if (!primary.value) primary.value = data.key;
+      elseStatus.value = t("workspace.draftReady");
+    }
+  } catch (e) {
+    elseError.value = apiError(e);
+  } finally {
+    elseBusy.value = false;
+  }
+}
 
 function next() {
   if (!name.value.trim()) {
@@ -72,6 +134,11 @@ function onFile(event: Event) {
 }
 
 async function submit() {
+  if (!name.value.trim()) {
+    error.value = t("validation.required");
+    step.value = 0;
+    return;
+  }
   busy.value = true;
   error.value = null;
   try {
@@ -90,10 +157,23 @@ async function submit() {
       }).catch(() => null);
     }
     for (const [index, key] of chosen.entries()) {
-      await addWorkspaceIndustryApiV1WorkspaceIndustriesPost({
-        body: { key, is_primary: index === 0 },
-        throwOnError: true,
-      });
+      const custom = customPacks.value[key];
+      if (custom) {
+        await addCustomPackApiV1WorkspaceIndustriesCustomPost({
+          body: {
+            key,
+            description: customDescriptions.value[key] ?? elseText.value.trim(),
+            base_pack: custom.base_pack,
+            is_primary: index === 0,
+          },
+          throwOnError: true,
+        });
+      } else {
+        await addWorkspaceIndustryApiV1WorkspaceIndustriesPost({
+          body: { key, is_primary: index === 0 },
+          throwOnError: true,
+        });
+      }
     }
     await exp.refresh();
     open.value = false;
@@ -179,6 +259,28 @@ async function submit() {
           <p v-if="selected.length >= 2" class="text-xs text-ink-600">
             {{ t("workspace.limitTwo") }}
           </p>
+          <FnField :label="t('workspace.somethingElse')" :error="elseError">
+            <template #default="{ id, describedby, invalid }">
+              <FnInput
+                :id="id"
+                v-model="elseText"
+                :aria-describedby="describedby"
+                :aria-invalid="invalid"
+                :placeholder="t('workspace.somethingElsePlaceholder')"
+                maxlength="600"
+                @keydown.enter.prevent="draftElse"
+              />
+              <FnButton
+                class="self-start"
+                size="sm"
+                tone="quiet"
+                :loading="elseBusy"
+                @click="draftElse"
+                >{{ t("workspace.draftField") }}</FnButton
+              >
+            </template>
+          </FnField>
+          <p v-if="elseStatus" role="status" class="text-xs text-ink-600">{{ elseStatus }}</p>
         </div>
         <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
         <div class="flex flex-wrap justify-between gap-2">

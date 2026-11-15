@@ -256,7 +256,7 @@ CUSTOMER_SERVICE = _pack(
         ("retail", ("Retail associate", "Cashier", "Store supervisor")),
         ("contact_center", ("Customer service agent", "Technical support agent", "Team lead")),
     ),
-    states=_states(shifts="visible"),
+    states=_states(shifts="visible", remote_eligibility="visible"),
     brief=(
         "Customer service and retail. Evidence: channel, volume, escalation handling, languages, "
         "sales or quality metrics, and shift availability. Never invent a metric."
@@ -340,7 +340,7 @@ FINANCE = _pack(
         ("acca", ("acca",)),
         ("cfa", ("cfa", "chartered financial analyst")),
     ),
-    states=_states(),
+    states=_states(remote_eligibility="collapsed"),
     brief=(
         "Finance and accounting. Evidence: close cycle, systems, audit scope, portfolio size, and "
         "certifications. Never invent a number, client, or certification."
@@ -367,7 +367,7 @@ ADMIN = _pack(
         ("office", ("Administrative assistant", "Executive assistant", "Office manager")),
         ("virtual", ("Virtual assistant", "Data entry specialist", "Customer support assistant")),
     ),
-    states=_states(),
+    states=_states(remote_eligibility="visible", shifts="collapsed"),
     brief=(
         "Admin and virtual assistance. Evidence: tools, calendar and inbox volume, languages, "
         "response time, and confidentiality. Never invent a client or a volume."
@@ -400,7 +400,7 @@ SALES_MARKETING = _pack(
             ("Marketing manager", "Content marketer", "Growth marketer", "SEO specialist"),
         ),
     ),
-    states=_states(),
+    states=_states(remote_eligibility="visible"),
     brief=(
         "Sales and marketing. Evidence: quota, pipeline, campaign results, channels, audience, "
         "and tools. Never invent revenue or campaign numbers."
@@ -429,7 +429,7 @@ CREATIVE = _pack(
         ("design", ("Product designer", "Graphic designer", "UX designer", "Illustrator")),
         ("content", ("Photographer", "Video editor", "Content creator")),
     ),
-    states=_states(),
+    states=_states(remote_eligibility="visible"),
     brief=(
         "Creative roles. Evidence: portfolio pieces, tools, audience, and outcomes. Never claim "
         "a project you cannot show or describe."

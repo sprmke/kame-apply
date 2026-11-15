@@ -56,6 +56,7 @@ async def build_export(ctx: WorkspaceContext) -> dict[str, Any]:
         "profile_bullets",
         "profile_education",
         "profile_certifications",
+        "profile_facets",
         "profile_languages",
         "profile_skills",
         "answer_bank",

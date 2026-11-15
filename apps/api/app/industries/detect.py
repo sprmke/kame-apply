@@ -66,7 +66,10 @@ def draft_custom_pack(description: str, *, base_pack: str | None = None) -> dict
     import hashlib
 
     from app.industries.schema import IndustryPack
+    from app.profiles.sanitize import sanitize_untrusted_text
 
+    cleaned = sanitize_untrusted_text(description).text.strip() or "Custom field"
+    description = cleaned
     detection = detect_industry(description)
     key = base_pack or detection.pack_key or GENERAL.key
     base = get_pack(key) or GENERAL
@@ -82,6 +85,7 @@ def draft_custom_pack(description: str, *, base_pack: str | None = None) -> dict
         "key": custom_key,
         "version": 1,
         "label_key": f"industry.{custom_key}.label",
+        "display_name": description.strip()[:80],
         "icon": base.icon,
         "detection": base.detection.model_dump(),
         "role_families": [

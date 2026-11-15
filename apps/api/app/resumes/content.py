@@ -44,6 +44,7 @@ class ResumeSection(BaseModel):
         "education",
         "skills",
         "certifications",
+        "facets",
         "languages",
         "custom",
     ]

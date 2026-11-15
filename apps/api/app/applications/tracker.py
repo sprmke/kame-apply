@@ -205,7 +205,7 @@ async def list_applications(
     for app, job in rows:
         dup = False
         if job:
-            other = await check_duplicate(ctx, job_id=job.id, exclude_app_id=[redacted]
+            other = await check_duplicate(ctx, job_id=job.id, exclude_app_id=app.id)
             dup = other is not None
         items.append(_app_dict(app, job=job, duplicate_warning=dup))
     return {"total": total, "items": items, "limit": limit, "offset": offset}
@@ -241,7 +241,7 @@ async def get_application_detail(ctx: WorkspaceContext, app_id: uuid.UUID) -> di
     )
     dup = False
     if job:
-        other = await check_duplicate(ctx, job_id=job.id, exclude_app_id=[redacted]
+        other = await check_duplicate(ctx, job_id=job.id, exclude_app_id=app.id)
         dup = other is not None
     out = _app_dict(app, job=job, events=events, reminders=reminders, duplicate_warning=dup)
     if job:

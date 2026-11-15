@@ -294,6 +294,7 @@ class IndustryPack(BaseModel):
     key: str
     version: int = Field(default=1, ge=1)
     label_key: str
+    display_name: str = Field(default="", max_length=80)
     icon: str = "ph:briefcase"
     detection: Detection = Field(default_factory=Detection)
     role_families: tuple[RoleFamily, ...] = ()

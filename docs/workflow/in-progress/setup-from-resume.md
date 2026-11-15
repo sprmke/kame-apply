@@ -748,7 +748,7 @@ Exit: tests for B1 to B5 green; `/start` saves every value it shows; `ci:quality
 
 ### S1. Data model and contracts
 
-- [x] Migration `0042_setup_drafts` with RLS, forced policy, constraints, indexes; record it in `docs/architecture/deployment.md`. (Number 0042, not 0040: 0040 and 0041 belong to the multi-industry work; the deployment note explains the merge.)
+- [x] Migration `0043_setup_drafts` with RLS, forced policy, constraints, indexes; record it in `docs/architecture/deployment.md`. (Number 0043: 0040 and 0041 belong to the multi-industry work and 0042 is the tenant grant hardening; the deployment note explains the chain.)
 - [x] `SetupDraft` model; `SetupBundle`, `SetupItem`, `SearchProposal`, `EvidenceRef`, `SetupDecisions`, `ApplyResult` schemas; target registry with per-target validation.
 - [x] Cross-tenant tests; route coverage is automatic for new routes; export includes `setup_drafts`.
 - [x] Retention job (clear content after 30 days, expire after 14) on the scheduler loop.
@@ -935,7 +935,7 @@ Pass: each run without docs, no question about what a word means, timings within
 | Slice | Status | Evidence |
 | --- | --- | --- |
 | S0 | Done | B1 to B5 fixed with tests: `test_profiles.py::test_skills_are_stored_with_canonical_names`, `test_onboarding_plan.py::test_country_from_location_is_a_hint_only`, `test_phase18_strategy.py::test_open_to_work_*`, `apps/web/tests/setup.test.ts` (11 cases). `vue-tsc`, Vitest, and the touched pytest files pass. Route guides `start.md` and `tracks/be-found.md` updated. |
-| S1 | Done | Migration `0042`, `SetupDraft` model, bundle contracts, target registry, retention jobs in the scheduler loop, export. `test_setup_drafts.py` (32 cases: RLS, one-open-draft, expiry, retention, contracts, targets). |
+| S1 | Done | Migration `0043`, `SetupDraft` model, bundle contracts, target registry, retention jobs in the scheduler loop, export. `test_setup_drafts.py` (32 cases: RLS, one-open-draft, expiry, retention, contracts, targets). |
 | S2 | Done | `setup_service.py` + `pipeline.py` + routes; upload hardening; sensitive-line filter. `test_setup_pipeline.py` (12), `test_sensitive_lines.py` (9), `test_upload_hardening.py` (4). Deviations: `POST /setups` takes JSON (`document_id` from the existing upload endpoint, or `text`) instead of multipart; no DBOS wrapper. |
 | S3 | Done | Derivers, grounding, `setup_signals.v1`, `search_plan.v2`, bundle assembly. Tests: `test_setup_derive_*` (95), `test_setup_grounding.py` (11), `test_setup_searches.py` (17), `test_setup_ai_path.py`, `evals/test_setup_signals_eval.py` (16). |
 | S4 | Done | Decisions, validate, apply, revert, seen, provenance; update-mode annotations; after-commit gap refresh and first run. Tests: `test_setup_apply.py` (7: idempotency, stale, rollback, no network, revert, RBAC). Deviation: merge-preview sheet deferred; no silent overwrite. |

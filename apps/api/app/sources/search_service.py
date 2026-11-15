@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -20,9 +21,8 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.core.config import Settings
 from app.core.security import WorkspaceContext
-from app.industries.packs.general import GENERAL
-from app.industries.registry import get_pack
 from app.industries.schema import IndustryPack
+from app.industries.service import pack_for_track
 from app.jobs.ingest import upsert_raw_job
 from app.jobs.link import link_track_job
 from app.jobs.models import DiscoveryRun
@@ -32,6 +32,24 @@ from app.tracks.models import Track, TrackCriteria
 from kame_core.sources import get_adapter, list_adapters
 from kame_core.sources.base import AdapterMeta, RawJob
 from kame_core.sources.http import BlockSignalError
+
+_SECRET_PARAM = re.compile(r"(?i)(app_key|app_id|api_key|key)=([^&\s]+)")
+
+
+def _safe_error(exc: Exception) -> str:
+    """Store a provider failure without URLs, query strings, or API keys."""
+    name = type(exc).__name__
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    request = getattr(exc, "request", None)
+    url = getattr(request, "url", None)
+    host = getattr(url, "host", None)
+    detail = f"{name}"
+    if status is not None:
+        detail += f" status={status}"
+    if host:
+        detail += f" host={host}"
+    return _SECRET_PARAM.sub(r"\1=***", detail)[:500]
 
 
 def _hash(query: dict[str, Any]) -> str:
@@ -123,9 +141,15 @@ def _adapter_keys(pack: IndustryPack) -> list[str]:
     return [key for key in keys if key in available]
 
 
+def _supports_country(meta: AdapterMeta, country: str) -> bool:
+    return not country or not meta.countries or country.upper() in meta.countries
+
+
 def _configured(meta: AdapterMeta, settings: Settings) -> bool:
     if meta.key == "search_jooble":
-        has_key = bool(settings.jooble_api_key)
+        has_key = bool(
+            settings.jooble_api_key or settings.jooble_api_key_ph or settings.jooble_api_key_ae
+        )
     elif meta.key == "search_adzuna":
         has_key = bool(settings.adzuna_app_id and settings.adzuna_app_key)
     else:
@@ -141,6 +165,10 @@ def _adapter_kwargs(meta: AdapterMeta, settings: Settings, fixture_root: Path | 
         kwargs["fixture_dir"] = fixture_root / meta.key
     if meta.key == "search_jooble":
         kwargs["api_key"] = settings.jooble_api_key
+        kwargs["api_keys"] = {
+            "PH": settings.jooble_api_key_ph,
+            "AE": settings.jooble_api_key_ae,
+        }
     elif meta.key == "search_adzuna":
         kwargs["app_id"] = settings.adzuna_app_id
         kwargs["app_key"] = settings.adzuna_app_key
@@ -153,6 +181,11 @@ def _raw_to_payload(raw: RawJob) -> dict[str, Any]:
         value = data.get(key)
         if isinstance(value, datetime):
             data[key] = value.isoformat()
+    # The cache is global; keep one row bounded so a verbose feed cannot store megabytes per query.
+    for key in ("description_html", "description_text"):
+        value = data.get(key)
+        if isinstance(value, str) and len(value) > 20_000:
+            data[key] = value[:20_000]
     return data
 
 
@@ -179,11 +212,11 @@ async def _cached(
             )
         )
     ).scalar_one_or_none()
-    if row is None or not row.payload:
+    if row is None:
         return None
     if row.expires_at is not None and row.expires_at <= now:
         return None
-    return list(row.payload)
+    return list(row.payload or [])
 
 
 async def _store_cache(
@@ -231,7 +264,7 @@ async def run_search_sources(
         await ctx.session.execute(select(TrackCriteria).where(TrackCriteria.track_id == track.id))
     ).scalar_one_or_none()
     criteria = criteria_from_dict(crit.structured if crit else {})
-    pack = get_pack(track.industry) or GENERAL
+    pack = await pack_for_track(ctx.session, workspace_id=ctx.workspace_id, industry=track.industry)
     queries = plan_queries(track, criteria, pack, limit=settings.search_queries_per_track)
     if not queries:
         return
@@ -247,6 +280,8 @@ async def run_search_sources(
             continue
         kwargs = _adapter_kwargs(meta, settings, fixture_root)
         for query in queries:
+            if not _supports_country(meta, str(query.get("country") or "")):
+                continue
             qhash = _hash(query)
             payload = await _cached(ctx.session, key, qhash, now)
             if payload is None:
@@ -270,12 +305,12 @@ async def run_search_sources(
                 except BlockSignalError as exc:
                     source.circuit_open = True
                     source.block_signals = (source.block_signals or 0) + 1
-                    source.last_error = str(exc)[:500]
+                    source.last_error = _safe_error(exc)
                     source.last_error_at = now
                     progress["search_blocked"] = int(progress.get("search_blocked") or 0) + 1
                     break
                 except Exception as exc:
-                    source.last_error = str(exc)[:500]
+                    source.last_error = _safe_error(exc)
                     source.last_error_at = now
                     source.error_count = (source.error_count or 0) + 1
                     progress["search_errors"] = int(progress.get("search_errors") or 0) + 1

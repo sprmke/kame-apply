@@ -13,6 +13,7 @@ from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
+from app.industries import service as industries_service
 from app.jobs.models import DiscoveryRun, Job, TrackJob
 from app.sources.discover import run_discover_track
 from app.sources.models import Source, TrackSource
@@ -43,15 +44,21 @@ async def list_track_sources(ctx: WorkspaceContext, track_id: uuid.UUID) -> list
         )
     ).all()
     if not rows:
-        # Default: enable all global ATS+board sources
-        sources = (
-            await ctx.session.execute(
-                select(Source).where(
-                    Source.enabled_global.is_(True), Source.kind.in_(("ats", "board", "search"))
-                )
-            )
-        ).scalars()
+        # Default: enable only sources this field's pack can use.
+        pack = await industries_service.pack_for_track(
+            ctx.session, workspace_id=ctx.workspace_id, industry=track.industry
+        )
+        allowed = set(pack.sources.adapters)
+        q = select(Source).where(
+            Source.enabled_global.is_(True),
+            Source.kind.in_(("ats", "board", "search", "career_page")),
+        )
+        if allowed:
+            q = q.where(Source.key.in_(allowed))
+        sources = (await ctx.session.execute(q)).scalars()
+        created = 0
         for src in sources:
+            created += 1
             ctx.session.add(
                 TrackSource(
                     workspace_id=ctx.workspace_id,
@@ -62,6 +69,13 @@ async def list_track_sources(ctx: WorkspaceContext, track_id: uuid.UUID) -> list
                 )
             )
         await ctx.session.flush()
+        await audit.record(
+            ctx,
+            action="track_source.defaulted",
+            target_type="track",
+            target_id=str(track_id),
+            after={"count": created},
+        )
         rows = (
             await ctx.session.execute(
                 select(TrackSource, Source)
@@ -133,6 +147,7 @@ async def start_discovery(
 
     from sqlalchemy import func, select
 
+    from app.core.config import get_settings
     from app.schedules.cron import day_start_utc
     from app.schedules.models import Schedule
 
@@ -175,6 +190,23 @@ async def start_discovery(
             ).scalar_one()
         )
         if used >= cap:
+            raise AppError("rate_limited", "Daily run cap reached", 429)
+    else:
+        start = day_start_utc(now, "UTC")
+        used_manual = int(
+            (
+                await ctx.session.execute(
+                    select(func.count())
+                    .select_from(DiscoveryRun)
+                    .where(
+                        DiscoveryRun.workspace_id == ctx.workspace_id,
+                        DiscoveryRun.created_at >= start,
+                        DiscoveryRun.trigger == "run_now",
+                    )
+                )
+            ).scalar_one()
+        )
+        if used_manual >= get_settings().manual_discovery_daily_cap:
             raise AppError("rate_limited", "Daily run cap reached", 429)
 
     run = DiscoveryRun(

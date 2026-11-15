@@ -22,6 +22,9 @@ async def test_profile_facets_create_list_delete_and_full_profile(env):  # noqa:
     c, _ = env
     me = await signup(c)
     h = me.h(me.personal)
+    assert (
+        await c.post("/api/v1/workspace/industries", json={"key": "hospitality"}, headers=h)
+    ).status_code == 200
     profile_id = await _profile(c, me)
     base = f"/api/v1/profiles/{profile_id}"
 
@@ -53,10 +56,31 @@ async def test_profile_facets_create_list_delete_and_full_profile(env):  # noqa:
     assert (await c.get(base + "/facets", headers=h)).json() == []
 
 
+async def test_profile_facets_must_match_an_enabled_field(env):  # noqa: F811
+    c, _ = env
+    me = await signup(c)
+    h = me.h(me.personal)
+    profile_id = await _profile(c, me)
+    base = f"/api/v1/profiles/{profile_id}/facets"
+
+    # The default Technology workspace has no cuisine facet.
+    rejected = await c.post(base, json={"facet_key": "cuisine", "value": "filipino"}, headers=h)
+    assert rejected.status_code == 422
+
+    assert (
+        await c.post("/api/v1/workspace/industries", json={"key": "hospitality"}, headers=h)
+    ).status_code == 200
+    unknown = await c.post(base, json={"facet_key": "cuisine", "value": "not-a-cuisine"}, headers=h)
+    assert unknown.status_code == 422
+
+
 async def test_profile_facets_are_tenant_isolated(env, tenancy):  # noqa: F811
     c, _ = env
     me = await signup(c)
     h = me.h(me.personal)
+    assert (
+        await c.post("/api/v1/workspace/industries", json={"key": "hospitality"}, headers=h)
+    ).status_code == 200
     profile_id = await _profile(c, me)
     created = await c.post(
         f"/api/v1/profiles/{profile_id}/facets",

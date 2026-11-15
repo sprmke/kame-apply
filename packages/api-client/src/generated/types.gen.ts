@@ -161,6 +161,28 @@ export type AiSettingsUpdate = {
 };
 
 /**
+ * AlertGuideRead
+ */
+export type AlertGuideRead = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Note
+     */
+    note: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Url
+     */
+    url: string;
+};
+
+/**
  * AnomalyStatusRead
  */
 export type AnomalyStatusRead = {
@@ -1295,6 +1317,10 @@ export type CanonicalKeyRead = {
      * Label
      */
     label: string;
+    /**
+     * Packs
+     */
+    packs?: Array<string>;
 };
 
 /**
@@ -1354,6 +1380,10 @@ export type CertificationIn = {
      */
     confidential?: boolean;
     /**
+     * Credential Key
+     */
+    credential_key?: string | null;
+    /**
      * Do Not Use
      */
     do_not_use?: boolean;
@@ -1399,6 +1429,10 @@ export type CertificationPatch = {
      * Confidential
      */
     confidential?: boolean | null;
+    /**
+     * Credential Key
+     */
+    credential_key?: string | null;
     /**
      * Do Not Use
      */
@@ -1449,6 +1483,10 @@ export type CertificationRead = {
      * Created At
      */
     created_at: string;
+    /**
+     * Credential Key
+     */
+    credential_key?: string | null;
     /**
      * Do Not Use
      */
@@ -2040,6 +2078,50 @@ export type ContactsParseRead = {
 };
 
 /**
+ * CoverageRead
+ */
+export type CoverageRead = {
+    /**
+     * Country
+     */
+    country: string;
+    /**
+     * Industry
+     */
+    industry: string;
+    /**
+     * Level
+     */
+    level: string;
+    /**
+     * Note
+     */
+    note: string;
+    /**
+     * Sources
+     */
+    sources: Array<CoverageSourceRead>;
+};
+
+/**
+ * CoverageSourceRead
+ */
+export type CoverageSourceRead = {
+    /**
+     * Coverage
+     */
+    coverage: string;
+    /**
+     * Note
+     */
+    note: string;
+    /**
+     * Source Key
+     */
+    source_key: string;
+};
+
+/**
  * CredentialCreate
  */
 export type CredentialCreate = {
@@ -2194,16 +2276,6 @@ export type CriteriaPlanPreview = {
 };
 
 /**
- * CriteriaPlanRequest
- */
-export type CriteriaPlanRequest = {
-    /**
-     * Text
-     */
-    text: string;
-};
-
-/**
  * CriteriaPut
  */
 export type CriteriaPut = {
@@ -2247,7 +2319,13 @@ export type CriteriaV1 = {
     /**
      * Employment Types
      */
-    employment_types?: Array<'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship' | 'temporary'>;
+    employment_types?: Array<'full_time' | 'part_time' | 'contract' | 'freelance' | 'internship' | 'temporary' | 'casual' | 'seasonal'>;
+    /**
+     * Facets
+     */
+    facets?: {
+        [key: string]: Array<string> | boolean | number;
+    };
     keywords?: KeywordFilter;
     /**
      * Languages
@@ -2283,6 +2361,10 @@ export type CriteriaV1 = {
      * Seniority
      */
     seniority?: Array<'intern' | 'junior' | 'mid' | 'senior' | 'staff' | 'principal' | 'lead' | 'manager' | 'director' | 'executive'>;
+    /**
+     * Shifts
+     */
+    shifts?: Array<'morning' | 'afternoon' | 'evening' | 'night' | 'weekend' | 'split' | 'rotating'>;
     skills?: SkillSets;
     /**
      * Titles
@@ -2328,6 +2410,66 @@ export type CritiqueRead = {
      * Top Fixes
      */
     top_fixes?: Array<unknown>;
+};
+
+/**
+ * CustomPackAcceptIn
+ */
+export type CustomPackAcceptIn = {
+    /**
+     * Base Pack
+     */
+    base_pack?: string | null;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Is Primary
+     */
+    is_primary?: boolean;
+    /**
+     * Key
+     */
+    key: string;
+};
+
+/**
+ * CustomPackDraftIn
+ */
+export type CustomPackDraftIn = {
+    /**
+     * Base Pack
+     */
+    base_pack?: string | null;
+    /**
+     * Description
+     */
+    description: string;
+};
+
+/**
+ * CustomPackDraftRead
+ */
+export type CustomPackDraftRead = {
+    /**
+     * Base Pack
+     */
+    base_pack: string;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Pack
+     */
+    pack: {
+        [key: string]: unknown;
+    };
+    /**
+     * Role Family
+     */
+    role_family: string | null;
 };
 
 /**
@@ -3251,6 +3393,112 @@ export type ExtractedField = {
 };
 
 /**
+ * FacetIn
+ */
+export type FacetIn = {
+    /**
+     * Confidential
+     */
+    confidential?: boolean;
+    /**
+     * Do Not Use
+     */
+    do_not_use?: boolean;
+    /**
+     * Facet Key
+     */
+    facet_key: string;
+    /**
+     * Sort Order
+     */
+    sort_order?: number;
+    /**
+     * Source
+     */
+    source?: 'parsed' | 'interview' | 'user';
+    /**
+     * Value
+     */
+    value: string;
+};
+
+/**
+ * FacetPatch
+ */
+export type FacetPatch = {
+    /**
+     * Confidential
+     */
+    confidential?: boolean | null;
+    /**
+     * Do Not Use
+     */
+    do_not_use?: boolean | null;
+    /**
+     * Facet Key
+     */
+    facet_key?: string | null;
+    /**
+     * Sort Order
+     */
+    sort_order?: number | null;
+    /**
+     * Source
+     */
+    source?: 'parsed' | 'interview' | 'user' | null;
+    /**
+     * Value
+     */
+    value?: string | null;
+};
+
+/**
+ * FacetRead
+ */
+export type FacetRead = {
+    /**
+     * Confidential
+     */
+    confidential?: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Do Not Use
+     */
+    do_not_use?: boolean;
+    /**
+     * Facet Key
+     */
+    facet_key: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Profile Id
+     */
+    profile_id: string;
+    /**
+     * Sort Order
+     */
+    sort_order?: number;
+    /**
+     * Source
+     */
+    source?: 'parsed' | 'interview' | 'user';
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Value
+     */
+    value: string;
+};
+
+/**
  * FeedbackCreate
  */
 export type FeedbackCreate = {
@@ -3706,6 +3954,128 @@ export type InboxStatus = {
      * Waiting
      */
     waiting: number;
+};
+
+/**
+ * IndustryAdd
+ */
+export type IndustryAdd = {
+    /**
+     * Is Primary
+     */
+    is_primary?: boolean;
+    /**
+     * Key
+     */
+    key: string;
+};
+
+/**
+ * IndustryDetectIn
+ */
+export type IndustryDetectIn = {
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * IndustryDetectRead
+ */
+export type IndustryDetectRead = {
+    /**
+     * Confidence
+     */
+    confidence: number;
+    /**
+     * Pack Key
+     */
+    pack_key: string;
+    /**
+     * Reasons
+     */
+    reasons?: Array<string>;
+    /**
+     * Role Family
+     */
+    role_family: string | null;
+};
+
+/**
+ * IndustryExperienceRead
+ *
+ * Global manifest plus one manifest per enabled pack for per-search pages.
+ */
+export type IndustryExperienceRead = {
+    /**
+     * Enabled
+     */
+    enabled: Array<WorkspaceIndustryRead>;
+    /**
+     * Manifest
+     */
+    manifest: {
+        [key: string]: unknown;
+    };
+    /**
+     * Packs
+     */
+    packs: {
+        [key: string]: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Primary
+     */
+    primary: string;
+};
+
+/**
+ * IndustryList
+ */
+export type IndustryList = {
+    /**
+     * Items
+     */
+    items: Array<IndustrySummary>;
+};
+
+/**
+ * IndustryPrimaryIn
+ */
+export type IndustryPrimaryIn = {
+    /**
+     * Key
+     */
+    key: string;
+};
+
+/**
+ * IndustrySummary
+ */
+export type IndustrySummary = {
+    /**
+     * Icon
+     */
+    icon: string;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label?: string | null;
+    /**
+     * Label Key
+     */
+    label_key: string;
+    /**
+     * Role Families
+     */
+    role_families?: Array<RoleFamilyRead>;
 };
 
 /**
@@ -5522,6 +5892,10 @@ export type ProfileFull = {
      */
     experiences: Array<ExperienceRead>;
     /**
+     * Facets
+     */
+    facets: Array<FacetRead>;
+    /**
      * Headline
      */
     headline: string | null;
@@ -6445,6 +6819,24 @@ export type RiskDecisionBody = {
 };
 
 /**
+ * RoleFamilyRead
+ */
+export type RoleFamilyRead = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label Key
+     */
+    label_key: string;
+    /**
+     * Titles
+     */
+    titles?: Array<string>;
+};
+
+/**
  * RoutingItem
  */
 export type RoutingItem = {
@@ -6559,6 +6951,10 @@ export type SalaryAdviceRead = {
      */
     posting_currency: string | null;
     /**
+     * Posting Includes
+     */
+    posting_includes?: Array<string>;
+    /**
      * Posting Max
      */
     posting_max: number | null;
@@ -6566,6 +6962,10 @@ export type SalaryAdviceRead = {
      * Posting Min
      */
     posting_min: number | null;
+    /**
+     * Posting Period
+     */
+    posting_period?: string | null;
     /**
      * Rationale
      */
@@ -6600,6 +7000,10 @@ export type SalaryFilter = {
      * Hide Unspecified
      */
     hide_unspecified?: boolean;
+    /**
+     * Includes
+     */
+    includes?: Array<'accommodation' | 'meals' | 'tips' | 'service_charge' | 'transport'>;
     /**
      * Max
      */
@@ -6855,6 +7259,151 @@ export type ScoreResultRead = {
 };
 
 /**
+ * SearchAdapterRead
+ */
+export type SearchAdapterRead = {
+    /**
+     * Configured
+     */
+    configured: boolean;
+    /**
+     * Countries
+     */
+    countries: Array<string>;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Terms Note
+     */
+    terms_note: string;
+    /**
+     * Terms Url
+     */
+    terms_url: string;
+};
+
+/**
+ * SearchPlanIn
+ *
+ * Request body for a plan. Industry is optional: it is detected when omitted.
+ */
+export type SearchPlanIn = {
+    /**
+     * Industry
+     */
+    industry?: string | null;
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * SearchPlanOut
+ *
+ * Draft search setup plus the pack it was built for and the queries it will run.
+ */
+export type SearchPlanOut = {
+    /**
+     * Ai Error
+     */
+    ai_error?: string | null;
+    /**
+     * Confidence
+     */
+    confidence?: number;
+    criteria: CriteriaV1;
+    /**
+     * Diff
+     */
+    diff?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Industry
+     */
+    industry?: string;
+    /**
+     * Industry Version
+     */
+    industry_version?: number;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Prompt Version
+     */
+    prompt_version?: string;
+    /**
+     * Provider
+     */
+    provider?: string | null;
+    /**
+     * Reasons
+     */
+    reasons?: Array<string>;
+    /**
+     * Role Family
+     */
+    role_family?: string | null;
+    /**
+     * Source
+     */
+    source?: 'ai' | 'defaults';
+    /**
+     * Source Queries
+     */
+    source_queries?: Array<SearchPlanQuery>;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Titles
+     */
+    titles?: Array<string>;
+    /**
+     * Warnings
+     */
+    warnings?: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * SearchPlanQuery
+ */
+export type SearchPlanQuery = {
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Country
+     */
+    country?: string;
+    /**
+     * Keywords
+     */
+    keywords: string;
+    /**
+     * Location
+     */
+    location?: string;
+};
+
+/**
  * SearchProposal
  */
 export type SearchProposal = {
@@ -6896,6 +7445,28 @@ export type SearchProposal = {
      * Variant
      */
     variant: 'you_said' | 'same_role' | 'step_up';
+};
+
+/**
+ * SearchQueryRead
+ */
+export type SearchQueryRead = {
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Country
+     */
+    country: string;
+    /**
+     * Keywords
+     */
+    keywords: string;
+    /**
+     * Location
+     */
+    location: string;
 };
 
 /**
@@ -7483,6 +8054,54 @@ export type SkillSets = {
      * Nice
      */
     nice?: Array<string>;
+};
+
+/**
+ * SourceAdviceItem
+ */
+export type SourceAdviceItem = {
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Provider
+     */
+    provider?: string | null;
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * SourceAdviceRead
+ */
+export type SourceAdviceRead = {
+    /**
+     * Alert Sources
+     */
+    alert_sources: Array<string>;
+    /**
+     * Country
+     */
+    country: string;
+    /**
+     * Coverage
+     */
+    coverage: string;
+    /**
+     * Employer Tags
+     */
+    employer_tags: Array<string>;
+    /**
+     * Industry
+     */
+    industry: string;
+    /**
+     * Suggestions
+     */
+    suggestions: Array<SourceAdviceItem>;
 };
 
 /**
@@ -8079,6 +8698,10 @@ export type TrackCreate = {
      */
     icon?: string;
     /**
+     * Industry
+     */
+    industry?: string | null;
+    /**
      * Name
      */
     name?: string | null;
@@ -8165,6 +8788,14 @@ export type TrackDetail = {
      * Id
      */
     id: string;
+    /**
+     * Industry
+     */
+    industry: string;
+    /**
+     * Industry Version
+     */
+    industry_version: number;
     /**
      * Name
      */
@@ -8279,6 +8910,14 @@ export type TrackRead = {
      * Id
      */
     id: string;
+    /**
+     * Industry
+     */
+    industry: string;
+    /**
+     * Industry Version
+     */
+    industry_version: number;
     /**
      * Name
      */
@@ -8433,6 +9072,10 @@ export type TrackUpdate = {
      * Icon
      */
     icon?: string | null;
+    /**
+     * Industry
+     */
+    industry?: string | null;
     /**
      * Name
      */
@@ -8759,6 +9402,32 @@ export type WebhookAck = {
 };
 
 /**
+ * WhereLookRead
+ */
+export type WhereLookRead = {
+    /**
+     * Adapters
+     */
+    adapters: Array<SearchAdapterRead>;
+    /**
+     * Alerts
+     */
+    alerts: Array<string>;
+    /**
+     * Employer Tags
+     */
+    employer_tags: Array<string>;
+    /**
+     * Industry
+     */
+    industry: string;
+    /**
+     * Queries
+     */
+    queries: Array<SearchQueryRead>;
+};
+
+/**
  * WorkspaceCreate
  */
 export type WorkspaceCreate = {
@@ -8766,6 +9435,46 @@ export type WorkspaceCreate = {
      * Name
      */
     name: string;
+};
+
+/**
+ * WorkspaceIndustryList
+ */
+export type WorkspaceIndustryList = {
+    /**
+     * Items
+     */
+    items: Array<WorkspaceIndustryRead>;
+};
+
+/**
+ * WorkspaceIndustryRead
+ */
+export type WorkspaceIndustryRead = {
+    /**
+     * Custom
+     */
+    custom?: boolean;
+    /**
+     * Icon
+     */
+    icon: string;
+    /**
+     * Is Primary
+     */
+    is_primary: boolean;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label?: string | null;
+    /**
+     * Label Key
+     */
+    label_key: string;
 };
 
 /**
@@ -11977,6 +12686,99 @@ export type MessagesApiV1InboundMessagesGetResponses = {
 
 export type MessagesApiV1InboundMessagesGetResponse = MessagesApiV1InboundMessagesGetResponses[keyof MessagesApiV1InboundMessagesGetResponses];
 
+export type ListIndustriesApiV1IndustriesGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/industries';
+};
+
+export type ListIndustriesApiV1IndustriesGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ListIndustriesApiV1IndustriesGetError = ListIndustriesApiV1IndustriesGetErrors[keyof ListIndustriesApiV1IndustriesGetErrors];
+
+export type ListIndustriesApiV1IndustriesGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: IndustryList;
+};
+
+export type ListIndustriesApiV1IndustriesGetResponse = ListIndustriesApiV1IndustriesGetResponses[keyof ListIndustriesApiV1IndustriesGetResponses];
+
+export type DetectApiV1IndustriesDetectPostData = {
+    body: IndustryDetectIn;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/industries/detect';
+};
+
+export type DetectApiV1IndustriesDetectPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DetectApiV1IndustriesDetectPostError = DetectApiV1IndustriesDetectPostErrors[keyof DetectApiV1IndustriesDetectPostErrors];
+
+export type DetectApiV1IndustriesDetectPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: IndustryDetectRead;
+};
+
+export type DetectApiV1IndustriesDetectPostResponse = DetectApiV1IndustriesDetectPostResponses[keyof DetectApiV1IndustriesDetectPostResponses];
+
+export type DraftPackApiV1IndustriesDraftPostData = {
+    body: CustomPackDraftIn;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/industries/draft';
+};
+
+export type DraftPackApiV1IndustriesDraftPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DraftPackApiV1IndustriesDraftPostError = DraftPackApiV1IndustriesDraftPostErrors[keyof DraftPackApiV1IndustriesDraftPostErrors];
+
+export type DraftPackApiV1IndustriesDraftPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: CustomPackDraftRead;
+};
+
+export type DraftPackApiV1IndustriesDraftPostResponse = DraftPackApiV1IndustriesDraftPostResponses[keyof DraftPackApiV1IndustriesDraftPostResponses];
+
 export type AcceptInvitationApiV1InvitationsAcceptPostData = {
     body: InviteAcceptIn;
     headers?: {
@@ -15103,6 +15905,176 @@ export type UpdateProfileExperienceResponses = {
 
 export type UpdateProfileExperienceResponse = UpdateProfileExperienceResponses[keyof UpdateProfileExperienceResponses];
 
+export type ListProfileFacetsData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/facets';
+};
+
+export type ListProfileFacetsErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ListProfileFacetsError = ListProfileFacetsErrors[keyof ListProfileFacetsErrors];
+
+export type ListProfileFacetsResponses = {
+    /**
+     * Response List Profile Facets
+     *
+     * Successful Response
+     */
+    200: Array<FacetRead>;
+};
+
+export type ListProfileFacetsResponse = ListProfileFacetsResponses[keyof ListProfileFacetsResponses];
+
+export type CreateProfileFacetData = {
+    body: FacetIn;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/facets';
+};
+
+export type CreateProfileFacetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type CreateProfileFacetError = CreateProfileFacetErrors[keyof CreateProfileFacetErrors];
+
+export type CreateProfileFacetResponses = {
+    /**
+     * Successful Response
+     */
+    201: FacetRead;
+};
+
+export type CreateProfileFacetResponse = CreateProfileFacetResponses[keyof CreateProfileFacetResponses];
+
+export type DeleteProfileFacetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+        /**
+         * Item Id
+         */
+        item_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/facets/{item_id}';
+};
+
+export type DeleteProfileFacetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type DeleteProfileFacetError = DeleteProfileFacetErrors[keyof DeleteProfileFacetErrors];
+
+export type DeleteProfileFacetResponses = {
+    /**
+     * Successful Response
+     */
+    200: OkRead;
+};
+
+export type DeleteProfileFacetResponse = DeleteProfileFacetResponses[keyof DeleteProfileFacetResponses];
+
+export type UpdateProfileFacetData = {
+    body: FacetPatch;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Profile Id
+         */
+        profile_id: string;
+        /**
+         * Item Id
+         */
+        item_id: string;
+    };
+    query?: never;
+    url: '/api/v1/profiles/{profile_id}/facets/{item_id}';
+};
+
+export type UpdateProfileFacetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type UpdateProfileFacetError = UpdateProfileFacetErrors[keyof UpdateProfileFacetErrors];
+
+export type UpdateProfileFacetResponses = {
+    /**
+     * Successful Response
+     */
+    200: FacetRead;
+};
+
+export type UpdateProfileFacetResponse = UpdateProfileFacetResponses[keyof UpdateProfileFacetResponses];
+
 export type ListInterviewGapsApiV1ProfilesProfileIdInterviewGapsGetData = {
     body?: never;
     headers?: {
@@ -18115,6 +19087,104 @@ export type UpdateScheduleApiV1SchedulesScheduleIdPatchResponses = {
 
 export type UpdateScheduleApiV1SchedulesScheduleIdPatchResponse = UpdateScheduleApiV1SchedulesScheduleIdPatchResponses[keyof UpdateScheduleApiV1SchedulesScheduleIdPatchResponses];
 
+export type SourceAdviceApiV1SourcesAdviceGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Industry
+         */
+        industry?: string;
+        /**
+         * Country
+         */
+        country?: string;
+    };
+    url: '/api/v1/sources/advice';
+};
+
+export type SourceAdviceApiV1SourcesAdviceGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type SourceAdviceApiV1SourcesAdviceGetError = SourceAdviceApiV1SourcesAdviceGetErrors[keyof SourceAdviceApiV1SourcesAdviceGetErrors];
+
+export type SourceAdviceApiV1SourcesAdviceGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: SourceAdviceRead;
+};
+
+export type SourceAdviceApiV1SourcesAdviceGetResponse = SourceAdviceApiV1SourcesAdviceGetResponses[keyof SourceAdviceApiV1SourcesAdviceGetResponses];
+
+export type AlertGuideApiV1SourcesAlertsGuideGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Industry
+         */
+        industry?: string;
+        /**
+         * Country
+         */
+        country?: string;
+        /**
+         * Q
+         */
+        q?: string;
+        /**
+         * Location
+         */
+        location?: string;
+    };
+    url: '/api/v1/sources/alerts/guide';
+};
+
+export type AlertGuideApiV1SourcesAlertsGuideGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type AlertGuideApiV1SourcesAlertsGuideGetError = AlertGuideApiV1SourcesAlertsGuideGetErrors[keyof AlertGuideApiV1SourcesAlertsGuideGetErrors];
+
+export type AlertGuideApiV1SourcesAlertsGuideGetResponses = {
+    /**
+     * Response Alert Guide Api V1 Sources Alerts Guide Get
+     *
+     * Successful Response
+     */
+    200: Array<AlertGuideRead>;
+};
+
+export type AlertGuideApiV1SourcesAlertsGuideGetResponse = AlertGuideApiV1SourcesAlertsGuideGetResponses[keyof AlertGuideApiV1SourcesAlertsGuideGetResponses];
+
 export type AddCareersApiV1SourcesCareersPostData = {
     body: AddCareersIn;
     headers?: {
@@ -18149,6 +19219,50 @@ export type AddCareersApiV1SourcesCareersPostResponses = {
 };
 
 export type AddCareersApiV1SourcesCareersPostResponse = AddCareersApiV1SourcesCareersPostResponses[keyof AddCareersApiV1SourcesCareersPostResponses];
+
+export type SourceCoverageApiV1SourcesCoverageGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query: {
+        /**
+         * Industry
+         */
+        industry: string;
+        /**
+         * Country
+         */
+        country: string;
+    };
+    url: '/api/v1/sources/coverage';
+};
+
+export type SourceCoverageApiV1SourcesCoverageGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type SourceCoverageApiV1SourcesCoverageGetError = SourceCoverageApiV1SourcesCoverageGetErrors[keyof SourceCoverageApiV1SourcesCoverageGetErrors];
+
+export type SourceCoverageApiV1SourcesCoverageGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: CoverageRead;
+};
+
+export type SourceCoverageApiV1SourcesCoverageGetResponse = SourceCoverageApiV1SourcesCoverageGetResponses[keyof SourceCoverageApiV1SourcesCoverageGetResponses];
 
 export type DirectoryStatsApiV1SourcesDirectoryStatsGetData = {
     body?: never;
@@ -18964,7 +20078,7 @@ export type GeoLookupApiV1TracksGeoLookupGetResponses = {
 export type GeoLookupApiV1TracksGeoLookupGetResponse = GeoLookupApiV1TracksGeoLookupGetResponses[keyof GeoLookupApiV1TracksGeoLookupGetResponses];
 
 export type PlanSearchApiV1TracksPlanPostData = {
-    body: CriteriaPlanRequest;
+    body: SearchPlanIn;
     headers?: {
         /**
          * X-Workspace-Id
@@ -18993,7 +20107,7 @@ export type PlanSearchApiV1TracksPlanPostResponses = {
     /**
      * Successful Response
      */
-    200: CriteriaPlanPreview;
+    200: SearchPlanOut;
 };
 
 export type PlanSearchApiV1TracksPlanPostResponse = PlanSearchApiV1TracksPlanPostResponses[keyof PlanSearchApiV1TracksPlanPostResponses];
@@ -20222,6 +21336,46 @@ export type PatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchResponses = {
 
 export type PatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchResponse = PatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchResponses[keyof PatchTrackSourceApiV1TracksTrackIdSourcesSourceIdPatchResponses];
 
+export type WhereWeLookApiV1TracksTrackIdWhereGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Track Id
+         */
+        track_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tracks/{track_id}/where';
+};
+
+export type WhereWeLookApiV1TracksTrackIdWhereGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type WhereWeLookApiV1TracksTrackIdWhereGetError = WhereWeLookApiV1TracksTrackIdWhereGetErrors[keyof WhereWeLookApiV1TracksTrackIdWhereGetErrors];
+
+export type WhereWeLookApiV1TracksTrackIdWhereGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WhereLookRead;
+};
+
+export type WhereWeLookApiV1TracksTrackIdWhereGetResponse = WhereWeLookApiV1TracksTrackIdWhereGetResponses[keyof WhereWeLookApiV1TracksTrackIdWhereGetResponses];
+
 export type InboundEmailWebhookApiV1WebhooksInboundEmailPostData = {
     body?: never;
     headers?: {
@@ -20387,6 +21541,41 @@ export type RenameWorkspaceApiV1WorkspacePatchResponses = {
 
 export type RenameWorkspaceApiV1WorkspacePatchResponse = RenameWorkspaceApiV1WorkspacePatchResponses[keyof RenameWorkspaceApiV1WorkspacePatchResponses];
 
+export type GetExperienceApiV1WorkspaceExperienceGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/workspace/experience';
+};
+
+export type GetExperienceApiV1WorkspaceExperienceGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type GetExperienceApiV1WorkspaceExperienceGetError = GetExperienceApiV1WorkspaceExperienceGetErrors[keyof GetExperienceApiV1WorkspaceExperienceGetErrors];
+
+export type GetExperienceApiV1WorkspaceExperienceGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: IndustryExperienceRead;
+};
+
+export type GetExperienceApiV1WorkspaceExperienceGetResponse = GetExperienceApiV1WorkspaceExperienceGetResponses[keyof GetExperienceApiV1WorkspaceExperienceGetResponses];
+
 export type ExportWorkspaceApiV1WorkspaceExportGetData = {
     body?: never;
     headers?: {
@@ -20419,6 +21608,186 @@ export type ExportWorkspaceApiV1WorkspaceExportGetResponses = {
      */
     200: unknown;
 };
+
+export type ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/workspace/industries';
+};
+
+export type ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetError = ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetErrors[keyof ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetErrors];
+
+export type ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceIndustryList;
+};
+
+export type ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetResponse = ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetResponses[keyof ListWorkspaceIndustriesApiV1WorkspaceIndustriesGetResponses];
+
+export type AddWorkspaceIndustryApiV1WorkspaceIndustriesPostData = {
+    body: IndustryAdd;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/workspace/industries';
+};
+
+export type AddWorkspaceIndustryApiV1WorkspaceIndustriesPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type AddWorkspaceIndustryApiV1WorkspaceIndustriesPostError = AddWorkspaceIndustryApiV1WorkspaceIndustriesPostErrors[keyof AddWorkspaceIndustryApiV1WorkspaceIndustriesPostErrors];
+
+export type AddWorkspaceIndustryApiV1WorkspaceIndustriesPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceIndustryList;
+};
+
+export type AddWorkspaceIndustryApiV1WorkspaceIndustriesPostResponse = AddWorkspaceIndustryApiV1WorkspaceIndustriesPostResponses[keyof AddWorkspaceIndustryApiV1WorkspaceIndustriesPostResponses];
+
+export type AddCustomPackApiV1WorkspaceIndustriesCustomPostData = {
+    body: CustomPackAcceptIn;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/workspace/industries/custom';
+};
+
+export type AddCustomPackApiV1WorkspaceIndustriesCustomPostErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type AddCustomPackApiV1WorkspaceIndustriesCustomPostError = AddCustomPackApiV1WorkspaceIndustriesCustomPostErrors[keyof AddCustomPackApiV1WorkspaceIndustriesCustomPostErrors];
+
+export type AddCustomPackApiV1WorkspaceIndustriesCustomPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceIndustryList;
+};
+
+export type AddCustomPackApiV1WorkspaceIndustriesCustomPostResponse = AddCustomPackApiV1WorkspaceIndustriesCustomPostResponses[keyof AddCustomPackApiV1WorkspaceIndustriesCustomPostResponses];
+
+export type SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutData = {
+    body: IndustryPrimaryIn;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/workspace/industries/primary';
+};
+
+export type SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutError = SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutErrors[keyof SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutErrors];
+
+export type SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceIndustryList;
+};
+
+export type SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutResponse = SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutResponses[keyof SetPrimaryIndustryApiV1WorkspaceIndustriesPrimaryPutResponses];
+
+export type RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Key
+         */
+        key: string;
+    };
+    query?: never;
+    url: '/api/v1/workspace/industries/{key}';
+};
+
+export type RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteError = RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteErrors[keyof RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteErrors];
+
+export type RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceIndustryList;
+};
+
+export type RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteResponse = RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteResponses[keyof RemoveWorkspaceIndustryApiV1WorkspaceIndustriesKeyDeleteResponses];
 
 export type ListInvitationsApiV1WorkspaceInvitationsGetData = {
     body?: never;
@@ -20852,6 +22221,46 @@ export type WorkspaceKillApiV1WorkspacesAutoSubmitKillPostResponses = {
 };
 
 export type WorkspaceKillApiV1WorkspacesAutoSubmitKillPostResponse = WorkspaceKillApiV1WorkspacesAutoSubmitKillPostResponses[keyof WorkspaceKillApiV1WorkspacesAutoSubmitKillPostResponses];
+
+export type GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * X-Workspace-Id
+         */
+        'x-workspace-id'?: string | null;
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Workspace Id
+         */
+        workspace_id: string;
+    };
+    query?: never;
+    url: '/api/v1/workspaces/{workspace_id}/experience';
+};
+
+export type GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetErrors = {
+    /**
+     * Default Response
+     */
+    default: ErrorEnvelope;
+};
+
+export type GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetError = GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetErrors[keyof GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetErrors];
+
+export type GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: IndustryExperienceRead;
+};
+
+export type GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetResponse = GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetResponses[keyof GetExperienceForApiV1WorkspacesWorkspaceIdExperienceGetResponses];
 
 export type HealthzHealthzGetData = {
     body?: never;

@@ -3,7 +3,7 @@ import type { IndustrySummary } from "@kame/api-client";
 
 const props = withDefaults(
   defineProps<{
-    industries: IndustrySummary[];
+    industries: (IndustrySummary & { draft?: boolean })[];
     selected: string[];
     primary: string | null;
     max?: number;
@@ -19,7 +19,15 @@ const emit = defineEmits<{
 const { t, te } = useI18n();
 
 function label(industry: IndustrySummary): string {
+  if (industry.label) return industry.label;
   return te(industry.label_key) ? t(industry.label_key) : industry.key;
+}
+
+function shortLabel(industry: IndustrySummary & { draft?: boolean }): string {
+  const full = label(industry);
+  if (!industry.draft) return full;
+  const words = full.split(/\s+/).filter(Boolean);
+  return words.length > 5 ? `${words.slice(0, 5).join(" ")}…` : full;
 }
 
 function families(industry: IndustrySummary): string {
@@ -54,17 +62,22 @@ function toggle(key: string) {
 </script>
 
 <template>
-  <div class="grid gap-2 sm:grid-cols-2" role="group" :aria-label="t('workspace.pickField')">
+  <div
+    class="grid min-w-0 gap-2 sm:grid-cols-2"
+    role="group"
+    :aria-label="t('workspace.pickField')"
+  >
     <button
       v-for="industry in industries"
       :key="industry.key"
       type="button"
-      class="group flex min-h-16 items-center gap-3 rounded-xl border bg-paper-0 px-3 py-2.5 text-left transition-colors focus-visible:ring-4 focus-visible:ring-brand-100 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+      class="group flex min-h-16 min-w-0 items-center gap-3 rounded-xl border bg-paper-0 px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
       :class="
         isSelected(industry.key)
           ? 'border-brand-500 bg-brand-50'
-          : 'border-rule hover:border-brand-200 hover:bg-brand-50/60'
+          : 'border-edge hover:border-brand-200 hover:bg-brand-50/60'
       "
+      :aria-label="industry.draft ? `${label(industry)}, draft` : label(industry)"
       :aria-pressed="isSelected(industry.key)"
       :disabled="disabled || atLimit(industry.key)"
       @click="toggle(industry.key)"
@@ -78,10 +91,18 @@ function toggle(key: string) {
         <Icon :name="industry.icon" :size="20" aria-hidden="true" />
       </span>
       <span class="min-w-0 flex-1">
-        <span class="flex items-center gap-1.5">
-          <span class="truncate text-sm font-semibold text-ink-900" :title="label(industry)">{{
-            label(industry)
-          }}</span>
+        <span class="flex min-w-0 flex-wrap items-center gap-1.5">
+          <span
+            class="text-sm font-semibold text-ink-900"
+            :class="industry.draft ? 'w-full text-pencil' : 'min-w-0 truncate'"
+            :title="label(industry)"
+            >{{ shortLabel(industry) }}</span
+          >
+          <span
+            v-if="industry.draft"
+            class="rounded-full bg-paper-2 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-600 uppercase"
+            >{{ t("workspace.draftBadge") }}</span
+          >
           <span
             v-if="industry.key === primary && isSelected(industry.key)"
             class="rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-brand-700 uppercase"

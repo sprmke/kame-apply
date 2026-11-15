@@ -12,7 +12,6 @@ from app.audit import service as audit
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.industries import service as industries_service
-from app.industries.registry import get_pack
 from app.profiles import models as profile_models
 from app.sources.models import TrackSource
 from app.taxonomy import models as tax_models
@@ -152,7 +151,9 @@ async def create_track(
         template_industry=template_industry,
     )
     await industries_service.validate_facets(ctx, criteria, industry)
-    pack = get_pack(industry)
+    pack = await industries_service.pack_for_track(
+        ctx.session, workspace_id=ctx.workspace_id, industry=industry
+    )
 
     max_sort = (
         await ctx.session.execute(
@@ -226,8 +227,10 @@ async def update_track(ctx: WorkspaceContext, track_id: uuid.UUID, body: TrackUp
         else:
             industry = await industries_service.industry_for_track(ctx, requested=data["industry"])
             data["industry"] = industry
-            pack = get_pack(industry)
-            data["industry_version"] = pack.version if pack is not None else 1
+            pack = await industries_service.pack_for_track(
+                ctx.session, workspace_id=ctx.workspace_id, industry=industry
+            )
+            data["industry_version"] = pack.version
     for k, v in data.items():
         setattr(track, k, v)
     await ctx.session.flush()

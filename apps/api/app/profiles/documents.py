@@ -125,18 +125,24 @@ def _strip_image_metadata(data: bytes, mime: str) -> bytes:
     """Re-encode a portfolio image so EXIF, GPS, and text chunks do not leave the device."""
     from PIL import Image
 
-    Image.MAX_IMAGE_PIXELS = 40_000_000
-    with Image.open(io.BytesIO(data)) as image:
-        image.load()
-        if image.width * image.height > 40_000_000:
-            raise AppError("image_too_large", "Image dimensions are too large", 422)
-        out = io.BytesIO()
-        if mime == "image/jpeg":
-            image.convert("RGB").save(out, "JPEG", quality=90)
-        elif mime == "image/png":
-            image.save(out, "PNG")
-        else:
-            image.save(out, "WEBP", quality=90)
+    Image.MAX_IMAGE_PIXELS = 20_000_000
+    try:
+        with Image.open(io.BytesIO(data)) as image:
+            # The header carries the dimensions. Reject before decoding a multi-megapixel bitmap.
+            if image.width * image.height > 20_000_000:
+                raise AppError("image_too_large", "Image dimensions are too large", 422)
+            image.load()
+            out = io.BytesIO()
+            if mime == "image/jpeg":
+                image.convert("RGB").save(out, "JPEG", quality=90)
+            elif mime == "image/png":
+                image.save(out, "PNG")
+            else:
+                image.save(out, "WEBP", quality=90)
+    except AppError:
+        raise
+    except (Image.DecompressionBombError, Image.UnidentifiedImageError, OSError):
+        raise AppError("invalid_image", "That image could not be read", 422) from None
     return out.getvalue()
 
 
@@ -151,7 +157,7 @@ async def _process_bytes(
 ) -> m.Document:
     scan_bytes(data)
     if mime.startswith("image/") and kind == "portfolio":
-        data = _strip_image_metadata(data, mime)
+        data = await asyncio.to_thread(_strip_image_metadata, data, mime)
         row.extracted_text = ""
         row.ocr_used = False
         row.warnings = []

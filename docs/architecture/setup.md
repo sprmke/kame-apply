@@ -19,7 +19,7 @@ Review screen ─► PATCH decisions (autosave) ─► validate ─► apply (on
 
 ## 2. Table: `setup_drafts`
 
-Migration `0042` (see [`deployment.md`](./deployment.md)). Workspace-scoped with a forced RLS policy, like every tenant table.
+Migration `0043` (see [`deployment.md`](./deployment.md)). Workspace-scoped with a forced RLS policy, like every tenant table.
 
 | Column | Type | Notes |
 | --- | --- | --- |

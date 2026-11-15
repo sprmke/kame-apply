@@ -44,4 +44,8 @@ Type chip (read only), Name field, Save. Save appears disabled until the name di
 
 ## Implementation map
 
-`pages/settings/general.vue`; i18n `settings.general*`, `workspace.*`; `FnSectionCard`.
+`pages/settings/general.vue`, `components/FieldsOfWorkCard.vue`, `useExperience`, i18n `settings.general*`, `workspace.*`; `FnSectionCard`.
+
+## Custom field
+
+A field with no curated pack can be drafted from the workspace picker's **Something else** box. `POST /industries/draft` returns a schema-valid draft, and `POST /workspace/industries/custom` accepts it. Custom packs only select existing building blocks; they cannot add a field type or weaken a safety rule. The field appears in Fields of work with its drafted name.

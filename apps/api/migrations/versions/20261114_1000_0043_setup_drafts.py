@@ -1,11 +1,11 @@
 """Setup drafts: one row per resume reading that fills the pages about a person.
 
-Revision ID: 0042
-Revises: 0039
+Revision ID: 0043
+Revises: 0042
 Create Date: 2026-11-13
 
-Numbering note: 0040 and 0041 belong to the multi-industry work. If that lands first, re-point
-`down_revision` at 0041 in the same change that resolves the merge.
+Numbering note: 0040 and 0041 belong to the multi-industry work and 0042 is the industry
+tenant-grant hardening, so this follows 0042.
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from sqlalchemy.dialects import postgresql
 
 from app.core.rls import tenant_rls_sql
 
-revision = "0042"
-down_revision = "0039"
+revision = "0043"
+down_revision = "0042"
 branch_labels = None
 depends_on = None
 

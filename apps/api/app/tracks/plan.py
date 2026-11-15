@@ -424,6 +424,11 @@ def baseline(
     )
 
 
+def baseline_plan(text: str, templates: Sequence[Any] = ()) -> CriteriaV1:
+    """Public deterministic plan. Setup reuses it for every search variant."""
+    return _baseline(text, templates)
+
+
 def plan_from_model(plan: SearchPlanDraft, *, base: CriteriaV1) -> CriteriaV1:
     """Public model→criteria mapping, with the deterministic base as the floor."""
     return _from_model(plan, base=base)
