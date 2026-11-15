@@ -320,9 +320,9 @@ def apply_model(
 
 
 def _plan_output(raw: dict[str, Any]):
-    from app.tracks.plan import SearchPlanOut
+    from app.tracks.plan import SearchPlanDraft
 
-    return SearchPlanOut.model_validate(
+    return SearchPlanDraft.model_validate(
         {
             "titles": raw.get("titles") or [],
             "core_skills": raw.get("core_skills") or [],

@@ -15,6 +15,7 @@
     "fix-migration-issues",
     "git-commits",
     "human-copy",
+    "industry-pack",
     "karpathy-guidelines",
     "live-view",
     "minimal-ui-copy",
@@ -29,6 +30,7 @@
     "source-command-ka-create-new-ticket",
     "source-command-ka-design-review",
     "source-command-ka-help",
+    "source-command-ka-new-industry-pack",
     "source-command-ka-pull-new-changes",
     "source-command-ka-start-app",
     "source-command-ka-start-work",
@@ -52,6 +54,7 @@
     "ka-create-new-ticket": ".cursor/commands/ka-create-new-ticket.md",
     "ka-design-review": ".cursor/commands/ka-design-review.md",
     "ka-help": ".cursor/commands/ka-help.md",
+    "ka-new-industry-pack": ".cursor/commands/ka-new-industry-pack.md",
     "ka-pull-new-changes": ".cursor/commands/ka-pull-new-changes.md",
     "ka-start-app": ".cursor/commands/ka-start-app.md",
     "ka-start-work": ".cursor/commands/ka-start-work.md",
@@ -120,6 +123,11 @@
       "path": ".cursor/rules/in-app-notifications.mdc",
       "always": false,
       "scope": "- apps/api/app/notifications/**"
+    },
+    {
+      "path": ".cursor/rules/industry-packs.mdc",
+      "always": false,
+      "scope": "- apps/api/app/industries/**"
     },
     {
       "path": ".cursor/rules/job-site-access.mdc",

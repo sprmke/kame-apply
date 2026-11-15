@@ -187,8 +187,8 @@ const loading = computed(
 );
 const filtersOpen = ref(false);
 const isDesktop = useMediaQuery("(min-width: 1024px)");
-const hasFilters = computed(
-  () => Boolean(trackId.value || status.value || method.value || q.value),
+const hasFilters = computed(() =>
+  Boolean(trackId.value || status.value || method.value || q.value),
 );
 
 const byStatus = computed(() => {
@@ -475,7 +475,11 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           {{ t("applications.funnel") }}
         </h2>
         <div class="w-40">
-          <FnSelect v-model="periodValue" :options="periodOptions" :aria-label="t('today.period')" />
+          <FnSelect
+            v-model="periodValue"
+            :options="periodOptions"
+            :aria-label="t('today.period')"
+          />
         </div>
       </div>
       <p class="text-sm leading-6 text-ink-600">{{ t("applications.funnelHint") }}</p>
@@ -500,13 +504,20 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
         :title="hasFilters ? t('applications.emptyFiltered') : t('applications.emptyTitle')"
         :body="hasFilters ? t('applications.emptyFilteredBody') : t('applications.emptyBody')"
       >
-        <FnButton v-if="hasFilters" tone="quiet" @click="trackId = ''; status = ''; method = ''; q = ''">
+        <FnButton
+          v-if="hasFilters"
+          tone="quiet"
+          @click="
+            trackId = '';
+            status = '';
+            method = '';
+            q = '';
+          "
+        >
           {{ t("applications.clearFilters") }}
         </FnButton>
         <template v-else>
-          <FnButton tone="primary" @click="manualOpen = true">{{
-            t("applications.log")
-          }}</FnButton>
+          <FnButton tone="primary" @click="manualOpen = true">{{ t("applications.log") }}</FnButton>
           <FnButton as-child tone="quiet">
             <NuxtLink to="/jobs">{{ t("applications.browseJobs") }}</NuxtLink>
           </FnButton>
@@ -607,21 +618,21 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
           <input
             v-model="manualCompany"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm text-ink-900"
-          >
+          />
         </label>
         <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.title") }}
           <input
             v-model="manualTitle"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm text-ink-900"
-          >
+          />
         </label>
         <label class="flex flex-col gap-2 text-sm font-semibold text-ink-900">
           {{ t("applications.url") }}
           <input
             v-model="manualUrl"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm text-ink-900"
-          >
+          />
         </label>
         <div class="flex justify-end gap-2">
           <FnButton tone="quiet" size="sm" @click="manualOpen = false">{{

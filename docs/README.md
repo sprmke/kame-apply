@@ -1,7 +1,7 @@
 # Kame Apply: documentation index
 
 **Status:** Eng phases 0–20 complete; operator leftovers in [`phases/REMAINING.md`](./phases/REMAINING.md).
-**Last updated:** 2026-11-02
+**Last updated:** 2026-11-12
 
 Portfolio README (features, screenshots, quick start): [`../README.md`](../README.md). Screenshot set: [`screenshots/`](./screenshots/).
 
@@ -19,6 +19,7 @@ Kame Apply is a multi-tenant web app that helps people find real, relevant jobs 
 | 5b | [`architecture/configuration.md`](./architecture/configuration.md) | Every environment variable, credential, and the first dev/prod deploy runbook. |
 | 5b2 | [`architecture/setup.md`](./architecture/setup.md) | Setup from a resume: draft table, bundle contract, targets, retention, privacy. |
 | 5c | [`guides/run-free.md`](./guides/run-free.md) | 100% free paths: local mode, free DuckDNS single-VM mode, paid-service audit, and Oracle signup fixes. |
+| 5d | [`architecture/industries.md`](./architecture/industries.md) | Industry packs: how one field of work changes filters, sources, scoring, profile, AI, and visibility without branching the UI. |
 | 6 | [`research/03-apply-engine-and-live-view.md`](./research/03-apply-engine-and-live-view.md) | How forms get filled (extension, cloud runner, agent fallback), pause/resume, live preview + takeover. |
 | 7 | [`research/04-trust-safety-and-scam-detection.md`](./research/04-trust-safety-and-scam-detection.md) | Scam/phishing scoring, PII guard, prompt-injection defense, AI-answer policy. |
 | 8 | [`research/05-resume-intelligence.md`](./research/05-resume-intelligence.md) | Parsing, critique rubric, market skill research, tailoring, rendering. |

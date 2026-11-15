@@ -16,6 +16,7 @@ from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
+from app.industries.registry import get_pack
 from app.jobs.models import Job, TrackJob
 from app.matching import service as matching
 from app.profiles import models as pm
@@ -212,6 +213,8 @@ async def _execute_tailor(
         for q in quals_rows
     ]
 
+    pack = get_pack(track.industry) if track is not None else None
+
     # Base resume: explicit version, latest track base, or build from profile
     base_row: ResumeVersion | None = None
     if base_version_id:
@@ -236,7 +239,7 @@ async def _execute_tailor(
         content = ResumeContent.model_validate(base_row.content or {})
         run.base_version_id = base_row.id
     else:
-        content = build_from_profile(facts, target_role=job.title or track.name)
+        content = build_from_profile(facts, target_role=job.title or track.name, pack=pack)
         run.progress = {**(run.progress or {}), "step": "built_from_profile"}
 
     run.progress = {**(run.progress or {}), "step": "lens_before"}
@@ -247,6 +250,7 @@ async def _execute_tailor(
         content=result["content"],
         qualifications=qualifications,
         deterministic_notes=result["review"],
+        pack=pack,
         run_structured=run_structured,
         model_factory=model_factory,
     )
@@ -358,6 +362,7 @@ async def _execute_tailor(
             job=job_payload,
             matches=matches,
             voice=voice,
+            pack=pack,
             run_structured=run_structured,
             model_factory=model_factory,
         )
@@ -557,7 +562,8 @@ async def _recompute_tailor_draft(ctx: WorkspaceContext, run: TailorRun) -> None
         base_content = ResumeContent.model_validate(base.content or {})
     else:
         target = job.title or (track.name if track else None)
-        base_content = build_from_profile(facts, target_role=target)
+        pack = get_pack(track.industry) if track is not None else None
+        base_content = build_from_profile(facts, target_role=target, pack=pack)
 
     changes = list(
         (

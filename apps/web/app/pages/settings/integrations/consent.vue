@@ -127,7 +127,7 @@ async function approve() {
             class="size-4"
             :checked="selectedScopes.includes(scope)"
             @change="toggleScope(scope, ($event.target as HTMLInputElement).checked)"
-          >
+          />
           <span class="font-mono text-xs">{{ scope }}</span>
         </label>
       </fieldset>

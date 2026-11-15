@@ -6,50 +6,53 @@
 
 | Section | E2E | Validation | Docs | Notes |
 | --- | --- | --- | --- | --- |
-| Search header | Manual | — | Documented | Name, colour dot, status, More tools |
-| Section tabs | Manual | — | Documented | Criteria · Automation · History, same order on all three pages |
-| Run status + actions | Done | — | Documented | Last search line, View matches, Run search |
-| Brief | Done | non-empty role text | Documented | Suggest settings, then Use these or Discard |
-| What we match on | Done | — | Documented | Grouped chips; agencies toggle saves immediately |
-| Filters | Done | API schema | Documented | Collapsed by default; active filters summarised as chips |
+| Search header | Manual | — | Documented | Name, colour dot, status, More tools, field of work chip |
+| Section tabs | Manual | — | Documented | Matches · What to look for · Automation · History · Improve, same order on every tab |
+| Run status + actions | Done | — | Documented | Last search line, View matches, Find jobs now, live progress |
+| Top matches | Done | — | Documented | Top 12 by score, risk seal, salary line, opens the Jobs reader |
+| Coverage notice | Manual | — | Documented | Shown when the field has few results in the saved country |
+| Where we look | Manual | — | Documented | Planned keyword + location queries and providers, `Ready` / `Setup needed` |
 
 ## Overview
 
-The **Criteria** tab answers one question: what is this search looking for. It owns the run action, the role brief, the compiled criteria, and the fine-grained filters. Results are not listed here; **View matches** opens `/jobs?track=:id`, where triage (shortlist, skip, open posting) lives.
+**Matches** answers one question: what did this search find. It owns the run action, the run status line, the top matches, the coverage notice, and the **Where we look** disclosure. The full reader with triage lives at `/jobs?track=:id`. The criteria builder moved to `/tracks/:id/look-for`; this page links there through the section tabs.
 
-All three search tabs share `TrackShell`, so the page name, status, More tools menu, and section order never move between tabs.
+All tabs share `TrackShell`, so the page name, status, More tools menu, and section order never move between tabs.
+
+The field of work drives what appears on the tab: the chip names the pack, and the criteria page shows only the filters that fit that work. Changing the field happens in Settings > General > Fields of work.
 
 ## User-facing knowledge
 
-A search is a role you want plus the rules that narrow it. Change the sentence and ask for suggestions; nothing is written until you accept them. A skill you remove from a chip saves immediately. Matches fill in after a run.
+A search is a role you want plus the rules that narrow it. **Find jobs now** checks the sources and fills the list. **View matches** opens every result for this search.
 
 ### Common user questions
 
-- **Did my edit save?** Only after **Use these**. The panel lists exactly what will change.
-- **Why no jobs on this page?** Matches have their own list. **View matches** opens it for this search.
-- **Where did the old "Update" button go?** It is now **Suggest settings**, followed by **Use these**, so nothing is written before you see it.
+- **Why so few jobs?** The coverage notice says when our sources are thin for this field and country, and offers a job alert instead of leaving an empty page.
+- **Where do the results come from?** Open **Where we look** to see the exact search terms and providers, and whether each provider is ready or still needs setup.
+- **Where do I change the filters?** **What to look for** holds the role brief, chips, and filters. Nothing is written until you accept a suggestion or save.
+- **Why is a filter missing?** Some controls only apply to certain work. **Show every filter** on the criteria page keeps everything reachable.
 
 ## Sections
 
 ### Header
 
-Colour dot, name, Active/Paused status, and **More tools** (Be Found, Gap plan). Run search and the run status sit below the tabs.
+Colour dot, name, Active/Paused status, the field of work chip, and **More tools** (Be Found, Gap plan). Run search and the run status sit below the tabs.
 
 ### Run status
 
-While running: a pulsing dot, elapsed seconds, and board/found/new/linked progress from `GET /api/v1/discovery/runs/{run_id}` polled every 2s. Otherwise: last search time plus the new-match count, linking to History.
+While running: a pulsing dot, elapsed seconds, and board/found/new/linked progress from `GET /api/v1/discovery/runs/{run_id}` polled every 2s. Otherwise: last search time plus the new-match count.
 
-### Brief
+### Top matches
 
-`FnTextarea` inside `FnField`. **Suggest settings** is disabled while the text is empty or a suggestion is in flight. It calls `POST .../criteria/suggest` with `apply: false` and renders the returned diff in pencil inside a dashed panel, with **Use these** and **Discard**. An empty diff raises a "No changes." toast instead of an empty panel. While a suggestion is open, chip removal and the agencies toggle edit the suggested criteria rather than the saved ones, so the preview stays consistent; **Use these** then `PUT`s the previewed criteria.
+Up to 12 jobs ordered by score. Each row shows the score, title, company, work mode, salary when the posting states one, and a risk seal for caution or danger. Clicking opens `/jobs?track=:id&job=:jobId`.
 
-### What we match on
+### Coverage notice
 
-Four labelled groups: Roles, Skills (removable), Nice to have (pencil), Rules. The Rules group holds the **No agencies** toggle, which is a dashed chip when off and a checked chip when on, so the control looks the same in both states. Removing a must-skill or toggling agencies `PUT`s the criteria immediately.
+When the first run returns fewer than five matches and `GET /api/v1/sources/coverage` reports partial or thin coverage for the field and country, one notice explains it and links to Settings > Alerts. Add a location on the criteria page first; the planner does not invent places.
 
-### Filters
+### Where we look
 
-Collapsed by default. The header shows how many filters are on; collapsed it lists the active ones as chips. Expanded it holds work mode, employment type, posted within, location, radius, region, timezone overlap, visa sponsorship, salary (min, currency, period), keyword include/exclude, and company include/exclude. **Save filters** writes the whole criteria object and keeps any open suggestion.
+A disclosure below the list shows the planned keyword + location queries and the providers for this field, each marked **Ready** or **Setup needed**. It calls `GET /api/v1/tracks/{id}/where`.
 
 ## Loading / errors
 
@@ -60,15 +63,17 @@ Collapsed by default. The header shows how many filters are on; collapsed it lis
 | Call | Purpose |
 | --- | --- |
 | `GET /api/v1/tracks/{id}` | Detail + criteria |
-| `POST /api/v1/tracks/{id}/criteria/suggest` | Suggest criteria from the brief (`apply: false` previews) |
-| `PUT /api/v1/tracks/{id}/criteria` | Save structured criteria (accepted suggestions, chips, filters) |
+| `GET /api/v1/workspace/experience` | Field manifests (states, labels, facets) |
+| `GET /api/v1/sources/coverage` | Coverage level for a field and country |
+| `GET /api/v1/tracks/{id}/where` | Planned queries and adapters |
 | `POST /api/v1/tracks/{id}/discover` | Run discovery |
 | `GET /api/v1/discovery/runs/{run_id}` | Live run progress |
 | `GET /api/v1/tracks/{id}/runs` | Last-run line |
+| `GET /api/v1/jobs?track_id=…` | Top matches list |
 
 ## Implementation map
 
-`tracks/[id]/index.vue`, `components/TrackShell.vue`, i18n `tracks.*`.
+`tracks/[id]/index.vue`, `components/TrackShell.vue`, `composables/useExperience`, i18n `tracks.*`, `industry.*`.
 
 ## UX clarity (2026-11-12)
 
@@ -76,3 +81,9 @@ Collapsed by default. The header shows how many filters are on; collapsed it lis
 - The criteria page moved to `/tracks/:id/look-for`. Section tabs are **Matches**, **What to look for**, **Automation**, **History**, **Improve**. Old links to the criteria view land on Matches, which is the better default after a run.
 - **Improve** replaces the hidden **More tools** disclosure and holds the gap plan (filled on first open) plus the Be Found link.
 - The run action states its consequence through the live progress line ("14 sources, 9 new, 41 s").
+
+## Industry packs (2026-11-13)
+
+- The header chip names the field of work.
+- The coverage notice and **Where we look** come from the pack's adapters, so a Hospitality search names its own boards rather than company ATS boards.
+- Filters, shifts, pay includes, and facets live on `/tracks/:id/look-for` and follow the pack's visibility rules.

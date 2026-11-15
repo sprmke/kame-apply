@@ -142,6 +142,8 @@ const nextSteps = computed(() => {
         </article>
       </section>
 
+      <ProfileFacets v-if="profileId" />
+
       <section class="flex flex-col gap-2">
         <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
           {{ t("career.skills") }}

@@ -13,6 +13,7 @@ def build_prep(
     skills: list[str],
     experiences: list[dict[str, Any]],
     bullets: list[dict[str, Any]],
+    pack=None,
 ) -> dict[str, Any]:
     company = (company or "the company").strip() or "the company"
     title = (title or "the role").strip() or "the role"
@@ -46,6 +47,14 @@ def build_prep(
                 "hint": "Cite a bullet or experience that mentions it, or say you have not.",
             }
         )
+    if pack is not None:
+        for question in pack.profile.interview_questions:
+            questions.append(
+                {
+                    "q": question,
+                    "hint": "Answer from real experience; gaps stay gaps.",
+                }
+            )
 
     stories: list[dict[str, str]] = []
     for exp in experiences[:5]:
@@ -78,6 +87,9 @@ def build_prep(
         {"item": "List questions for the interviewer", "done": False},
         {"item": "Confirm logistics (time zone, link)", "done": False},
     ]
+    if pack is not None:
+        for item in pack.profile.trial_shift_checklist:
+            checklist.append({"item": item, "done": False})
 
     citations: list[dict[str, str]] = []
     if company:

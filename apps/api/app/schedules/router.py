@@ -34,6 +34,8 @@ def _track_read(track) -> track_schemas.TrackRead:
         "summary": track.summary or "",
         "settings": dict(track.settings or {}),
         "template_slug": track.template_slug,
+        "industry": track.industry,
+        "industry_version": track.industry_version,
         "created_at": track.created_at,
         "updated_at": track.updated_at,
         "archived_at": track.archived_at,

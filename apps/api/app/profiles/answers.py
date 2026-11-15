@@ -22,6 +22,7 @@ from app.profiles.answer_keys import (
     CANONICAL_BY_KEY,
     CANONICAL_KEYS,
     SETUP_COUNTRIES,
+    CanonicalKey,
 )
 from app.profiles.sanitize import strip_sensitive_numbers
 from app.profiles.service import _get_profile
@@ -131,8 +132,28 @@ async def list_canonical_keys(
             default_variants=list(k.default_variants),
             default_answer=k.default_answer,
             json_hint=k.json_hint,
+            packs=list(k.packs),
         )
-        for k in CANONICAL_KEYS
+        for k in await _visible_keys(ctx)
+    ]
+
+
+async def _visible_keys(ctx: WorkspaceContext) -> list[CanonicalKey]:
+    """Filter the catalog by the workspace's fields, honoring pack add/hide rules."""
+    from app.industries import service as industries_service
+
+    packs = await industries_service.enabled_packs(ctx)
+    enabled = {pack.key for pack in packs}
+    hidden: set[str] = set()
+    added: set[str] = set()
+    for pack in packs:
+        hidden |= set(pack.answer_keys.hide)
+        added |= set(pack.answer_keys.add)
+    return [
+        key
+        for key in CANONICAL_KEYS
+        if (not key.packs or set(key.packs) & enabled)
+        and (key.key not in hidden or key.key in added)
     ]
 
 
@@ -321,7 +342,7 @@ async def setup_answers(
     created_ids: list[uuid.UUID] = []
     skipped = 0
 
-    for meta in CANONICAL_KEYS:
+    for meta in await _visible_keys(ctx):
         if meta.key in _LINK_KEY_LABELS and not body.include_links:
             continue
         targets: list[str | None]

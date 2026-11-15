@@ -18,9 +18,10 @@ export async function signUp(page: Page, email = uniqueEmail(), name = "Mika Tes
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Create account" }).click();
-  // Registration lands on `/start`; older builds landed on Today.
+  // Registration lands on `/start`, which owns the setup flow.
+  await page.waitForURL(/\/start/);
   await expect(
-    page.getByRole("heading", { level: 1, name: /Set up from your resume|Welcome/ }),
+    page.getByRole("heading", { level: 1, name: /Set up from your resume|Get set up/ }),
   ).toBeVisible();
   return email;
 }

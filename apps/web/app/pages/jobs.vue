@@ -21,7 +21,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const ws = useWorkspaceStore();
@@ -389,7 +389,28 @@ const allUnproven = computed(() => {
 function kindLabel(kind?: string | null): string {
   if (kind === "must") return t("jobs.required");
   if (kind === "nice") return t("jobs.preferred");
+  if (kind === "credential") return t("jobs.certificate");
+  if (kind === "shift") return t("jobs.shift");
+  if (kind === "benefit") return t("jobs.payIncludes");
   return kind || "";
+}
+
+function qualText(row: { kind?: string; text?: string }): string {
+  const raw = String(row.text || "");
+  if (row.kind === "credential") {
+    const key = `credential.${raw}`;
+    return te(key) ? t(key) : raw;
+  }
+  if (row.kind === "shift" || row.kind === "benefit") {
+    const prefix = row.kind === "shift" ? "tracks.shift_" : "tracks.include_";
+    return raw
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => (te(prefix + part) ? t(prefix + part) : part))
+      .join(", ");
+  }
+  return raw;
 }
 
 function verdictLabel(verdict?: string | null): string {
@@ -470,7 +491,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             v-model="salaryOnly"
             type="checkbox"
             class="size-5 rounded border-rule accent-brand-600"
-          >
+          />
           {{ t("jobs.filtersSalary") }}
         </label>
         <label class="flex min-h-11 items-center gap-2 text-sm text-ink-900">
@@ -478,7 +499,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             v-model="remoteOnly"
             type="checkbox"
             class="size-5 rounded border-rule accent-brand-600"
-          >
+          />
           {{ t("jobs.filtersRemote") }}
         </label>
         <label class="flex min-h-11 items-center gap-2 text-sm text-ink-900">
@@ -486,7 +507,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
             v-model="includeIneligible"
             type="checkbox"
             class="size-5 rounded border-rule accent-brand-600"
-          >
+          />
           {{ t("jobs.includeIneligible") }}
         </label>
       </div>
@@ -534,7 +555,11 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           <span class="w-9 shrink-0 text-right">{{ t("jobs.colMatch") }}</span>
           <span class="flex-1">{{ t("jobs.colJob") }}</span>
         </div>
-        <ul :aria-label="t('jobs.list')" class="min-h-0 flex-1 pb-20 lg:overflow-y-auto lg:pb-0" role="listbox">
+        <ul
+          :aria-label="t('jobs.list')"
+          class="min-h-0 flex-1 pb-20 lg:overflow-y-auto lg:pb-0"
+          role="listbox"
+        >
           <li
             v-for="row in rows"
             :key="row.id"
@@ -650,7 +675,10 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
           <FnButton size="sm" tone="ghost" @click="skipOpen = true">{{ t("jobs.skip") }}</FnButton>
         </div>
 
-        <section v-if="visibleReasons(selected.reasons).length" class="mt-4 flex flex-col gap-1 xl:hidden">
+        <section
+          v-if="visibleReasons(selected.reasons).length"
+          class="mt-4 flex flex-col gap-1 xl:hidden"
+        >
           <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
             {{ t("jobs.whyMatch") }}
           </h3>
@@ -694,7 +722,7 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
                 v-model="highlightMatches"
                 type="checkbox"
                 class="size-5 rounded border-rule accent-brand-600"
-              >
+              />
               {{ t("jobs.highlightMatches") }}
             </label>
           </div>
@@ -781,8 +809,8 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
                   kindLabel(String(q.kind || ""))
                 }}</span>
               </div>
-              <p class="mt-2 line-clamp-3 text-sm leading-6 text-ink-900">
-                {{ q.text }}
+              <p class="mt-2 line-clamp-3 text-sm leading-6 text-ink-900" :title="qualText(q)">
+                {{ qualText(q) }}
               </p>
               <p
                 v-if="q.evidence_quote && q.evidence_quote !== q.text"
@@ -831,7 +859,11 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
 
         <div v-if="skipOpen" class="space-y-2 rounded-lg border border-rule bg-paper-1 p-3">
           <p class="text-sm font-medium text-ink-900">{{ t("jobs.skipPrompt") }}</p>
-          <FnSelect v-model="skipReason" :options="skipOptions" :aria-label="t('jobs.skipPrompt')" />
+          <FnSelect
+            v-model="skipReason"
+            :options="skipOptions"
+            :aria-label="t('jobs.skipPrompt')"
+          />
           <FnButton size="sm" @click="triage('skip', skipReason)">{{
             t("jobs.confirmSkip")
           }}</FnButton>

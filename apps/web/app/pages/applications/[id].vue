@@ -477,7 +477,7 @@ function statusLabel(status: string): string {
             type="text"
             class="min-h-11 min-w-[12rem] flex-1 border border-rule bg-paper-0 px-2 text-sm"
             :placeholder="t('applications.statusNote')"
-          >
+          />
         </div>
       </section>
 
@@ -508,7 +508,9 @@ function statusLabel(status: string): string {
         </p>
         <div v-if="activeRun" class="flex flex-wrap items-center gap-2 text-sm">
           <FnChip>{{ statusLabel(activeRun.status) }}</FnChip>
-          <span class="text-ink-600">{{ t("applications.stepCount", { n: activeRun.last_step_seq }) }}</span>
+          <span class="text-ink-600">{{
+            t("applications.stepCount", { n: activeRun.last_step_seq })
+          }}</span>
         </div>
         <div v-if="openCheckpoint" class="flex flex-col gap-2 border border-rule bg-paper-1 p-3">
           <p class="text-sm font-medium text-ink-900">{{ checkpointLabel(openCheckpoint.kind) }}</p>
@@ -526,7 +528,7 @@ function statusLabel(status: string): string {
             autocomplete="off"
             class="min-h-11 border border-rule bg-paper-0 px-2 text-sm"
             :aria-label="t('applications.typedValue')"
-          >
+          />
           <div class="flex flex-wrap gap-2">
             <p
               v-if="openCheckpoint.kind === 'final_review'"

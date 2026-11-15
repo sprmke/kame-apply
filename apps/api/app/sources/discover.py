@@ -17,86 +17,51 @@ from app.companies.models import CompanyBoard
 from app.core.errors import AppError
 from app.core.rls import set_request_context
 from app.core.security import WorkspaceContext
+from app.industries.packs.general import GENERAL
+from app.industries.registry import get_pack
+from app.industries.schema import IndustryPack
 from app.jobs.ingest import mark_missed_jobs, upsert_raw_job
-from app.jobs.models import DiscoveryRun, Job, TrackJob
-from app.jobs.normalize import normalize_title
+from app.jobs.link import rule_match
+from app.jobs.models import DiscoveryRun, TrackJob
 from app.sources.models import Source, TrackSource
 from app.tracks import models as track_models
-from app.tracks.criteria import criteria_from_dict
 from kame_core.sources import get_adapter
 from kame_core.sources.http import BlockSignalError, fetch_json
 
 logger = logging.getLogger(__name__)
 
 
-def _rule_match(job: Job, structured: dict[str, Any]) -> bool:
-    """Cheap interim filter until Phase 6 ranking."""
-    c = criteria_from_dict(structured)
-    title_blob = f"{job.title} {job.normalized_title}".lower()
-    if c.titles:
-        ok = False
-        for t in c.titles:
-            if t.exclude:
-                if normalize_title(t.title) in job.normalized_title:
-                    return False
-            elif normalize_title(t.title) in job.normalized_title or t.title.lower() in title_blob:
-                ok = True
-        if not ok and any(not t.exclude for t in c.titles):
-            # soft: also allow skill overlap later; require at least token overlap
-            tokens = {w for w in job.normalized_title.split() if len(w) > 2}
-            for t in c.titles:
-                if t.exclude:
-                    continue
-                want = {w for w in normalize_title(t.title).split() if len(w) > 2}
-                if tokens & want:
-                    ok = True
-                    break
-            if not ok:
-                return False
-    if c.skills and c.skills.must:
-        blob = (job.description_text or "").lower()
-        for sk in c.skills.must:
-            if sk.lower() not in blob and sk.lower() not in title_blob:
-                return False
-    if c.work_modes and job.work_mode and job.work_mode not in c.work_modes:
-        # remote/hybrid/on_site naming
-        wm = set(c.work_modes)
-        if job.work_mode == "remote" and "remote" not in wm:
-            return False
-    if c.companies and c.companies.exclude_agencies:
-        # placeholder: agency names often contain "staffing", "recruit"
-        name = (job.meta or {}).get("company_name") or ""
-        if any(x in name.lower() for x in ("staffing", "recruiting agency", "talent partner")):
-            return False
-    return True
+async def _boards_for_run(
+    session: AsyncSession, *, limit: int = 8, pack: IndustryPack | None = None
+) -> list[CompanyBoard]:
+    """Pick boards for the Track's field. Empty-industry boards stay eligible (user-added pages)."""
+    from sqlalchemy import or_
 
-
-async def _boards_for_run(session: AsyncSession, limit: int = 8) -> list[CompanyBoard]:
-    # Prefer hot, then curated greenhouse/ashby/lever
-    rows = (
-        (
-            await session.execute(
-                select(CompanyBoard)
-                .where(
-                    CompanyBoard.status == "active",
-                    CompanyBoard.validation_method.in_(("seed_curated", "api", "user")),
-                )
-                .order_by(CompanyBoard.poll_tier.asc())
-                .limit(limit)
+    tags = list(pack.sources.employer_tags) if pack is not None else []
+    q = select(CompanyBoard).where(
+        CompanyBoard.status == "active",
+        CompanyBoard.validation_method.in_(("seed_curated", "api", "user")),
+    )
+    if tags:
+        q = q.where(
+            or_(
+                CompanyBoard.industries.overlap(tags),
+                CompanyBoard.industries == [],
             )
         )
+    rows = (
+        (await session.execute(q.order_by(CompanyBoard.poll_tier.asc()).limit(limit)))
         .scalars()
         .all()
     )
     if rows:
         return list(rows)
-    return list(
-        (
-            await session.execute(
-                select(CompanyBoard).where(CompanyBoard.status == "active").limit(limit)
-            )
-        ).scalars()
-    )
+    fallback = select(CompanyBoard).where(CompanyBoard.status == "active")
+    if tags:
+        fallback = fallback.where(
+            or_(CompanyBoard.industries.overlap(tags), CompanyBoard.industries == [])
+        )
+    return list((await session.execute(fallback.limit(limit))).scalars().all())
 
 
 async def run_discover_track(
@@ -118,6 +83,7 @@ async def run_discover_track(
             )
         )
     ).scalar_one()
+    pack = get_pack(track.industry) or GENERAL
 
     run = None
     if run_id:
@@ -163,6 +129,7 @@ async def run_discover_track(
         ).all()
         adapter_keys = {s.key for _, s in track_sources if s.enabled_global and not s.circuit_open}
         if not adapter_keys:
+            allowed = set(pack.sources.adapters)
             adapter_keys = {
                 s.key
                 for s in (
@@ -170,13 +137,14 @@ async def run_discover_track(
                         select(Source).where(
                             Source.enabled_global.is_(True),
                             Source.circuit_open.is_(False),
-                            Source.kind.in_(("ats", "board")),
+                            Source.kind.in_(("ats", "board", "search")),
                         )
                     )
                 ).scalars()
+                if s.key in allowed
             }
 
-        boards = await _boards_for_run(ctx.session, limit=board_limit)
+        boards = await _boards_for_run(ctx.session, limit=board_limit, pack=pack)
         for board in boards:
             if board.ats not in adapter_keys and "career_jsonld" not in adapter_keys:
                 # still allow matching ATS key
@@ -227,7 +195,7 @@ async def run_discover_track(
                     progress["jobs_found"] = int(progress.get("jobs_found") or 0) + 1
                     if created:
                         progress["jobs_new"] = int(progress.get("jobs_new") or 0) + 1
-                    if _rule_match(job, crit.structured):
+                    if rule_match(job, crit.structured):
                         existing = (
                             await ctx.session.execute(
                                 select(TrackJob).where(
@@ -278,8 +246,13 @@ async def run_discover_track(
             await publish_progress()
 
         # Layer-2 boards without slug (remotive etc.) once per run
-        for key in ("remotive", "remoteok", "arbeitnow", "jobicy", "muse", "himalayas"):
-            if key not in adapter_keys:
+        feed_keys = [
+            key
+            for key in ("remotive", "remoteok", "arbeitnow", "jobicy", "muse", "himalayas")
+            if key in adapter_keys and key in pack.sources.adapters
+        ]
+        for key in feed_keys:
+            if key.startswith("search_"):
                 continue
             source = (
                 await ctx.session.execute(select(Source).where(Source.key == key))
@@ -303,7 +276,7 @@ async def run_discover_track(
                     progress["jobs_found"] = int(progress.get("jobs_found") or 0) + 1
                     if created:
                         progress["jobs_new"] = int(progress.get("jobs_new") or 0) + 1
-                    if _rule_match(job, crit.structured):
+                    if rule_match(job, crit.structured):
                         existing = (
                             await ctx.session.execute(
                                 select(TrackJob).where(
@@ -345,6 +318,20 @@ async def run_discover_track(
                 source.error_count = (source.error_count or 0) + 1
             progress["boards_checked"] = int(progress.get("boards_checked") or 0) + 1
             await publish_progress()
+
+        # Layer 4: keyword + location search for fields those boards do not cover.
+        from app.core.config import get_settings
+        from app.sources.search_service import run_search_sources
+
+        await run_search_sources(
+            ctx,
+            track=track,
+            run=run,
+            progress=progress,
+            fixture_root=fixture_root,
+            settings=get_settings(),
+        )
+        await publish_progress()
 
         # Phase 6: rank linked jobs for this Track
         try:

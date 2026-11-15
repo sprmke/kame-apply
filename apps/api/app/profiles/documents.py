@@ -7,6 +7,7 @@ file bytes or resume text.
 from __future__ import annotations
 
 import asyncio
+import io
 import re
 import uuid
 from typing import Any
@@ -120,14 +121,61 @@ async def get_document(
     return await _get_document(ctx, profile_id, document_id)
 
 
+def _strip_image_metadata(data: bytes, mime: str) -> bytes:
+    """Re-encode a portfolio image so EXIF, GPS, and text chunks do not leave the device."""
+    from PIL import Image
+
+    Image.MAX_IMAGE_PIXELS = 40_000_000
+    with Image.open(io.BytesIO(data)) as image:
+        image.load()
+        if image.width * image.height > 40_000_000:
+            raise AppError("image_too_large", "Image dimensions are too large", 422)
+        out = io.BytesIO()
+        if mime == "image/jpeg":
+            image.convert("RGB").save(out, "JPEG", quality=90)
+        elif mime == "image/png":
+            image.save(out, "PNG")
+        else:
+            image.save(out, "WEBP", quality=90)
+    return out.getvalue()
+
+
 async def _process_bytes(
     ctx: WorkspaceContext,
     row: m.Document,
     data: bytes,
     mime: str,
     storage: ObjectStorage,
+    *,
+    kind: str = "resume_upload",
 ) -> m.Document:
     scan_bytes(data)
+    if mime.startswith("image/") and kind == "portfolio":
+        data = _strip_image_metadata(data, mime)
+        row.extracted_text = ""
+        row.ocr_used = False
+        row.warnings = []
+        row.status = "ready"
+        row.mime = mime
+        row.size_bytes = len(data)
+        await storage.put(row.r2_key, data, mime)
+        await ctx.session.flush()
+        await ctx.session.refresh(row)
+        await audit.record(
+            ctx,
+            action="document.ready",
+            target_type="document",
+            target_id=str(row.id),
+            after={
+                "profile_id": str(row.profile_id),
+                "kind": row.kind,
+                "mime": row.mime,
+                "size_bytes": row.size_bytes,
+                "warning_codes": [],
+                "ocr_used": False,
+            },
+        )
+        return row
     try:
         extracted = await asyncio.wait_for(
             asyncio.to_thread(extract_text, data, mime), timeout=EXTRACT_TIMEOUT_SECONDS
@@ -215,7 +263,7 @@ async def upload_document(
             {"max_bytes": MAX_UPLOAD_BYTES},
         )
     filename = file.filename or "upload.txt"
-    mime = validate_upload(filename, len(data), file.content_type)
+    mime = validate_upload(filename, len(data), file.content_type, kind=kind)
     await _require_storage_room(ctx, len(data))
 
     doc_id = uuid.uuid4()
@@ -241,7 +289,7 @@ async def upload_document(
         target_id=str(row.id),
         after={"profile_id": str(profile_id), "kind": kind, "mime": mime},
     )
-    return await _process_bytes(ctx, row, data, mime, storage)
+    return await _process_bytes(ctx, row, data, mime, storage, kind=kind)
 
 
 async def create_text_document(
@@ -303,7 +351,7 @@ async def presign_upload(
     storage: ObjectStorage,
 ) -> dict[str, Any]:
     await _get_profile(ctx, profile_id)
-    mime = validate_upload(body.filename, body.size_bytes, body.content_type)
+    mime = validate_upload(body.filename, body.size_bytes, body.content_type, kind=body.kind)
     await _require_storage_room(ctx, body.size_bytes)
 
     doc_id = uuid.uuid4()
@@ -354,7 +402,7 @@ async def finalize_document(
         row.warnings = [{"code": "file_too_large", "message": "File must be 10 MB or smaller"}]
         await ctx.session.flush()
         raise AppError("file_too_large", "File must be 10 MB or smaller", 422)
-    mime = validate_upload(row.filename, size, row.mime)
+    mime = validate_upload(row.filename, size, row.mime, kind=row.kind)
     # Re-check room against actual size (presign used the declared size).
     used = await _storage_used_bytes(ctx)
     caps = await workspace_limits.get_limits(ctx.session, ctx.workspace_id)
@@ -363,7 +411,7 @@ async def finalize_document(
     if adjusted > caps["max_storage_mb"] * 1024 * 1024:
         raise AppError("storage_limit", "Workspace storage limit reached", 409)
     # put is a no-op overwrite when bytes are already at the key; keeps MemoryStorage consistent.
-    return await _process_bytes(ctx, row, data, mime, storage)
+    return await _process_bytes(ctx, row, data, mime, storage, kind=row.kind)
 
 
 async def download_url(

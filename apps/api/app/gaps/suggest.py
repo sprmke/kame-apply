@@ -31,8 +31,12 @@ _RESOURCES: dict[str, tuple[str, str]] = {
 }
 
 
-def suggest_for_skill(skill: str) -> tuple[str, str]:
+def suggest_for_skill(skill: str, *, pack=None) -> tuple[str, str]:
     key = skill.strip().casefold()
+    if pack is not None and pack.profile.gap_actions:
+        # Field-specific actions are short and truthful; no invented credential or course provider.
+        action = pack.profile.gap_actions[0]
+        return action.format(skill=skill), ""
     if key in _RESOURCES:
         return _RESOURCES[key]
     for k, v in _RESOURCES.items():

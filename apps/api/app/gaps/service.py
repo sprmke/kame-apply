@@ -13,6 +13,7 @@ from app.core.security import WorkspaceContext
 from app.gaps import models as m
 from app.gaps.schemas import GapPlanItemRead
 from app.gaps.suggest import suggest_for_skill
+from app.industries.registry import get_pack
 from app.profiles.models import Skill
 from app.tracks.models import Track, TrackCriteria
 
@@ -78,13 +79,14 @@ async def refresh_suggestions(ctx: WorkspaceContext, track_id: uuid.UUID) -> lis
         ).scalars()
     }
 
+    pack = get_pack(track.industry)
     created = 0
     for skill in must:
         if not skill or skill.casefold() in have:
             continue
         if skill.casefold() in existing:
             continue
-        suggestion, url = suggest_for_skill(skill)
+        suggestion, url = suggest_for_skill(skill, pack=pack)
         row = m.GapPlanItem(
             workspace_id=ctx.workspace_id,
             track_id=track_id,

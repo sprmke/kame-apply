@@ -4,16 +4,16 @@ Rank Track jobs with explainable scores and triage them on the Jobs board.
 
 ## Funnel
 
-1. **Hard filters** (`matching/hard_filters.py`): titles, excluded skills, work mode, employment type, posting age, agencies, knockout predictor, hidden companies → `eligible` / `not_eligible`. Unknown job values (missing employment type or posted date) stay eligible; we do not drop a job for a field the source did not state.
-2. **Rule score** (`matching/rule_score.py`): title, must-skills, seniority, salary, freshness (<72h), location/remote.
+1. **Hard filters** (`matching/hard_filters.py`): compiled criteria, titles, excluded skills, work mode, employment type, posting age, agencies, knockout predictor, hidden companies → `eligible` / `not_eligible`. Unknown job values (missing employment type or posted date) stay eligible; we do not drop a job for a field the source did not state.
+2. **Rule score** (`matching/rule_score.py`): title (including pack title groups and generic words), must-skills, seniority, salary, freshness (<72h), location/remote, **commute distance** when coordinates exist, **credentials** named in the posting against profile certifications, and **shift** overlap. Unknown shifts and unknown facets stay neutral.
 3. **Semantic** (`matching/embed.py`): fastembed `bge-small-en-v1.5` (or hash embedder in tests via `MATCHING_EMBEDDER=hash`); cosine → 0–100; stored on `jobs.embedding` (pgvector HNSW).
 4. **LLM fit** (optional, top N): prompt `job_fit` via bulk tier; skipped when AI unset/budget → `ai_review_paused`.
 
-Final score is a weighted blend; weights live in `tracks.settings.ranking_weights` and shift with skip/shortlist feedback (`matching/feedback.py`, bounded).
+Final score is a weighted blend. Defaults come from the Track's industry pack (`pack.matching.weights`); learned `tracks.settings.ranking_weights` override them and stay bounded (`matching/feedback.py`). Facet matches with `match.boost` add a small capped bonus. Hard filters apply pack facets marked `match.filter` only when the posting has known values, so an unknown stays eligible (P4).
 
 ## Qualifications
 
-`job_qualifications` (global): kind `must|preferred|knockout`, quote, normalized JSON. Rule extract always runs; cached by `jobs.qualifications_hash`. Knockouts compared to profile + answer bank (`matching/knockout.py`). Per-row verdicts in `track_jobs.fit.ledger`.
+`job_qualifications` (global): kind `must|preferred|knockout`, quote, normalized JSON. Rule extract always runs, including the pack's credential names and aliases; cached by `jobs.qualifications_hash`. Knockouts compared to profile + answer bank (`matching/knockout.py`). Per-row verdicts in `track_jobs.fit.ledger`; credential, shift, and pay-include rows are added for Hospitality and shown in the Jobs fit panel with pack labels.
 
 ## Match highlights
 

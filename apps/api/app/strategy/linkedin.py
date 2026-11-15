@@ -85,6 +85,7 @@ def build_suggestions(
     location: str | None,
     experiences: list[dict[str, Any]],
     skills: list[str],
+    pack=None,
 ) -> LinkedInOptimizeRead:
     titles = _titles_from_criteria(structured) or (
         [track_name] if track_name else ["Software Engineer"]
@@ -183,12 +184,16 @@ def build_suggestions(
         "Job types matching your Track employment types",
     ]
 
-    github = [
-        "Pin 2-3 repos that match Track must-have skills",
-        "README: what it is, how to run, one screenshot or sample output",
-        "Remove empty or unfinished repos from the top of your profile",
-        "Link the same GitHub URL in Career Profile links",
-    ]
+    github = (
+        list(pack.profile.found_checklist)
+        if pack is not None and pack.profile.found_checklist
+        else [
+            "Pin 2-3 repos that match Track must-have skills",
+            "README: what it is, how to run, one screenshot or sample output",
+            "Remove empty or unfinished repos from the top of your profile",
+            "Link the same GitHub URL in Career Profile links",
+        ]
+    )
 
     return LinkedInOptimizeRead(
         track_id=track_id,

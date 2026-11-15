@@ -190,7 +190,9 @@ const letter = computed(
   <div class="mx-auto flex w-full max-w-4xl flex-col gap-5">
     <PageHeader :title="t('jobs.tailorResume')" :lede="t('tailor.lede')">
       <template #actions>
-        <FnButton size="sm" tone="ghost" @click="router.push('/jobs')">{{ t("start.back") }}</FnButton>
+        <FnButton size="sm" tone="ghost" @click="router.push('/jobs')">{{
+          t("start.back")
+        }}</FnButton>
         <FnButton
           size="sm"
           tone="primary"
@@ -214,7 +216,9 @@ const letter = computed(
     />
     <div class="flex flex-wrap items-center gap-2 text-sm text-ink-600">
       <span class="tabular-nums">{{ beforeGrade }} → {{ afterGrade }}</span>
-      <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')">{{ run.status }}</FnChip>
+      <FnChip v-if="run && (run.status === 'queued' || run.status === 'running')">{{
+        run.status
+      }}</FnChip>
     </div>
 
     <WaitingForClaude v-if="inboxWaiting > 0" :waiting="inboxWaiting" />
@@ -230,7 +234,9 @@ const letter = computed(
         class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
       >
         <div class="mb-3 flex flex-col gap-1">
-          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("tailor.ledger") }}</h2>
+          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+            {{ t("tailor.ledger") }}
+          </h2>
           <p class="text-sm leading-6 text-ink-600">{{ t("tailor.ledgerHint") }}</p>
         </div>
         <div
@@ -245,7 +251,9 @@ const letter = computed(
         <ul class="divide-y divide-rule text-sm">
           <li v-for="(row, i) in ledgerRows" :key="i" class="px-1 py-3">
             <div class="flex gap-2">
-              <span class="mt-0.5 w-4 shrink-0 text-center text-xs font-bold">{{ verdictGlyph(String(row.verdict)) }}</span>
+              <span class="mt-0.5 w-4 shrink-0 text-center text-xs font-bold">{{
+                verdictGlyph(String(row.verdict))
+              }}</span>
               <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-1.5">
                   <FnChip>{{ row.kind }}</FnChip>
@@ -275,7 +283,9 @@ const letter = computed(
         class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
       >
         <div class="mb-3 flex flex-col gap-1">
-          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">{{ t("tailor.changes") }}</h2>
+          <h2 class="text-lg font-bold tracking-[-0.02em] text-ink-900">
+            {{ t("tailor.changes") }}
+          </h2>
           <p class="text-sm leading-6 text-ink-600">{{ t("tailor.changesHint") }}</p>
         </div>
         <p v-if="!changes.length" class="text-sm text-ink-600">{{ t("tailor.noChanges") }}</p>
@@ -306,7 +316,9 @@ const letter = computed(
         </ul>
         <div class="mt-4 flex flex-wrap gap-2">
           <FnButton size="sm" tone="ghost" @click="step = 'match'">{{ t("start.back") }}</FnButton>
-          <FnButton size="sm" tone="primary" @click="step = 'check'">{{ t("start.next") }}</FnButton>
+          <FnButton size="sm" tone="primary" @click="step = 'check'">{{
+            t("start.next")
+          }}</FnButton>
         </div>
       </section>
 
@@ -319,7 +331,11 @@ const letter = computed(
           <button
             type="button"
             class="min-h-11 rounded-md px-4 text-sm font-semibold"
-            :class="tab !== 'letter' ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'"
+            :class="
+              tab !== 'letter'
+                ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+                : 'text-ink-600'
+            "
             @click="tab = 'preview'"
           >
             {{ t("tailor.resume") }}
@@ -327,13 +343,20 @@ const letter = computed(
           <button
             type="button"
             class="min-h-11 rounded-md px-4 text-sm font-semibold"
-            :class="tab === 'letter' ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]' : 'text-ink-600'"
+            :class="
+              tab === 'letter'
+                ? 'bg-paper-1 text-brand-700 shadow-[var(--shadow-card)]'
+                : 'text-ink-600'
+            "
             @click="tab = 'letter'"
           >
             {{ t("tailor.letter") }}
           </button>
         </div>
-        <pre v-if="tab !== 'letter'" class="overflow-x-auto whitespace-pre-wrap rounded-lg bg-paper-0 p-4 text-sm text-ink-900">{{ previewText }}</pre>
+        <pre
+          v-if="tab !== 'letter'"
+          class="overflow-x-auto whitespace-pre-wrap rounded-lg bg-paper-0 p-4 text-sm text-ink-900"
+          >{{ previewText }}</pre>
         <div v-else class="rounded-lg bg-paper-0 p-4 text-sm text-ink-900">
           <p v-if="!letter" class="text-ink-600">{{ t("tailor.noLetter") }}</p>
           <template v-else>

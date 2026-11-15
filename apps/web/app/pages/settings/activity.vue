@@ -96,7 +96,9 @@ const rows = computed(() =>
     <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
     <FnSkeleton v-if="loading && !items.length" :lines="5" />
     <template v-else>
-      <ul class="flex flex-col divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 sm:hidden">
+      <ul
+        class="flex flex-col divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 sm:hidden"
+      >
         <li v-for="r in rows" :key="r.id" class="flex flex-col gap-0.5 px-4 py-3">
           <p class="text-sm font-medium text-ink-900">{{ r.action }}</p>
           <p class="text-xs text-ink-600">{{ r.target }} · {{ r.when }}</p>

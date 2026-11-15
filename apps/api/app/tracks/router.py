@@ -13,6 +13,7 @@ from app.core.security import WorkspaceContext, require_action
 from app.tracks import recommend as recommend_svc
 from app.tracks import schemas as s
 from app.tracks import service
+from app.tracks.plan import SearchPlanIn, SearchPlanOut
 
 router = APIRouter(prefix="/tracks", tags=["tracks"])
 Read = Depends(require_action("data.read"))
@@ -82,16 +83,22 @@ async def geo_lookup(
     )
 
 
-@router.post("/plan", response_model=s.CriteriaPlanPreview)
+@router.post("/plan", response_model=SearchPlanOut)
 async def plan_search(
-    body: s.CriteriaPlanRequest,
+    body: SearchPlanIn,
     request: Request,
     settings: SettingsDep,
     ctx: WorkspaceContext = Write,
 ):
     runner = getattr(request.app.state, "run_structured", None)
-    result = await service.plan_search(ctx, settings, text=body.text, run_structured=runner)
-    return s.CriteriaPlanPreview(**result)
+    result = await service.plan_search(
+        ctx,
+        settings,
+        text=body.text,
+        industry=body.industry,
+        run_structured=runner,
+    )
+    return SearchPlanOut(**result)
 
 
 @router.post("/{track_id}/criteria/suggest", response_model=s.CriteriaPlanPreview)

@@ -145,6 +145,7 @@ Workspace AI keys are added in **Settings → AI** and encrypted with `MASTER_KE
 | Inbound email alerts | `INBOUND_EMAIL_DOMAIN`, `INBOUND_WEBHOOK_SECRET` | Cloudflare Email Worker → `https://api.example.com/api/v1/webhooks/inbound-email` with `X-Kame-Signature: sha256=<hmac>` |
 | Sentry | `SENTRY_DSN` (API), `NUXT_PUBLIC_SENTRY_DSN` (web) | Optional; PII stays off |
 | Feedback to GitHub | `GITHUB_FEEDBACK_TOKEN`, `GITHUB_FEEDBACK_REPO` | Optional; without it feedback is audit-logged only |
+| Layer 4 job search | `JOOBLE_API_KEY`, `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `SEARCH_TERMS_ACKNOWLEDGED`, `SEARCH_SOURCES_ENABLED`, `SOURCE_QUERY_TTL_HOURS`, `SEARCH_QUERIES_PER_TRACK` | Platform keys only. A provider runs only after a human confirms its terms (`SEARCH_TERMS_ACKNOWLEDGED=true`); a missing key disables that provider. Fixtures are exempt for tests. |
 
 Deployed environments fail closed on the inbound and Telegram webhooks when their secrets are missing. Prod refuses to start with the Telegram bot enabled and no `TELEGRAM_WEBHOOK_SECRET`.
 

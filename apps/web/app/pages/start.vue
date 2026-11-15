@@ -651,7 +651,7 @@ onBeforeUnmount(() => {
           class="sr-only"
           @change="onFile"
         />
-        <FnButton tone="ghost" as-child>
+        <FnButton tone="quiet" as-child>
           <NuxtLink to="/tracks">{{ t("setup.startBlank") }}</NuxtLink>
         </FnButton>
       </div>

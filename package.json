@@ -10,6 +10,7 @@
     "check:filenames": "bash scripts/dev/check-filename-conventions.sh",
     "check:stack-terminology": "bash scripts/dev/check-stack-terminology.sh",
     "check:ux-jargon": "bash scripts/dev/check-ux-jargon.sh",
+    "check:industry-branches": "bash scripts/dev/check-industry-branches.sh",
     "check:hooks": "bash scripts/dev/test-hooks.sh",
     "env:status": "bash scripts/dev/env-status.sh",
     "dev:free-ports": "bash scripts/dev/free-local-ports.sh",

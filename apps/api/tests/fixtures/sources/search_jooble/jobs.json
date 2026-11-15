@@ -1,0 +1,27 @@
+{
+  "totalCount": 2,
+  "jobs": [
+    {
+      "id": "jb-1001",
+      "title": "Sous Chef",
+      "location": "Dubai, United Arab Emirates",
+      "company": "Marina Bay Hotel",
+      "salary": "AED 7,000 - 9,000 per month plus accommodation and meals",
+      "type": "Full-time",
+      "link": "https://ae.indeed.com/viewjob?jk=jb1001",
+      "description": "<p>Hotel kitchen brigade seeks a sous chef. HACCP, evening and weekend shifts, accommodation provided. Filipino and Japanese cuisine a plus. 180 covers per service.</p>",
+      "updated": "2026-11-10T08:00:00Z"
+    },
+    {
+      "id": "jb-1002",
+      "title": "Commis Chef",
+      "location": "Makati, Philippines",
+      "company": "Casa Manila Restaurant",
+      "salary": "PHP 22,000 per month",
+      "type": "Full-time",
+      "link": "https://ph.indeed.com/viewjob?jk=jb1002",
+      "description": "<p>Commis chef for a casual dining kitchen. Morning and split shifts. TESDA Cookery NC II preferred. Grill and saute stations.</p>",
+      "updated": "2026-11-11T09:30:00Z"
+    }
+  ]
+}

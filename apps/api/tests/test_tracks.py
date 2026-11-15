@@ -12,7 +12,7 @@ from app.main import create_app
 from app.taxonomy.seed import seed_taxonomy
 from app.tracks.criteria import SkillSets, TitleSpec
 from app.tracks.merge import CriteriaPatch
-from app.tracks.plan import SearchPlanOut
+from app.tracks.plan import SearchPlanDraft
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
 from tests.test_ai import env  # noqa: F401
 from tests.test_workspaces import signup
@@ -216,7 +216,7 @@ async def test_plan_uses_ai_titles_and_skills(env_tracks):
     me = await signup(c)
 
     class Result:
-        output = SearchPlanOut(
+        output = SearchPlanDraft(
             titles=[
                 TitleSpec(title="Backend Engineer", synonyms=["Backend Developer"]),
                 TitleSpec(title="Platform Engineer"),
@@ -282,7 +282,7 @@ async def test_suggest_preserves_personal_filters(env_tracks):
     ).json()["id"]
 
     class Result:
-        output = SearchPlanOut(
+        output = SearchPlanDraft(
             titles=[TitleSpec(title="Platform Engineer")],
             core_skills=["Go"],
             work_modes=["remote"],
@@ -324,7 +324,7 @@ async def test_create_with_suggest_uses_plan(env_tracks):
     p = await _profile(c, me)
 
     class Result:
-        output = SearchPlanOut(
+        output = SearchPlanDraft(
             titles=[TitleSpec(title="Data Analyst")],
             core_skills=["SQL"],
             work_modes=["remote"],

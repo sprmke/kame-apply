@@ -29,7 +29,8 @@ def test_baseline_is_structural_and_never_invents_personal_facts(path: Path):
     assert plan.has_role_signal()
     assert plan.posting_max_age_days == 21
     assert plan.companies.exclude_agencies is True
-    assert plan.salary is None
+    # A field of work may set how a rate is read (month or hour); amounts stay empty.
+    assert plan.salary is None or (plan.salary.min is None and plan.salary.max is None)
     assert plan.locations == []
     if plan.visa_sponsorship is not None:
         assert re.search(r"\b(visa|sponsor)", data["text"], re.I)

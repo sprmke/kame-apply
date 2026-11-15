@@ -27,6 +27,7 @@ class TrackCreate(BaseModel):
     template_slug: str | None = Field(default=None, max_length=80)
     # Build a full role-based search setup from nl_text (falls back to deterministic defaults).
     suggest: bool = False
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackUpdate(BaseModel):
@@ -37,6 +38,7 @@ class TrackUpdate(BaseModel):
     color_hue: int | None = Field(default=None, ge=1, le=8)
     autonomy: Autonomy | None = None
     settings: dict[str, Any] | None = None
+    industry: str | None = Field(default=None, max_length=48)
 
 
 class TrackReorder(BaseModel):
@@ -114,6 +116,8 @@ class TrackRead(BaseModel):
     summary: str
     settings: dict[str, Any]
     template_slug: str | None
+    industry: str
+    industry_version: int
     created_at: datetime
     updated_at: datetime
     archived_at: datetime | None
