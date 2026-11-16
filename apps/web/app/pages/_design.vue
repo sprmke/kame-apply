@@ -403,13 +403,10 @@ const opts = [
 
         <div class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4">
           <div class="flex flex-wrap items-center gap-2">
-            <input
-              id="d-setup-skill"
-              type="checkbox"
-              checked
-              class="size-5 rounded border-edge text-brand-600"
-            />
-            <label for="d-setup-skill" class="text-sm font-semibold text-ink-900">Skill</label>
+            <label class="flex min-h-11 items-center gap-2">
+              <input type="checkbox" checked class="size-5 rounded border-edge text-brand-600" />
+              <span class="text-sm font-semibold text-ink-900">Skill</span>
+            </label>
             <FnChip>From your resume</FnChip>
             <FnChip tone="neutral">Already there</FnChip>
           </div>
@@ -422,14 +419,9 @@ const opts = [
           </details>
 
           <div class="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
-            <input
-              id="d-setup-auth"
-              type="checkbox"
-              checked
-              class="size-5 rounded border-edge text-brand-600"
-            />
-            <label for="d-setup-auth" class="text-sm font-semibold text-ink-900">
-              Work authorization (PH)
+            <label class="flex min-h-11 items-center gap-2">
+              <input type="checkbox" checked class="size-5 rounded border-edge text-brand-600" />
+              <span class="text-sm font-semibold text-ink-900">Work authorization (PH)</span>
             </label>
             <FnChip tone="accent">Only you can answer this</FnChip>
           </div>
@@ -448,14 +440,11 @@ const opts = [
 
         <div class="flex flex-col gap-2 rounded-xl border border-rule bg-paper-1 p-4">
           <div class="flex flex-wrap items-center gap-2">
-            <input
-              id="d-setup-search"
-              type="checkbox"
-              checked
-              class="size-5 rounded border-edge text-brand-600"
-            />
-            <label for="d-setup-search" class="text-sm font-semibold text-ink-900">
-              Frontend engineer, Manila or remote
+            <label class="flex min-h-11 items-center gap-2">
+              <input type="checkbox" checked class="size-5 rounded border-edge text-brand-600" />
+              <span class="text-sm font-semibold text-ink-900">
+                Frontend engineer, Manila or remote
+              </span>
             </label>
             <FnChip tone="accent">Edited</FnChip>
             <FnButton tone="ghost" size="sm" class="ml-auto">Edit</FnButton>
