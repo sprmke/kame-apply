@@ -52,10 +52,17 @@ test("interactive controls are at least 44px tall at 375px", async ({ page }) =>
       'button, a[href], [role="tab"], [role="combobox"], input:not([type="hidden"]), textarea';
     return [...document.querySelectorAll<HTMLElement>(sel)]
       .filter((el) => el.offsetParent !== null && !el.closest("p") && !el.closest("label"))
-      .map((el) => ({
-        name: (el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 30),
-        h: Math.round(el.getBoundingClientRect().height),
-      }))
+      .map((el) => {
+        // A checkbox or radio is hit through its label, so measure the label's box.
+        const type = el.getAttribute("type");
+        const target = type === "checkbox" || type === "radio" ? (el.closest("label") ?? el) : el;
+        return {
+          name: (target.getAttribute("aria-label") || target.textContent || target.tagName)
+            .trim()
+            .slice(0, 30),
+          h: Math.round(target.getBoundingClientRect().height),
+        };
+      })
       .filter((x) => x.h < 44);
   });
   expect(small).toEqual([]);

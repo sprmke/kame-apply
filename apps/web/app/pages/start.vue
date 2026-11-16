@@ -628,6 +628,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-24">
+    <VerifyEmailBanner />
     <!-- eslint-disable vue/html-self-closing (prettier keeps the slash on void elements) -->
     <PageHeader :title="t('setup.title')" :lede="t('setup.intro')" />
 

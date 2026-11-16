@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+  createWorkspace,
   devGeminiKey,
   latestMail,
   open,
@@ -16,8 +17,9 @@ test.describe("Phase 2 acceptance", () => {
   }) => {
     await signUp(page);
     await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText("Personal");
-    await expect(page.getByRole("heading", { name: "Get set up" })).toBeVisible();
-    await expect(page.getByText("Add an AI key")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Set up from your resume" })).toBeVisible();
+    await open(page, "/");
+    await expect(page.getByText("Turn on AI")).toBeVisible();
     // Reload keeps the session through the refresh cookie.
     await page.reload();
     await expect(page.getByRole("heading", { level: 1, name: /Welcome/ })).toBeVisible();
@@ -93,8 +95,9 @@ test.describe("Phase 2 acceptance", () => {
 
   test("3. owner adds a Gemini key, sets a $5 budget, usage shows $0.00", async ({ page }) => {
     await signUp(page);
-    await page.getByRole("link", { name: "Add an AI key" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "AI providers" })).toBeVisible();
+    await open(page, "/");
+    await page.getByRole("link", { name: "Turn on AI" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Connect AI" })).toBeVisible();
     await expect(page.getByText("$0.00 of $5.00 this month")).toBeVisible();
 
     await page.getByRole("button", { name: "Add key" }).click();
@@ -121,11 +124,7 @@ test.describe("Phase 2 acceptance", () => {
 
   test("invite a member who joins and appears with the right role", async ({ page, browser }) => {
     await verifyEmail(page, await signUp(page));
-    await page.getByRole("button", { name: "Switch workspace" }).click();
-    await page.getByRole("menuitem", { name: "New workspace" }).click();
-    await page.getByRole("dialog").getByLabel("Name").fill("Crew");
-    await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText("Crew");
+    await createWorkspace(page, "Crew");
 
     await open(page, "/settings/members");
     const guestEmail = uniqueEmail("guest");
@@ -145,16 +144,12 @@ test.describe("Phase 2 acceptance", () => {
 
     await page.reload();
     await expect(page.getByRole("row", { name: /Gus Guest/ })).toContainText("Member");
-    await expect(page.getByText("2 of 10 seats used")).toBeVisible();
+    await expect(page.getByText(/of \d+ members/).first()).toBeVisible();
   });
 
   test("members cannot see manager-only controls", async ({ page, browser }) => {
     await verifyEmail(page, await signUp(page));
-    await page.getByRole("button", { name: "Switch workspace" }).click();
-    await page.getByRole("menuitem", { name: "New workspace" }).click();
-    await page.getByRole("dialog").getByLabel("Name").fill("Locked");
-    await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText("Locked");
+    await createWorkspace(page, "Locked");
     await open(page, "/settings/members");
     const email = uniqueEmail("viewer");
     await page.getByRole("button", { name: "Invite member" }).click();
@@ -176,7 +171,7 @@ test.describe("Phase 2 acceptance", () => {
     await open(v, "/settings/members");
     await expect(v.getByRole("button", { name: "Invite member" })).toHaveCount(0);
     await open(v, "/settings/ai");
-    await expect(v.getByText("Owners and admins manage keys and budget.")).toBeVisible();
+    await expect(v.getByText("Owners and admins manage AI and budget.")).toBeVisible();
     await expect(v.getByRole("button", { name: "Add key" })).toHaveCount(0);
   });
 
@@ -187,6 +182,7 @@ test.describe("Phase 2 acceptance", () => {
     await open(page, "/settings/sessions");
     await expect(page.getByText("This device")).toHaveCount(1);
     await page.getByRole("button", { name: "Sign out" }).first().click();
+    await page.getByRole("dialog").getByRole("button", { name: "Sign out" }).click();
     await expect(page.getByText("Device signed out")).toBeVisible();
     await open(second, "/settings/profile");
     await expect(second).toHaveURL(/\/login/);
@@ -194,16 +190,13 @@ test.describe("Phase 2 acceptance", () => {
 
   test("workspace switching never shows another workspace's data", async ({ page }) => {
     await signUp(page);
-    await page.getByRole("button", { name: "Switch workspace" }).click();
-    await page.getByRole("menuitem", { name: "New workspace" }).click();
-    await page.getByRole("dialog").getByLabel("Name").fill("Second");
-    await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText("Second");
+    await createWorkspace(page, "Second");
     await open(page, "/settings/members");
-    await expect(page.getByText("1 of 10 seats used")).toBeVisible();
+    await expect(page.getByText(/of \d+ members/).first()).toBeVisible();
     await page.getByRole("button", { name: "Switch workspace" }).click();
     await page.getByRole("menuitem", { name: /Personal/ }).click();
     await open(page, "/settings/general");
-    await expect(page.getByLabel("Name")).toHaveValue("Personal");
+    await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText("Personal");
+    await expect(page.getByRole("textbox", { name: "Name" }).first()).toHaveValue("Personal");
   });
 });

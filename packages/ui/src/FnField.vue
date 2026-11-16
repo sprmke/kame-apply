@@ -29,10 +29,14 @@ const describedby = computed(
       <FnTooltip v-if="help" :text="help" side="top">
         <button
           type="button"
-          class="grid size-5 shrink-0 place-items-center rounded-full border border-rule text-[0.6875rem] font-semibold text-ink-600 hover:border-edge hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"
+          class="-m-3 grid size-11 shrink-0 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"
           :aria-label="help"
         >
-          ?
+          <span
+            class="grid size-5 place-items-center rounded-full border border-rule text-[0.6875rem] font-semibold text-ink-600 hover:border-edge hover:bg-paper-2"
+            aria-hidden="true"
+            >?</span
+          >
         </button>
       </FnTooltip>
     </div>

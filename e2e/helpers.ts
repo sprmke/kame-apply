@@ -79,3 +79,15 @@ export async function latestMail(subject: string, to: string): Promise<string> {
   }
   throw new Error(`no mail "${subject}" for ${to}`);
 }
+
+/** Create a workspace through the three steps: name, field of work, optional resume. */
+export async function createWorkspace(page: Page, name: string) {
+  await page.getByRole("button", { name: "Switch workspace" }).click();
+  await page.getByRole("menuitem", { name: "New workspace" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Name").fill(name);
+  await dialog.getByRole("button", { name: "Next" }).click();
+  await dialog.getByRole("button", { name: "Next" }).click();
+  await dialog.getByRole("button", { name: "Create workspace" }).click();
+  await expect(page.getByRole("button", { name: "Switch workspace" })).toContainText(name);
+}

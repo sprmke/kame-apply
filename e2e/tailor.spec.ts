@@ -112,8 +112,13 @@ test("tailor changes can be removed and kept", async ({ page, request }) => {
 
   await signIn(page, email);
   await open(page, `/tailor/${clip.track_job_id}`);
-  await expect(page.getByRole("heading", { name: "Tailor" })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByRole("button", { name: "Accept" })).toBeEnabled({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Tailor resume" })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByRole("button", { name: "Accept and attach" })).toBeEnabled({
+    timeout: 30_000,
+  });
+  await page.getByRole("button", { name: "Continue" }).click();
 
   const keep = page.getByRole("button", { name: "Keep", exact: true }).first();
   const remove = page.getByRole("button", { name: "Remove", exact: true }).first();

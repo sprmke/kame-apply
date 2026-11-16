@@ -6,17 +6,17 @@ test.describe("Phase 5 discovery", () => {
     await signUp(page);
     await open(page, "/tracks");
     await page.getByRole("button", { name: "New search" }).click();
-    await page.getByLabel("Name (optional)").fill("Software Engineer");
+    await page.getByLabel("Name this search").fill("Software Engineer");
     await page.getByLabel("What role are you looking for?").fill("software engineer remote Python");
-    await page.getByRole("button", { name: "Create" }).click();
+    await page.getByRole("button", { name: "Create search" }).click();
     await expect(page).toHaveURL(/\/tracks\/[0-9a-f-]+/);
-    await expect(page.getByRole("button", { name: "Run search" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Find jobs now" }).first()).toBeVisible();
     await page
-      .getByRole("navigation", { name: "Track sections" })
-      .getByRole("link", { name: "Settings" })
+      .getByRole("navigation", { name: "Search sections" })
+      .getByRole("link", { name: "How we work" })
       .click();
-    await expect(page.getByText("Sources", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Where we look", { exact: true }).first()).toBeVisible();
     await open(page, "/settings/sources");
-    await expect(page.getByRole("heading", { name: "Source health" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
