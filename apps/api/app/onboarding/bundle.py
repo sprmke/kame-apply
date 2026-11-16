@@ -14,6 +14,7 @@ from typing import Any
 from app.onboarding import schemas as s
 from app.onboarding.derive import account as account_rules
 from app.onboarding.derive import answers as answer_rules
+from app.onboarding.derive import industry as industry_rules
 from app.onboarding.derive import prefs
 from app.onboarding.derive import seniority as seniority_rules
 from app.onboarding.derive import skills as skill_rules
@@ -336,6 +337,17 @@ def build_bundle(
     notice_keys = list(notices or []) + account_notices
     if reading.source == "rules" and "ai_off_basics_only" not in notice_keys:
         notice_keys.append("ai_off_basics_only")
+    hint = industry_rules.detect(reading)
+    industry = (
+        s.IndustryHint(
+            pack_key=hint.pack_key,
+            label_key=_pack_label_key(hint.pack_key),
+            role_family=hint.role_family,
+            confidence=hint.confidence,
+        )
+        if hint is not None
+        else None
+    )
     return s.SetupBundle(
         items=items,
         searches=proposals,
@@ -343,7 +355,15 @@ def build_bundle(
         notices=notice_keys,
         counts=_counts(items, proposals),
         lowest_pay=_lowest_pay(signal_list),
+        industry=industry,
     )
+
+
+def _pack_label_key(pack_key: str) -> str:
+    from app.industries.registry import get_pack
+
+    pack = get_pack(pack_key)
+    return pack.label_key if pack is not None else pack_key
 
 
 def _lowest_pay(signals: list[prefs.Signal]) -> s.SalaryInput | None:
