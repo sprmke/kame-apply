@@ -813,7 +813,7 @@ Exit: each entry point covered by an E2E path; markers disappear after edit or *
 
 - [x] Golden set grows from 15 to 25 (§10.3), including the planted-injection resume.
 - [ ] `setup_grounding` eval blocking in CI; PII and injection fixtures added to the existing evals.
-- [x] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo). Written, not yet run green.
+- [x] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo). Green on 2026-11-15 against the local stack: three tests, 8s each.
 - [x] MCP read tool `get_setup_draft` (D7 accepted).
 - [ ] Performance check against R1 on staging with a free-tier provider.
 - [ ] Scripted manual run (§10.6), including the chef resume.
@@ -941,8 +941,9 @@ Pass: each run without docs, no question about what a word means, timings within
 | S4 | Done | Decisions, validate, apply, revert, seen, provenance; update-mode annotations; after-commit gap refresh and first run. Tests: `test_setup_apply.py` (7: idempotency, stale, rollback, no network, revert, RBAC). Deviation: merge-preview sheet deferred; no silent overwrite. |
 | S5 | Done | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing on the search it starts. Lowest pay fan-out, search edit sheet, See all, `/_design` states, and the one-time finish panel (`SetupDonePanel` on the search page, dismissed per search) are in. Open: reviewer passes and a running-app run at 375, 820, and 1440. |
 | S6 | Done | Create workspace dialog (name, field of work, optional resume), Settings > General entry, Profile > Files after a merge (**Review changes** opens `/start?document=`), People I help **Start from their resume**, Today open and done card with undo, and `FilledFromResume` markers on Profile, Answers, Writing style, and What to look for. |
-| S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts`, and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, Playwright run, staging performance, scripted manual run. |
+| S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts` (green against the local stack), and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, staging performance, scripted manual run. |
 | S8 | Done | `derive/industry.py` detects the field with the deterministic classifier (no AI needed), the bundle carries an `IndustryHint` (pack key, label key, role family, confidence), and the review shows a field chip with **Change**. Deviation: the chip never switches the workspace by itself, so a search keeps the workspace's primary field until the person changes it in Settings. |
+| S9 | Not started | AI detection pass: `industry_detect.v1` when a key is present, for resumes the curated classifier cannot place. |
 
 ### Verification (2026-11-13)
 
@@ -956,8 +957,8 @@ Pass: each run without docs, no question about what a word means, timings within
 | Gap | Where |
 | --- | --- |
 | S5: `ux-reviewer` + `design-reviewer` passes, running-app run at 375/820/1440 | S5 |
-| S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, Playwright run of `setup-from-resume.spec.ts`, staging performance, scripted manual run | S7 |
-| S8: AI detection pass (the deterministic classifier covers the curated packs today) | S8 |
+| S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, staging performance, scripted manual run | S7 |
+| S9: AI detection pass (the deterministic classifier covers the curated packs today) | S9 |
 | Full merge-preview sheet for update mode | S4 deviation |
 | Starter answers generated after apply (needs profile facts); the answer desk already offers them | S3 deviation |
 

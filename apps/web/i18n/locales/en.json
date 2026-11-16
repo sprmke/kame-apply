@@ -1806,7 +1806,7 @@
     "doneCardBody": "We filled your pages. Check them, improve them, or undo.",
     "undo": "Undo setup",
     "undoConfirm": "Undo the setup? Only untouched rows are removed.",
-    "undone": "Setup undone",
+    "undone": "Setup undone. Your edits are kept.",
     "filledFrom": "Filled from your resume. Check it, then use {control} to improve it.",
     "gotIt": "Got it",
     "control": {
