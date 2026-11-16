@@ -813,7 +813,7 @@ Exit: each entry point covered by an E2E path; markers disappear after edit or *
 
 - [x] Golden set grows from 15 to 25 (§10.3), including the planted-injection resume.
 - [ ] `setup_grounding` eval blocking in CI; PII and injection fixtures added to the existing evals.
-- [x] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo). Written, not yet run green.
+- [x] Playwright: `e2e/setup-from-resume.spec.ts` (AI fixture runner, no-key path, update mode, other person, stale, undo). Green on 2026-11-15 against the local stack: three tests, 8s each.
 - [x] MCP read tool `get_setup_draft` (D7 accepted).
 - [ ] Performance check against R1 on staging with a free-tier provider.
 - [ ] Scripted manual run (§10.6), including the chef resume.
@@ -941,7 +941,7 @@ Pass: each run without docs, no question about what a word means, timings within
 | S4 | Done | Decisions, validate, apply, revert, seen, provenance; update-mode annotations; after-commit gap refresh and first run. Tests: `test_setup_apply.py` (7: idempotency, stale, rollback, no network, revert, RBAC). Deviation: merge-preview sheet deferred; no silent overwrite. |
 | S5 | Done except the finish panel | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing. Lowest pay fan-out, search edit sheet, See all, and the `/_design` states are in. Open: finish panel, reviewer passes, and a running-app run at 375, 820, and 1440. |
 | S6 | Partial | In: create workspace dialog step (name, field of work, optional resume), Settings > General entry, Profile > merge page, Today open and done card with undo, and `FilledFromResume` markers on Profile, Answers, Writing style, and What to look for. Open: People I help starts from a resume (only the hint exists), and the Files update-mode prompt. |
-| S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts`, and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, Playwright run, staging performance, scripted manual run. |
+| S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts` (green against the local stack), and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, staging performance, scripted manual run. |
 
 ### Verification (2026-11-13)
 
@@ -956,7 +956,7 @@ Pass: each run without docs, no question about what a word means, timings within
 | --- | --- |
 | S5: finish panel, `ux-reviewer` + `design-reviewer` passes, running-app run at 375/820/1440 | S5 |
 | S6: People I help starts from a resume, Files update-mode prompt | S6 |
-| S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, Playwright run of `setup-from-resume.spec.ts`, staging performance, scripted manual run | S7 |
+| S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, staging performance, scripted manual run | S7 |
 | S8: industry hook (`industry_detect.v1` in `derive/industry.py`, field chip on the review). Industry packs are on this branch, so it can start | S8 |
 | Full merge-preview sheet for update mode | S4 deviation |
 | Starter answers generated after apply (needs profile facts); the answer desk already offers them | S3 deviation |
