@@ -132,6 +132,11 @@ const keptCounts = computed(() => {
   return counts;
 });
 const keptSummary = computed(() => summarySentence(keptCounts.value));
+const industryLabel = computed(() => {
+  const hint = bundle.value?.industry;
+  if (!hint) return "";
+  return t(hint.label_key || `industry.${hint.pack_key}.label`);
+});
 const hiddenSalaryTargets = new Set(["profile.salary_prefs", "answers.salary_expectation"]);
 const visibleItems = computed(() => {
   const out: ReviewItem[] = [];
@@ -738,6 +743,17 @@ onBeforeUnmount(() => {
 
       <div v-for="notice in bundle.notices" :key="notice" class="text-sm text-ink-600">
         {{ t(`setup.notice.${notice}`) }}
+      </div>
+
+      <div
+        v-if="bundle?.industry"
+        class="flex flex-wrap items-center gap-2 rounded-xl border border-rule bg-paper-1 px-4 py-3"
+      >
+        <span class="text-sm text-ink-600">{{ t("setup.fieldOfWork") }}</span>
+        <FnChip tone="accent">{{ industryLabel }}</FnChip>
+        <NuxtLink class="text-sm font-semibold text-brand-700" to="/settings/general">
+          {{ t("setup.changeField") }}
+        </NuxtLink>
       </div>
 
       <FnSectionCard

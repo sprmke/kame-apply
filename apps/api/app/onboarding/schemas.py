@@ -162,6 +162,17 @@ class SearchProposal(BaseModel):
     adjacent_titles: list[str] = Field(default_factory=list, max_length=10)
 
 
+class IndustryHint(BaseModel):
+    """The field of work the resume points at. A chip on the review, never a silent switch."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pack_key: str = Field(min_length=1, max_length=48)
+    label_key: str = Field(default="", max_length=120)
+    role_family: str | None = Field(default=None, max_length=48)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+
 class SetupBundle(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -172,6 +183,7 @@ class SetupBundle(BaseModel):
     notices: list[str] = Field(default_factory=list, max_length=20)
     counts: dict[str, int] = Field(default_factory=dict)
     lowest_pay: SalaryInput | None = None
+    industry: IndustryHint | None = None
 
     @model_validator(mode="after")
     def _unique_ids(self):

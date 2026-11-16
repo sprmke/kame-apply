@@ -7309,6 +7309,48 @@
         "title": "IndustryExperienceRead",
         "type": "object"
       },
+      "IndustryHint": {
+        "additionalProperties": false,
+        "description": "The field of work the resume points at. A chip on the review, never a silent switch.",
+        "properties": {
+          "confidence": {
+            "default": 0.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "label_key": {
+            "default": "",
+            "maxLength": 120,
+            "title": "Label Key",
+            "type": "string"
+          },
+          "pack_key": {
+            "maxLength": 48,
+            "minLength": 1,
+            "title": "Pack Key",
+            "type": "string"
+          },
+          "role_family": {
+            "anyOf": [
+              {
+                "maxLength": 48,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Family"
+          }
+        },
+        "required": [
+          "pack_key"
+        ],
+        "title": "IndustryHint",
+        "type": "object"
+      },
       "IndustryList": {
         "properties": {
           "items": {
@@ -13277,6 +13319,16 @@
             },
             "title": "Counts",
             "type": "object"
+          },
+          "industry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IndustryHint"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "items": {
             "items": {

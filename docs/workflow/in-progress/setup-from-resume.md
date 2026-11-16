@@ -802,8 +802,8 @@ Exit: a golden PDF goes from upload to Matches in the running app; reviewers pas
 
 - [x] Create workspace dialog step 2. The dialog is three steps: name, field of work, optional resume.
 - [x] Settings > General **Set up from a resume**.
-- [ ] Profile > Files update-mode prompt.
-- [ ] People I help **Start from their resume**.
+- [x] Profile > Files update-mode prompt after a merge.
+- [x] People I help **Start from their resume**.
 - [x] Today **Setup done** card, **Undo setup**, checklist link to an open draft, Needs you entry for needs-you answers.
 - [x] `FilledFromResume` line and chips on Profile, Answers, Writing style, What to look for. Studio still open.
 
@@ -823,7 +823,7 @@ Exit: R1 to R8 met and recorded in the plan's delivery status section.
 
 ### S8. Industry hook (after IND-2 of multi-industry-support)
 
-- [ ] `derive/industry.py` calls `industry_detect.v1`; the review screen gets the field chip with **Change**; the review hides pack-hidden fields through the experience manifest.
+- [x] `derive/industry.py` detects the field and the review shows the chip with **Change**. The deterministic classifier is used, not `industry_detect.v1`; pack-hidden fields stay visible on the review for now (recorded as deviations).
 
 Exit: the chef scenario in multi-industry-support §13.3 starts from this setup.
 
@@ -939,9 +939,11 @@ Pass: each run without docs, no question about what a word means, timings within
 | S2 | Done | `setup_service.py` + `pipeline.py` + routes; upload hardening; sensitive-line filter. `test_setup_pipeline.py` (12), `test_sensitive_lines.py` (9), `test_upload_hardening.py` (4). Deviations: `POST /setups` takes JSON (`document_id` from the existing upload endpoint, or `text`) instead of multipart; no DBOS wrapper. |
 | S3 | Done | Derivers, grounding, `setup_signals.v1`, `search_plan.v2`, bundle assembly. Tests: `test_setup_derive_*` (95), `test_setup_grounding.py` (11), `test_setup_searches.py` (17), `test_setup_ai_path.py`, `evals/test_setup_signals_eval.py` (16). |
 | S4 | Done | Decisions, validate, apply, revert, seen, provenance; update-mode annotations; after-commit gap refresh and first run. Tests: `test_setup_apply.py` (7: idempotency, stale, rollback, no network, revert, RBAC). Deviation: merge-preview sheet deferred; no silent overwrite. |
-| S5 | Done except the finish panel | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing. Lowest pay fan-out, search edit sheet, See all, and the `/_design` states are in. Open: finish panel, reviewer passes, and a running-app run at 375, 820, and 1440. |
-| S6 | Partial | In: create workspace dialog step (name, field of work, optional resume), Settings > General entry, Profile > merge page, Today open and done card with undo, and `FilledFromResume` markers on Profile, Answers, Writing style, and What to look for. Open: People I help starts from a resume (only the hint exists), and the Files update-mode prompt. |
+| S5 | Done | `/start` rebuilt around the draft: upload or paste, role sentence, polling, grouped review with source chips and needs-you rows, autosave, validate and apply, stale refresh, landing on the search it starts. Lowest pay fan-out, search edit sheet, See all, `/_design` states, and the one-time finish panel (`SetupDonePanel` on the search page, dismissed per search) are in. Open: reviewer passes and a running-app run at 375, 820, and 1440. |
+| S6 | Done | Create workspace dialog (name, field of work, optional resume), Settings > General entry, Profile > Files after a merge (**Review changes** opens `/start?document=`), People I help **Start from their resume**, Today open and done card with undo, and `FilledFromResume` markers on Profile, Answers, Writing style, and What to look for. |
 | S7 | Partial | Golden set 16 to 25 added including an injection case, `e2e/setup-from-resume.spec.ts` with `pw.setup.config.ts` (green against the local stack), and the read-only `get_setup_draft` MCP tool. Open: blocking `setup_grounding` eval run, live model precision run, staging performance, scripted manual run. |
+| S8 | Done | `derive/industry.py` detects the field with the deterministic classifier (no AI needed), the bundle carries an `IndustryHint` (pack key, label key, role family, confidence), and the review shows a field chip with **Change**. Deviation: the chip never switches the workspace by itself, so a search keeps the workspace's primary field until the person changes it in Settings. |
+| S9 | Not started | AI detection pass: `industry_detect.v1` when a key is present, for resumes the curated classifier cannot place. |
 
 ### Verification (2026-11-13)
 
@@ -954,10 +956,9 @@ Pass: each run without docs, no question about what a word means, timings within
 
 | Gap | Where |
 | --- | --- |
-| S5: finish panel, `ux-reviewer` + `design-reviewer` passes, running-app run at 375/820/1440 | S5 |
-| S6: People I help starts from a resume, Files update-mode prompt | S6 |
+| S5: `ux-reviewer` + `design-reviewer` passes, running-app run at 375/820/1440 | S5 |
 | S7: blocking `setup_grounding` eval run, live `setup_grounding`/`setup_signals` precision run, staging performance, scripted manual run | S7 |
-| S8: industry hook (`industry_detect.v1` in `derive/industry.py`, field chip on the review). Industry packs are on this branch, so it can start | S8 |
+| S9: AI detection pass (the deterministic classifier covers the curated packs today) | S9 |
 | Full merge-preview sheet for update mode | S4 deviation |
 | Starter answers generated after apply (needs profile facts); the answer desk already offers them | S3 deviation |
 

@@ -1719,6 +1719,8 @@
     "currentValue": "Now: {value}",
     "whereFrom": "Where this came from",
     "showAll": "Show all",
+    "fieldOfWork": "Field of work",
+    "changeField": "Change",
     "onlyYou": "Only you can answer this",
     "onlyYouHint": "Job forms ask this. We never guess it.",
     "oneStepUp": "One step up",
