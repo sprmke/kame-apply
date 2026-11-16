@@ -4033,6 +4033,30 @@ export type IndustryExperienceRead = {
 };
 
 /**
+ * IndustryHint
+ *
+ * The field of work the resume points at. A chip on the review, never a silent switch.
+ */
+export type IndustryHint = {
+    /**
+     * Confidence
+     */
+    confidence?: number;
+    /**
+     * Label Key
+     */
+    label_key?: string;
+    /**
+     * Pack Key
+     */
+    pack_key: string;
+    /**
+     * Role Family
+     */
+    role_family?: string | null;
+};
+
+/**
  * IndustryList
  */
 export type IndustryList = {
@@ -7531,6 +7555,7 @@ export type SetupBundle = {
     counts?: {
         [key: string]: number;
     };
+    industry?: IndustryHint | null;
     /**
      * Items
      */

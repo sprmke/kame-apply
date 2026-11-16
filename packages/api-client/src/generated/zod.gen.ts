@@ -1684,6 +1684,18 @@ export const zIndustryDetectRead = z.object({
 });
 
 /**
+ * IndustryHint
+ *
+ * The field of work the resume points at. A chip on the review, never a silent switch.
+ */
+export const zIndustryHint = z.object({
+    confidence: z.number().gte(0).lte(1).optional().default(0),
+    label_key: z.string().max(120).optional().default(''),
+    pack_key: z.string().min(1).max(48),
+    role_family: z.string().max(48).nullish()
+});
+
+/**
  * IndustryPrimaryIn
  */
 export const zIndustryPrimaryIn = z.object({
@@ -3862,6 +3874,7 @@ export const zSearchProposal = z.object({
  */
 export const zSetupBundle = z.object({
     counts: z.record(z.number().int()).optional(),
+    industry: zIndustryHint.nullish(),
     items: z.array(zSetupItem).max(600).optional(),
     lowest_pay: zSalaryInput.nullish(),
     notices: z.array(z.string()).max(20).optional(),
