@@ -1,6 +1,6 @@
 # Phase 7: Trust & safety: scam scoring, PII guard, injection defense, Check-this
 
-**Status:** Done (not merged) · **Release:** R1 · **Depends on:** 6 · **Features:** F13 · **Reference:** [`research/04`](../research/04-trust-safety-and-scam-detection.md)
+**Status:** Done · **Release:** R1 · **Depends on:** 6 · **Features:** F13 · **Reference:** [`research/04`](../research/04-trust-safety-and-scam-detection.md)
 
 ## Goal
 

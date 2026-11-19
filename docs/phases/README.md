@@ -16,14 +16,14 @@ The execution plan from an empty repo to Release 1 (MVP) and Release 2. Scope is
 | --- | --- | --- | --- | --- |
 | 0 | [AI tooling & agentic workflow](./phase-00-ai-tooling-and-agent-setup.md) | Foundation | Done | — |
 | 1 | [Monorepo scaffold, local infra, CI, technical spikes](./phase-01-scaffold-infra-spikes.md) | Foundation | Done | 0 |
-| 2 | [Auth, workspaces (multi-tenancy), RBAC, audit, AI providers, app shell & design system](./phase-02-auth-tenancy-shell.md) | R1 | Done (not merged) | 1 |
-| 3 | [Career Profile: resume intake, parsing, profile interview, answer bank, voice](./phase-03-career-profile.md) | R1 | Done (not merged) | 2 |
-| 4 | [Tracks & criteria builder + occupation/skills taxonomy](./phase-04-tracks-and-criteria.md) | R1 | Done (not merged) | 3 |
-| 5 | [Job discovery engine v1: sources, company directory, normalization, dedupe](./phase-05-job-discovery.md) | R1 | Done (not merged) | 4 |
-| 6 | [Qualification extraction, matching & ranking, job research board](./phase-06-matching-and-job-board.md) | R1 | Done (not merged) | 5 |
-| 7 | [Trust & safety: scam scoring, PII guard, injection defense, Check-this](./phase-07-trust-and-safety.md) | R1 | Done (not merged) | 6 |
-| 8 | [Resume Studio: critique, market insights, improved base resume, rendering + parse gate](./phase-08-resume-studio.md) | R1 | Done (not merged) | 6 |
-| 9 | [Per-job tailoring, Recruiter Lens, cover letters](./phase-09-tailoring-and-recruiter-lens.md) | R1 | Done (not merged) | 8 |
+| 2 | [Auth, workspaces (multi-tenancy), RBAC, audit, AI providers, app shell & design system](./phase-02-auth-tenancy-shell.md) | R1 | Done | 1 |
+| 3 | [Career Profile: resume intake, parsing, profile interview, answer bank, voice](./phase-03-career-profile.md) | R1 | Done | 2 |
+| 4 | [Tracks & criteria builder + occupation/skills taxonomy](./phase-04-tracks-and-criteria.md) | R1 | Done | 3 |
+| 5 | [Job discovery engine v1: sources, company directory, normalization, dedupe](./phase-05-job-discovery.md) | R1 | Done | 4 |
+| 6 | [Qualification extraction, matching & ranking, job research board](./phase-06-matching-and-job-board.md) | R1 | Done | 5 |
+| 7 | [Trust & safety: scam scoring, PII guard, injection defense, Check-this](./phase-07-trust-and-safety.md) | R1 | Done | 6 |
+| 8 | [Resume Studio: critique, market insights, improved base resume, rendering + parse gate](./phase-08-resume-studio.md) | R1 | Done | 6 |
+| 9 | [Per-job tailoring, Recruiter Lens, cover letters](./phase-09-tailoring-and-recruiter-lens.md) | R1 | Done | 8 |
 | 10 | [Scheduling, automation chain, notifications](./phase-10-scheduling-and-notifications.md) | R1 | Done | 7, 9 |
 | 11 | [Applications tracker & command center](./phase-11-tracker-and-command-center.md) | R1 | Done | 10 |
 | 12 | [Answer Desk](./phase-12-answer-desk.md) | R1 | Done | 9 |

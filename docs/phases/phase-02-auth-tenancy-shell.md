@@ -1,6 +1,6 @@
 # Phase 2: Auth, workspaces (multi-tenancy), RBAC, audit, AI providers, app shell & design system
 
-**Status:** Done (not yet merged) · **Release:** R1 · **Depends on:** 1 · **Features:** tenancy (PRD §2), F16, shell for all
+**Status:** Done · **Release:** R1 · **Depends on:** 1 · **Features:** tenancy (PRD §2), F16, shell for all
 
 ## Goal
 

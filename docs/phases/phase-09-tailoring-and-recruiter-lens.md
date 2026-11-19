@@ -1,6 +1,6 @@
 # Phase 9: Per-job tailoring, Recruiter Lens, cover letters
 
-**Status:** Done (not merged) · **Release:** R1 (MVP centerpiece) · **Depends on:** 8 · **Features:** F7 (tailor), F18 · **Reference:** [`research/07`](../research/07-how-recruiters-find-and-screen.md), [`research/05`](../research/05-resume-intelligence.md) §6
+**Status:** Done · **Release:** R1 (MVP centerpiece) · **Depends on:** 8 · **Features:** F7 (tailor), F18 · **Reference:** [`research/07`](../research/07-how-recruiters-find-and-screen.md), [`research/05`](../research/05-resume-intelligence.md) §6
 
 ## Goal
 

@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | [setup-from-resume](./setup-from-resume.md) | Cross-cutting (S0 to S8) | In progress | One resume upload fills profile, answers, writing style, searches, Studio base resume, and gap plan. S0 to S6 and S8 done; S7 partial (evals run, e2e run, manual run) |
 | [phase-03-career-profile](./phase-03-career-profile.md) | 3 | Done | Career Profile (merge) |
-| [phase-04-tracks-and-criteria](./phase-04-tracks-and-criteria.md) | 4 | Slice A | Tracks, criteria, taxonomy |
+| [phase-04-tracks-and-criteria](./phase-04-tracks-and-criteria.md) | 4 | Done | Tracks, criteria, taxonomy |
 | [ind-01-pack-foundation](./ind-01-pack-foundation.md) | IND-1 | Done | Industry pack schema, registry, resolver, workspace industries, track industry |
 | [ind-02-picker-visibility](./ind-02-picker-visibility.md) | IND-2 | Done | Workspace picker, Fields of work, useExperience, pack-driven criteria, Show all |
 | [ind-03-hospitality-content](./ind-03-hospitality-content.md) | IND-3 | Done | Hospitality pack, 15 kitchen templates, i18n, manifest tests |

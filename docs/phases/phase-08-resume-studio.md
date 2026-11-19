@@ -1,6 +1,6 @@
 # Phase 8: Resume Studio: critique, market insights, improved base resume, rendering + parse gate
 
-**Status:** Done (not merged) · **Release:** R1 · **Depends on:** 6 · **Features:** F7 (critique, research, improve, render), F18 (parse check) · **Reference:** [`research/05`](../research/05-resume-intelligence.md), [`research/07`](../research/07-how-recruiters-find-and-screen.md)
+**Status:** Done · **Release:** R1 · **Depends on:** 6 · **Features:** F7 (critique, research, improve, render), F18 (parse check) · **Reference:** [`research/05`](../research/05-resume-intelligence.md), [`research/07`](../research/07-how-recruiters-find-and-screen.md)
 
 ## Goal
 
