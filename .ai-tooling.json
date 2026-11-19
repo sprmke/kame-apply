@@ -13,7 +13,7 @@
     "rollback:db:prod"
   ],
   "opencode": {
-    "skillRoots": [".agent/skills", ".agents/skills"],
+    "skillRoots": [".agent/skills"],
     "requiredMcp": ["context7", "markitdown", "playwright"],
     "denyMigrations": true,
     "askOnForcePush": true,

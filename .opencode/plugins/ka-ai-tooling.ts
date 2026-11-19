@@ -1,6 +1,9 @@
 /**
  * Kame Apply AI tooling parity for OpenCode.
  *
+ * OpenCode V2 requires a default export with `{ id, setup }` (or `effect`).
+ * The V1 function export is kept as `server` for older clients.
+ *
  * Reuses the same shell hooks as Claude Code / Cursor:
  *   - session context (superpowers opt-in, AI tooling sync, workflow in-progress)
  *   - prod-deploy + dangerous bash guards (applywave unlock via shared lib)
@@ -51,6 +54,22 @@ type AfterOutput = {
   metadata: Record<string, unknown>;
 };
 
+type V2SetupContext = {
+  location?: { directory?: string };
+  session?: {
+    hook: (
+      name: string,
+      callback: (event: Record<string, unknown>) => void | Promise<void>,
+    ) => Promise<unknown>;
+  };
+  tool?: {
+    hook: (
+      name: string,
+      callback: (event: Record<string, unknown>) => void | Promise<void>,
+    ) => Promise<unknown>;
+  };
+};
+
 function runHookScript(
   root: string,
   scriptRel: string,
@@ -87,7 +106,8 @@ function permissionFromHook(parsed: Record<string, unknown>): {
   additionalContext?: string;
 } {
   const specific = parsed.hookSpecificOutput as
-    Record<string, unknown> | undefined;
+    | Record<string, unknown>
+    | undefined;
   if (specific) {
     return {
       decision: specific.permissionDecision as string | undefined,
@@ -121,10 +141,15 @@ function resolveCommand(args: Record<string, unknown>): string {
   return "";
 }
 
+function asArgs(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
 function collectSessionContext(root: string): string {
   const chunks: string[] = [];
 
-  // Superpowers opt-in (same text as .claude/hooks/session-superpowers-opt-in.sh)
   chunks.push(
     [
       "SUPERPOWERS OPT-IN (this repo)",
@@ -138,11 +163,10 @@ function collectSessionContext(root: string): string {
       "- Specs → docs/workflow/intake/<slug>-design.md",
       "- Read .agent/skills/superpowers/SKILL.md for path overrides.",
       "",
-      "Retired folders (must not exist): docs/superpowers/, docs/planning/, docs/todos/ — GitHub backlog is in docs/README.md.",
+      "Retired folders (must not exist): docs/superpowers/, docs/planning/, docs/todos/. GitHub backlog is in docs/README.md.",
     ].join("\n"),
   );
 
-  // AI tooling sync (warn-only — same as session-ai-tooling-sync.sh)
   const sync = spawnSync(
     "bash",
     [path.join(root, "scripts/dev/check-ai-tooling-sync.sh")],
@@ -158,11 +182,10 @@ function collectSessionContext(root: string): string {
     );
   } else {
     chunks.push(
-      "AI tooling sync: DRIFT DETECTED — run 'pnpm run check:ai-tooling-sync' for details.",
+      "AI tooling sync: DRIFT DETECTED. Run 'pnpm run check:ai-tooling-sync' for details.",
     );
   }
 
-  // Workflow in-progress list
   const progressDir = path.join(root, "docs/workflow/in-progress");
   try {
     const files = fs
@@ -171,23 +194,22 @@ function collectSessionContext(root: string): string {
       .sort();
     if (files.length === 0) {
       chunks.push(
-        "Workflow in-progress: (none) — use /workflow-start when picking up a planned item.",
+        "Workflow in-progress: (none). Use /workflow-start when picking up a planned item.",
       );
     } else {
       chunks.push(
-        `Workflow in-progress: ${files.join(", ")} — primary session docs under docs/workflow/in-progress/.`,
+        `Workflow in-progress: ${files.join(", ")}. Primary session docs under docs/workflow/in-progress/.`,
       );
     }
   } catch {
     chunks.push(
-      "Workflow in-progress: (none) — use /workflow-start when picking up a planned item.",
+      "Workflow in-progress: (none). Use /workflow-start when picking up a planned item.",
     );
   }
 
-  // Docs sync (Claude/OpenCode cannot auto-load alwaysApply .mdc — mirror session-docs-sync-reminder.sh)
   chunks.push(
     [
-      "DOCS SYNC (mandatory): Material code/behavior changes must update matching docs in the SAME change — not later.",
+      "DOCS SYNC (mandatory): Material code/behavior changes must update matching docs in the SAME change, not later.",
       "Route/page UX → docs/guides/routes/* (route-guides skill).",
       "API/env/architecture → docs/PROJECT.md.",
       "Plans/tiers → docs/architecture/plans-feature-matrix.md + Plans guides.",
@@ -203,7 +225,7 @@ function collectSessionContext(root: string): string {
       "OpenCode project tooling (this repo)",
       "",
       "- Rules: CLAUDE.md (auto) + always-on `.cursor/rules/*.mdc` via opencode.json instructions",
-      "- Skills: `.agent/skills/` + `.agents/skills/` (+ Claude-compat `.claude/skills/`)",
+      "- Skills: `.agent/skills/` (+ Claude-compat `.claude/skills/`)",
       "- Commands: `.opencode/commands/` → `.claude/commands/`",
       "- Agents: `.opencode/agents/`",
       "- MCP: opencode.json (mirrors root `.mcp.json`)",
@@ -215,7 +237,96 @@ function collectSessionContext(root: string): string {
   return chunks.join("\n\n");
 }
 
-export default async function KameApplyAiToolingPlugin(ctx: PluginInput) {
+function guardShell(root: string, command: string): void {
+  if (!command) return;
+  const { stdout } = runHookScript(
+    root,
+    ".claude/hooks/guard-shell.sh",
+    JSON.stringify({ tool_input: { command } }),
+  );
+  const { decision, reason } = permissionFromHook(parseHookJson(stdout));
+  if (decision === "deny") {
+    throw new Error(
+      reason ||
+        "Blocked by the Kame Apply shell guard (production deploys need the unlock word applywave).",
+    );
+  }
+  if (decision === "ask") {
+    throw new Error(
+      `${reason || "This command requires confirmation."} Re-run only if the user explicitly confirmed.`,
+    );
+  }
+}
+
+function guardEdit(root: string, filePath: string): void {
+  if (!filePath) return;
+  const { stdout } = runHookScript(
+    root,
+    ".claude/hooks/guard-shipped-migrations.sh",
+    JSON.stringify({ tool_input: { file_path: filePath } }),
+  );
+  const { decision, reason } = permissionFromHook(parseHookJson(stdout));
+  if (decision === "deny") {
+    throw new Error(
+      reason ||
+        "Editing shipped migrations under apps/api/migrations/versions/ is not allowed. Add a new migration file.",
+    );
+  }
+}
+
+function annotateEditOutput(root: string, filePath: string): string[] {
+  if (!filePath) return [];
+  const notes: string[] = [];
+
+  runHookScript(
+    root,
+    ".claude/hooks/format-edited-file.sh",
+    JSON.stringify({ tool_input: { file_path: filePath } }),
+  );
+
+  const stack = runHookScript(
+    root,
+    ".claude/hooks/check-stack-terminology.sh",
+    JSON.stringify({ tool_input: { file_path: filePath } }),
+  );
+  const { additionalContext: stackCtx } = permissionFromHook(
+    parseHookJson(stack.stdout),
+  );
+  if (stackCtx) notes.push(stackCtx);
+
+  const docs = runHookScript(
+    root,
+    ".claude/hooks/remind-docs-on-code-edit.sh",
+    JSON.stringify({ tool_input: { file_path: filePath } }),
+  );
+  const { additionalContext: docsCtx } = permissionFromHook(
+    parseHookJson(docs.stdout),
+  );
+  if (docsCtx) notes.push(docsCtx);
+
+  return notes;
+}
+
+function appendNotesToResult(
+  result: unknown,
+  notes: string[],
+): unknown {
+  if (notes.length === 0) return result;
+  const suffix = notes.map((n) => `[${n}]`).join("\n");
+  if (typeof result === "string") return `${result}\n\n${suffix}`;
+  if (result && typeof result === "object") {
+    const record = result as Record<string, unknown>;
+    if (typeof record.content === "string") {
+      return { ...record, content: `${record.content}\n\n${suffix}` };
+    }
+    if (typeof record.output === "string") {
+      return { ...record, output: `${record.output}\n\n${suffix}` };
+    }
+  }
+  return result;
+}
+
+async function KaAiToolingServer(ctx: PluginInput) {
   const root = ctx.directory;
   const sessionContext = collectSessionContext(root);
   let injectedSession = false;
@@ -238,28 +349,7 @@ export default async function KameApplyAiToolingPlugin(ctx: PluginInput) {
       const tool = (input.tool || "").toLowerCase();
 
       if (tool === "bash" || tool === "shell") {
-        const command = resolveCommand(output.args);
-        if (!command) return;
-
-        const { stdout } = runHookScript(
-          root,
-          ".claude/hooks/guard-shell.sh",
-          JSON.stringify({ tool_input: { command } }),
-        );
-        const { decision, reason } = permissionFromHook(parseHookJson(stdout));
-        if (decision === "deny") {
-          throw new Error(
-            reason ||
-              "Blocked by the Kame Apply shell guard (production deploys need the unlock word applywave).",
-          );
-        }
-        if (decision === "ask") {
-          // Surface as a hard pause: OpenCode shell already may ask; throw with clear message
-          // so the model (and user) must re-confirm. Does not auto-allow dangerous commands.
-          throw new Error(
-            `${reason || "This command requires confirmation."} Re-run only if the user explicitly confirmed.`,
-          );
-        }
+        guardShell(root, resolveCommand(output.args));
         return;
       }
 
@@ -269,21 +359,7 @@ export default async function KameApplyAiToolingPlugin(ctx: PluginInput) {
         tool === "strreplace" ||
         tool === "apply_patch"
       ) {
-        const filePath = resolveFilePath(output.args);
-        if (!filePath) return;
-
-        const { stdout } = runHookScript(
-          root,
-          ".claude/hooks/guard-shipped-migrations.sh",
-          JSON.stringify({ tool_input: { file_path: filePath } }),
-        );
-        const { decision, reason } = permissionFromHook(parseHookJson(stdout));
-        if (decision === "deny") {
-          throw new Error(
-            reason ||
-              "Editing shipped migrations under apps/api/migrations/versions/ is not allowed — add a new migration file.",
-          );
-        }
+        guardEdit(root, resolveFilePath(output.args));
       }
     },
 
@@ -306,41 +382,78 @@ export default async function KameApplyAiToolingPlugin(ctx: PluginInput) {
         return;
       }
 
-      const filePath = resolveFilePath(input.args || {});
-      if (!filePath) return;
-
-      // Format (non-blocking)
-      runHookScript(
+      const notes = annotateEditOutput(
         root,
-        ".claude/hooks/format-edited-file.sh",
-        JSON.stringify({ tool_input: { file_path: filePath } }),
+        resolveFilePath(input.args || {}),
       );
-
-      // Wrong-stack / evasion-tooling warning (surface to agent via output text)
-      const stack = runHookScript(
-        root,
-        ".claude/hooks/check-stack-terminology.sh",
-        JSON.stringify({ tool_input: { file_path: filePath } }),
-      );
-      const { additionalContext: stackCtx } = permissionFromHook(
-        parseHookJson(stack.stdout),
-      );
-      if (stackCtx) {
-        output.output = `${output.output || ""}\n\n[${stackCtx}]`;
-      }
-
-      // Docs-sync reminder after material code edits (non-blocking)
-      const docs = runHookScript(
-        root,
-        ".claude/hooks/remind-docs-on-code-edit.sh",
-        JSON.stringify({ tool_input: { file_path: filePath } }),
-      );
-      const { additionalContext: docsCtx } = permissionFromHook(
-        parseHookJson(docs.stdout),
-      );
-      if (docsCtx) {
-        output.output = `${output.output || ""}\n\n[${docsCtx}]`;
+      if (notes.length > 0) {
+        output.output = `${output.output || ""}\n\n${notes
+          .map((n) => `[${n}]`)
+          .join("\n")}`;
       }
     },
   };
 }
+
+async function setupKaAiTooling(ctx: V2SetupContext) {
+  const root = ctx.location?.directory;
+  if (!root) return;
+
+  const sessionContext = collectSessionContext(root);
+  let injectedSession = false;
+
+  if (ctx.session?.hook) {
+    await ctx.session.hook("context", (event) => {
+      if (injectedSession || !sessionContext) return;
+      const system = event.system;
+      if (Array.isArray(system)) {
+        system.push({ type: "text", text: sessionContext });
+        injectedSession = true;
+      }
+    });
+  }
+
+  if (!ctx.tool?.hook) return;
+
+  await ctx.tool.hook("execute.before", (event) => {
+    const tool = String(event.tool || "").toLowerCase();
+    const input = asArgs(event.input);
+
+    if (tool === "bash" || tool === "shell") {
+      guardShell(root, resolveCommand(input));
+      return;
+    }
+
+    if (
+      tool === "edit" ||
+      tool === "write" ||
+      tool === "strreplace" ||
+      tool === "apply_patch"
+    ) {
+      guardEdit(root, resolveFilePath(input));
+    }
+  });
+
+  await ctx.tool.hook("execute.after", (event) => {
+    if (event.status !== "completed") return;
+    const tool = String(event.tool || "").toLowerCase();
+    if (
+      tool !== "edit" &&
+      tool !== "write" &&
+      tool !== "strreplace" &&
+      tool !== "apply_patch"
+    ) {
+      return;
+    }
+
+    const notes = annotateEditOutput(root, resolveFilePath(asArgs(event.input)));
+    if (notes.length === 0) return;
+    event.result = appendNotesToResult(event.result, notes);
+  });
+}
+
+export default {
+  id: "kame-apply-ai-tooling",
+  server: KaAiToolingServer,
+  setup: setupKaAiTooling,
+};
