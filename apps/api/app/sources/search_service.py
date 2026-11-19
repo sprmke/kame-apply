@@ -27,7 +27,7 @@ from app.jobs.ingest import upsert_raw_job
 from app.jobs.link import link_track_job
 from app.jobs.models import DiscoveryRun
 from app.sources.models import Source, SourceQueryCache
-from app.tracks.criteria import CriteriaV1, criteria_from_dict
+from app.tracks.criteria import CriteriaV1, LocationFilter, criteria_from_dict
 from app.tracks.models import Track, TrackCriteria
 from kame_core.sources import get_adapter, list_adapters
 from kame_core.sources.base import AdapterMeta, RawJob
@@ -81,6 +81,11 @@ async def _ensure_source(session, meta: AdapterMeta) -> Source:
     return source
 
 
+DEFAULT_SEARCH_PLACE = "Philippines"
+DEFAULT_SEARCH_COUNTRY = "PH"
+DEFAULT_SEARCH_RADIUS_KM = 100
+
+
 def plan_queries(
     track: Track,
     criteria: CriteriaV1,
@@ -88,17 +93,34 @@ def plan_queries(
     *,
     limit: int = 6,
 ) -> list[dict[str, Any]]:
-    """Build a small set of keyword + location queries from the Track, never inventing places."""
+    """Build a small set of keyword + location queries from the Track, never inventing places.
+
+    No location means the home market: the Philippines with a 100 km radius. Every location the
+    person adds becomes its own query, so several places widen the search instead of replacing it.
+    """
     titles = [t.title for t in criteria.titles if not t.exclude][:3] or [track.name]
     countries = {loc.country.upper() for loc in criteria.locations if loc.country}
     if len(countries) != 1:
         countries = set()
     country = next(iter(countries), "")
     category_map = pack.sources.adzuna_categories
+    home = [
+        LocationFilter(
+            place=DEFAULT_SEARCH_PLACE,
+            country=DEFAULT_SEARCH_COUNTRY,
+            radius_km=DEFAULT_SEARCH_RADIUS_KM,
+        )
+    ]
     out: list[dict[str, Any]] = []
     for title in titles:
         if criteria.locations:
-            for loc in criteria.locations[:2]:
+            places = criteria.locations
+        elif criteria.remote_eligibility and criteria.remote_eligibility.anywhere:
+            places = []
+        else:
+            places = home
+        if places:
+            for loc in places:
                 out.append(
                     {
                         "keywords": title,
@@ -110,7 +132,7 @@ def plan_queries(
                         "page": 1,
                     }
                 )
-        elif criteria.remote_eligibility and criteria.remote_eligibility.anywhere:
+        else:
             out.append(
                 {
                     "keywords": f"{title} remote",
@@ -337,7 +359,7 @@ async def run_search_sources(
                 )
                 if linked:
                     progress["linked"] = int(progress.get("linked") or 0) + 1
-            run.progress = progress
+            run.progress = dict(progress)
             await ctx.session.flush()
 
 

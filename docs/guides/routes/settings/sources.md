@@ -17,9 +17,15 @@ Per-adapter health (success, errors, latency, circuit, blocks) and the number of
 
 | UI | API | Effect |
 | --- | --- | --- |
-| Add | `POST /api/v1/sources/careers` | Detect ATS + slug; insert `company_boards` |
+| Add | `POST /api/v1/sources/careers` | Detect the ATS + slug and insert `company_boards`. A page that is not a known ATS is stored as a `career_jsonld` board so the JSON-LD reader can use it. |
 | (read) | `GET /api/v1/sources/health` | Catalog metrics |
 | (read) | `GET /api/v1/sources/directory/stats` | Active board count |
+
+## Edge cases
+
+- A known ATS URL (Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee) is read through that ATS API.
+- Any other public careers URL becomes a `career_jsonld` board. The reader only picks up pages that publish `JobPosting` JSON-LD, so a marketing page adds a board with nothing to find.
+- Search providers (Jooble, Adzuna) need platform keys in `apps/api/.env` and acknowledged terms. Without them a field that relies on search has no automatic source; the track page says so and offers job alerts.
 
 ## RBAC
 

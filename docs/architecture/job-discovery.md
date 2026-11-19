@@ -41,7 +41,7 @@ Track-aware boards: `_boards_for_run` picks boards whose `industries` overlap th
 
 Interim Track link: rule filter on criteria titles/skills/work modes (`jobs/link.py`). Phase 6 ranking refines it.
 
-Layer 4: `sources/search_service.py` builds up to 6 keyword + location queries from the Track's titles and locations, checks the global `source_query_cache` (default 6 hours), calls the provider, upserts through the same dedupe path, and links the Track. The same cache serves every workspace.
+Layer 4: `sources/search_service.py` builds up to 6 keyword + location queries from the Track's titles and locations, checks the global `source_query_cache` (default 6 hours), calls the provider, upserts through the same dedupe path, and links the Track. The same cache serves every workspace. With no location set, the planner uses the home market (the Philippines, 100 km) instead of inventing a place. Every location the person adds becomes its own query, so several places widen the search instead of replacing it. A remote-anywhere search drops the place and sends only the role, so the provider answers from its whole index; Jooble's global host can serve that query while Adzuna, which needs a country, skips it.
 
 Coverage: `source_coverage(source_key, country, industry, coverage, note)` powers `GET /api/v1/sources/coverage` and the Track's "Few jobs" notice. `GET /api/v1/tracks/{id}/where` shows the planned queries, adapters, and whether each is configured. `GET /api/v1/sources/alerts/guide` returns prefilled public search URLs for the person to create their own alerts; Kame never signs in for them.
 

@@ -79,6 +79,11 @@ async def upsert_raw_job(
         if job.status == "closed":
             job.status = "open"
             job.closed_at = None
+        # A feed that only starts sending text later still fills an empty body.
+        if not job.description_text and norm["description_text"]:
+            job.description_text = norm["description_text"]
+            job.description_html = norm["description_html"] or job.description_html
+            job.content_hash = norm["content_hash"]
         await session.flush()
         return job, False
 

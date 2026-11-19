@@ -71,6 +71,7 @@ type Coverage = { level: "strong" | "partial" | "thin" | "none" };
 type WhereLook = {
   queries: { keywords: string; location: string; country: string; category: string | null }[];
   adapters: { key: string; name: string; configured: boolean; terms_note: string }[];
+  boards: number;
   alerts: string[];
 };
 
@@ -167,6 +168,13 @@ const rows = computed(() => jobs.data.value ?? []);
 const thinCoverage = computed(() =>
   Boolean(coverage.data.value && coverage.data.value.level !== "strong" && rows.value.length < 5),
 );
+// Nothing ran: every provider needs a key and this field has no employer boards yet.
+const noSourceReady = computed(() => {
+  const where = whereLook.data.value;
+  if (!where) return false;
+  const anyReady = where.adapters.some((adapter) => adapter.configured);
+  return !anyReady && where.boards === 0 && where.queries.length > 0;
+});
 
 function workModeLabel(mode: string | null | undefined): string {
   return mode ? t(`tracks.mode_${mode}`) : "";
@@ -265,8 +273,8 @@ function salaryLine(s: unknown): string {
 
       <FnEmptyState
         v-else-if="!rows.length"
-        :title="t('tracks.noMatchesYet')"
-        :body="t('tracks.noMatchesBody')"
+        :title="noSourceReady ? t('tracks.noSourceTitle') : t('tracks.noMatchesYet')"
+        :body="noSourceReady ? t('tracks.noSourceBody') : t('tracks.noMatchesBody')"
       >
         <FnButton tone="primary" :disabled="running" @click="runNow">
           {{ t("jobs.findNow") }}

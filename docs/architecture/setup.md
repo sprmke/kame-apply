@@ -70,13 +70,14 @@ Retention (scheduler loop):
 | `notices` | 20 | i18n keys such as `ai_off_basics_only` |
 | `counts` | per group | Summary sentence |
 
-`SetupItem`: stable `id` (max 200), `group` (`profile`, `answers`, `writing`, `searches`, `studio`, `account`, `industry`), `target`, `kind`, `value`, `current`, `action` (`add`, `fill_blank`, `replace`, `keep_current`, `skip`), `source` (`resume`, `you_said`, `suggested`, `default`), `confidence`, `evidence` (quote ≤ 200 chars, optional offsets), `reason_key`, `reason_params`, `needs_you`, `blocked`, `default_on`.
+`SetupItem`: stable `id` (max 200), `group` (`profile`, `answers`, `writing`, `searches`, `studio`, `account`, `industry`), `target`, `kind`, `value`, `current`, `action` (`add`, `fill_blank`, `replace`, `keep_current`, `skip`), `source` (`resume`, `you_said`, `suggested`, `default`), `confidence`, `evidence` (quote ≤ 200 chars, optional offsets), `reason_key`, `reason_params`, `needs_you`, `needs_country`, `blocked`, `default_on`.
 
 Rules enforced by the contract:
 
 - A `needs_you` item cannot carry a value. It is a question, not a guess.
 - Item ids are unique inside a bundle.
 - At most 600 item decisions, each a known action.
+- `needs_country` marks a country-scoped answer whose target has no country (`answers.work_authorization`). The decision carries `country` (two letters, uppercased), and both autosave and apply rewrite the target to `answers.<key>.<CC>` before validating or writing. Without a country the value is refused, so the review never queues one.
 
 Targets are typed in [`apps/api/app/onboarding/targets.py`](../../apps/api/app/onboarding/targets.py). Each target re-validates against the same schema its service uses (`ProfileUpdate`, `ExperienceIn`, `AnswerCreate` rules, `CriteriaV1`, `VoicePresetBody`, `MeUpdate`, and so on). Unknown targets and invalid values fail the draft before the review screen, never during the write.
 

@@ -154,6 +154,8 @@ class WhereLookRead(BaseModel):
     industry: str
     queries: list[SearchQueryRead]
     adapters: list[SearchAdapterRead]
+    # Active company boards this field would poll. Zero plus no ready adapter means nothing ran.
+    boards: int = 0
     employer_tags: list[str]
     alerts: list[str]
 

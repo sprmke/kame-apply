@@ -10,6 +10,8 @@ import {
   SelectValue,
   SelectViewport,
 } from "reka-ui";
+import { computed } from "vue";
+import { fromItemValue, toItemValue } from "./select-value";
 
 export type SelectOption = { value: string; label: string; disabled?: boolean };
 
@@ -22,10 +24,18 @@ defineProps<{
   disabled?: boolean;
   ariaLabel?: string;
 }>();
+
+// An empty value is a valid choice ("All", "Any"), but Reka UI rejects it as an item value.
+const selected = computed({
+  get: () => toItemValue(model.value ?? ""),
+  set: (value: string) => {
+    model.value = fromItemValue(value);
+  },
+});
 </script>
 
 <template>
-  <SelectRoot v-model="model" :disabled="disabled">
+  <SelectRoot v-model="selected" :disabled="disabled">
     <SelectTrigger
       :id="id"
       :aria-label="ariaLabel"
@@ -59,7 +69,7 @@ defineProps<{
           <SelectItem
             v-for="o in options"
             :key="o.value"
-            :value="o.value"
+            :value="toItemValue(o.value)"
             :disabled="o.disabled"
             class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-md px-3 text-sm text-ink-900 outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-brand-50 data-[highlighted]:text-brand-700"
           >

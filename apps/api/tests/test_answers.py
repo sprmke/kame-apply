@@ -44,6 +44,10 @@ async def test_canonical_keys_and_setup_seeds_defaults(env):  # noqa: F811
     }
     wa = next(k for k in keys if k["key"] == "work_authorization")
     assert wa["country_scoped"] is True
+    notice = next(k for k in keys if k["key"] == "notice_period")
+    assert notice["choices"] == ["Immediately", "2 weeks", "30 days", "60 days", "90 days"]
+    linkedin = next(k for k in keys if k["key"] == "linkedin_url")
+    assert linkedin["choices"] == []
 
     setup = await c.post(
         f"{P}/{p['id']}/answers/setup",

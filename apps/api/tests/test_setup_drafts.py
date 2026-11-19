@@ -16,7 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.core.rls import set_request_context
 from app.onboarding import schemas as s
 from app.onboarding.setup_service import clear_setup_content, expire_setups
-from app.onboarding.targets import TargetError, validate_target
+from app.onboarding.targets import (
+    TargetError,
+    answer_needs_country,
+    answer_target_with_country,
+    validate_target,
+)
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL, Tenancy
 
 
@@ -265,6 +270,31 @@ def test_bundle_rejects_duplicate_item_ids():
 def test_decisions_reject_unknown_actions():
     with pytest.raises(ValidationError):
         s.SetupDecisions.model_validate({"items": {"profile.headline": {"action": "delete"}}})
+
+
+def test_country_scoped_answer_targets():
+    assert answer_needs_country("answers.work_authorization") is True
+    assert answer_needs_country("answers.work_authorization.PH") is False
+    assert answer_needs_country("answers.notice_period") is False
+    assert answer_needs_country("profile.headline") is False
+    assert (
+        answer_target_with_country("answers.work_authorization", "ph")
+        == "answers.work_authorization.PH"
+    )
+    assert answer_target_with_country("answers.notice_period", "PH") == "answers.notice_period"
+    assert (
+        answer_target_with_country("answers.work_authorization", None)
+        == "answers.work_authorization"
+    )
+
+
+def test_item_decision_country_is_two_letters():
+    assert s.ItemDecision(country=" ph ").country == "PH"
+    assert s.ItemDecision(country="").country is None
+    with pytest.raises(ValidationError):
+        s.ItemDecision(country="P")
+    with pytest.raises(ValidationError):
+        s.ItemDecision(country="PHL")
 
 
 def test_setup_create_needs_exactly_one_source():

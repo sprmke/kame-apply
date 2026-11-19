@@ -218,6 +218,36 @@ describe("review helpers", () => {
     });
   });
 
+  it("carries the country on a country-scoped answer", () => {
+    const auth = {
+      ...item,
+      id: "answers.work_authorization",
+      group: "answers",
+      target: "answers.work_authorization",
+      value: null,
+      needs_you: true,
+      needs_country: true,
+    };
+    const decisions = setValue(
+      { items: {}, seen_pages: [] },
+      auth as never,
+      { answer: "Yes", approved: true },
+      "PH",
+    );
+    expect(decisions.items["answers.work_authorization"]).toEqual({
+      action: "add",
+      value: { answer: "Yes", approved: true },
+      edited: true,
+      country: "PH",
+    });
+    expect(setKept(decisions, auth as never, false).items["answers.work_authorization"]).toEqual({
+      action: "skip",
+      value: { answer: "Yes", approved: true },
+      edited: true,
+      country: "PH",
+    });
+  });
+
   it("labels answer rows", () => {
     expect(answerLabelKey("answers.notice_period")).toBe("setup.answer.notice");
     expect(answerLabelKey("answers.work_authorization.PH")).toBe("setup.answer.workAuth");

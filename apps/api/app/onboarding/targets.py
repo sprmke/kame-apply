@@ -138,6 +138,22 @@ def validate_target(target: str, value: Any) -> Any:
     return spec.validate(value)
 
 
+def answer_needs_country(target: str) -> bool:
+    """A country-scoped answer target that carries no country: the human must pick one."""
+    parts = target.split(".")
+    if len(parts) != 2 or parts[0] != "answers":
+        return False
+    meta = CANONICAL_BY_KEY.get(parts[1])
+    return bool(meta and meta.country_scoped)
+
+
+def answer_target_with_country(target: str, country: str | None) -> str:
+    """Qualify a country-less country-scoped answer target with the chosen country."""
+    if not country or not answer_needs_country(target):
+        return target
+    return f"{target}.{country.upper()}"
+
+
 def target_kind(target: str) -> str:
     if target.startswith("answers."):
         return "value"
@@ -149,6 +165,8 @@ __all__ = [
     "TARGETS",
     "StudioBaseResume",
     "TargetError",
+    "answer_needs_country",
+    "answer_target_with_country",
     "target_kind",
     "validate_target",
 ]

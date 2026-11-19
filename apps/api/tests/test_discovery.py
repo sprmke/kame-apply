@@ -6,18 +6,20 @@ import asyncio
 import json
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.companies.ats_detect import detect_ats_url
+from app.companies.ats_detect import detect_ats_url, detect_career_page
 from app.companies.seed import seed_directory
 from app.core.config import Settings
 from app.jobs.dedupe import same_job
 from app.jobs.normalize import normalize_raw, parse_remote_eligibility
 from app.main import create_app
+from app.sources.discover import board_params
 from kame_core.sources import get_adapter, list_adapters
 from kame_core.sources.base import RawJob
 from tests.conftest import TEST_DB_URL, TEST_OWNER_URL
@@ -104,6 +106,20 @@ def test_ats_detect_patterns():
     d = detect_ats_url("https://jobs.ashbyhq.com/linear")
     assert d and d.ats == "ashby"
     assert detect_ats_url("https://example.com/careers") is None
+
+
+def test_generic_career_page_falls_back_to_jsonld():
+    d = detect_career_page("https://www.example.com/careers")
+    assert d and d.ats == "career_jsonld" and d.slug == "example.com"
+    assert d.url == "https://www.example.com/careers"
+    assert detect_career_page("") is None
+    assert detect_career_page("not-a-host") is None
+
+
+def test_board_params_carry_the_career_page_url():
+    """The JSON-LD adapter reads the board URL; ATS adapters only need the slug."""
+    board = SimpleNamespace(slug="acme", url="https://acme.example/careers")
+    assert board_params(board) == {"slug": "acme", "url": "https://acme.example/careers"}
 
 
 def test_remote_eligibility_patterns():
@@ -258,6 +274,13 @@ async def test_directory_seed_and_discover_with_fixtures(env_disc):
         )
         assert add.status_code == 201
         assert add.json()["ats"] == "greenhouse"
+        career = await c.post(
+            "/api/v1/sources/careers",
+            json={"url": "https://www.example.com/careers"},
+            headers=h,
+        )
+        assert career.status_code == 201, career.text
+        assert career.json()["ats"] == "career_jsonld"
         sources = await c.get(f"/api/v1/tracks/{track_id}/sources", headers=h)
         assert sources.status_code == 200
         assert len(sources.json()) >= 1

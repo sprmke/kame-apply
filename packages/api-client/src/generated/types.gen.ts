@@ -1290,6 +1290,10 @@ export type BulletRead = {
  */
 export type CanonicalKeyRead = {
     /**
+     * Choices
+     */
+    choices?: Array<string>;
+    /**
      * Country Scoped
      */
     country_scoped: boolean;
@@ -4334,6 +4338,10 @@ export type ItemDecision = {
      * Action
      */
     action?: 'add' | 'fill_blank' | 'replace' | 'keep_current' | 'skip';
+    /**
+     * Country
+     */
+    country?: string | null;
     /**
      * Edited
      */
@@ -7714,6 +7722,10 @@ export type SetupItem = {
      */
     kind: 'value' | 'list' | 'entity' | 'search';
     /**
+     * Needs Country
+     */
+    needs_country?: boolean;
+    /**
      * Needs You
      */
     needs_you?: boolean;
@@ -9438,6 +9450,10 @@ export type WhereLookRead = {
      * Alerts
      */
     alerts: Array<string>;
+    /**
+     * Boards
+     */
+    boards?: number;
     /**
      * Employer Tags
      */

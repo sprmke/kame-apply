@@ -352,6 +352,7 @@ class CanonicalKeyRead(BaseModel):
     country_scoped: bool
     default_variants: list[str]
     default_answer: str
+    choices: list[str] = Field(default_factory=list)
     json_hint: str | None = None
     packs: list[str] = Field(default_factory=list)
 

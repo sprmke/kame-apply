@@ -72,19 +72,22 @@ class JoobleSearchAdapter:
             return self._api_key
         return None
 
+    def _host_for(self, country: str) -> str:
+        """The domain that owns the key. US and unknown regions use the global jooble.org host."""
+        if not country or country == "US" or country not in self._api_keys:
+            return "https://jooble.org"
+        return f"https://{country.lower()}.jooble.org"
+
     async def discover(self, params: Mapping[str, object]) -> AsyncIterator[RawJob]:
         query = SearchQuery.from_params(params)
         if self._fixture_dir:
             data = json.loads((self._fixture_dir / "jobs.json").read_text(encoding="utf-8"))
         else:
-            key = self._key_for(query.country.upper() if query.country else "")
+            country = query.country.upper() if query.country else ""
+            key = self._key_for(country)
             if not key:
                 return
-            host = (
-                f"https://{query.country.lower()}.jooble.org"
-                if query.country
-                else "https://jooble.org"
-            )
+            host = self._host_for(country)
             data, _, _ = await fetch_json(
                 f"{host}/api/{key}",
                 method="POST",
@@ -99,7 +102,7 @@ class JoobleSearchAdapter:
         for job in data.get("jobs") or []:
             if not isinstance(job, dict):
                 continue
-            description = str(job.get("description") or "")
+            description = str(job.get("description") or job.get("snippet") or "")
             text = html_to_text(description)
             salary = parse_salary_fragment(str(job.get("salary") or text))
             link = str(job.get("link") or "")

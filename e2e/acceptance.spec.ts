@@ -108,7 +108,8 @@ test.describe("Phase 2 acceptance", () => {
       await expect(page.getByText("Key works").first()).toBeVisible({ timeout: 30_000 });
       await expect(page.getByRole("row", { name: /Google Gemini/ })).toContainText("Valid");
     } else {
-      await expect(page.getByText("The provider rejected this key")).toBeVisible({
+      // The live region repeats the toast text, so match the visible title exactly.
+      await expect(page.getByText("The provider rejected this key", { exact: true })).toBeVisible({
         timeout: 30_000,
       });
     }

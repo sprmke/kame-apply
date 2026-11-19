@@ -99,9 +99,23 @@ async def where_for_track(ctx: WorkspaceContext, track_id, settings: Settings) -
             for query in queries
         ],
         "adapters": adapter_plan(pack, settings),
+        "boards": await _boards_for_pack(ctx, pack),
         "employer_tags": list(pack.sources.employer_tags),
         "alerts": list(pack.sources.alert_sources),
     }
+
+
+async def _boards_for_pack(ctx: WorkspaceContext, pack: Any) -> int:
+    """How many active company boards this field would poll, mirroring the discovery filter."""
+    from sqlalchemy import func, or_
+
+    from app.companies.models import CompanyBoard
+
+    tags = list(pack.sources.employer_tags)
+    q = select(func.count()).select_from(CompanyBoard).where(CompanyBoard.status == "active")
+    if tags:
+        q = q.where(or_(CompanyBoard.industries.overlap(tags), CompanyBoard.industries == []))
+    return int((await ctx.session.execute(q)).scalar_one())
 
 
 def _indeed_host(country: str) -> str:

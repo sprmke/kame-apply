@@ -52,8 +52,9 @@ const relaxations = useQuery({
   enabled: computed(() => Boolean(ws.currentId && trackId.value)),
 });
 
-const place = ref("");
-const radiusKm = ref(25);
+const DEFAULT_RADIUS_KM = 100;
+type PlaceRow = { place: string; radius: string };
+const places = ref<PlaceRow[]>([{ place: "", radius: String(DEFAULT_RADIUS_KM) }]);
 const REGION_ANY = "any";
 const regionPreset = ref(REGION_ANY);
 const visa = ref(false);
@@ -96,8 +97,11 @@ function showField(field: string): boolean {
 }
 
 function hydrateFilters(c: CriteriaV1) {
-  place.value = c.locations?.[0]?.place ?? "";
-  radiusKm.value = c.locations?.[0]?.radius_km ?? 25;
+  const rows = (c.locations ?? []).map((loc) => ({
+    place: loc.place ?? "",
+    radius: String(loc.radius_km ?? DEFAULT_RADIUS_KM),
+  }));
+  places.value = rows.length ? rows : [{ place: "", radius: String(DEFAULT_RADIUS_KM) }];
   regionPreset.value = c.remote_eligibility?.regions?.[0] ?? REGION_ANY;
   visa.value = c.visa_sponsorship === true;
   salaryMin.value = c.salary?.min ?? null;
@@ -149,13 +153,14 @@ function splitCsv(raw: string): string[] {
     .filter(Boolean);
 }
 
-const radiusText = computed({
-  get: () => String(radiusKm.value ?? ""),
-  set: (value: string | number) => {
-    const text = String(value ?? "");
-    radiusKm.value = text.trim() === "" ? 0 : Number(text);
-  },
-});
+function addPlace() {
+  places.value = [...places.value, { place: "", radius: String(DEFAULT_RADIUS_KM) }];
+}
+
+function removePlace(index: number) {
+  places.value = places.value.filter((_, i) => i !== index);
+}
+
 const salaryText = computed({
   get: () => (salaryMin.value == null ? "" : String(salaryMin.value)),
   set: (value: string | number) => {
@@ -209,7 +214,7 @@ const activeFilterCount = computed(() => {
   n += workModes.value.length;
   n += employmentTypes.value.length;
   if (postingAge.value > 0) n += 1;
-  if (place.value.trim()) n += 1;
+  if (places.value.some((row) => row.place.trim())) n += 1;
   if (salaryMin.value != null) n += 1;
   if (visa.value) n += 1;
   if (regionPreset.value !== REGION_ANY) n += 1;
@@ -392,9 +397,12 @@ async function saveMore() {
     regionPreset.value === REGION_ANY
       ? (c.remote_eligibility?.regions ?? [])
       : [regionPreset.value];
-  const locations = place.value.trim()
-    ? [{ place: place.value.trim(), radius_km: radiusKm.value || null }]
-    : [];
+  const locations = places.value
+    .filter((row) => row.place.trim())
+    .map((row) => ({
+      place: row.place.trim(),
+      radius_km: Number(row.radius) || null,
+    }));
   await saveCriteria({
     ...c,
     work_modes: workModes.value as CriteriaV1["work_modes"],
@@ -633,17 +641,30 @@ async function saveMore() {
           >
             <FnSelect :id="id" v-model="postingAgeText" :options="postingOptions" />
           </FnField>
-          <FnField
-            v-if="showField('locations')"
-            v-slot="{ id }"
-            :label="t('tracks.location')"
-            :help="t('tracks.locationHelp')"
-          >
-            <FnInput :id="id" v-model="place" :placeholder="t('tracks.locationPlaceholder')" />
-          </FnField>
-          <FnField v-if="showField('locations')" v-slot="{ id }" :label="t('tracks.radius')">
-            <FnInput :id="id" v-model="radiusText" type="number" />
-          </FnField>
+          <fieldset v-if="showField('locations')" class="flex flex-col gap-3 sm:col-span-2">
+            <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.location") }}</legend>
+            <p class="-mt-1 text-sm text-ink-600">{{ t("tracks.locationHelp") }}</p>
+            <div v-for="(row, index) in places" :key="index" class="flex flex-wrap items-end gap-2">
+              <FnField v-slot="{ id }" :label="t('tracks.location')" class="min-w-[14rem] flex-1">
+                <FnInput
+                  :id="id"
+                  v-model="row.place"
+                  :placeholder="t('tracks.locationPlaceholder')"
+                />
+              </FnField>
+              <FnField v-slot="{ id }" :label="t('tracks.radius')" class="w-32">
+                <FnInput :id="id" v-model="row.radius" type="number" />
+              </FnField>
+              <FnButton v-if="places.length > 1" size="sm" tone="ghost" @click="removePlace(index)">
+                {{ t("tracks.removeLocation") }}
+              </FnButton>
+            </div>
+            <div>
+              <FnButton size="sm" tone="quiet" @click="addPlace">
+                {{ t("tracks.addLocation") }}
+              </FnButton>
+            </div>
+          </fieldset>
           <FnField
             v-if="showField('remote_eligibility')"
             v-slot="{ id }"

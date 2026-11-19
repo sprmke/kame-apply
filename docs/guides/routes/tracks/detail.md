@@ -48,7 +48,7 @@ Up to 12 jobs ordered by score. Each row shows the score, title, company, work m
 
 ### Coverage notice
 
-When the first run returns fewer than five matches and `GET /api/v1/sources/coverage` reports partial or thin coverage for the field and country, one notice explains it and links to Settings > Alerts. Add a location on the criteria page first; the planner does not invent places.
+When the first run returns fewer than five matches and `GET /api/v1/sources/coverage` reports partial or thin coverage for the field and country, one notice explains it and links to Settings > Alerts. With no location set the search uses the home market: the Philippines within 100 km. Add a location on the criteria page to search somewhere else. The planner never invents a place.
 
 ### Where we look
 

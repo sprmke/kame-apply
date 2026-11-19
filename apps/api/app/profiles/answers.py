@@ -131,6 +131,7 @@ async def list_canonical_keys(
             country_scoped=k.country_scoped,
             default_variants=list(k.default_variants),
             default_answer=k.default_answer,
+            choices=list(k.choices),
             json_hint=k.json_hint,
             packs=list(k.packs),
         )

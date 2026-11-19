@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { AnswerRead } from "@kame/api-client";
-import { FnButton, FnTextarea } from "@kame/ui";
+import { FnButton, FnSuggestions, FnTextarea } from "@kame/ui";
 
-const props = defineProps<{ row: AnswerRead }>();
+const props = defineProps<{ row: AnswerRead; options?: string[] }>();
 const emit = defineEmits<{ save: [row: AnswerRead, text: string, approved: boolean] }>();
 const { t } = useI18n();
 const text = ref(props.row.answer);
@@ -21,6 +21,12 @@ watch(
       :rows="2"
       :aria-label="t('career.answer')"
       :placeholder="t('career.answerPlaceholder')"
+    />
+    <FnSuggestions
+      v-if="(options ?? []).length"
+      :options="options ?? []"
+      :label="t('career.commonAnswers')"
+      @select="(value) => (text = value)"
     />
     <div>
       <FnButton size="sm" tone="quiet" @click="emit('save', row, text, true)">{{
