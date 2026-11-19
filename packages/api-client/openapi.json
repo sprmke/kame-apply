@@ -2341,6 +2341,13 @@
       },
       "CanonicalKeyRead": {
         "properties": {
+          "choices": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Choices",
+            "type": "array"
+          },
           "country_scoped": {
             "title": "Country Scoped",
             "type": "boolean"
@@ -7775,6 +7782,19 @@
             ],
             "title": "Action",
             "type": "string"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           },
           "edited": {
             "default": false,
@@ -13647,6 +13667,11 @@
             "title": "Kind",
             "type": "string"
           },
+          "needs_country": {
+            "default": false,
+            "title": "Needs Country",
+            "type": "boolean"
+          },
           "needs_you": {
             "default": false,
             "title": "Needs You",
@@ -16642,6 +16667,11 @@
             },
             "title": "Alerts",
             "type": "array"
+          },
+          "boards": {
+            "default": 0,
+            "title": "Boards",
+            "type": "integer"
           },
           "employer_tags": {
             "items": {

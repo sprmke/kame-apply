@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 _PATTERNS: list[tuple[str, re.Pattern[str], int]] = [
     ("greenhouse", re.compile(r"(?:job-)?boards\.greenhouse\.io/([^/?#]+)", re.I), 1),
@@ -49,6 +50,19 @@ def detect_ats_url(url: str) -> DetectedBoard | None:
             continue
         return DetectedBoard(ats=ats, slug=slug, url=u)
     return None
+
+
+def detect_career_page(url: str) -> DetectedBoard | None:
+    """Any public careers page can be read for JSON-LD JobPosting markup."""
+    u = (url or "").strip()
+    if not u:
+        return None
+    if not u.startswith("http"):
+        u = "https://" + u
+    host = urlparse(u).netloc.lower().removeprefix("www.")
+    if "." not in host:
+        return None
+    return DetectedBoard(ats="career_jsonld", slug=host, url=u)
 
 
 def board_public_url(ats: str, slug: str) -> str:

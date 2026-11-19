@@ -138,6 +138,86 @@ async def test_apply_writes_every_page_once(env_apply):
     assert different.json()["error"]["code"] == "setup_already_applied"
 
 
+RESUME_NO_COUNTRY = """ANA REYES
+Customer Support Lead
+ana.reyes@example.com
+
+Summary
+Support lead with 6 years in SaaS onboarding and a track record of cutting response times.
+
+Notice period: 30 days
+
+Skills: onboarding, Zendesk, team leadership
+
+Experience
+2020 - 2025 Support Lead at Acme
+Cut response times by 40 percent.
+"""
+
+
+async def test_work_authorization_answer_saves_under_the_chosen_country(env_apply):
+    c, _app = env_apply
+    me = await signup(c)
+    r = await c.post(
+        S, json={"text": RESUME_NO_COUNTRY, "with_ai": False}, headers=me.h(me.personal)
+    )
+    assert r.status_code == 202, r.text
+    draft = r.json()
+    assert draft["status"] == "ready"
+
+    auth = next(
+        item for item in draft["bundle"]["items"] if item["target"] == "answers.work_authorization"
+    )
+    assert auth["needs_country"] is True
+
+    # Without a country the answer cannot be stored, so the review must never send one.
+    refused = await c.patch(
+        f"{S}/{draft['id']}/decisions",
+        json={
+            "items": {
+                "answers.work_authorization": {
+                    "action": "add",
+                    "edited": True,
+                    "value": {"answer": "Filipino citizen", "approved": True},
+                }
+            }
+        },
+        headers=me.h(me.personal),
+    )
+    assert refused.status_code == 422
+    assert refused.json()["error"]["code"] == "setup_invalid_value"
+
+    saved = await c.patch(
+        f"{S}/{draft['id']}/decisions",
+        json={
+            "items": {
+                "answers.work_authorization": {
+                    "action": "add",
+                    "edited": True,
+                    "country": "ph",
+                    "value": {"answer": "Filipino citizen", "approved": True},
+                }
+            }
+        },
+        headers=me.h(me.personal),
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["decisions"]["items"]["answers.work_authorization"]["country"] == "PH"
+
+    applied = await _apply(c, me, draft["id"], "country-key")
+    assert applied.status_code == 200, applied.text
+    answers = (
+        await c.get(
+            f"/api/v1/profiles/{applied.json()['profile_id']}/answers",
+            headers=me.h(me.personal),
+        )
+    ).json()
+    row = next(a for a in answers if a["key"] == "work_authorization")
+    assert row["country"] == "PH"
+    assert row["answer"] == "Filipino citizen"
+    assert row["approved"] is True
+
+
 async def test_apply_requires_an_idempotency_key(env_apply):
     c, _app = env_apply
     me = await signup(c)

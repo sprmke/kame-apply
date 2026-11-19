@@ -52,6 +52,95 @@ def test_plan_queries_uses_titles_and_locations_only():
     assert all(q["posted_within_days"] == 21 for q in queries)
 
 
+def test_plan_queries_without_a_location_defaults_to_the_philippines():
+    track = Track(name="Chef", industry="hospitality")
+    criteria = CriteriaV1(titles=[TitleSpec(title="Cook"), TitleSpec(title="Chef")])
+    queries = plan_queries(track, criteria, require_pack("hospitality"), limit=6)
+    assert len(queries) == 2
+    assert {q["keywords"] for q in queries} == {"Cook", "Chef"}
+    assert all(q["location"] == "Philippines" for q in queries)
+    assert all(q["country"] == "PH" for q in queries)
+    assert all(q["radius_km"] == 100 for q in queries)
+
+
+def test_plan_queries_covers_every_location():
+    track = Track(name="Chef", industry="hospitality")
+    criteria = CriteriaV1(
+        titles=[TitleSpec(title="Cook")],
+        locations=[
+            LocationFilter(place="Pampanga", country="PH", radius_km=100),
+            LocationFilter(place="Dubai", country="AE", radius_km=50),
+        ],
+    )
+    queries = plan_queries(track, criteria, require_pack("hospitality"), limit=6)
+    assert [(q["location"], q["country"]) for q in queries] == [
+        ("Pampanga", "PH"),
+        ("Dubai", "AE"),
+    ]
+
+
+async def test_jooble_uses_the_key_for_its_own_country_domain(monkeypatch):
+    from kame_core.sources.adapters import search_jooble as mod
+
+    calls: list[tuple[str, dict]] = []
+
+    async def fake_fetch(url, *, method="GET", json_body=None, **_kwargs):
+        calls.append((url, json_body or {}))
+        return {"jobs": []}, {}, 200
+
+    monkeypatch.setattr(mod, "fetch_json", fake_fetch)
+
+    regional = mod.JoobleSearchAdapter(api_key="bare", api_keys={"PH": "ph-key"})
+    [
+        job
+        async for job in regional.discover(
+            {"keywords": "Cook", "location": "Pampanga", "country": "PH"}
+        )
+    ]
+    assert calls[-1][0] == "https://ph.jooble.org/api/ph-key"
+
+    # A US key belongs to jooble.org and is never reused on another region's domain.
+    us = mod.JoobleSearchAdapter(api_key="bare")
+    [job async for job in us.discover({"keywords": "Cook", "country": "US"})]
+    assert calls[-1][0] == "https://jooble.org/api/bare"
+
+    before = len(calls)
+    [job async for job in us.discover({"keywords": "Cook", "country": "PH"})]
+    assert len(calls) == before
+
+
+async def test_jooble_uses_the_snippet_when_there_is_no_description(monkeypatch):
+    from kame_core.sources.adapters import search_jooble as mod
+
+    async def fake_fetch(url, *, method="GET", json_body=None, **_kwargs):
+        return (
+            {
+                "jobs": [
+                    {
+                        "id": "1",
+                        "title": "Line Cook",
+                        "link": "https://ph.jooble.org/jdp/1",
+                        "company": "Cafe Noelle",
+                        "location": "Pampanga",
+                        "snippet": "<b>Line Cook</b> at Cafe Noelle, Sindalan",
+                        "source": "bossjob.ph",
+                    }
+                ]
+            },
+            {},
+            200,
+        )
+
+    monkeypatch.setattr(mod, "fetch_json", fake_fetch)
+    jobs = [
+        job
+        async for job in mod.JoobleSearchAdapter(api_key="k", api_keys={"PH": "ph"}).discover(
+            {"keywords": "Cook", "location": "Pampanga", "country": "PH"}
+        )
+    ]
+    assert jobs[0].description_text == "Line Cook at Cafe Noelle, Sindalan"
+
+
 async def test_search_adapter_fixtures_yield_jobs():
     jooble = get_adapter("search_jooble", fixture_dir=FIXTURES / "search_jooble")
     jobs = [
@@ -339,7 +428,9 @@ async def test_hospitality_search_run_ingests_and_links_chef_jobs(env, tmp_path)
         await session.commit()
         await set_request_context(session, user_id=me.id, workspace_id=me.personal)
         assert run.status == "succeeded", run.error
-        assert run.progress["jobs_new"] >= 2
+        # The corpus is shared across tests, so a fixture job may already exist. What matters is
+        # that this run read and linked it.
+        assert run.progress["jobs_found"] >= 2
         assert run.progress["linked"] >= 1
         rows = (
             await session.execute(

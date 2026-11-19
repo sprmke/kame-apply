@@ -19,7 +19,7 @@ from app.auth.models import User
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
 from app.onboarding import schemas as s
-from app.onboarding.targets import TargetError, validate_target
+from app.onboarding.targets import TargetError, answer_target_with_country, validate_target
 from app.profiles import models as profile_models
 from app.profiles import schemas as profile_schemas
 from app.profiles.answers import create_answer, list_answers, update_answer
@@ -129,12 +129,14 @@ def resolve(
         if value in (None, "", [], {}):
             errors[item.id] = "Add a value or skip this row."
             continue
+        target = answer_target_with_country(item.target, decision.country if decision else None)
         try:
-            validated = validate_target(item.target, value)
+            validated = validate_target(target, value)
         except TargetError as exc:
             errors[item.id] = str(exc)
             continue
-        writes.append(Resolved(item=item, action=action, value=validated))
+        resolved = item if target == item.target else item.model_copy(update={"target": target})
+        writes.append(Resolved(item=resolved, action=action, value=validated))
     return writes, errors
 
 

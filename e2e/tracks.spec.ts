@@ -34,6 +34,35 @@ test.describe("Phase 4 tracks", () => {
     await expect(page.getByText("ICU nurse night shifts UAE visa copy")).toHaveCount(0);
   });
 
+  test("several locations widen the search", async ({ page }) => {
+    await signUp(page);
+    await open(page, "/tracks");
+    await page.getByRole("button", { name: "New search" }).click();
+    await page.getByLabel("What role are you looking for?").fill("Cook, chef, kitchen");
+    await page.getByRole("button", { name: "Create search" }).click();
+    await expect(page).toHaveURL(/\/tracks\/[0-9a-f-]+/);
+    const id = new URL(page.url()).pathname.split("/")[2];
+    await open(page, `/tracks/${id}/look-for`);
+
+    await page.getByRole("textbox", { name: "Location" }).fill("Pampanga");
+    await page.getByRole("button", { name: "Add location" }).click();
+    await page.getByRole("textbox", { name: "Location" }).nth(1).fill("Manila");
+    await page.getByRole("spinbutton", { name: "Radius km" }).nth(1).fill("50");
+
+    const saved = page.waitForResponse(
+      (response) => response.url().includes("/criteria") && response.request().method() === "PUT",
+    );
+    await page.getByRole("button", { name: "Save filters" }).click();
+    await saved;
+
+    await page.reload();
+    await page.waitForSelector("html[data-hydrated]");
+    await expect(page.getByRole("textbox", { name: "Location" })).toHaveCount(2);
+    await expect(page.getByRole("textbox", { name: "Location" }).nth(0)).toHaveValue("Pampanga");
+    await expect(page.getByRole("textbox", { name: "Location" }).nth(1)).toHaveValue("Manila");
+    await expect(page.getByRole("spinbutton", { name: "Radius km" }).nth(1)).toHaveValue("50");
+  });
+
   test("Today next step reaches a search", async ({ page }) => {
     await signUp(page);
     await open(page, "/");

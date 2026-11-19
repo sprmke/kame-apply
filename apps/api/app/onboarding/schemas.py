@@ -12,6 +12,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.onboarding.targets import answer_needs_country
 from app.tracks.criteria import CriteriaV1, TitleSpec
 
 SetupSubject = Literal["self", "other_person"]
@@ -122,6 +123,8 @@ class SetupItem(BaseModel):
     reason_key: str = Field(min_length=1, max_length=120)
     reason_params: dict[str, str | int] = Field(default_factory=dict)
     needs_you: bool = False
+    # A country-scoped answer with no country in its target: the human picks the country.
+    needs_country: bool = False
     blocked: ItemBlocked = "ok"
     default_on: bool = True
 
@@ -192,6 +195,13 @@ class SetupBundle(BaseModel):
             raise ValueError("item ids must be unique")
         return self
 
+    @model_validator(mode="after")
+    def _mark_country_questions(self):
+        """Derive the flag on read, so a bundle stored before the flag existed still gets it."""
+        for item in self.items:
+            item.needs_country = answer_needs_country(item.target)
+        return self
+
 
 class ItemDecision(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -199,6 +209,17 @@ class ItemDecision(BaseModel):
     action: ItemAction = "add"
     value: Any = None
     edited: bool = False
+    # Set only for a `needs_country` item: the country the answer is stored under.
+    country: str | None = Field(default=None, min_length=2, max_length=2)
+
+    @field_validator("country", mode="before")
+    @classmethod
+    def _clean_country(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value.strip().upper() or None
+        return value
 
 
 class SetupDecisions(BaseModel):

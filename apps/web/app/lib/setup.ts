@@ -125,6 +125,7 @@ export type ReviewItem = {
   action: string;
   source: string;
   needs_you: boolean;
+  needs_country: boolean;
   blocked: string;
   default_on: boolean;
   evidence: Array<{ quote: string }>;
@@ -242,7 +243,10 @@ export type LowestPay = {
 };
 
 export type Decisions = {
-  items: Record<string, { action: string; value: unknown; edited: boolean }>;
+  items: Record<
+    string,
+    { action: string; value: unknown; edited: boolean; country?: string | null }
+  >;
   searches: Record<string, unknown>;
   lowest_pay: LowestPay | null;
   lowest_pay_set: boolean;
@@ -272,14 +276,21 @@ export function setKept(decisions: Decisions, item: ReviewItem, kept: boolean): 
   };
 }
 
-export function setValue(decisions: Decisions, item: ReviewItem, value: unknown): Decisions {
-  return {
-    ...decisions,
-    items: {
-      ...decisions.items,
-      [item.id]: { action: "add", value, edited: true },
-    },
+export function setValue(
+  decisions: Decisions,
+  item: ReviewItem,
+  value: unknown,
+  country?: string | null,
+): Decisions {
+  const previous = decisionFor(decisions, item) as { country?: string | null };
+  const next: { action: string; value: unknown; edited: boolean; country?: string | null } = {
+    action: "add",
+    value,
+    edited: true,
   };
+  const chosen = country === undefined ? previous.country : country;
+  if (chosen) next.country = chosen;
+  return { ...decisions, items: { ...decisions.items, [item.id]: next } };
 }
 
 export function salaryText(pay: LowestPay): string {

@@ -22,6 +22,7 @@ from app.onboarding import apply as apply_module
 from app.onboarding import models as m
 from app.onboarding import pipeline
 from app.onboarding import schemas as s
+from app.onboarding.targets import answer_target_with_country
 from app.profiles import schemas as profile_schemas
 from app.profiles.answers import list_answers
 from app.profiles.documents import create_text_document, get_document
@@ -495,7 +496,9 @@ async def patch_decisions(
             if item.needs_you:
                 value = apply_module._answer_payload(value)
             try:
-                apply_module.validate_target(item.target, value)
+                apply_module.validate_target(
+                    answer_target_with_country(item.target, decision.country), value
+                )
             except Exception as exc:
                 raise AppError(
                     "setup_invalid_value",

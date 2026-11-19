@@ -75,6 +75,10 @@ function labelFor(key: string, catalog: CanonicalKeyRead[]) {
   return catalog.find((k) => k.key === key)?.label ?? key;
 }
 
+function choicesFor(key: string): string[] {
+  return keyCatalog.value.find((k) => k.key === key)?.choices ?? [];
+}
+
 function groupLabel(group: string): string {
   return group.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
@@ -240,7 +244,7 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
           </h4>
           <FnChip v-if="row.approved" tone="accent">{{ t("career.approved") }}</FnChip>
         </div>
-        <AnswerRow :row="row" @save="saveAnswer" />
+        <AnswerRow :row="row" :options="choicesFor(row.key)" @save="saveAnswer" />
       </article>
     </section>
   </div>

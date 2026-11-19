@@ -504,6 +504,7 @@ export const zBulletRead = z.object({
  * CanonicalKeyRead
  */
 export const zCanonicalKeyRead = z.object({
+    choices: z.array(z.string()).optional(),
     country_scoped: z.boolean(),
     default_answer: z.string(),
     default_variants: z.array(z.string()),
@@ -1814,6 +1815,7 @@ export const zItemDecision = z.object({
         'keep_current',
         'skip'
     ]).optional().default('add'),
+    country: z.string().length(2).nullish(),
     edited: z.boolean().optional().default(false),
     value: z.unknown().optional()
 });
@@ -3258,6 +3260,7 @@ export const zSetupItem = z.object({
         'entity',
         'search'
     ]),
+    needs_country: z.boolean().optional().default(false),
     needs_you: z.boolean().optional().default(false),
     reason_key: z.string().min(1).max(120),
     reason_params: z.record(z.union([
@@ -4316,6 +4319,7 @@ export const zWebhookAck = z.object({
 export const zWhereLookRead = z.object({
     adapters: z.array(zSearchAdapterRead),
     alerts: z.array(z.string()),
+    boards: z.number().int().optional().default(0),
     employer_tags: z.array(z.string()),
     industry: z.string(),
     queries: z.array(zSearchQueryRead)

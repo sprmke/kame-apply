@@ -19,6 +19,8 @@ class CanonicalKey:
     country_scoped: bool = False
     default_variants: tuple[str, ...] = ()
     default_answer: str = ""
+    # Common answers offered as one-tap suggestions. The field stays free text.
+    choices: tuple[str, ...] = ()
     # Suggested JSON shape for answer_json when structured data helps the apply engine.
     json_hint: str | None = None
     # Industry packs that add this key. Empty means it is available in every field.
@@ -36,6 +38,11 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "Do you have the legal right to work here?",
         ),
         json_hint="status",
+        choices=(
+            "Yes, I am authorized",
+            "Yes, with a work visa",
+            "No, I need sponsorship",
+        ),
     ),
     CanonicalKey(
         "sponsorship",
@@ -46,12 +53,14 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "Do you need visa sponsorship?",
         ),
         default_answer="No",
+        choices=("No", "Yes", "Not sure yet"),
     ),
     CanonicalKey(
         "notice_period",
         "Notice period",
         "eligibility",
         default_variants=("What is your notice period?", "When can you start?"),
+        choices=("Immediately", "2 weeks", "30 days", "60 days", "90 days"),
     ),
     CanonicalKey(
         "salary_expectation",
@@ -62,12 +71,14 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "Desired compensation",
         ),
         json_hint="amount,currency,period",
+        choices=("Open to discussion", "Market rate", "Negotiable"),
     ),
     CanonicalKey(
         "relocation",
         "Relocation",
         "preferences",
         default_variants=("Are you willing to relocate?", "Open to relocation?"),
+        choices=("Yes, anywhere", "Yes, in this country", "No", "Open to discussion"),
     ),
     CanonicalKey(
         "remote_preference",
@@ -77,6 +88,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "Remote, hybrid, or on-site preference?",
             "What is your preferred work arrangement?",
         ),
+        choices=("Remote", "Hybrid", "On-site", "No preference"),
     ),
     CanonicalKey(
         "food_safety_certificate",
@@ -88,6 +100,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         ),
         json_hint="have,expires_on",
         packs=("hospitality",),
+        choices=("Yes", "No", "Expired"),
     ),
     CanonicalKey(
         "availability_days",
@@ -96,6 +109,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         default_variants=("Which days can you work?", "Days available"),
         json_hint="days",
         packs=("hospitality",),
+        choices=("Monday to Friday", "Weekends", "Any day"),
     ),
     CanonicalKey(
         "shift_preference",
@@ -104,6 +118,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         default_variants=("Which shifts do you prefer?", "Shift preference"),
         json_hint="shifts",
         packs=("hospitality",),
+        choices=("Morning", "Afternoon", "Evening", "Night", "Rotating"),
     ),
     CanonicalKey(
         "weekend_holiday_availability",
@@ -111,6 +126,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "preferences",
         default_variants=("Can you work weekends and holidays?",),
         packs=("hospitality",),
+        choices=("Yes", "No", "Sometimes"),
     ),
     CanonicalKey(
         "earliest_start_date",
@@ -118,6 +134,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eligibility",
         default_variants=("When can you start?", "Earliest start date"),
         packs=("hospitality",),
+        choices=("Immediately", "In 2 weeks", "In 1 month"),
     ),
     CanonicalKey(
         "hourly_rate_expectation",
@@ -126,6 +143,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         default_variants=("What hourly rate are you looking for?",),
         json_hint="amount,currency,period",
         packs=("hospitality",),
+        choices=("Open to discussion", "Market rate"),
     ),
     CanonicalKey(
         "reliable_transport",
@@ -133,6 +151,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eligibility",
         default_variants=("Do you have reliable transport to work?",),
         packs=("hospitality",),
+        choices=("Yes", "No"),
     ),
     CanonicalKey(
         "accommodation_needed",
@@ -140,6 +159,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "preferences",
         default_variants=("Do you need staff accommodation?",),
         packs=("hospitality",),
+        choices=("No", "Yes"),
     ),
     CanonicalKey(
         "knife_kit",
@@ -147,6 +167,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "preferences",
         default_variants=("Do you have your own knife kit?",),
         packs=("hospitality",),
+        choices=("Yes", "No"),
     ),
     CanonicalKey(
         "trial_shift_ok",
@@ -154,6 +175,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "preferences",
         default_variants=("Are you available for a trial shift?", "Stage or trial shift"),
         packs=("hospitality",),
+        choices=("Yes", "No"),
     ),
     CanonicalKey(
         "eeo_race",
@@ -161,6 +183,14 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eeo",
         default_variants=("Race / ethnicity (voluntary)",),
         default_answer="Decline to self-identify",
+        choices=(
+            "Decline to self-identify",
+            "Asian",
+            "Black or African American",
+            "Hispanic or Latino",
+            "White",
+            "Two or more races",
+        ),
     ),
     CanonicalKey(
         "eeo_gender",
@@ -168,6 +198,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eeo",
         default_variants=("Gender (voluntary)",),
         default_answer="Decline to self-identify",
+        choices=("Decline to self-identify", "Female", "Male", "Non-binary"),
     ),
     CanonicalKey(
         "eeo_veteran",
@@ -175,6 +206,11 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eeo",
         default_variants=("Veteran status (voluntary)",),
         default_answer="Decline to self-identify",
+        choices=(
+            "Decline to self-identify",
+            "I am not a protected veteran",
+            "I am a protected veteran",
+        ),
     ),
     CanonicalKey(
         "eeo_disability",
@@ -182,6 +218,11 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
         "eeo",
         default_variants=("Disability status (voluntary)",),
         default_answer="Decline to self-identify",
+        choices=(
+            "Decline to self-identify",
+            "No, I do not have a disability",
+            "Yes, I have a disability",
+        ),
     ),
     CanonicalKey(
         "how_did_you_hear",
@@ -191,6 +232,7 @@ CANONICAL_KEYS: tuple[CanonicalKey, ...] = (
             "How did you hear about this role?",
             "Where did you find this job?",
         ),
+        choices=("Company website", "LinkedIn", "Indeed", "JobStreet", "Referral", "Other"),
     ),
     CanonicalKey(
         "linkedin_url",

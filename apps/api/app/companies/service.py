@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 
-from app.companies.ats_detect import detect_ats_url
+from app.companies.ats_detect import detect_ats_url, detect_career_page
 from app.companies.models import Company, CompanyBoard
 from app.core.errors import AppError
 from app.core.security import WorkspaceContext
@@ -14,7 +14,7 @@ from app.sources.models import Source
 
 
 async def add_careers_url(ctx: WorkspaceContext, url: str) -> CompanyBoard:
-    detected = detect_ats_url(url)
+    detected = detect_ats_url(url) or detect_career_page(url)
     if detected is None:
         raise AppError("ats_not_detected", "Could not detect an ATS from that URL", 422)
     existing = (

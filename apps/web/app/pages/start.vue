@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { toRaw } from "vue";
 import {
   applySetupApiV1OnboardingSetupsDraftIdApplyPost,
   cancelSetupApiV1OnboardingSetupsDraftIdCancelPost,
   createSetupApiV1OnboardingSetupsPost,
   getSetupApiV1OnboardingSetupsDraftIdGet,
   listCredentialsApiV1AiCredentialsGet,
+  listAnswerKeysApiV1ProfilesProfileIdAnswersKeysGet,
   openSetupApiV1OnboardingSetupsGet,
   patchDecisionsApiV1OnboardingSetupsDraftIdDecisionsPatch,
   retrySetupApiV1OnboardingSetupsDraftIdRetryPost,
@@ -24,6 +26,7 @@ import {
   FnSelect,
   FnStepper,
   FnTextarea,
+  FnSuggestions,
   useToast,
 } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
@@ -39,6 +42,7 @@ import {
   isKept,
   isSearchKept,
   itemValueText,
+  normalizeCountryCode,
   parseAmount,
   salaryText,
   searchSkillText,
@@ -104,6 +108,7 @@ const lowestPeriod = ref<LowestPay["period"]>("month");
 const seeAllOpen = ref(false);
 const editOpen = ref(false);
 const localValues = ref<Record<string, string>>({});
+const localCountries = ref<Record<string, string>>({});
 const applying = ref(false);
 const itemErrors = ref<Record<string, string>>({});
 const showAll = ref(false);
@@ -116,6 +121,42 @@ const bundle = computed(() => draft.value?.bundle ?? null);
 const items = computed<ReviewItem[]>(() => (bundle.value?.items ?? []) as ReviewItem[]);
 const searches = computed<ReviewSearch[]>(() => (bundle.value?.searches ?? []) as ReviewSearch[]);
 const grouped = computed(() => groupItems(items.value));
+
+// Common answers per question, from the same catalog the answer bank uses.
+const answerKeys = useQuery({
+  queryKey: computed(() => ["answer-keys", draft.value?.profile_id]),
+  queryFn: async () => {
+    const { data } = await listAnswerKeysApiV1ProfilesProfileIdAnswersKeysGet({
+      path: { profile_id: draft.value!.profile_id },
+      throwOnError: true,
+    });
+    return data ?? [];
+  },
+  enabled: computed(() => Boolean(draft.value?.profile_id)),
+});
+const keyMeta = computed(() => {
+  const map = new Map<string, { choices: string[]; question: string }>();
+  for (const row of answerKeys.data.value ?? []) {
+    map.set(row.key, {
+      choices: row.choices ?? [],
+      question: row.default_variants?.[0] ?? "",
+    });
+  }
+  return map;
+});
+function answerKeyOf(item: ReviewItem): string {
+  return item.target.startsWith("answers.") ? (item.target.split(".")[1] ?? "") : "";
+}
+function choicesFor(item: ReviewItem): string[] {
+  return keyMeta.value.get(answerKeyOf(item))?.choices ?? [];
+}
+function questionFor(item: ReviewItem): string {
+  return keyMeta.value.get(answerKeyOf(item))?.question ?? "";
+}
+/** The form's own question when we know it, otherwise the plain needs-you hint. */
+function placeholderFor(item: ReviewItem): string {
+  return questionFor(item) || t("setup.onlyYouHint");
+}
 const needsYouCount = computed(
   () =>
     items.value.filter((item) => item.needs_you).length +
@@ -204,6 +245,7 @@ function hydrate(data: SetupRead) {
     lowestPeriod.value = detected.period;
   }
   const values: Record<string, string> = {};
+  const countries: Record<string, string> = {};
   for (const item of (data.bundle?.items ?? []) as ReviewItem[]) {
     const decision = decisions.value.items[item.id];
     if (decision?.edited) {
@@ -227,8 +269,10 @@ function hydrate(data: SetupRead) {
     ) {
       values[item.id] = itemValueText(item);
     }
+    if (item.needs_country) countries[item.id] = decision?.country ?? "";
   }
   localValues.value = values;
+  localCountries.value = countries;
   hydrating = false;
   if (data.status === "ready") {
     stopPolling();
@@ -286,6 +330,7 @@ async function start() {
       }
       body = {
         document_id: data.id,
+        profile_id: profileId,
         role_text: roleText.value.trim() || null,
         timezone: timezone.value,
         with_ai: hasAi.value,
@@ -293,6 +338,7 @@ async function start() {
     } else {
       body = {
         text: resumeText.value.trim(),
+        profile_id: profileId,
         role_text: roleText.value.trim() || null,
         timezone: timezone.value,
         with_ai: hasAi.value,
@@ -327,8 +373,8 @@ async function saveDecisions() {
       throwOnError: true,
     });
     if (data) draft.value = data as SetupRead;
-  } catch {
-    toast.push({ title: t("setup.saveChoicesFailed"), tone: "danger" });
+  } catch (error) {
+    toast.push({ title: apiError(error), tone: "danger" });
   } finally {
     saving.value = false;
   }
@@ -336,15 +382,11 @@ async function saveDecisions() {
 
 function commitLowestPay() {
   const amount = parseAmount(lowestAmount.value);
+  const currency = lowestCurrency.value.replace(/[^a-zA-Z]/g, "").toUpperCase();
   decisions.value = {
     ...decisions.value,
-    lowest_pay: amount
-      ? {
-          amount,
-          currency: (lowestCurrency.value || "USD").toUpperCase(),
-          period: lowestPeriod.value,
-        }
-      : null,
+    lowest_pay:
+      amount && currency.length === 3 ? { amount, currency, period: lowestPeriod.value } : null,
     lowest_pay_set: true,
   };
 }
@@ -367,16 +409,49 @@ watch(
 function toggleItem(item: ReviewItem, kept: boolean) {
   decisions.value = setKept(decisions.value, item, kept);
 }
+function omitKey(record: Record<string, string>, key: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [name, value] of Object.entries(record)) {
+    if (name !== key) out[name] = value;
+  }
+  return out;
+}
+
 function commitValue(item: ReviewItem) {
   const value = localValues.value[item.id] ?? "";
+  // A country-scoped answer cannot be saved without a country. Do not queue a decision the
+  // server will reject on every autosave.
+  const country = item.needs_country
+    ? normalizeCountryCode(localCountries.value[item.id] ?? "")
+    : "";
+  if (item.needs_country && country.length !== 2) {
+    if (value.trim()) {
+      itemErrors.value = { ...itemErrors.value, [item.id]: t("setup.countryNeeded") };
+    } else if (itemErrors.value[item.id]) {
+      itemErrors.value = omitKey(itemErrors.value, item.id);
+    }
+    return;
+  }
+  if (itemErrors.value[item.id]) itemErrors.value = omitKey(itemErrors.value, item.id);
   if (item.target.startsWith("answers.")) {
-    decisions.value = setValue(decisions.value, item, { answer: value, approved: true });
+    decisions.value = setValue(
+      decisions.value,
+      item,
+      { answer: value, approved: true },
+      item.needs_country ? country : undefined,
+    );
   } else {
     decisions.value = setValue(decisions.value, item, value);
   }
 }
 function toggleSearch(search: ReviewSearch, kept: boolean) {
   decisions.value = setSearchKept(decisions.value, search, kept);
+}
+
+/** One tap fills the field and saves it through the normal commit path. */
+function applySuggestion(item: ReviewItem, value: string) {
+  localValues.value = { ...localValues.value, [item.id]: value };
+  commitValue(item);
 }
 
 async function retry() {
@@ -492,7 +567,7 @@ function openSearchEdit(search: ReviewSearch) {
     decisions.value.searches[search.variant] ??
     searches.value.find((row) => row.variant === search.variant);
   if (!original) return;
-  const base = structuredClone(original) as unknown as EditBase;
+  const base = structuredClone(toRaw(original)) as unknown as EditBase;
   editingSearch.value = {
     variant: search.variant,
     name: String(base.name ?? ""),
@@ -850,11 +925,34 @@ onBeforeUnmount(() => {
               <FnChip v-if="item.needs_you" tone="accent">{{ t("setup.onlyYou") }}</FnChip>
               <FnChip v-else>{{ sourceLabel(item.source) }}</FnChip>
             </div>
+            <div v-if="item.needs_country" class="grid gap-2 sm:grid-cols-[1fr_96px]">
+              <FnInput
+                v-model="localValues[item.id]"
+                :aria-label="t(answerLabelKey(item.target))"
+                :placeholder="placeholderFor(item)"
+                @blur="commitValue(item)"
+              />
+              <FnInput
+                v-model="localCountries[item.id]"
+                maxlength="2"
+                class="uppercase"
+                :aria-label="t('setup.answerCountry')"
+                :placeholder="t('setup.countryCode')"
+                @blur="commitValue(item)"
+              />
+            </div>
             <FnInput
+              v-else
               v-model="localValues[item.id]"
               :aria-label="t(answerLabelKey(item.target))"
-              :placeholder="t('setup.onlyYouHint')"
+              :placeholder="placeholderFor(item)"
               @blur="commitValue(item)"
+            />
+            <FnSuggestions
+              v-if="choicesFor(item).length"
+              :options="choicesFor(item)"
+              :label="t('setup.commonAnswers')"
+              @select="(value) => applySuggestion(item, value)"
             />
             <details v-if="item.evidence?.length" class="text-xs text-ink-600">
               <summary class="flex min-h-11 cursor-pointer items-center">

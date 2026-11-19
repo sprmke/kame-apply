@@ -15,6 +15,7 @@ export { default as FnCommandBar, type CommandItem } from "./FnCommandBar.vue";
 export { default as FnTable, type Column } from "./FnTable.vue";
 export { default as FnSectionCard } from "./FnSectionCard.vue";
 export { default as FnChoiceCards, type ChoiceCard } from "./FnChoiceCards.vue";
+export { default as FnSuggestions } from "./FnSuggestions.vue";
 export { default as FnMoreOptions } from "./FnMoreOptions.vue";
 export { default as FnSummaryLine } from "./FnSummaryLine.vue";
 export { default as FnTerm } from "./FnTerm.vue";

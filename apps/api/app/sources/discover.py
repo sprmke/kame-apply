@@ -42,6 +42,11 @@ def _enabled_source_keys(
     }
 
 
+def board_params(board: Any) -> dict[str, str]:
+    """What a board adapter needs: the slug for ATS APIs and the URL for career pages."""
+    return {"slug": board.slug, "url": board.url}
+
+
 async def _boards_for_run(
     session: AsyncSession, *, limit: int = 8, pack: IndustryPack | None = None
 ) -> list[CompanyBoard]:
@@ -128,7 +133,7 @@ async def run_discover_track(
 
     async def publish_progress() -> None:
         """Flush progress; in the background path commit so pollers see counts mid-run."""
-        run.progress = progress
+        run.progress = dict(progress)
         await ctx.session.flush()
         if commit_progress:
             await ctx.session.commit()
@@ -202,7 +207,7 @@ async def run_discover_track(
                         board.last_modified = cond_headers["last-modified"][:255]
                 adapter = get_adapter(board.ats, **kwargs)
                 seen: set[str] = set()
-                async for raw in adapter.discover({"slug": board.slug}):
+                async for raw in adapter.discover(board_params(board)):
                     seen.add(raw.external_id)
                     try:
                         # A savepoint isolates one bad record; a full rollback would discard the
@@ -373,7 +378,7 @@ async def run_discover_track(
         progress["linked"] = max(int(progress.get("linked") or 0), linked_after - linked_before)
         run.status = "succeeded"
         run.finished_at = datetime.now(UTC)
-        run.progress = progress
+        run.progress = dict(progress)
         await audit.record(
             ctx,
             action="discovery.run_completed",
@@ -389,7 +394,7 @@ async def run_discover_track(
         run.status = "failed"
         run.error = str(exc)[:1000]
         run.finished_at = datetime.now(UTC)
-        run.progress = progress
+        run.progress = dict(progress)
         await ctx.session.flush()
         logger.exception("discovery_failed run=%s", run.id)
         return run
