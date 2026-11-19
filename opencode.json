@@ -19,7 +19,7 @@
     ".cursor/rules/truthful-content.mdc",
     "DESIGN.md"
   ],
-  "skills": [".agent/skills", ".agents/skills"],
+  "skills": [".agent/skills"],
   "formatter": true,
   "experimental": {
     "todo": true

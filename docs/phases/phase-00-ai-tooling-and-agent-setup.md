@@ -37,7 +37,7 @@ Kame Apply has unusual hard rules (no bot evasion, no fabrication, PII guard, un
 - [x] `README.md` index.
 
 ### 5. OpenCode layer
-- [x] `opencode.json`, `.opencode/agents`, `.opencode/commands`, `.opencode/plugins/ka-ai-tooling.ts` (port `dd-ai-tooling.ts`), `README.md`.
+- [x] `opencode.json`, `.opencode/agents`, `.opencode/commands`, `.opencode/plugins/ka-ai-tooling.ts` (V2 `{ id, setup }` + V1 `server`; port of `dd-ai-tooling.ts`), `README.md`.
 
 ### 6. Hooks with Kame Apply specifics
 - [x] `check-stack-terminology.sh`: fails on banned stack drift (React/`react-dom`/Next.js/TanStack Start/shadcn/`lucide` imports in `apps/web`, `apps/extension`, `packages/ui`; Supabase client, Drizzle, Prisma, ARQ) **and on evasion tooling** (`playwright-stealth`, `undetected`, `puppeteer-extra-plugin-stealth`, `capsolver`, `2captcha`, `anticaptcha`, `fake-useragent`, proxy rotation libs).

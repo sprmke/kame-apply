@@ -17,7 +17,7 @@ Then run `opencode` from the repo root. Personal providers and models stay in `~
 | ------------ | ------------------------------------ | ----------------------------------------- |
 | Instructions | `AGENTS.md`                          | Auto-discovered (V2 reads AGENTS.md only) |
 | Rules        | always-on `.cursor/rules/*.mdc`      | `opencode.json` → `instructions`          |
-| Skills       | `.agent/skills/` + `.agents/skills/` | `opencode.json` → `skills` array          |
+| Skills       | `.agent/skills/`                     | `opencode.json` → `skills` array          |
 | Commands     | `.claude/commands/`                  | `.opencode/commands/` symlinks            |
 | Subagents    | `.claude/agents/`                    | `.opencode/agents/` (V2 frontmatter)      |
 | Guards       | `.claude/hooks/` (Cursor/Claude)     | `opencode.json` → `permissions` array     |
@@ -33,9 +33,10 @@ OpenCode V2 enforces through config:
 - `rm -rf /` and `rm -rf ~` denied; `drop table` and force-push ask.
 - Reads and edits outside the project ask, except the shared global skill library.
 
-`.opencode/plugins/ka-ai-tooling.ts` targets the OpenCode V1 plugin API. V1 plugin
-implementations do not run in V2, so treat it as legacy. The guarantees above live
-in `opencode.json`.
+`.opencode/plugins/ka-ai-tooling.ts` exports a V2 `{ id, setup }` definition (plus a
+V1 `server` for older clients). OpenCode V2 auto-loads it from `.opencode/plugins/`.
+Shell and migration denies also live in `opencode.json` `permissions`, so the
+project stays guarded even if the plugin fails to load.
 
 ## Token discipline
 

@@ -78,7 +78,7 @@ Before installing any third-party skill: read it fully (skills are code-adjacent
 
 - **Claude Code:** `CLAUDE.md` (single always-loaded context), `.claude/settings.json` hooks + permissions (allow: `uv run`, `pnpm`, read-only git; ask: deploys, migrations; deny: prod unlock-less commands), agents, commands, skills symlinks.
 - **Cursor:** `.cursor/rules` (glob-scoped heavy rules), `.cursor/hooks.json`, `.cursor/skills`, `.cursor/mcp.json`.
-- **OpenCode:** `opencode.json`, `.opencode/agents`, `.opencode/commands`, `.opencode/plugins/ka-ai-tooling.ts` (port of `dd-ai-tooling.ts`).
+- **OpenCode:** `opencode.json`, `.opencode/agents`, `.opencode/commands`, `.opencode/plugins/ka-ai-tooling.ts` (V2 `{ id, setup }` + V1 `server`; port of `dd-ai-tooling.ts`).
 - `check-ai-tooling-sync.sh` enforces parity in CI.
 
 Note: in this environment the `context7` MCP plugin currently needs authorization (`/mcp` in an interactive session) before agents can use it.
