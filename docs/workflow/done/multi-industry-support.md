@@ -2,7 +2,7 @@
 
 **Status:** In progress (IND-1 to IND-10 shipped) · **Created:** 2026-11-12 · **Type:** cross-cutting product + platform program (API, web, extension copy, AI, discovery)
 
-Related: [`docs/prd.md`](../../prd.md), [`docs/architecture/industries.md`](../../architecture/industries.md), [`docs/architecture/criteria-and-taxonomy.md`](../../architecture/criteria-and-taxonomy.md), [`docs/architecture/job-discovery.md`](../../architecture/job-discovery.md), [`docs/architecture/matching.md`](../../architecture/matching.md), [`docs/architecture/profile.md`](../../architecture/profile.md), and [`ux-clarity-overhaul.md`](../done/ux-clarity-overhaul.md) (onboarding `/start`, Searches tabs, glossary).
+Related: [`docs/prd.md`](../../prd.md), [`docs/architecture/industries.md`](../../architecture/industries.md), [`docs/architecture/criteria-and-taxonomy.md`](../../architecture/criteria-and-taxonomy.md), [`docs/architecture/job-discovery.md`](../../architecture/job-discovery.md), [`docs/architecture/matching.md`](../../architecture/matching.md), [`docs/architecture/profile.md`](../../architecture/profile.md), and [`ux-clarity-overhaul.md`](ux-clarity-overhaul.md) (onboarding `/start`, Searches tabs, glossary).
 
 ---
 

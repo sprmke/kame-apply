@@ -6,7 +6,7 @@ description: Add or change an industry pack so a new field of work (hospitality,
 # Industry pack
 
 A pack is content, not a branch. Read `docs/architecture/industries.md` and
-`docs/workflow/planned/multi-industry-support.md` §4–§5 before editing.
+`docs/workflow/done/multi-industry-support.md` §4–§5 before editing.
 
 ## Rules
 

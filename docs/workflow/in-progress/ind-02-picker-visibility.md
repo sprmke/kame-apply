@@ -1,6 +1,6 @@
 # IND-2: Picker and visibility (scratchpad)
 
-**Branch:** `ind/01-pack-foundation` (shared worktree) · **Started:** 2026-11-13 · **Plan:** `docs/workflow/planned/multi-industry-support.md`
+**Branch:** `ind/01-pack-foundation` (shared worktree) · **Started:** 2026-11-13 · **Plan:** `docs/workflow/done/multi-industry-support.md`
 
 ## Shipped
 

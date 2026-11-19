@@ -1,6 +1,6 @@
 # IND-4: Discovery for non-tech (scratchpad)
 
-**Branch:** `ind/01-pack-foundation` · **Started:** 2026-11-13 · **Plan:** `docs/workflow/planned/multi-industry-support.md` §7
+**Branch:** `ind/01-pack-foundation` · **Started:** 2026-11-13 · **Plan:** `docs/workflow/done/multi-industry-support.md` §7
 
 ## Shipped
 

@@ -21,7 +21,7 @@ evals.
 template whose industry has no curated pack yet maps its track to `general`.
 
 Decisions: D1 = workspace default + per search; D2 = Philippines + UAE/Gulf for the first live
-chef searches. See `docs/workflow/planned/multi-industry-support.md` §16.
+chef searches. See `docs/workflow/done/multi-industry-support.md` §16.
 
 ## 2. Pack shape
 

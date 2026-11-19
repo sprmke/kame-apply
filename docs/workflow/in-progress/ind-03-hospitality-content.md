@@ -1,6 +1,6 @@
 # IND-3: Hospitality content (scratchpad)
 
-**Branch:** `ind/01-pack-foundation` (shared worktree) · **Started:** 2026-11-13 · **Plan:** `docs/workflow/planned/multi-industry-support.md` §5.2
+**Branch:** `ind/01-pack-foundation` (shared worktree) · **Started:** 2026-11-13 · **Plan:** `docs/workflow/done/multi-industry-support.md` §5.2
 
 ## Shipped
 

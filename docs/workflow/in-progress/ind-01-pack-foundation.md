@@ -1,6 +1,6 @@
 # IND-1: Pack foundation (scratchpad)
 
-**Branch:** `ind/01-pack-foundation` · **Started:** 2026-11-12 · **Plan:** `docs/workflow/planned/multi-industry-support.md`
+**Branch:** `ind/01-pack-foundation` · **Started:** 2026-11-12 · **Plan:** `docs/workflow/done/multi-industry-support.md`
 
 ## Decisions recorded in IND-0
 
