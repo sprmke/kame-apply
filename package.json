@@ -18,6 +18,8 @@
     "dev:docker": "docker compose -f infra/docker-compose.dev.yml up -d --wait && bash scripts/dev/ensure-db-roles.sh",
     "stop:docker": "docker compose -f infra/docker-compose.dev.yml down",
     "dev": "bash dev.sh",
+    "ui": "./scripts/dev/ui-web-worktree.sh",
+    "ui:port": "./scripts/dev/ui-web-worktree.sh --print-port",
     "dev:api": "cd apps/api && uv run uvicorn app.main:app --reload --port 8100",
     "dev:web": "pnpm --filter @kame/web dev",
     "db:migrate": "cd apps/api && uv run alembic upgrade head",
