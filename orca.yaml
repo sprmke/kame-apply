@@ -1,0 +1,16 @@
+# Orca worktree lifecycle for Kame Apply.
+# Sticky per-worktree Nuxt web port (3600-3699) and a UI tab.
+# The Python API on :8100 and its Docker Postgres are shared.
+
+scripts:
+  setup: |
+    pnpm install
+    cp -n "$ORCA_ROOT_PATH/apps/api/.env" apps/api/.env 2>/dev/null || true
+  archive: |
+    bash scripts/dev/archive-worktree-ui.sh
+
+setupAgentStartupPolicy: wait-for-setup
+
+defaultTabs:
+  - title: UI
+    command: bun run ui

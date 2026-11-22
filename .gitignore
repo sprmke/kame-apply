@@ -56,3 +56,4 @@ browser-profiles/
 
 # Nuxt 4 SPA output symlink
 apps/web/dist
+.local/
