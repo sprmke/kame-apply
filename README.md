@@ -2,7 +2,7 @@
 
 **Find real jobs worldwide, strengthen your resume with live market evidence, tailor each application, and apply faster, while you stay in control of every irreversible step.**
 
-A multi-tenant job-search workbench: Tracks per role, scheduled discovery across ATS boards and public feeds, match scoring, scam safety checks, truthful resume studio and per-job tailoring, Answer Desk, assisted apply via browser extension or cloud runner, and a command center for the whole pipeline. Built as a **pnpm + Turborepo** (TypeScript) and **uv** (Python) monorepo: **Vue 3 + Nuxt 4** SPA, **FastAPI** (all business logic), **PostgreSQL 17** with **pgvector** and **RLS**, **DBOS** durable workflows, **PydanticAI**, and a **WXT** browser extension.
+A multi-tenant job-search workbench: one search per role, scheduled discovery across ATS boards and public feeds, match scoring, scam safety checks, a truthful resume studio and per-job tailoring, answer help, assisted apply through a browser extension or cloud runner, and a command center for the whole pipeline. Built as a **pnpm + Turborepo** (TypeScript) and **uv** (Python) monorepo: **Vue 3 + Nuxt 4** SPA, **FastAPI** (all business logic), **PostgreSQL 17** with **pgvector** and **RLS**, **DBOS** durable workflows, **PydanticAI**, and a **WXT** browser extension.
 
 <p align="center">
   <img src="./docs/screenshots/sign-in.png" alt="Kame Apply sign-in" width="900" />
@@ -12,8 +12,8 @@ A multi-tenant job-search workbench: Tracks per role, scheduled discovery across
   <a href="#features">Features</a> ·
   <a href="#screenshots">Screenshots</a> ·
   <a href="#tech-stack">Tech Stack</a> ·
-  <a href="#getting-started">Getting Started</a> ·
-  <a href="#documentation">Documentation</a>
+  <a href="#documentation">Documentation</a> ·
+  <a href="#design">Design</a>
 </p>
 
 <p align="center">
@@ -40,53 +40,62 @@ A multi-tenant job-search workbench: Tracks per role, scheduled discovery across
 - Guided profile interview to fill gaps (metrics, tools, scope, outcomes)
 - **Answer bank** for forms: work authorization, notice period, salary, relocation, EEO defaults
 - **Writing voice** from your own samples (emails, Slack, letters); free-text answers match your style
-- Sensitive data (government IDs, bank) is never stored
+- Sensitive data (government IDs, bank details) is never stored
 
-### Tracks & criteria
+### Searches and criteria
 
-- One **Track** per role (Software Developer, AI Engineer, Product Manager, …) with its own criteria, sources, schedule, autonomy, resume variant, and pipeline
-- Hybrid criteria builder: describe the role in plain language, then edit structured chips and filters
-- Live preview of estimated matches; AI suggestions for synonyms, skills, and noise filters
-- Filters for titles, skills, seniority, remote/hybrid, salary, visa, company size, agencies, and more
+- One **search** per role (AI Engineer, Product Manager, Nurse, Electrician, ...) with its own criteria, sources, schedule, autonomy, resume variant, and pipeline
+- Describe the role in plain language, then edit structured chips and filters
+- Preview of estimated matches; AI suggestions for synonyms, skills, and noise filters
+- Filters for titles, skills, seniority, remote and hybrid work, salary, visa, company size, agencies, and industry-specific facets
 
-### Job discovery & matching
+### Job discovery and matching
 
-- Scheduled pulls from company ATS APIs (Greenhouse, Lever, Ashby, Workable, …), remote boards, RSS, schema.org career pages, forwarded email alerts, and extension clips
+- Scheduled pulls from company ATS APIs (Greenhouse, Lever, Ashby, Workable, ...), remote boards, RSS, schema.org career pages, forwarded email alerts, and extension clips
 - Normalize and dedupe across sources; expire closed posts; grow a company directory from public signals
-- Hard filters → rule score → embeddings → LLM fit only for top candidates
-- Per-job score, matched/missing skills, eligibility verdict, and salary/seniority fit
+- Hard filters, rule score, embeddings, then LLM fit only for top candidates
+- Per-job score, matched and missing skills, eligibility verdict, salary and seniority fit
+- **Fit ledger** checks each requirement against your profile and shows the evidence, or says plainly that there is none
 
-### Jobs board & safety
+### Jobs board and safety
 
 - Filterable research board: match score, risk badge, source, salary, location
 - Shortlist, skip (trains ranking), hide company, mark applied, prepare, or open with assist
-- **Risk levels** green / yellow / red with reasons; yellow/red pause automation
-- PII guard on form fields; Check-this for recruiter messages and take-home links
-- No CAPTCHA solvers, stealth plugins, or proxy rotation. Challenges hand control to you
+- **Risk levels** green, caution, and high risk with reasons; yellow and red pause automation
+- **Check this** for recruiter messages and take-home links
+- PII guard on form fields; sensitive values always stop for the human
+- No CAPTCHA solvers, stealth plugins, or proxy rotation. A challenge hands control to you
 
-### Resume Studio & Recruiter Lens
+### Resume studio and tailoring
 
-- Critique (ATS parseability, impact, keywords vs market), market insights from live postings
-- Improve a base resume per Track; every change is a diff with a reason
+- **Resume check**: ATS parseability, claims with proof, scanability, dates and titles, 6-second view, and what hiring software reads
+- **What employers ask** from live postings, with market insights for your role
+- Improve a base resume per search; every change is a diff with a reason
 - **Per-job tailor**: map posting requirements to Career Profile evidence; gaps stay gaps
-- Recruiter Lens: parse check, qualification fit grades, knockout prediction, 7-second skim, authenticity
 - ATS-safe PDF (Typst/RenderCV) and DOCX; optional cover letter in your voice
 
-### Apply assist & Answer Desk
+### Applying and answers
 
-- Autonomy per Track: `discover` → `prepare` → `assist` (default) → opt-in `auto-submit` on allowlisted ATS only
-- **Browser extension**: fill in your own session; LinkedIn/Indeed/JobStreet autofill is opt-in
+- Autonomy per search: find only, prepare, fill forms, or apply (opt-in and allowlisted ATS only)
+- **Browser extension**: fill in your own session; LinkedIn, Indeed, and JobStreet autofill is opt-in
 - **Cloud runner**: headless apply with durable checkpoints, live view, and takeover
-- You click Submit unless `auto-submit` policy allows it; never auto-submit on restricted platforms
-- **Answer Desk**: paste questions, draft in your voice, copy; restricted questions get notes only
+- You click Submit unless the apply policy allows otherwise; never auto-submit on restricted platforms
+- **Answer help**: paste application questions, draft in your voice, copy or save to the answer bank; restricted questions get notes only
 
-### Tracker, scheduling & agents
+### Tracker, replies, and people
 
-- Command center (Today): matches, Needs you inbox, Track cards, activity
-- Pipeline: new → shortlisted → preparing → ready → in progress → needs you → submitted → interview → offer
-- Per-Track schedules, quiet hours, daily caps, run history, notification prefs (in-app, email digest, push, Telegram)
-- Bring-your-own AI keys (Gemini, OpenAI, Anthropic, Groq, OpenRouter, Ollama) with budgets
-- **Claude Agent Bridge**: MCP server + Claude Code plugin so your own Claude works on workspace data (no credential relay)
+- **Applications** as a table or board: funnel from discovered to interview, status, method, submitted date, notes, and next step
+- **Replies**: paste an employer reply and accept its status suggestion
+- **People I help**: keep profiles for people you are helping apply
+- **Contacts**: add people you met while applying from a signature, profile, or CSV
+- Needs you inbox for every decision that waits on a human
+
+### Scheduling, AI, and integrations
+
+- Per-search schedules, quiet hours, daily caps, run history, and source health
+- Notification prefs: in-app, email digest, push, and Telegram
+- Bring-your-own AI keys (Gemini, OpenAI, Anthropic, Groq, OpenRouter, Ollama) or a free provider, with budgets
+- **Claude Agent Bridge**: MCP server and Claude Code plugin so your own Claude works on workspace data, with no credential relay
 
 ---
 
@@ -96,27 +105,31 @@ A multi-tenant job-search workbench: Tracks per role, scheduled discovery across
 | :----------------------------------------: | :------------------------------------: |
 | ![Sign in](./docs/screenshots/sign-in.png) | ![Today](./docs/screenshots/today.png) |
 
-|                  Tracks                  |                      Criteria                      |
-| :--------------------------------------: | :------------------------------------------------: |
-| ![Tracks](./docs/screenshots/tracks.png) | ![Criteria](./docs/screenshots/track-criteria.png) |
+|                  Searches                  |                      Search overview                      |
+| :----------------------------------------: | :-------------------------------------------------------: |
+| ![Searches](./docs/screenshots/tracks.png) | ![Search overview](./docs/screenshots/track-criteria.png) |
 
-|                      Track settings                      |                    Jobs                    |
-| :------------------------------------------------------: | :----------------------------------------: |
-| ![Track settings](./docs/screenshots/track-settings.png) | ![Jobs board](./docs/screenshots/jobs.png) |
+|                         How we work                         |                    Jobs                    |
+| :---------------------------------------------------------: | :----------------------------------------: |
+| ![Search automation](./docs/screenshots/track-settings.png) | ![Jobs board](./docs/screenshots/jobs.png) |
 
-|                  Profile                   |                     Studio                      |
-| :----------------------------------------: | :---------------------------------------------: |
-| ![Profile](./docs/screenshots/profile.png) | ![Resume Studio](./docs/screenshots/studio.png) |
+|                    Job reader                    |                      Profile                      |
+| :----------------------------------------------: | :-----------------------------------------------: |
+| ![Job detail](./docs/screenshots/job-detail.png) | ![Career profile](./docs/screenshots/profile.png) |
 
-|                Applications (board)                 |                Applications (table)                 |
-| :-------------------------------------------------: | :-------------------------------------------------: |
-| ![Board](./docs/screenshots/applications-board.png) | ![Table](./docs/screenshots/applications-table.png) |
+|                  Resume studio                  |                    Answer help                     |
+| :---------------------------------------------: | :------------------------------------------------: |
+| ![Resume studio](./docs/screenshots/studio.png) | ![Answer help](./docs/screenshots/answer-desk.png) |
 
-|                    Answer Desk                     |                  Safety                  |
-| :------------------------------------------------: | :--------------------------------------: |
-| ![Answer Desk](./docs/screenshots/answer-desk.png) | ![Safety](./docs/screenshots/safety.png) |
+|                     Applications                     |                  Safety                  |
+| :--------------------------------------------------: | :--------------------------------------: |
+| ![Applications](./docs/screenshots/applications.png) | ![Safety](./docs/screenshots/safety.png) |
 
-More captures and regenerate notes: [`docs/screenshots/README.md`](./docs/screenshots/README.md).
+|                     Inbox                      |                    Connect AI                     |
+| :--------------------------------------------: | :-----------------------------------------------: |
+| ![Inbox](./docs/screenshots/notifications.png) | ![Connect AI](./docs/screenshots/settings-ai.png) |
+
+Captured at 1440px in light theme. Notes and regeneration steps: [`docs/screenshots/README.md`](./docs/screenshots/README.md).
 
 ---
 
@@ -141,113 +154,6 @@ Full rationale: [`docs/tech-stack.md`](./docs/tech-stack.md). Product principles
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (see [`.nvmrc`](./.nvmrc)) and [pnpm](https://pnpm.io/) 10+
-- [uv](https://docs.astral.sh/uv/)
-- [Docker](https://www.docker.com/) (Postgres+pgvector, MinIO, Mailpit)
-- `jq`
-
-### 1. Clone and install
-
-```bash
-git clone https://github.com/sprmke/kame-apply.git
-cd kame-apply
-pnpm install
-uv sync --all-packages
-pnpm run setup:ai-tooling   # once; Cursor / Claude Code / OpenCode links
-```
-
-### 2. Environment
-
-```bash
-cp apps/api/.env.example apps/api/.env
-```
-
-Local defaults work with Compose. Optional: LLM API keys for AI features. See [`apps/api/.env.example`](./apps/api/.env.example) and [`docs/architecture/deployment.md`](./docs/architecture/deployment.md).
-
-### 3. Run locally
-
-```bash
-pnpm run dev:docker   # Postgres :5442, MinIO, Mailpit
-pnpm run dev          # migrate, then API :8100 + web :3100
-```
-
-Open [http://localhost:3100](http://localhost:3100). API health: [http://localhost:8100/api/v1/health](http://localhost:8100/api/v1/health).
-
-**VS Code / Cursor:** Terminal → Run Task for the same commands. `⇧⌘B` starts the full stack.
-
-Quality gate before a PR: `pnpm run ci:quality`.
-
----
-
-## Scripts
-
-| Command                                              | Description                                              |
-| ---------------------------------------------------- | -------------------------------------------------------- |
-| `pnpm run dev`                                       | Migrate + API + web (`./dev.sh`)                         |
-| `pnpm run dev:docker` / `stop:docker`                | Local Postgres, MinIO, Mailpit                           |
-| `pnpm run dev:api` / `dev:web`                       | One side only                                            |
-| `pnpm run lint` / `format` / `type-check` / `build`  | Quality                                                  |
-| `pnpm run test`                                      | pytest (API, runner) + Vitest (web, ui, extension)       |
-| `pnpm run audit:ui`                                  | Screenshot real routes at 375/820/1440; fail on overflow |
-| `pnpm run ci:quality`                                | Full CI gate                                             |
-| `pnpm run db:migrate` / `db:reset:local` / `db:seed` | Database                                                 |
-| `pnpm run gen:api-client`                            | OpenAPI → `packages/api-client`                          |
-| `pnpm run check:ai-tooling-sync`                     | Keep Cursor/Claude/OpenCode tooling aligned              |
-
-Deploy and migrate scripts are documented in [`docs/architecture/deployment.md`](./docs/architecture/deployment.md). Production writes need an explicit unlock word in-session.
-
----
-
-## Project structure
-
-```text
-apps/
-  web/                 # Vue 3 + Nuxt 4 (UI only)
-  api/                 # FastAPI: routers, services, models, AI, MCP
-  runner/              # Playwright cloud apply worker
-  extension/           # WXT + Vue side panel
-packages/
-  ui/                  # Signal components + tokens
-  api-client/          # Generated OpenAPI TypeScript client
-  py-core/             # Shared Python (adapters, utils)
-docs/
-  prd.md               # Authoritative product scope
-  tech-stack.md        # Authoritative stack
-  architecture/        # Overview, auth, RLS, deploy, …
-  phases/              # Build plan (phases 0–20)
-  guides/routes/       # Per-page behavior
-  screenshots/         # README portfolio images
-.agent/                # Canonical AI skills (symlinked into Cursor/Claude)
-```
-
----
-
-## Routes
-
-| Route                    | Access | Description                               |
-| ------------------------ | ------ | ----------------------------------------- |
-| `/login`, `/register`    | Public | Auth                                      |
-| `/`                      | Auth   | Today command center                      |
-| `/tracks`, `/tracks/:id` | Auth   | Tracks, criteria, runs, settings          |
-| `/jobs`                  | Auth   | Research board                            |
-| `/profile/*`             | Auth   | Career Profile, answers, voice, documents |
-| `/studio`                | Auth   | Resume Studio                             |
-| `/tailor/:trackJobId`    | Auth   | Per-job tailor + Recruiter Lens           |
-| `/applications`          | Auth   | Tracker (table / board)                   |
-| `/answers`               | Auth   | Answer Desk                               |
-| `/safety`                | Auth   | Flagged jobs & Check-this                 |
-| `/notifications`         | Auth   | Inbox                                     |
-| `/settings/*`            | Auth   | Workspace, AI keys, sources, integrations |
-| `/legal/*`               | Public | Privacy, terms, extension disclosure      |
-
-Full guides: [`docs/guides/routes/README.md`](./docs/guides/routes/README.md).
-
----
-
 ## Documentation
 
 | Doc                                                                | Purpose                                          |
@@ -257,6 +163,7 @@ Full guides: [`docs/guides/routes/README.md`](./docs/guides/routes/README.md).
 | [`docs/architecture/overview.md`](./docs/architecture/overview.md) | System diagram, invariants, modules              |
 | [`docs/phases/README.md`](./docs/phases/README.md)                 | Build plan and phase status                      |
 | [`docs/design/design-system.md`](./docs/design/design-system.md)   | Signal visual identity                           |
+| [`docs/guides/routes/README.md`](./docs/guides/routes/README.md)   | Per-page behavior guides                         |
 | [`docs/README.md`](./docs/README.md)                               | Full documentation index                         |
 | [`CLAUDE.md`](./CLAUDE.md)                                         | Always-loaded agent context                      |
 
