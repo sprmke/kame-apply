@@ -1,28 +1,22 @@
 # Screenshots
 
-Portfolio images for the main [README](../../README.md). Sourced from design captures under [`docs/design/screenshots/`](../design/screenshots/) (1440px, light).
+Portfolio images for the main [README](../../README.md).
 
 | File | View |
 | --- | --- |
-| `sign-in.png` | Auth / sign-in |
+| `sign-in.png` | Sign in |
 | `today.png` | Today command center |
-| `tracks.png` | Tracks list |
-| `track-criteria.png` | Track criteria builder |
-| `track-settings.png` | Track sources & autonomy |
-| `jobs.png` | Jobs research board |
+| `tracks.png` | Searches list |
+| `track-criteria.png` | One search: matches and status |
+| `track-settings.png` | One search: how we work |
+| `jobs.png` | Jobs board |
+| `job-detail.png` | Job reader with the fit ledger |
 | `profile.png` | Career Profile |
-| `studio.png` | Resume Studio |
-| `applications-board.png` | Applications kanban |
-| `applications-table.png` | Applications table |
-| `answer-desk.png` | Answer Desk |
-| `safety.png` | Safety / flagged jobs |
-| `notifications.png` | Notification center |
+| `studio.png` | Resume studio |
+| `answer-desk.png` | Answer help |
+| `applications.png` | Applications table |
+| `safety.png` | Safety: flagged jobs |
+| `notifications.png` | Inbox and Needs you |
+| `settings-ai.png` | Connect AI |
 
-Regenerate phase captures with the local stack running:
-
-```bash
-pnpm run dev
-CAPTURE=1 CAPTURE_PHASE=11 pnpm exec playwright test e2e/capture-screens.spec.ts
-```
-
-Then re-copy the chosen `*-1440-light.png` files into this folder with the names above.
+All captures are 1440px wide in light theme, from a local workspace seeded with demo data. Re-capture after a visual change, then replace the matching file here with the same name. Keep the demo data synthetic; never capture a real profile, resume, or answer bank.
