@@ -24,7 +24,7 @@ Read-only. `GET /api/v1/ops/dashboard`.
 
 ## States
 
-Loading: skeleton. Error: a single line to retry. Empty lists: one line each ("No AI calls this month.", "No sources yet.", "No runs this week").
+Loading: three section cards (AI cost, sources, runs) with list-row placeholders at the same heights. Error: a single line to retry. Empty lists: one line each ("No AI calls this month.", "No sources yet.", "No runs this week").
 
 ## Implementation map
 

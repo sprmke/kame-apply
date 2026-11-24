@@ -5,7 +5,7 @@ import {
   refreshGapPlanApiV1TracksTrackIdGapPlanRefreshPost,
   type GapPlanItemRead,
 } from "@kame/api-client";
-import { FnButton, FnSectionCard, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSectionCard, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -78,10 +78,28 @@ function statusLabel(status: string): string {
   <TrackShell :track-id="trackId">
     <div class="flex flex-col gap-5">
       <FnSectionCard :title="t('gaps.title')" :intro="t('tracks.improveIntro')">
-        <div v-if="gaps.isPending.value || suggest.isPending.value" class="flex flex-col gap-2">
-          <FnSkeleton class="h-14 w-full" />
-          <FnSkeleton class="h-14 w-full" />
-        </div>
+        <FnSkeletonGroup
+          v-if="gaps.isPending.value || suggest.isPending.value"
+          :label="t('common.loading')"
+        >
+          <ul class="divide-y divide-rule border-y border-rule">
+            <li
+              v-for="n in 3"
+              :key="n"
+              class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div class="flex min-w-0 flex-1 flex-col gap-2">
+                <FnSkeleton class="h-4 w-2/5" />
+                <FnSkeleton class="h-3.5 w-3/5" />
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <FnSkeleton class="h-11 w-28 rounded-md" />
+                <FnSkeleton class="h-11 w-20 rounded-md" />
+                <FnSkeleton class="h-11 w-20 rounded-md" />
+              </div>
+            </li>
+          </ul>
+        </FnSkeletonGroup>
         <p v-else-if="!(gaps.data.value ?? []).length" class="text-sm text-ink-600">
           {{ t("gaps.empty") }}
         </p>

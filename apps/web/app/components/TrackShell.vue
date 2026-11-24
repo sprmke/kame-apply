@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getTrackApiV1TracksTrackIdGet, type TrackDetail } from "@kame/api-client";
-import { FnSkeleton } from "@kame/ui";
+import { FnSkeleton, FnSkeletonGroup } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -43,10 +43,27 @@ const path = computed(() => route.path.replace(/\/+$/, "") || "/");
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-6">
-    <div v-if="loading" class="flex flex-col gap-3">
-      <FnSkeleton class="h-9 w-64" />
-      <FnSkeleton class="h-11 w-full" />
-    </div>
+    <FnSkeletonGroup v-if="loading" :label="t('common.loading')" class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <FnSkeleton class="size-3 shrink-0 rounded-full" />
+          <FnSkeleton class="h-8 w-2/3 max-w-72" />
+        </div>
+        <FnSkeleton class="h-7 w-20 rounded-full" />
+      </div>
+      <div class="flex gap-1 overflow-x-auto rounded-lg bg-paper-2 p-1">
+        <FnSkeleton v-for="n in 5" :key="n" class="h-11 w-24 shrink-0 rounded-md bg-paper-1" />
+      </div>
+      <div class="flex flex-col gap-5">
+        <SkeletonSectionCard v-for="n in 2" :key="n">
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-4 w-1/3" />
+            <FnSkeleton class="h-4 w-4/5" />
+            <FnSkeleton class="h-4 w-3/5" />
+          </div>
+        </SkeletonSectionCard>
+      </div>
+    </FnSkeletonGroup>
     <p v-else-if="detail.error.value" class="text-sm text-ink-600">
       {{ apiError(detail.error.value) }}
     </p>
@@ -98,5 +115,14 @@ const path = computed(() => route.path.replace(/\/+$/, "") || "/");
       </header>
       <slot :track="track" />
     </template>
+    <div v-else class="flex flex-col gap-5">
+      <SkeletonSectionCard v-for="n in 2" :key="n">
+        <div class="flex flex-col gap-2">
+          <FnSkeleton class="h-4 w-1/3" />
+          <FnSkeleton class="h-4 w-4/5" />
+          <FnSkeleton class="h-4 w-3/5" />
+        </div>
+      </SkeletonSectionCard>
+    </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { needsYouApiV1NeedsYouGet } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnSkeleton } from "@kame/ui";
+import { FnButton, FnEmptyState, FnSkeleton, FnSkeletonGroup } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -60,10 +60,25 @@ function detailText(detail: string): string {
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
     <PageHeader :title="t('needsYou.title')" :lede="t('needsYou.intro')" />
 
-    <div v-if="query.isPending.value" class="flex flex-col gap-3">
-      <FnSkeleton class="h-20 w-full" />
-      <FnSkeleton class="h-20 w-full" />
-    </div>
+    <FnSkeletonGroup
+      v-if="query.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-2"
+    >
+      <div
+        v-for="n in 4"
+        :key="n"
+        class="flex min-h-16 items-start gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+      >
+        <FnSkeleton class="mt-0.5 h-5 w-16 shrink-0 rounded-full" />
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <FnSkeleton class="h-4 w-3/5" />
+          <FnSkeleton class="h-3.5 w-4/5" />
+        </div>
+        <FnSkeleton class="mt-1 hidden size-4 shrink-0 rounded sm:block" />
+        <FnSkeleton class="mt-1 size-4 shrink-0 rounded" />
+      </div>
+    </FnSkeletonGroup>
 
     <FnEmptyState
       v-else-if="!items.length"

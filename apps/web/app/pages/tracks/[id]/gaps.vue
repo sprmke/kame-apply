@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -80,7 +80,23 @@ async function setStatus(id: string, status: string) {
       <FnButton :disabled="refreshing" @click="refresh">{{ t("gaps.refresh") }}</FnButton>
     </div>
 
-    <div v-if="gaps.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
+    <FnSkeletonGroup v-if="gaps.isPending.value" :label="t('common.loading')">
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 3" :key="n" class="flex flex-col gap-2 py-4">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3 w-20" />
+          </div>
+          <FnSkeleton class="h-4 w-4/5" />
+          <FnSkeleton class="h-3.5 w-1/3" />
+          <div class="flex flex-wrap gap-2">
+            <FnSkeleton class="h-11 w-28 rounded-md" />
+            <FnSkeleton class="h-11 w-20 rounded-md" />
+            <FnSkeleton class="h-11 w-20 rounded-md" />
+          </div>
+        </li>
+      </ul>
+    </FnSkeletonGroup>
     <ul v-else class="divide-y divide-rule border-y border-rule">
       <li v-for="g in gaps.data.value ?? []" :key="g.id" class="flex flex-col gap-2 py-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2">

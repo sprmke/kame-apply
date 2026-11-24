@@ -8,7 +8,7 @@ import {
   parseDocumentApiV1ProfilesProfileIdDocumentsDocumentIdParsePost,
   type DocumentRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, FnPencilText, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnPencilText, FnSkeletonGroup, useToast } from "@kame/ui";
 import { errorCode } from "~/lib/errors";
 
 const { t } = useI18n();
@@ -134,9 +134,18 @@ function isLow(path: string) {
         t("career.tabs.documents")
       }}</NuxtLink>
     </div>
-    <div v-else-if="!doc" class="flex flex-col gap-2">
-      <FnSkeleton class="h-40 w-full" />
-    </div>
+    <FnSkeletonGroup v-else-if="!doc" :label="t('common.loading')" class="flex flex-col gap-5">
+      <div class="flex flex-wrap gap-2">
+        <FnSkeleton class="h-12 w-28 rounded-md" />
+        <FnSkeleton class="h-12 w-32 rounded-md" />
+      </div>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section v-for="n in 2" :key="n" class="flex flex-col gap-2">
+          <FnSkeleton class="h-4 w-24" />
+          <FnSkeleton class="h-[56vh] min-h-72 w-full rounded-sm" />
+        </section>
+      </div>
+    </FnSkeletonGroup>
     <template v-else>
       <div class="flex flex-wrap gap-2">
         <FnButton v-if="!doc.parsed" tone="primary" :loading="busy" @click="runParse">{{

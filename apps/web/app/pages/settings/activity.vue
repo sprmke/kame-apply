@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ok } from "~/lib/api";
 import { listActivityApiV1ActivityGet, type ActivityRead } from "@kame/api-client";
-import { FnButton, FnSelect, FnSkeleton, FnTable } from "@kame/ui";
+import { FnButton, FnSelect, FnSkeleton, FnSkeletonGroup, FnTable } from "@kame/ui";
 
 const { t } = useI18n();
 const apiError = useApiError();
@@ -94,7 +94,17 @@ const rows = computed(() =>
     <PageHeader :title="t('settings.activity')" />
     <div class="max-w-56"><FnSelect v-model="filter" :options="options" /></div>
     <p v-if="error" role="alert" class="text-sm text-oxblood-600">{{ error }}</p>
-    <FnSkeleton v-if="loading && !items.length" :lines="5" />
+    <FnSkeletonGroup v-if="loading && !items.length" :label="t('common.loading')">
+      <ul
+        class="flex flex-col divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 sm:hidden"
+      >
+        <li v-for="n in 6" :key="n" class="flex flex-col gap-2 px-4 py-3">
+          <FnSkeleton class="h-4 w-2/5" />
+          <FnSkeleton class="h-3 w-3/5" />
+        </li>
+      </ul>
+      <SkeletonTable class="max-sm:hidden" :columns="3" compact :rows="6" />
+    </FnSkeletonGroup>
     <template v-else>
       <ul
         class="flex flex-col divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 sm:hidden"

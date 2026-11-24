@@ -149,6 +149,28 @@ WCAG 2.2 AA. 44px targets. Visible 2px brand focus ring. Two channels for meanin
 - Use color alone for status.
 - Truncate job titles, company names, errors, or primary labels.
 
+## Loading and skeletons (2026-11-23)
+
+A loading state is the same screen with its content removed. It is never a spinner, a centered block, or a different layout.
+
+| Rule | Detail |
+| --- | --- |
+| Mirror the destination | The skeleton reuses the real wrapper, grid, gaps, border, radius, and breakpoint classes. A card in the loaded page is a card in the skeleton; a table row is a table-shaped row. |
+| One transition | Show a skeleton only while the first request has no data. Keep previous rows during a filter change or refetch (`keepPreviousData`), so the page does not collapse and rebuild. |
+| Loading, then empty | The empty state replaces the skeleton only after the request resolves. Never render an empty state and a skeleton at the same time. |
+| Stable chrome | Page titles, tabs, filters, and static cards render immediately. Only the data region gets a skeleton. Optional banners (setup prompts, "filled from your resume") do not reserve space. |
+| Responsive by construction | Compose with the same layout classes as the loaded content and check 375, 820, and 1440. A skeleton that only works at one width is a bug. |
+| Quiet motion | Pulse only. `prefers-reduced-motion` stops it. No shimmer, gradient, or layout animation. |
+| Announced once | Bars are `aria-hidden`. One `FnSkeletonGroup` marks the region `role="status"` and `aria-busy="true"` with a visually hidden label. |
+| Row count is a guess | Lists use the number that matches a typical first page (4 to 7 rows). Never show fewer than two rows for a table with data. |
+
+| Component | Purpose |
+| --- | --- |
+| `FnSkeleton` | One bar; size with classes. `:lines` renders a paragraph with a shorter last line. |
+| `FnSkeletonGroup` | Accessible busy region around a skeleton composition. |
+| `SkeletonSectionCard` | Shell of `FnSectionCard`: same padding, title, intro, and action space. |
+| `SkeletonTable` | Shell of `FnTable`: recessed header and fixed-height rows; `stack` mirrors the phone cards. |
+
 ## Clarity components (2026-11-12)
 
 Built for the UX clarity program and shown on `/_design` in every state.

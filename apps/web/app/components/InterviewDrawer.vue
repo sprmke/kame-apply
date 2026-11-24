@@ -9,7 +9,15 @@ import {
   type InterviewGapRead,
   type ProposalRead,
 } from "@kame/api-client";
-import { FnButton, FnDialog, FnPencilText, FnTextarea, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnDialog,
+  FnPencilText,
+  FnSkeleton,
+  FnSkeletonGroup,
+  FnTextarea,
+  useToast,
+} from "@kame/ui";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -31,6 +39,7 @@ const proposal = ref<ProposalRead | null>(null);
 const pending = ref<ProposalRead[]>([]);
 const busy = ref(false);
 const streaming = ref(false);
+const loading = ref(false);
 
 async function loadGaps() {
   const { data } = await listInterviewGapsApiV1ProfilesProfileIdInterviewGapsGet({
@@ -116,7 +125,12 @@ watch(open, async (v) => {
   if (!v) return;
   answer.value = "";
   proposal.value = null;
-  await loadPending();
+  loading.value = true;
+  try {
+    await loadPending();
+  } finally {
+    loading.value = false;
+  }
   await streamQuestion();
 });
 
@@ -206,41 +220,54 @@ function payloadLabel(p: ProposalRead): string {
     :close-label="t('common.close')"
   >
     <div class="flex flex-col gap-4">
-      <div v-if="typed" class="rounded-sm border border-rule bg-paper-0 p-3 text-sm text-ink-900">
-        <FnPencilText>{{ typed }}</FnPencilText>
-        <span
-          v-if="streaming"
-          class="ml-1 inline-block h-3 w-1 animate-pulse bg-ink-600"
-          aria-hidden="true"
-        />
-      </div>
-      <p v-else-if="!pending.length" class="text-sm text-ink-600">
-        {{ t("career.interviewDone") }}
-      </p>
+      <FnSkeletonGroup
+        v-if="loading || (streaming && !typed)"
+        :label="t('common.loading')"
+        class="flex flex-col gap-4"
+      >
+        <FnSkeleton class="h-24 w-full rounded-sm" />
+        <FnSkeleton class="h-20 w-full rounded-sm" />
+        <FnSkeleton class="h-12 w-28 rounded-md" />
+      </FnSkeletonGroup>
+      <template v-else>
+        <div v-if="typed" class="rounded-sm border border-rule bg-paper-0 p-3 text-sm text-ink-900">
+          <FnPencilText>{{ typed }}</FnPencilText>
+          <span
+            v-if="streaming"
+            class="ml-1 inline-block h-3 w-1 animate-pulse bg-ink-600"
+            aria-hidden="true"
+          />
+        </div>
+        <p v-else-if="!pending.length" class="text-sm text-ink-600">
+          {{ t("career.interviewDone") }}
+        </p>
 
-      <form v-if="gap && !streaming" class="flex flex-col gap-3" @submit.prevent="submitAnswer">
-        <FnTextarea v-model="answer" :rows="4" :aria-label="t('career.yourAnswer')" />
-        <FnButton type="submit" tone="primary" :loading="busy">{{ t("common.continue") }}</FnButton>
-      </form>
+        <form v-if="gap && !streaming" class="flex flex-col gap-3" @submit.prevent="submitAnswer">
+          <FnTextarea v-model="answer" :rows="4" :aria-label="t('career.yourAnswer')" />
+          <FnButton type="submit" tone="primary" :loading="busy">{{
+            t("common.continue")
+          }}</FnButton>
+        </form>
 
-      <div v-if="shownProposals.length" class="flex flex-col gap-3 border-t border-rule pt-4">
-        <h3 class="text-sm font-medium text-ink-900">{{ t("career.proposals") }}</h3>
-        <article
-          v-for="p in shownProposals"
-          :key="p.id"
-          class="flex flex-col gap-2 rounded-sm border border-dashed border-pencil p-3"
-        >
-          <FnPencilText class="text-sm">{{ payloadLabel(p) }}</FnPencilText>
-          <div class="flex gap-2">
-            <FnButton size="sm" tone="primary" :loading="busy" @click="accept(p)">{{
-              t("career.accept")
-            }}</FnButton>
-            <FnButton size="sm" tone="ghost" :loading="busy" @click="reject(p)">{{
-              t("career.reject")
-            }}</FnButton>
-          </div>
-        </article>
-      </div>
+        <div v-if="shownProposals.length" class="flex flex-col gap-3 border-t border-rule pt-4">
+          <h3 class="text-sm font-medium text-ink-900">{{ t("career.proposals") }}</h3>
+          <article
+            v-for="p in shownProposals"
+            :key="p.id"
+            class="flex flex-col gap-2 rounded-sm border border-dashed border-pencil p-3"
+          >
+            <FnPencilText class="text-sm">{{ payloadLabel(p) }}</FnPencilText>
+            <div class="flex gap-2">
+              <FnButton size="sm" tone="primary" :loading="busy" @click="accept(p)">{{
+                t("career.accept")
+              }}</FnButton>
+              <FnButton size="sm" tone="ghost" :loading="busy" @click="reject(p)">{{
+                t("career.reject")
+              }}</FnButton>
+            </div>
+          </article>
+        </div>
+      </template>
     </div>
   </FnDialog>
 </template>

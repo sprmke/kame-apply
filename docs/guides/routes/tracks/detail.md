@@ -56,7 +56,7 @@ A disclosure below the list shows the planned keyword + location queries and the
 
 ## Loading / errors
 
-`TrackShell` shows a skeleton while the workspace or track query is pending and the API error string on failure, so no tab renders blank chrome.
+`TrackShell` shows a skeleton shaped like the track header (colour dot, name, status chip, tab bar) while the workspace or track query is pending, and the API error string on failure, so no tab renders blank chrome. The Matches tab then shows score rows in the same card shape as the real matches. The criteria tab shows its three section cards while the field manifest loads.
 
 ## API reference
 

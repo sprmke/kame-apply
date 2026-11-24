@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSelect, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -101,7 +101,23 @@ async function approve() {
 <template>
   <div class="mx-auto flex max-w-lg flex-col gap-6">
     <PageHeader :title="t('integrations.consentTitle')" />
-    <FnSkeleton v-if="pending.isPending.value" class="h-40 w-full" />
+    <FnSkeletonGroup
+      v-if="pending.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-6"
+    >
+      <FnSkeleton class="h-4 w-4/5" />
+      <FnSkeleton class="h-3.5 w-full" />
+      <div class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <FnSkeleton class="h-12 w-full rounded-md" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-32" />
+        <FnSkeleton v-for="n in 4" :key="n" class="h-6 w-2/5" />
+      </div>
+      <FnSkeleton class="h-12 w-28 rounded-md" />
+    </FnSkeletonGroup>
     <template v-else-if="pending.data.value">
       <p class="text-sm text-ink-600">
         {{ t("integrations.consentClient", { name: pending.data.value.client_name }) }}

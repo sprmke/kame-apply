@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FnEmptyState, FnSectionCard, FnSkeleton } from "@kame/ui";
+import { FnEmptyState, FnSectionCard, FnSkeleton, FnSkeletonGroup } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -86,7 +86,20 @@ const budgetUsd = computed(() =>
   <section class="flex max-w-3xl flex-col gap-6">
     <PageHeader :title="t('ops.title')" />
 
-    <FnSkeleton v-if="dash.isPending.value && !dash.data.value" class="h-32" />
+    <FnSkeletonGroup
+      v-if="dash.isPending.value && !dash.data.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-6"
+    >
+      <SkeletonSectionCard v-for="n in 3" :key="n" :intro="false">
+        <ul class="flex flex-col gap-2 text-sm">
+          <li v-for="row in 3" :key="row" class="flex items-baseline justify-between gap-4">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3.5 w-24" />
+          </li>
+        </ul>
+      </SkeletonSectionCard>
+    </FnSkeletonGroup>
 
     <FnEmptyState v-else-if="dash.isError.value" :title="t('ops.loadError')" tone="danger" />
 

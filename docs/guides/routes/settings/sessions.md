@@ -29,7 +29,7 @@ Browser and OS, current badge, address (or "This network"), last used. Sign out 
 
 ## States
 
-Loading: skeleton. Empty and error: one line plus the next action (retry on error).
+Loading: two device rows in the same card, with the device line, badge, address line, and Sign out button. Empty and error: one line plus the next action (retry on error).
 
 ## API reference
 

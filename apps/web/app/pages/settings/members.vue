@@ -9,6 +9,7 @@ import {
   FnMenu,
   FnSelect,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTable,
   useToast,
 } from "@kame/ui";
@@ -131,7 +132,8 @@ const columns = computed(() => {
         }}</FnButton>
       </template>
     </PageHeader>
-    <p v-if="limits.data.value" class="text-sm text-ink-600">
+    <FnSkeleton v-if="limits.isPending.value" class="h-4 w-32" />
+    <p v-else-if="limits.data.value" class="text-sm text-ink-600">
       {{
         t("members.seats", {
           used: limits.data.value.members_used,
@@ -140,7 +142,9 @@ const columns = computed(() => {
       }}
     </p>
 
-    <FnSkeleton v-if="members.isPending.value" :lines="4" />
+    <FnSkeletonGroup v-if="members.isPending.value" :label="t('common.loading')">
+      <SkeletonTable stack :columns="3" :rows="4" />
+    </FnSkeletonGroup>
     <p v-else-if="members.isError.value" role="alert" class="text-sm text-oxblood-600">
       {{ apiError(members.error.value) }}
     </p>

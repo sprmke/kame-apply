@@ -13,6 +13,7 @@ import {
   FnEmptyState,
   FnSectionCard,
   FnSkeleton,
+  FnSkeletonGroup,
   FnSummaryLine,
   useToast,
 } from "@kame/ui";
@@ -119,7 +120,28 @@ async function unsub() {
   <section class="flex max-w-2xl flex-col gap-6">
     <PageHeader :title="t('settings.notifications')" :lede="t('settings.notificationsLede')" />
 
-    <FnSkeleton v-if="prefs.isPending.value" :lines="6" />
+    <FnSkeletonGroup v-if="prefs.isPending.value" :label="t('common.loading')">
+      <SkeletonSectionCard>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-4 border-b border-rule pb-2">
+            <FnSkeleton class="h-3 flex-1" />
+            <FnSkeleton class="h-3 w-10" />
+            <FnSkeleton class="h-3 w-10" />
+          </div>
+          <div v-for="n in 6" :key="n" class="flex items-center gap-4 border-b border-rule py-3">
+            <FnSkeleton class="h-4 flex-1" />
+            <FnSkeleton class="size-5 shrink-0 rounded" />
+            <FnSkeleton class="size-5 shrink-0 rounded" />
+          </div>
+          <FnSkeleton class="mt-2 h-9 w-full rounded-lg" />
+          <div class="flex flex-wrap items-center gap-2 border-t border-rule pt-4">
+            <FnSkeleton class="h-12 w-24 rounded-md" />
+            <FnSkeleton class="h-12 w-40 rounded-md" />
+            <FnSkeleton class="ml-auto h-11 w-28 rounded-md" />
+          </div>
+        </div>
+      </SkeletonSectionCard>
+    </FnSkeletonGroup>
 
     <FnEmptyState
       v-else-if="prefs.isError.value"

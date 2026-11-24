@@ -16,9 +16,10 @@ import {
   FnRiskSeal,
   FnSelect,
   FnSkeleton,
+  FnSkeletonGroup,
   useToast,
 } from "@kame/ui";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
 const { t, te } = useI18n();
@@ -177,6 +178,7 @@ const board = useQuery({
     return (data ?? []) as BoardJobRead[];
   },
   enabled: computed(() => Boolean(ws.currentId)),
+  placeholderData: keepPreviousData,
 });
 
 const rows = computed(() =>
@@ -520,11 +522,93 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       </p>
     </header>
 
-    <div v-if="loading" class="grid gap-2">
-      <FnSkeleton class="h-16" />
-      <FnSkeleton class="h-16" />
-      <FnSkeleton class="h-16" />
-    </div>
+    <FnSkeletonGroup
+      v-if="loading"
+      :label="t('common.loading')"
+      class="grid min-h-0 flex-1 gap-0 rounded-xl border border-rule bg-paper-1 p-0 shadow-[var(--shadow-card)] lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)_minmax(0,19rem)]"
+    >
+      <div class="flex min-h-0 min-w-0 flex-col lg:border-r lg:border-rule">
+        <div
+          class="flex items-center gap-3 border-b border-rule px-4 py-2 text-[0.6875rem] font-semibold tracking-[0.12em] uppercase max-sm:hidden"
+          aria-hidden="true"
+        >
+          <span class="w-9 shrink-0"><FnSkeleton class="ml-auto h-3 w-7" /></span>
+          <span class="flex-1"><FnSkeleton class="h-3 w-12" /></span>
+        </div>
+        <ul class="min-h-0 flex-1 pb-20 lg:overflow-hidden lg:pb-0">
+          <li v-for="n in 7" :key="n" class="border-b border-rule last:border-b-0">
+            <div class="flex items-start gap-3 px-3 py-3">
+              <FnSkeleton class="mt-0.5 h-4 w-9 shrink-0" />
+              <div class="flex min-h-14 min-w-0 flex-1 flex-col gap-2">
+                <FnSkeleton class="h-4 w-4/5" />
+                <FnSkeleton class="h-3 w-3/5" />
+                <FnSkeleton class="h-3 w-2/5" />
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <section class="hidden min-h-0 px-4 py-4 sm:px-6 xl:block">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-8 w-4/5 sm:h-9" />
+            <FnSkeleton class="h-4 w-2/3" />
+          </div>
+          <FnSkeleton class="h-7 w-24 shrink-0 rounded-full" />
+        </div>
+        <div class="mt-5 flex flex-wrap gap-2 border-y border-rule py-3">
+          <FnSkeleton class="h-11 w-32 rounded-md" />
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+          <FnSkeleton class="h-11 w-28 rounded-md" />
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+        </div>
+        <div class="mt-5 flex flex-col gap-2">
+          <FnSkeleton class="h-4 w-32" />
+          <FnSkeleton class="h-4 w-full" />
+          <FnSkeleton class="h-4 w-11/12" />
+          <FnSkeleton class="h-4 w-3/4" />
+        </div>
+        <div class="mt-6 flex flex-col gap-2">
+          <FnSkeleton class="h-4 w-40" />
+          <FnSkeleton class="h-4 w-full" />
+          <FnSkeleton class="h-4 w-10/12" />
+          <FnSkeleton class="h-4 w-9/12" />
+          <FnSkeleton class="h-4 w-full" />
+          <FnSkeleton class="h-4 w-7/12" />
+        </div>
+      </section>
+
+      <section
+        class="hidden min-h-0 flex-col gap-5 border-t border-rule bg-paper-0 px-4 py-5 xl:flex xl:overflow-y-auto xl:border-t-0 xl:border-l"
+      >
+        <section class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <FnSkeleton class="h-9 w-12" />
+            <FnSkeleton class="h-3 w-20" />
+          </div>
+          <FnSkeleton class="h-4 w-28" />
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-4 w-full" />
+            <FnSkeleton class="h-4 w-5/6" />
+            <FnSkeleton class="h-4 w-2/3" />
+          </div>
+          <FnSkeleton class="h-24 w-full rounded-lg" />
+        </section>
+        <section class="flex flex-col gap-2 border-t border-rule pt-4">
+          <div class="flex items-center justify-between gap-2">
+            <FnSkeleton class="h-4 w-16" />
+            <FnSkeleton class="h-3 w-16" />
+          </div>
+          <FnSkeleton class="h-3.5 w-full" />
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-16 w-full rounded-lg" />
+            <FnSkeleton class="h-16 w-full rounded-lg" />
+            <FnSkeleton class="h-16 w-full rounded-lg" />
+          </div>
+        </section>
+      </section>
+    </FnSkeletonGroup>
 
     <FnEmptyState
       v-else-if="!rows.length"
@@ -618,7 +702,50 @@ function chipTone(v?: string | null): "neutral" | "accent" | "pencil" {
       </div>
 
       <section
-        v-if="selected"
+        v-if="!selected && selectedId"
+        :class="mobileDetail ? 'block' : 'hidden xl:block'"
+        class="min-h-0 px-4 py-4 sm:px-6 lg:overflow-y-auto"
+      >
+        <button
+          type="button"
+          class="mb-3 flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold text-ink-600 hover:bg-paper-2 lg:hidden"
+          @click="mobileDetail = false"
+        >
+          <NavIcon name="ph:arrow-left" :size="16" /> {{ t("jobs.backToList") }}
+        </button>
+        <FnSkeletonGroup :label="t('common.loading')" class="flex flex-col gap-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-8 w-4/5 sm:h-9" />
+              <FnSkeleton class="h-4 w-2/3" />
+            </div>
+            <FnSkeleton class="h-7 w-24 shrink-0 rounded-full" />
+          </div>
+          <div class="flex flex-wrap gap-2 border-y border-rule py-3">
+            <FnSkeleton class="h-11 w-32 rounded-md" />
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+            <FnSkeleton class="h-11 w-28 rounded-md" />
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-4 w-32" />
+            <FnSkeleton class="h-4 w-full" />
+            <FnSkeleton class="h-4 w-11/12" />
+            <FnSkeleton class="h-4 w-3/4" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-4 w-40" />
+            <FnSkeleton class="h-4 w-full" />
+            <FnSkeleton class="h-4 w-10/12" />
+            <FnSkeleton class="h-4 w-9/12" />
+            <FnSkeleton class="h-4 w-full" />
+            <FnSkeleton class="h-4 w-7/12" />
+          </div>
+        </FnSkeletonGroup>
+      </section>
+
+      <section
+        v-else-if="selected"
         :class="mobileDetail ? 'block' : 'hidden xl:block'"
         class="min-h-0 px-4 py-4 sm:px-6 lg:overflow-y-auto"
       >

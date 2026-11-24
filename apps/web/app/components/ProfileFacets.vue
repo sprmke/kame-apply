@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnChip, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useExperience } from "~/composables/useExperience";
 
@@ -87,7 +87,21 @@ async function remove(id: string) {
 </script>
 
 <template>
-  <section v-if="facetDefs.length" class="flex flex-col gap-3">
+  <FnSkeletonGroup
+    v-if="exp.loading.value"
+    :label="t('common.loading')"
+    class="flex flex-col gap-3"
+  >
+    <FnSkeleton class="h-3.5 w-28" />
+    <div v-for="n in 2" :key="n" class="flex flex-col gap-2">
+      <FnSkeleton class="h-4 w-24" />
+      <div class="flex flex-wrap items-center gap-2">
+        <FnSkeleton class="h-7 w-24 rounded-full" />
+        <FnSkeleton class="h-11 w-32 rounded-lg" />
+      </div>
+    </div>
+  </FnSkeletonGroup>
+  <section v-else-if="facetDefs.length" class="flex flex-col gap-3">
     <h3 class="text-sm font-semibold tracking-wide text-ink-400 uppercase">
       {{ t("career.facets") }}
     </h3>

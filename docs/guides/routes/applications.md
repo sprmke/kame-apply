@@ -1,6 +1,6 @@
 # Route: `/applications`
 
-**Page:** `apps/web/app/pages/applications.vue` · **Layout:** `default` · **Access:** signed in
+**Page:** `apps/web/app/pages/applications/index.vue` · **Layout:** `default` · **Access:** signed in
 
 ## Progress overview
 
@@ -37,4 +37,4 @@ Log an application when you applied outside the app. Drag cards on the board to 
 
 ## Implementation map
 
-`apps/web/app/pages/applications.vue` · `apps/api/app/applications/{tracker,metrics,status}.py`
+`apps/web/app/pages/applications/index.vue` · `apps/api/app/applications/{tracker,metrics,status}.py`

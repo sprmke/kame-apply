@@ -61,3 +61,7 @@ One guide per app route, kept in the same change as the page. Copy `../_template
 | `/tailor/:trackJobId` | [tailor.md](./tailor.md) | Documented (three steps, 2026-11-12) |
 
 Advanced tools live under **Tools**. `/runs` redirects to `/tracks`; per-search history is `/tracks/:id/runs`. Answer Desk landed in Phase 12; applications in Phase 11; Phase 9 still creates application rows via Tailor Accept.
+
+## Loading behavior
+
+Every data route uses a layout-matched skeleton while its first request is pending: the same card, list row, table, or panel shape that the content will occupy, at 375, 820, and 1440. Static chrome (titles, tabs, filters) renders immediately. Filter changes keep the previous rows instead of collapsing to a skeleton, and an empty state appears only after the request resolves. The shared rules and components are in [`docs/design/design-system.md`](../../design/design-system.md#loading-and-skeletons-2026-11-23).

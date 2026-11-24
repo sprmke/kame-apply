@@ -7,14 +7,22 @@ import {
   updateVoiceApiV1ProfilesProfileIdVoicePatch,
   type VoiceRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnChoiceCards, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnChoiceCards,
+  FnSkeleton,
+  FnSkeletonGroup,
+  FnTextarea,
+  useToast,
+} from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 
 const { t } = useI18n();
 const toast = useToast();
 const apiError = useApiError();
 const qc = useQueryClient();
-const { profileId, ensureProfile } = useActiveProfile();
+const { profileId, loading: profileLoading, ensureProfile } = useActiveProfile();
 const sampleDraft = ref(["", "", ""]);
 const bannedDraft = ref("");
 const summaryDraft = ref("");
@@ -36,7 +44,9 @@ const voice = useQuery({
 
 const voiceData = computed(() => voice.data.value ?? null);
 const voiceLoading = computed(
-  () => Boolean(profileId.value) && voice.isFetching.value && !voiceData.value,
+  () =>
+    profileLoading.value ||
+    (Boolean(profileId.value) && voice.isFetching.value && !voiceData.value),
 );
 
 watch(
@@ -159,7 +169,20 @@ async function saveMeta() {
         <h3 class="text-sm font-semibold text-ink-900">{{ t("career.samples") }}</h3>
         <p class="text-sm leading-6 text-ink-600">{{ t("career.samplesHint") }}</p>
       </div>
-      <FnSkeleton v-if="voiceLoading" class="h-24 w-full" />
+      <FnSkeletonGroup
+        v-if="voiceLoading"
+        :label="t('common.loading')"
+        class="flex flex-col gap-1.5"
+      >
+        <div v-for="n in 3" :key="n" class="flex flex-col gap-1.5">
+          <FnSkeleton class="h-3 w-16" />
+          <FnSkeleton class="h-24 w-full rounded-sm" />
+        </div>
+        <div class="flex flex-col gap-2 pt-1">
+          <FnSkeleton class="h-12 w-32 rounded-md" />
+          <FnSkeleton class="h-4 w-3/5" />
+        </div>
+      </FnSkeletonGroup>
       <template v-else>
         <div v-for="(_, i) in sampleDraft" :key="i" class="flex flex-col gap-1.5">
           <label :for="`voice-sample-${i}`" class="text-xs font-semibold text-ink-600">

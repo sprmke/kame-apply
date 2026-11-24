@@ -6,7 +6,7 @@ import {
   uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
   type DocumentListItem,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useExperience } from "~/composables/useExperience";
 
@@ -106,9 +106,19 @@ async function uploadPhoto(event: Event) {
         }}</FnButton>
       </template>
     </div>
-    <div v-if="docsLoading" class="flex flex-col gap-2">
-      <FnSkeleton class="h-12 w-full" />
-    </div>
+    <FnSkeletonGroup v-if="docsLoading" :label="t('common.loading')">
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 4" :key="n" class="flex min-h-14 flex-wrap items-center gap-3 py-3">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3 w-20" />
+          </div>
+          <FnSkeleton class="h-6 w-20 rounded-full" />
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+          <FnSkeleton class="h-11 w-20 rounded-md" />
+        </li>
+      </ul>
+    </FnSkeletonGroup>
     <div
       v-else-if="!docRows.length"
       class="flex flex-col items-start gap-2 rounded-xl border border-dashed border-rule bg-paper-0 p-6"

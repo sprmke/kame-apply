@@ -15,6 +15,7 @@ import {
   FnSectionCard,
   FnSelect,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTextarea,
   useToast,
 } from "@kame/ui";
@@ -280,7 +281,29 @@ function statusLabel(status: string): string {
     </FnSectionCard>
 
     <FnSectionCard :title="t('responses.proposals')" :intro="t('responses.proposalsIntro')">
-      <div v-if="proposals.isPending.value"><FnSkeleton class="h-24 w-full" /></div>
+      <FnSkeletonGroup v-if="proposals.isPending.value" :label="t('common.loading')">
+        <ul class="divide-y divide-rule">
+          <li
+            v-for="n in 3"
+            :key="n"
+            class="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-3/5" />
+              <div class="flex items-center gap-2">
+                <FnSkeleton class="h-6 w-20 rounded-full" />
+                <FnSkeleton class="size-3 rounded" />
+                <FnSkeleton class="h-6 w-24 rounded-full" />
+              </div>
+              <FnSkeleton class="h-3.5 w-4/5" />
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <FnSkeleton class="h-11 w-24 rounded-md" />
+              <FnSkeleton class="h-11 w-20 rounded-md" />
+            </div>
+          </li>
+        </ul>
+      </FnSkeletonGroup>
       <FnEmptyState
         v-else-if="!(proposals.data.value ?? []).length"
         :title="t('responses.emptyProposals')"

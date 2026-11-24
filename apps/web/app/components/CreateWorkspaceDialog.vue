@@ -12,7 +12,15 @@ import {
   type CustomPackDraftRead,
   type IndustrySummary,
 } from "@kame/api-client";
-import { FnButton, FnDialog, FnField, FnInput, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnDialog,
+  FnField,
+  FnInput,
+  FnSkeleton,
+  FnSkeletonGroup,
+  useToast,
+} from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useExperience } from "~/composables/useExperience";
@@ -245,9 +253,23 @@ async function submit() {
       <template v-else-if="step === 1">
         <div class="flex flex-col gap-2">
           <p class="text-sm font-semibold text-ink-900">{{ t("workspace.pickField") }}</p>
-          <div v-if="industries.isPending.value" class="grid gap-2 sm:grid-cols-2">
-            <FnSkeleton v-for="n in 4" :key="n" class="h-16 w-full" />
-          </div>
+          <FnSkeletonGroup
+            v-if="industries.isPending.value"
+            :label="t('common.loading')"
+            class="grid gap-2 sm:grid-cols-2"
+          >
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="flex min-h-16 items-center gap-3 rounded-xl border border-rule bg-paper-0 px-3 py-2.5"
+            >
+              <FnSkeleton class="size-10 shrink-0 rounded-lg" />
+              <div class="flex min-w-0 flex-1 flex-col gap-2">
+                <FnSkeleton class="h-4 w-2/3" />
+                <FnSkeleton class="h-3 w-1/2" />
+              </div>
+            </div>
+          </FnSkeletonGroup>
           <IndustryPicker
             v-else
             v-model:selected="selected"

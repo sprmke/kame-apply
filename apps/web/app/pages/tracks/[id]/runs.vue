@@ -3,7 +3,14 @@ import {
   runHistoryApiV1TracksTrackIdRunsGet,
   type DiscoveryRunHistoryRead,
 } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnSectionCard, FnTable, type Column } from "@kame/ui";
+import {
+  FnButton,
+  FnEmptyState,
+  FnSectionCard,
+  FnSkeletonGroup,
+  FnTable,
+  type Column,
+} from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -126,8 +133,12 @@ function foundLabel(row: RunRow): string {
         {{ t("tracks.runningNow") }}
       </div>
 
+      <FnSkeletonGroup v-if="runs.isPending.value" :label="t('common.loading')">
+        <SkeletonTable stack compact :columns="3" :rows="5" />
+      </FnSkeletonGroup>
+
       <FnTable
-        v-if="rows.length"
+        v-else-if="rows.length"
         stack
         :columns="columns"
         :rows="rows"

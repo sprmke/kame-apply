@@ -11,9 +11,18 @@ import {
   type ApplicationStatusBody,
   type TrackRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnEmptyState, FnInput, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnEmptyState,
+  FnInput,
+  FnSelect,
+  FnSkeleton,
+  FnSkeletonGroup,
+  useToast,
+} from "@kame/ui";
 import { useMediaQuery } from "@vueuse/core";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useAuthStore } from "~/stores/auth";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -179,6 +188,7 @@ const metrics = useQuery({
     return data as MetricsPayload;
   },
   enabled: computed(() => Boolean(ws.currentId)),
+  placeholderData: keepPreviousData,
 });
 
 const items = computed(() => (list.data.value?.items ?? []) as ApplicationRead[]);
@@ -372,6 +382,12 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
       </template>
     </PageHeader>
 
+    <div v-if="!isDesktop" class="lg:hidden">
+      <FnSkeletonGroup v-if="loading" :label="t('common.loading')">
+        <FnSkeleton class="h-11 w-full rounded-xl" />
+      </FnSkeletonGroup>
+    </div>
+
     <button
       v-if="!isDesktop && !loading && (items.length || hasFilters)"
       type="button"
@@ -382,6 +398,20 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
       {{ t("applications.filters") }}
       <span aria-hidden="true" class="text-ink-600">{{ filtersOpen ? "−" : "+" }}</span>
     </button>
+
+    <FnSkeletonGroup
+      v-if="loading && (isDesktop || filtersOpen)"
+      :label="t('common.loading')"
+      class="hidden gap-4 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)] sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_auto_auto] lg:items-end"
+      aria-hidden="true"
+    >
+      <div v-for="n in 4" :key="n" class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <FnSkeleton class="h-12 w-full rounded-md" />
+      </div>
+      <FnSkeleton class="h-12 w-40 rounded-lg" />
+      <FnSkeleton class="h-12 w-28 rounded-md" />
+    </FnSkeletonGroup>
 
     <section
       v-if="(filtersOpen || isDesktop) && !loading && (items.length || hasFilters)"
@@ -496,7 +526,46 @@ const outcomes = computed(() => Object.entries(metrics.data.value?.outcomes?.by_
       </ul>
     </section>
 
-    <div v-if="loading"><FnSkeleton class="h-40 w-full" /></div>
+    <FnSkeletonGroup
+      v-if="loading"
+      :label="t('common.loading')"
+      class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+      aria-hidden="true"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <FnSkeleton class="h-10 w-40 rounded-md" />
+      </div>
+      <FnSkeleton class="h-4 w-full max-w-2xl" />
+      <FnSkeleton class="h-4 w-3/4 max-w-lg" />
+    </FnSkeletonGroup>
+
+    <FnSkeletonGroup v-if="loading" :label="t('common.loading')">
+      <SkeletonTable
+        v-if="view === 'table'"
+        :columns="4"
+        :rows="6"
+        min-width="640px"
+        class="rounded-xl"
+      />
+      <div v-else class="flex gap-3 overflow-x-auto pb-4">
+        <section
+          v-for="n in 6"
+          :key="n"
+          class="flex w-56 shrink-0 flex-col gap-2 border border-rule bg-paper-0 p-2"
+        >
+          <FnSkeleton class="h-3.5 w-24" />
+          <div
+            v-for="c in 3"
+            :key="c"
+            class="flex flex-col gap-2 border border-rule bg-paper-1 p-2"
+          >
+            <FnSkeleton class="h-4 w-4/5" />
+            <FnSkeleton class="h-3.5 w-3/5" />
+          </div>
+        </section>
+      </div>
+    </FnSkeletonGroup>
 
     <template v-else-if="view === 'table'">
       <FnEmptyState

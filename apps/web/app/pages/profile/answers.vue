@@ -11,8 +11,8 @@ import {
   type AnswerRead,
   type CanonicalKeyRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnInput, FnSkeleton, useToast } from "@kame/ui";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { FnButton, FnChip, FnInput, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/vue-query";
 
 const { t } = useI18n();
 const toast = useToast();
@@ -37,6 +37,7 @@ const answers = useQuery({
     return data ?? [];
   },
   enabled: computed(() => Boolean(profileId.value)),
+  placeholderData: keepPreviousData,
 });
 
 const keys = useQuery({
@@ -217,10 +218,23 @@ async function saveAnswer(row: AnswerRead, text: string, approved: boolean) {
     </section>
 
     <p v-if="drafting" class="text-sm text-ink-600">{{ t("career.drafting") }}</p>
-    <div v-if="answersLoading" class="flex flex-col gap-2">
-      <FnSkeleton class="h-16 w-full" />
-      <FnSkeleton class="h-16 w-full" />
-    </div>
+    <FnSkeletonGroup v-if="answersLoading" :label="t('common.loading')" class="flex flex-col gap-6">
+      <section v-for="g in 2" :key="g" class="flex flex-col gap-3">
+        <FnSkeleton class="h-3.5 w-28" />
+        <article v-for="n in 2" :key="n" class="flex flex-col gap-2 border-t border-rule py-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-6 w-20 rounded-full" />
+          </div>
+          <FnSkeleton class="h-20 w-full rounded-sm" />
+          <div class="flex flex-wrap gap-2">
+            <FnSkeleton class="h-8 w-24 rounded-full" />
+            <FnSkeleton class="h-8 w-20 rounded-full" />
+          </div>
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+        </article>
+      </section>
+    </FnSkeletonGroup>
     <div
       v-else-if="!answerRows.length"
       class="flex flex-col items-start gap-2 rounded-xl border border-dashed border-rule bg-paper-0 p-6"

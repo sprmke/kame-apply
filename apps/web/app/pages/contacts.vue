@@ -6,6 +6,7 @@ import {
   FnField,
   FnSectionCard,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTextarea,
   useToast,
 } from "@kame/ui";
@@ -249,7 +250,16 @@ async function importContacts() {
       </div>
     </FnSectionCard>
 
-    <div v-if="contacts.isPending.value"><FnSkeleton class="h-24 w-full" /></div>
+    <FnSkeletonGroup v-if="contacts.isPending.value" :label="t('common.loading')">
+      <ul
+        class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
+        <li v-for="n in 4" :key="n" class="flex flex-col gap-2 px-4 py-3">
+          <FnSkeleton class="h-4 w-2/5" />
+          <FnSkeleton class="h-3.5 w-3/5" />
+        </li>
+      </ul>
+    </FnSkeletonGroup>
     <FnEmptyState v-else-if="!(contacts.data.value ?? []).length" :title="t('contacts.empty')" />
     <ul
       v-else

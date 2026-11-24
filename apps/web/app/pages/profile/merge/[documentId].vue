@@ -4,7 +4,7 @@ import {
   mergePreviewApiV1ProfilesProfileIdDocumentsDocumentIdMergeGet,
   mergeResolveApiV1ProfilesProfileIdDocumentsDocumentIdMergePost,
 } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -61,9 +61,15 @@ async function resolveAllTakeIncoming() {
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-5">
     <PageHeader :title="t('career.mergeTitle')" />
-    <div v-if="!preview">
-      <FnSkeleton class="h-32 w-full" />
-    </div>
+    <FnSkeletonGroup v-if="!preview" :label="t('common.loading')" class="flex flex-col gap-5">
+      <FnSkeleton class="h-4 w-3/4" />
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 4" :key="n" class="flex items-center py-3">
+          <FnSkeleton class="h-4 w-2/5" />
+        </li>
+      </ul>
+      <FnSkeleton class="h-12 w-40 rounded-md" />
+    </FnSkeletonGroup>
     <template v-else>
       <p class="text-sm text-ink-600">
         {{

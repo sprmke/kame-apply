@@ -12,7 +12,15 @@ import {
   type DiscoveryRunRead,
   type TrackDetail,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnEmptyState, FnRiskSeal, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnEmptyState,
+  FnRiskSeal,
+  FnSkeleton,
+  FnSkeletonGroup,
+  useToast,
+} from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -246,10 +254,25 @@ function salaryLine(s: unknown): string {
         </div>
       </div>
 
-      <div v-if="jobs.isPending.value" class="flex flex-col gap-3">
-        <FnSkeleton class="h-20 w-full" />
-        <FnSkeleton class="h-20 w-full" />
-      </div>
+      <FnSkeletonGroup
+        v-if="jobs.isPending.value"
+        :label="t('common.loading')"
+        class="flex flex-col gap-2"
+      >
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="flex min-h-20 items-start gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+        >
+          <FnSkeleton class="h-8 w-10 shrink-0 rounded-md" />
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-4 w-3/5" />
+            <FnSkeleton class="h-3.5 w-4/5" />
+          </div>
+          <FnSkeleton class="mt-1 h-7 w-20 shrink-0 rounded-full" />
+          <FnSkeleton class="mt-1 size-4 shrink-0 rounded" />
+        </div>
+      </FnSkeletonGroup>
 
       <div
         v-if="thinCoverage"

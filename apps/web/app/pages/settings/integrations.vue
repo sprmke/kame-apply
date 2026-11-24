@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnCheckbox, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnCheckbox, FnSelect, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -360,7 +360,9 @@ function featureLabel(feature: string): string {
         {{ t("integrations.inbox") }}
       </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.inboxHint") }}</p>
-      <FnSkeleton v-if="inbox.isPending.value" class="h-10 w-64" />
+      <FnSkeletonGroup v-if="inbox.isPending.value" :label="t('common.loading')">
+        <FnSkeleton class="h-4 w-64 max-w-full" />
+      </FnSkeletonGroup>
       <p v-else class="text-sm text-ink-600">
         {{
           t("integrations.inboxStatus", {
@@ -380,7 +382,22 @@ function featureLabel(feature: string): string {
         {{ t("integrations.agents") }}
       </h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.agentsHint") }}</p>
-      <FnSkeleton v-if="tokens.isPending.value" class="h-24 w-full" />
+      <FnSkeletonGroup v-if="tokens.isPending.value" :label="t('common.loading')">
+        <ul class="divide-y divide-rule border border-rule">
+          <li
+            v-for="n in 3"
+            :key="n"
+            class="flex flex-wrap items-center justify-between gap-3 px-3 py-3"
+          >
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-40" />
+              <FnSkeleton class="h-3 w-24" />
+              <FnSkeleton class="h-3 w-3/5" />
+            </div>
+            <FnSkeleton class="h-11 w-20 shrink-0 rounded-md" />
+          </li>
+        </ul>
+      </FnSkeletonGroup>
       <ul v-else class="divide-y divide-rule border border-rule">
         <li
           v-for="tok in tokens.data.value ?? []"
@@ -419,24 +436,38 @@ function featureLabel(feature: string): string {
       </summary>
       <h2 class="sr-only">{{ t("integrations.routing") }}</h2>
       <p class="text-sm leading-6 text-ink-600">{{ t("integrations.routingHint") }}</p>
-      <ul class="flex flex-col gap-3">
-        <li
-          v-for="row in routing.data.value ?? []"
-          :key="row.feature"
-          class="flex flex-wrap items-center gap-3"
-        >
-          <span class="min-w-40 text-sm text-ink-900">{{ featureLabel(row.feature) }}</span>
-          <FnSelect
-            :model-value="row.route"
-            :options="routeOptions"
-            :disabled="!ws.canManage || saveRoute.isPending.value"
-            @update:model-value="
-              (v) => {
-                if (v) saveRoute.mutate({ ...row, route: v });
-              }
-            "
-          />
-        </li>
+      <ul class="flex flex-col gap-3" :aria-busy="routing.isPending.value || undefined">
+        <template v-if="routing.isPending.value">
+          <li
+            v-for="n in 4"
+            :key="n"
+            class="flex flex-wrap items-center gap-3"
+            :role="n === 1 ? 'status' : undefined"
+          >
+            <span v-if="n === 1" class="sr-only">{{ t("common.loading") }}</span>
+            <FnSkeleton class="h-4 w-40" />
+            <FnSkeleton class="h-12 w-36 rounded-md" />
+          </li>
+        </template>
+        <template v-else>
+          <li
+            v-for="row in routing.data.value ?? []"
+            :key="row.feature"
+            class="flex flex-wrap items-center gap-3"
+          >
+            <span class="min-w-40 text-sm text-ink-900">{{ featureLabel(row.feature) }}</span>
+            <FnSelect
+              :model-value="row.route"
+              :options="routeOptions"
+              :disabled="!ws.canManage || saveRoute.isPending.value"
+              @update:model-value="
+                (v) => {
+                  if (v) saveRoute.mutate({ ...row, route: v });
+                }
+              "
+            />
+          </li>
+        </template>
       </ul>
     </details>
 
@@ -482,7 +513,22 @@ function featureLabel(feature: string): string {
         }}</FnButton>
         <p class="w-full text-sm text-ink-600">{{ t("integrations.runnerTokenOnce") }}</p>
       </div>
-      <ul class="divide-y divide-rule border border-rule">
+      <FnSkeletonGroup v-if="runnerTokens.isPending.value" :label="t('common.loading')">
+        <ul class="divide-y divide-rule border border-rule">
+          <li
+            v-for="n in 2"
+            :key="n"
+            class="flex flex-wrap items-center justify-between gap-3 px-3 py-3"
+          >
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-28" />
+              <FnSkeleton class="h-3 w-16" />
+            </div>
+            <FnSkeleton class="h-11 w-20 shrink-0 rounded-md" />
+          </li>
+        </ul>
+      </FnSkeletonGroup>
+      <ul v-else class="divide-y divide-rule border border-rule">
         <li
           v-for="tok in runnerTokens.data.value ?? []"
           :key="tok.id"

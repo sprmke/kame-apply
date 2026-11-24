@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from "@kame/api-client";
-import { FnButton, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useMutation, useQuery } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -71,7 +71,34 @@ async function copy(text: string) {
   <div class="flex flex-col gap-8">
     <PageHeader :title="t('beFound.title')" />
 
-    <FnSkeleton v-if="opt.isPending.value" class="h-40 w-full" />
+    <FnSkeletonGroup
+      v-if="opt.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-8"
+    >
+      <section v-for="n in 3" :key="n" class="flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-2">
+          <FnSkeleton class="h-5 w-32" />
+          <FnSkeleton class="h-11 w-20 rounded-md" />
+        </div>
+        <FnSkeleton class="h-4 w-full" />
+        <FnSkeleton class="h-4 w-5/6" />
+        <FnSkeleton class="h-3 w-2/5" />
+      </section>
+      <section class="flex flex-col gap-3">
+        <FnSkeleton class="h-5 w-32" />
+        <div v-for="n in 2" :key="n" class="flex flex-col gap-2 border-b border-rule pb-3">
+          <FnSkeleton class="ml-auto h-11 w-20 rounded-md" />
+          <FnSkeleton class="h-4 w-full" />
+          <FnSkeleton class="h-3 w-2/5" />
+        </div>
+      </section>
+      <section class="flex flex-col gap-2">
+        <FnSkeleton class="h-5 w-40" />
+        <FnSkeleton class="h-3.5 w-4/5" />
+        <FnSkeleton class="h-3.5 w-3/5" />
+      </section>
+    </FnSkeletonGroup>
     <template v-else-if="opt.data.value">
       <section class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">

@@ -26,7 +26,7 @@ Choose which alerts arrive in the app, by email, or both. **Turn off all email**
 
 ## States
 
-Loading: skeleton. Error: message plus **Try again**. Success: toast on save.
+Loading: the matrix card with its event, in-app, and email columns in the same row heights. Error: message plus **Try again**. Success: toast on save.
 
 ## API reference
 

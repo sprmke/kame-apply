@@ -20,6 +20,7 @@ import {
   FnFolderTab,
   FnInput,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTextarea,
   useToast,
 } from "@kame/ui";
@@ -279,10 +280,35 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
       </template>
     </PageHeader>
 
-    <div v-if="tracksLoading" class="flex flex-col gap-3">
-      <FnSkeleton class="h-24 w-full" />
-      <FnSkeleton class="h-24 w-full" />
-    </div>
+    <FnSkeletonGroup
+      v-if="tracksLoading"
+      :label="t('common.loading')"
+      class="flex flex-col gap-3"
+      aria-busy="true"
+    >
+      <div
+        v-for="n in 2"
+        :key="n"
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-11 w-44 max-w-full rounded-full" />
+            <FnSkeleton class="mt-1 h-4 w-3/5" />
+          </div>
+          <FnSkeleton class="h-7 w-20 shrink-0 rounded-full" />
+        </div>
+        <FnSkeleton class="h-3.5 w-44" />
+        <div class="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
+          <FnSkeleton class="h-11 w-32 rounded-md" />
+          <FnSkeleton class="h-11 w-28 rounded-md" />
+          <div class="flex items-center gap-1 sm:ml-auto">
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+            <FnSkeleton class="h-11 w-20 rounded-md" />
+          </div>
+        </div>
+      </div>
+    </FnSkeletonGroup>
 
     <FnEmptyState
       v-else-if="!trackRows.length"
@@ -481,10 +507,19 @@ function hue(n: number): 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
         </template>
 
         <template v-else-if="mode === 'template'">
-          <div v-if="templatesLoading" class="flex flex-col gap-2">
-            <FnSkeleton class="h-14 w-full" />
-            <FnSkeleton class="h-14 w-full" />
-          </div>
+          <FnSkeletonGroup
+            v-if="templatesLoading"
+            :label="t('common.loading')"
+            class="grid gap-2 sm:grid-cols-2"
+          >
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="flex min-h-14 items-center rounded-lg border border-rule bg-paper-0 px-3"
+            >
+              <FnSkeleton class="h-8 w-36 max-w-full rounded-full" />
+            </div>
+          </FnSkeletonGroup>
           <ul v-else class="grid gap-2 sm:grid-cols-2">
             <li v-for="tmpl in templateRows" :key="tmpl.slug">
               <button

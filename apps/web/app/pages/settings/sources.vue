@@ -5,7 +5,7 @@ import {
   sourceHealthApiV1SourcesHealthGet,
   type SourceHealthRead,
 } from "@kame/api-client";
-import { FnButton, FnField, FnInput, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnField, FnInput, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -70,7 +70,8 @@ async function addCareers() {
 <template>
   <div class="flex flex-col gap-6">
     <PageHeader :title="t('sources.title')" :lede="t('settings.sourcesLede')" />
-    <p v-if="stats.data.value" class="text-sm text-ink-600">
+    <FnSkeleton v-if="stats.isPending.value" class="h-4 w-40" />
+    <p v-else-if="stats.data.value" class="text-sm text-ink-600">
       {{ t("sources.directoryLine", { n: stats.data.value.boards_active }) }}
     </p>
     <p class="text-sm leading-6 text-ink-600">{{ t("sources.legend") }}</p>
@@ -80,7 +81,20 @@ async function addCareers() {
       </FnField>
       <FnButton type="submit" tone="primary" :disabled="busy">{{ t("sources.add") }}</FnButton>
     </form>
-    <FnSkeleton v-if="loading" :lines="4" />
+    <FnSkeletonGroup v-if="loading" :label="t('common.loading')">
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 4" :key="n" class="flex flex-wrap items-center gap-3 py-3 text-sm">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3 w-24" />
+          </div>
+          <FnSkeleton class="h-3.5 w-16" />
+          <FnSkeleton class="h-3.5 w-14" />
+          <FnSkeleton class="h-3.5 w-16" />
+          <FnSkeleton class="h-3.5 w-16" />
+        </li>
+      </ul>
+    </FnSkeletonGroup>
     <ul v-else class="divide-y divide-rule border-y border-rule">
       <li v-for="s in rows" :key="s.id" class="flex flex-wrap items-center gap-3 py-3 text-sm">
         <div class="min-w-0 flex-1">

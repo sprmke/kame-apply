@@ -20,7 +20,15 @@ import {
   type ParseViewRead,
   type ResumeVersionRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSectionCard, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnChip,
+  FnSectionCard,
+  FnSelect,
+  FnSkeleton,
+  FnSkeletonGroup,
+  useToast,
+} from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -437,10 +445,62 @@ const contentPreview = computed(() => {
       </template>
     </PageHeader>
 
-    <div v-if="resumes.isPending.value" class="flex flex-col gap-3">
-      <FnSkeleton class="h-10 w-full" />
-      <FnSkeleton class="h-56 w-full" />
-    </div>
+    <FnSkeletonGroup
+      v-if="resumes.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-5"
+    >
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <FnSkeleton class="h-12 w-full rounded-md lg:max-w-xs" />
+        <div class="flex flex-wrap items-center gap-2">
+          <FnSkeleton class="h-12 w-36 rounded-md" />
+          <FnSkeleton class="h-11 w-28 rounded-md" />
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex gap-1 rounded-lg bg-paper-2 p-1">
+          <FnSkeleton v-for="n in 5" :key="n" class="h-11 w-24 rounded-md bg-paper-1" />
+        </div>
+        <FnSkeleton class="h-4 w-3/5" />
+      </div>
+
+      <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+        <section
+          class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+        >
+          <div class="flex flex-col gap-4">
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div
+                v-for="n in 6"
+                :key="n"
+                class="flex items-center justify-between gap-2 rounded-lg border border-rule bg-paper-0 px-3 py-2"
+              >
+                <FnSkeleton class="h-4 w-24" />
+                <FnSkeleton class="h-4 w-8" />
+              </div>
+            </div>
+            <FnSkeleton class="h-5 w-32" />
+            <div v-for="n in 3" :key="n" class="flex gap-2">
+              <FnSkeleton class="size-5 shrink-0 rounded-full" />
+              <FnSkeleton class="h-4 flex-1" />
+            </div>
+            <FnSkeleton class="h-11 w-36 rounded-md" />
+          </div>
+        </section>
+
+        <aside
+          class="flex flex-col gap-4 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)]"
+        >
+          <div v-for="n in 2" :key="n" class="flex flex-col gap-2">
+            <FnSkeleton class="h-4 w-24" />
+            <FnSkeleton class="h-12 w-full rounded-md" />
+          </div>
+          <FnSkeleton class="h-4 w-4/5" />
+          <FnSkeleton class="h-11 w-32 rounded-md" />
+        </aside>
+      </div>
+    </FnSkeletonGroup>
 
     <FnSectionCard
       v-else-if="!(resumes.data.value || []).length"
@@ -572,7 +632,21 @@ const contentPreview = computed(() => {
               }}</FnButton>
               <FnButton size="sm" @click="applyAccepted">{{ t("studio.applyAccepted") }}</FnButton>
             </div>
-            <div v-if="changesQ.isPending.value"><FnSkeleton class="h-16" /></div>
+            <FnSkeletonGroup v-if="changesQ.isPending.value" :label="t('common.loading')">
+              <ul class="flex flex-col divide-y divide-rule">
+                <li v-for="n in 3" :key="n" class="flex flex-col gap-2 py-3 sm:flex-row">
+                  <div class="flex min-w-0 flex-1 flex-col gap-2">
+                    <FnSkeleton class="h-3.5 w-2/5" />
+                    <FnSkeleton class="h-4 w-3/4" />
+                    <FnSkeleton class="h-4 w-2/3" />
+                  </div>
+                  <div class="flex shrink-0 gap-1">
+                    <FnSkeleton class="h-11 w-24 rounded-md" />
+                    <FnSkeleton class="h-11 w-20 rounded-md" />
+                  </div>
+                </li>
+              </ul>
+            </FnSkeletonGroup>
             <p v-else-if="!(changesQ.data.value || []).length" class="text-sm text-ink-600">
               {{ t("studio.noChanges") }}
             </p>
@@ -604,9 +678,21 @@ const contentPreview = computed(() => {
             <div v-if="!activeTrackId" class="text-sm text-ink-600">
               {{ t("studio.noInsights") }}
             </div>
-            <div v-else-if="insightsQ.isPending.value || insightsMut.isPending.value">
-              <FnSkeleton class="h-24" />
-            </div>
+            <FnSkeletonGroup
+              v-else-if="insightsQ.isPending.value || insightsMut.isPending.value"
+              :label="t('common.loading')"
+              class="flex flex-col gap-3"
+            >
+              <FnSkeleton class="h-4 w-3/5" />
+              <div class="flex flex-col gap-2">
+                <FnSkeleton class="h-4 w-full" />
+                <div v-for="n in 4" :key="n" class="grid grid-cols-3 gap-2">
+                  <FnSkeleton class="h-4" />
+                  <FnSkeleton class="h-4 w-12" />
+                  <FnSkeleton class="h-6 w-20 rounded-full" />
+                </div>
+              </div>
+            </FnSkeletonGroup>
             <div v-else-if="activeInsights" class="flex flex-col gap-3">
               <p class="text-sm text-ink-600">
                 {{ t("studio.sampleSize", { n: activeInsights.sample_size }) }}
@@ -665,7 +751,19 @@ const contentPreview = computed(() => {
           </div>
 
           <div v-else-if="tab === 'parse'" class="flex flex-col gap-2 text-sm">
-            <div v-if="parseQ.isPending.value"><FnSkeleton class="h-20" /></div>
+            <FnSkeletonGroup v-if="parseQ.isPending.value" :label="t('common.loading')">
+              <dl class="grid gap-2 sm:grid-cols-2">
+                <div
+                  v-for="n in 5"
+                  :key="n"
+                  class="flex flex-col gap-2"
+                  :class="n > 2 ? 'sm:col-span-2' : ''"
+                >
+                  <FnSkeleton class="h-3 w-20" />
+                  <FnSkeleton class="h-4 w-3/5" />
+                </div>
+              </dl>
+            </FnSkeletonGroup>
             <template v-else-if="parseQ.data.value">
               <dl class="grid gap-2 sm:grid-cols-2">
                 <div>

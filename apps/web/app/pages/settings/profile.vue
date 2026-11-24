@@ -14,6 +14,8 @@ import {
   FnInput,
   FnSectionCard,
   FnSelect,
+  FnSkeleton,
+  FnSkeletonGroup,
   useToast,
 } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
@@ -147,7 +149,15 @@ const themes = computed(() =>
       <div class="flex flex-wrap items-center gap-3">
         <NavIcon name="ph:google-logo" :size="20" />
         <span class="flex-1 font-medium text-ink-900">Google</span>
-        <template v-if="hasGoogle">
+        <FnSkeletonGroup
+          v-if="me.isPending.value || providersQ.isPending.value"
+          :label="t('common.loading')"
+          class="flex flex-wrap items-center justify-end gap-2"
+        >
+          <FnSkeleton class="h-7 w-24 rounded-full" />
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+        </FnSkeletonGroup>
+        <template v-else-if="hasGoogle">
           <FnChip tone="accent">
             <span aria-hidden="true">✓</span>
             {{ t("profile.linkedState") }}

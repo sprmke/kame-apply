@@ -7,6 +7,7 @@ import {
   FnEmptyState,
   FnSectionCard,
   FnSkeleton,
+  FnSkeletonGroup,
   useToast,
 } from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
@@ -66,7 +67,22 @@ async function onRevoke(id: string) {
   <section class="flex max-w-2xl flex-col gap-6">
     <PageHeader :title="t('settings.sessions')" :lede="t('sessions.lede')" />
 
-    <FnSkeleton v-if="sessions.isPending.value" :lines="3" />
+    <FnSkeletonGroup v-if="sessions.isPending.value" :label="t('common.loading')">
+      <SkeletonSectionCard headed :intro="false">
+        <ul class="flex flex-col divide-y divide-rule">
+          <li v-for="n in 2" :key="n" class="flex min-h-16 flex-wrap items-center gap-3 py-2">
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <FnSkeleton class="h-4 w-40" />
+                <FnSkeleton class="h-6 w-20 rounded-full" />
+              </div>
+              <FnSkeleton class="h-3.5 w-3/5" />
+            </div>
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+          </li>
+        </ul>
+      </SkeletonSectionCard>
+    </FnSkeletonGroup>
 
     <FnEmptyState
       v-else-if="sessions.isError.value"

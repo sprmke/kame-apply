@@ -22,6 +22,7 @@ export { default as FnTerm } from "./FnTerm.vue";
 export { default as FnEmptyState } from "./FnEmptyState.vue";
 export { default as FnStepper, type Step } from "./FnStepper.vue";
 export { default as FnSkeleton } from "./FnSkeleton.vue";
+export { default as FnSkeletonGroup } from "./FnSkeletonGroup.vue";
 export { default as FnProofMark } from "./FnProofMark.vue";
 export { default as FnPencilText } from "./FnPencilText.vue";
 export { default as FnRouteLine } from "./FnRouteLine.vue";

@@ -44,7 +44,7 @@ Status uses colour, glyph, and word. Relative times use `Intl.RelativeTimeFormat
 
 ## Loading / errors
 
-The query polls every 15s. The empty state is a dashed card with one action, and only renders once the query has resolved, so it never flashes while loading.
+The query polls every 15s. A stacked table skeleton with the same header and row heights fills the card until the first page arrives; the empty state is a dashed card with one action, and only renders once the query has resolved, so it never flashes while loading.
 
 ## API reference
 

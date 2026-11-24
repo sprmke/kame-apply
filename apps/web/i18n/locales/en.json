@@ -17,6 +17,7 @@
     "done": "Done",
     "saving": "Saving",
     "confirm": "Confirm",
+    "loading": "Loading",
     "retry": "Try again",
     "copyFailed": "Could not copy"
   },

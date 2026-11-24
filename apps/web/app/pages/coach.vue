@@ -4,7 +4,15 @@ import {
   createSetupApiV1OnboardingSetupsPost,
   uploadDocumentApiV1ProfilesProfileIdDocumentsPost,
 } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnInput, FnSectionCard, FnSkeleton, useToast } from "@kame/ui";
+import {
+  FnButton,
+  FnEmptyState,
+  FnInput,
+  FnSectionCard,
+  FnSkeleton,
+  FnSkeletonGroup,
+  useToast,
+} from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -116,7 +124,24 @@ async function addProfile() {
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-8">
     <PageHeader :title="t('coach.title')" :lede="t('coach.lede')" />
 
-    <div v-if="coach.isPending.value"><FnSkeleton class="h-32 w-full" /></div>
+    <FnSkeletonGroup v-if="coach.isPending.value" :label="t('common.loading')">
+      <ul
+        class="divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
+        <li
+          v-for="n in 3"
+          :key="n"
+          class="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+        >
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3.5 w-3/5" />
+          </div>
+          <FnSkeleton class="h-4 w-20" />
+          <FnSkeleton class="h-11 w-20 rounded-md" />
+        </li>
+      </ul>
+    </FnSkeletonGroup>
     <FnEmptyState
       v-else-if="!(coach.data.value ?? []).length"
       :title="t('coach.empty')"

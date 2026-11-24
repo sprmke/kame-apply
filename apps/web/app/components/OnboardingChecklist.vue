@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { listCredentialsApiV1AiCredentialsGet, listTracksApiV1TracksGet } from "@kame/api-client";
-import { FnChip } from "@kame/ui";
+import { FnChip, FnSkeleton, FnSkeletonGroup } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -9,7 +9,7 @@ const { t } = useI18n();
 const ws = useWorkspaceStore();
 const { profileId } = useActiveProfile();
 const canSeeKeys = computed(() => ws.canManage);
-const { data: creds } = useQuery({
+const { data: creds, isPending: credsPending } = useQuery({
   queryKey: computed(() => ["onboarding-credentials", ws.currentId]),
   queryFn: async () => (await listCredentialsApiV1AiCredentialsGet()).data,
   enabled: canSeeKeys,
@@ -22,6 +22,7 @@ const tracks = useQuery({
 });
 const hasTrack = computed(() => (tracks.data.value?.length ?? 0) > 0);
 const hasProfile = computed(() => Boolean(profileId.value));
+const loading = computed(() => tracks.isPending.value || (canSeeKeys.value && credsPending.value));
 
 // The checklist ends at the first Track. Running discovery is the Track's primary action.
 const steps = computed(() =>
@@ -39,7 +40,18 @@ const steps = computed(() =>
     class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-5 shadow-[var(--shadow-card)]"
   >
     <h2 class="text-lg font-bold">{{ t("onboarding.title") }}</h2>
-    <ol class="flex flex-col divide-y divide-rule">
+    <FnSkeletonGroup
+      v-if="loading"
+      :label="t('common.loading')"
+      class="flex flex-col divide-y divide-rule"
+    >
+      <div v-for="n in 3" :key="n" class="flex min-h-14 items-center gap-3 px-1">
+        <FnSkeleton class="size-6 shrink-0 rounded-full" />
+        <FnSkeleton class="h-4 flex-1" />
+        <FnSkeleton class="h-3 w-12" />
+      </div>
+    </FnSkeletonGroup>
+    <ol v-else class="flex flex-col divide-y divide-rule">
       <li v-for="(s, i) in steps" :key="s.key" class="flex min-h-14 items-center gap-3 px-1">
         <span
           class="grid size-6 shrink-0 place-items-center rounded-full border text-xs"

@@ -9,7 +9,7 @@ import {
   type ApplicationStatusBody,
   type ItemRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSelect, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSelect, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -428,7 +428,87 @@ function statusLabel(status: string): string {
       }}</NuxtLink>
     </div>
 
-    <div v-if="loading"><FnSkeleton class="h-40 w-full" /></div>
+    <FnSkeletonGroup v-if="loading" :label="t('common.loading')" class="flex flex-col gap-6">
+      <header class="flex flex-col gap-2 border-b border-rule pb-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-8 w-3/5" />
+            <FnSkeleton class="h-4 w-2/5" />
+          </div>
+          <FnSkeleton class="h-7 w-24 shrink-0 rounded-full" />
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <FnSkeleton class="h-4 w-28" />
+          <FnSkeleton class="h-4 w-20" />
+        </div>
+      </header>
+
+      <section class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <div class="flex flex-wrap gap-2">
+          <FnSkeleton class="h-12 w-48 rounded-md" />
+          <FnSkeleton class="h-11 min-w-48 flex-1 rounded-sm" />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <FnSkeleton class="h-4 w-20" />
+          <FnSkeleton class="h-11 w-28 rounded-md" />
+        </div>
+        <FnSkeleton class="h-4 w-3/5" />
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <FnSkeleton class="h-4 w-32" />
+          <FnSkeleton class="h-11 w-32 rounded-md" />
+        </div>
+        <FnSkeleton class="h-4 w-full" />
+        <FnSkeleton class="h-4 w-4/5" />
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <FnSkeleton class="h-4 w-24" />
+        <div class="divide-y divide-rule border-y border-rule">
+          <div
+            v-for="n in 2"
+            :key="n"
+            class="flex flex-wrap items-center justify-between gap-2 py-2"
+          >
+            <FnSkeleton class="h-4 w-40" />
+            <FnSkeleton class="h-11 w-28 rounded-md" />
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <div class="divide-y divide-rule border-y border-rule">
+          <div v-for="n in 3" :key="n" class="flex justify-between gap-3 py-2">
+            <FnSkeleton class="h-4 w-32" />
+            <FnSkeleton class="h-3.5 w-24" />
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-2">
+          <FnSkeleton class="h-4 w-24" />
+          <FnSkeleton class="h-4 w-20" />
+        </div>
+        <FnSkeleton class="h-14 w-full rounded-lg" />
+        <FnSkeleton class="h-14 w-full rounded-lg" />
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <FnSkeleton class="h-4 w-16" />
+        <FnSkeleton class="h-28 w-full rounded-sm" />
+        <div class="flex justify-end">
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+        </div>
+      </section>
+    </FnSkeletonGroup>
     <template v-else-if="app">
       <header class="flex flex-col gap-2 border-b border-rule pb-4">
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -630,7 +710,17 @@ function statusLabel(status: string): string {
             t("applications.generatePrep")
           }}</FnButton>
         </div>
-        <template v-if="interviewPrep.data.value">
+        <FnSkeletonGroup
+          v-if="interviewPrep.isPending.value"
+          :label="t('common.loading')"
+          class="flex flex-col gap-2"
+        >
+          <FnSkeleton class="h-4 w-full" />
+          <FnSkeleton class="h-4 w-4/5" />
+          <FnSkeleton class="h-4 w-3/5" />
+          <FnSkeleton class="h-4 w-2/3" />
+        </FnSkeletonGroup>
+        <template v-else-if="interviewPrep.data.value">
           <p class="text-sm text-ink-600">{{ interviewPrep.data.value.company_brief }}</p>
           <ul class="flex flex-col gap-2 text-sm">
             <li v-for="(q, i) in interviewPrep.data.value.likely_questions.slice(0, 5)" :key="i">
@@ -644,7 +734,19 @@ function statusLabel(status: string): string {
         <h2 class="text-sm font-medium tracking-wide text-ink-600 uppercase">
           {{ t("applications.referrals") }}
         </h2>
-        <ul class="divide-y divide-rule border-y border-rule text-sm">
+        <FnSkeletonGroup v-if="referralMatches.isPending.value" :label="t('common.loading')">
+          <ul class="divide-y divide-rule border-y border-rule text-sm">
+            <li
+              v-for="n in 2"
+              :key="n"
+              class="flex flex-wrap items-center justify-between gap-2 py-2"
+            >
+              <FnSkeleton class="h-4 w-2/5" />
+              <FnSkeleton class="h-11 w-28 rounded-md" />
+            </li>
+          </ul>
+        </FnSkeletonGroup>
+        <ul v-else class="divide-y divide-rule border-y border-rule text-sm">
           <li
             v-for="m in referralMatches.data.value ?? []"
             :key="m.contact.id"
@@ -751,8 +853,16 @@ function statusLabel(status: string): string {
             >{{ t("answers.draft") }}</NuxtLink
           >
         </div>
+        <FnSkeletonGroup v-if="deskAnswers.isPending.value" :label="t('common.loading')">
+          <ul class="divide-y divide-rule border-y border-rule text-sm">
+            <li v-for="n in 2" :key="n" class="flex flex-col gap-2 py-2">
+              <FnSkeleton class="h-4 w-3/5" />
+              <FnSkeleton class="h-3.5 w-4/5" />
+            </li>
+          </ul>
+        </FnSkeletonGroup>
         <ul
-          v-if="(deskAnswers.data.value ?? []).length"
+          v-else-if="(deskAnswers.data.value ?? []).length"
           class="divide-y divide-rule border-y border-rule text-sm"
         >
           <li v-for="a in deskAnswers.data.value ?? []" :key="a.id" class="py-2">

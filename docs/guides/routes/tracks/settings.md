@@ -46,7 +46,7 @@ Shows the saved schedules, each with the frequency and timezone, quiet hours, da
 
 ## Loading / errors
 
-`TrackShell` covers the loading and error states for the page chrome. Failed mutations raise a toast and leave the previous value in place.
+`TrackShell` covers the loading and error states for the page chrome. The recommended card, schedule rows, and source list each load in place: a card and list-row skeleton with the same heights, never a spinner. Failed mutations raise a toast and leave the previous value in place.
 
 ## API reference
 

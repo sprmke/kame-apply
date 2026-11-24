@@ -14,6 +14,8 @@ import {
   FnInput,
   FnSectionCard,
   FnSelect,
+  FnSkeleton,
+  FnSkeletonGroup,
   FnSummaryLine,
   FnTextarea,
   useToast,
@@ -454,343 +456,402 @@ async function saveMore() {
 <template>
   <TrackShell :track-id="trackId">
     <div v-if="track" class="flex flex-col gap-5">
-      <FilledFromResume page="searches" :control="t('setup.control.searches')" />
-      <FnSectionCard :title="t('tracks.whatToLookFor')" :intro="t('tracks.whatToLookForIntro')">
-        <FnField v-slot="{ id }" :label="t('tracks.describe')">
-          <FnTextarea :id="id" v-model="nl" :rows="4" />
-        </FnField>
-        <div class="flex flex-wrap items-center gap-2">
-          <FnButton tone="quiet" :disabled="!nl.trim() || compiling" @click="review">
-            {{ compiling ? t("tracks.suggesting") : t("tracks.checkSettings") }}
-          </FnButton>
-          <span v-if="briefDirty" class="text-sm text-ink-600">{{ t("common.unsaved") }}</span>
-        </div>
-
-        <div
-          v-if="preview"
-          class="flex flex-col gap-3 rounded-lg border border-dashed border-pencil bg-paper-0 p-4"
-        >
-          <p class="text-sm font-semibold text-ink-900">{{ t("tracks.changesTitle") }}</p>
-          <ul class="flex flex-col gap-1 text-sm text-pencil">
-            <li v-for="(d, i) in diff" :key="i">{{ d.label || d.op }}</li>
-          </ul>
-          <div class="flex flex-wrap gap-2">
-            <FnButton tone="primary" :disabled="compiling" @click="applyPreview">
-              {{ t("tracks.useSuggestions") }}
-            </FnButton>
-            <FnButton tone="ghost" @click="dismissPreview">
-              {{ t("tracks.discardSuggestions") }}
-            </FnButton>
-          </div>
-        </div>
-
-        <FnSummaryLine v-if="summaryLine" :text="summaryLine" />
-        <div v-if="relaxations.data.value?.length" class="flex flex-col gap-1 text-sm text-ink-600">
-          <p class="font-semibold text-ink-900">{{ t("tracks.relaxTitle") }}</p>
-          <ul class="flex flex-wrap gap-2">
-            <li
-              v-for="row in relaxations.data.value.slice(0, 4)"
-              :key="row.label"
-              class="rounded-full bg-paper-2 px-3 py-1"
-            >
-              {{ row.label }}: +{{ row.gained }}
-            </li>
-          </ul>
-        </div>
-      </FnSectionCard>
-
-      <FnSectionCard :title="t('tracks.matchesOn')" :intro="t('tracks.matchesOnIntro')">
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div v-if="shown?.titles?.filter((x) => !x.exclude).length" class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
-              {{ t("tracks.groupRoles") }}
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <FnChip
-                v-for="title in shown?.titles?.filter((x) => !x.exclude) ?? []"
-                :key="title.title"
-                tone="accent"
-                >{{ title.title }}</FnChip
-              >
-            </div>
-          </div>
-          <div v-if="shown?.skills?.must?.length" class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
-              {{ t("tracks.groupSkills") }}
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <FnChip
-                v-for="s in shown?.skills?.must ?? []"
-                :key="`m-${s}`"
-                tone="neutral"
-                removable
-                :remove-label="t('tracks.removeChip')"
-                @remove="removeMustSkill(s)"
-                >{{ s }}</FnChip
-              >
-            </div>
-          </div>
-          <div v-if="shown?.skills?.nice?.length" class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
-              {{ t("tracks.groupNice") }}
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <FnChip
-                v-for="s in shown?.skills?.nice ?? []"
-                :key="`n-${s}`"
-                tone="pencil"
-                removable
-                :remove-label="t('tracks.removeChip')"
-                @remove="removeNiceSkill(s)"
-                >{{ s }}</FnChip
-              >
-            </div>
-          </div>
-          <div class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
-              {{ t("tracks.groupRules") }}
-            </h3>
-            <div class="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                class="inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-xs font-semibold transition-colors"
-                :class="
-                  shown?.companies?.exclude_agencies
-                    ? 'border-rule bg-paper-2 text-ink-900'
-                    : 'border-dashed border-edge bg-paper-1 text-ink-600 hover:bg-paper-2'
-                "
-                :aria-pressed="Boolean(shown?.companies?.exclude_agencies)"
-                @click="toggleAgencies"
-              >
-                <span aria-hidden="true">{{ shown?.companies?.exclude_agencies ? "✓" : "+" }}</span>
-                {{ t("tracks.noAgencies") }}
-              </button>
-              <FnChip v-for="s in shown?.skills?.exclude ?? []" :key="`x-${s}`" tone="neutral"
-                >-{{ s }}</FnChip
-              >
-            </div>
-          </div>
-        </div>
-      </FnSectionCard>
-
-      <FnSectionCard
-        :title="t('tracks.filters')"
-        :intro="t('tracks.filtersIntro')"
-        :summary="
-          activeFilterCount
-            ? t('tracks.filtersOn', { n: activeFilterCount }, activeFilterCount)
-            : t('tracks.filtersNone')
-        "
+      <FnSkeletonGroup
+        v-if="exp.loading.value"
+        :label="t('common.loading')"
+        class="flex flex-col gap-5"
       >
-        <div class="grid gap-4 sm:grid-cols-2">
-          <fieldset v-if="showField('work_modes')" class="flex flex-col gap-1">
-            <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.workModes") }}</legend>
-            <label
-              v-for="m in modeValues"
-              :key="m"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="workModes.includes(m)"
-                @change="toggleMode(m)"
-              />
-              {{ t(`tracks.mode_${m}`) }}
-            </label>
-          </fieldset>
-          <fieldset v-if="showField('employment_types')" class="flex flex-col gap-1">
-            <legend class="text-sm font-semibold text-ink-900">
-              {{ t("tracks.employment") }}
-            </legend>
-            <label
-              v-for="e in employmentValues"
-              :key="e"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="employmentTypes.includes(e)"
-                @change="toggleEmployment(e)"
-              />
-              {{ t(`tracks.emp_${e}`) }}
-            </label>
-          </fieldset>
-          <fieldset v-if="showField('shifts')" class="flex flex-col gap-1">
-            <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.shifts") }}</legend>
-            <label
-              v-for="item in shiftValues"
-              :key="item"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="shifts.includes(item)"
-                @change="toggleShift(item)"
-              />
-              {{ t(`tracks.shift_${item}`) }}
-            </label>
-          </fieldset>
-          <FnField
-            v-if="showField('posting_max_age_days')"
-            v-slot="{ id }"
-            :label="t('tracks.postedWithin')"
-            :help="t('tracks.postedHelp')"
-          >
-            <FnSelect :id="id" v-model="postingAgeText" :options="postingOptions" />
-          </FnField>
-          <fieldset v-if="showField('locations')" class="flex flex-col gap-3 sm:col-span-2">
-            <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.location") }}</legend>
-            <p class="-mt-1 text-sm text-ink-600">{{ t("tracks.locationHelp") }}</p>
-            <div v-for="(row, index) in places" :key="index" class="flex flex-wrap items-end gap-2">
-              <FnField v-slot="{ id }" :label="t('tracks.location')" class="min-w-[14rem] flex-1">
-                <FnInput
-                  :id="id"
-                  v-model="row.place"
-                  :placeholder="t('tracks.locationPlaceholder')"
-                />
-              </FnField>
-              <FnField v-slot="{ id }" :label="t('tracks.radius')" class="w-32">
-                <FnInput :id="id" v-model="row.radius" type="number" />
-              </FnField>
-              <FnButton v-if="places.length > 1" size="sm" tone="ghost" @click="removePlace(index)">
-                {{ t("tracks.removeLocation") }}
-              </FnButton>
+        <SkeletonSectionCard>
+          <div class="flex flex-col gap-2">
+            <FnSkeleton class="h-3.5 w-24" />
+            <FnSkeleton class="h-24 w-full rounded-sm" />
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <FnSkeleton class="h-11 w-32 rounded-md" />
+          </div>
+          <FnSkeleton class="h-9 w-full rounded-lg" />
+        </SkeletonSectionCard>
+        <SkeletonSectionCard>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div v-for="n in 4" :key="n" class="flex flex-col gap-2">
+              <FnSkeleton class="h-3 w-20" />
+              <div class="flex flex-wrap gap-2">
+                <FnSkeleton class="h-7 w-20 rounded-full" />
+                <FnSkeleton class="h-7 w-24 rounded-full" />
+                <FnSkeleton class="h-7 w-16 rounded-full" />
+              </div>
             </div>
-            <div>
-              <FnButton size="sm" tone="quiet" @click="addPlace">
-                {{ t("tracks.addLocation") }}
-              </FnButton>
+          </div>
+        </SkeletonSectionCard>
+        <SkeletonSectionCard>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div v-for="n in 6" :key="n" class="flex flex-col gap-2">
+              <FnSkeleton class="h-4 w-24" />
+              <FnSkeleton class="h-4 w-2/3" />
             </div>
-          </fieldset>
-          <FnField
-            v-if="showField('remote_eligibility')"
-            v-slot="{ id }"
-            :label="t('tracks.region')"
-          >
-            <FnSelect :id="id" v-model="regionPreset" :options="regionOptions" />
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <FnSkeleton class="h-12 w-32 rounded-md" />
+            <FnSkeleton class="h-12 w-28 rounded-md" />
+          </div>
+        </SkeletonSectionCard>
+      </FnSkeletonGroup>
+
+      <template v-else>
+        <FilledFromResume page="searches" :control="t('setup.control.searches')" />
+        <FnSectionCard :title="t('tracks.whatToLookFor')" :intro="t('tracks.whatToLookForIntro')">
+          <FnField v-slot="{ id }" :label="t('tracks.describe')">
+            <FnTextarea :id="id" v-model="nl" :rows="4" />
           </FnField>
-          <label v-if="showField('remote_eligibility')" class="flex flex-col gap-2 text-sm">
-            <span class="font-semibold text-ink-900">{{ t("tracks.tzOverlap") }}</span>
-            <input
-              v-model.number="tzOverlap"
-              type="range"
-              min="0"
-              max="12"
-              class="min-h-11 w-full accent-brand-600"
-            />
-            <span class="text-sm tabular-nums text-ink-600">{{ tzOverlap }}h</span>
-          </label>
-          <label
-            v-if="showField('visa_sponsorship')"
-            class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-          >
-            <input
-              v-model="visa"
-              type="checkbox"
-              class="size-5 rounded border-rule accent-brand-600"
-            />
-            {{ t("tracks.visa") }}
-          </label>
-          <fieldset v-if="showField('salary_includes')" class="flex flex-col gap-1">
-            <legend class="text-sm font-semibold text-ink-900">
-              {{ t("tracks.salaryIncludes") }}
-            </legend>
-            <label
-              v-for="item in includeValues"
-              :key="item"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="salaryIncludes.includes(item)"
-                @change="toggleInclude(item)"
-              />
-              {{ t(`tracks.include_${item}`) }}
-            </label>
-          </fieldset>
-          <fieldset
-            v-for="facet in showField('facets') ? facets : []"
-            :key="facet.key"
-            class="flex flex-col gap-1"
-          >
-            <legend class="text-sm font-semibold text-ink-900">
-              {{ exp.facetLabel(facet) }}
-            </legend>
-            <label
-              v-for="option in facet.options"
-              :key="option.key"
-              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
-            >
-              <input
-                type="checkbox"
-                class="size-5 rounded border-rule accent-brand-600"
-                :checked="(facetValues[facet.key] ?? []).includes(option.key)"
-                @change="toggleFacet(facet, option.key)"
-              />
-              {{ exp.optionLabel(option) }}
-            </label>
-          </fieldset>
+          <div class="flex flex-wrap items-center gap-2">
+            <FnButton tone="quiet" :disabled="!nl.trim() || compiling" @click="review">
+              {{ compiling ? t("tracks.suggesting") : t("tracks.checkSettings") }}
+            </FnButton>
+            <span v-if="briefDirty" class="text-sm text-ink-600">{{ t("common.unsaved") }}</span>
+          </div>
+
           <div
-            v-if="showField('salary')"
-            class="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-2"
+            v-if="preview"
+            class="flex flex-col gap-3 rounded-lg border border-dashed border-pencil bg-paper-0 p-4"
           >
-            <FnField :label="t('tracks.salaryMin')" class="flex-1">
+            <p class="text-sm font-semibold text-ink-900">{{ t("tracks.changesTitle") }}</p>
+            <ul class="flex flex-col gap-1 text-sm text-pencil">
+              <li v-for="(d, i) in diff" :key="i">{{ d.label || d.op }}</li>
+            </ul>
+            <div class="flex flex-wrap gap-2">
+              <FnButton tone="primary" :disabled="compiling" @click="applyPreview">
+                {{ t("tracks.useSuggestions") }}
+              </FnButton>
+              <FnButton tone="ghost" @click="dismissPreview">
+                {{ t("tracks.discardSuggestions") }}
+              </FnButton>
+            </div>
+          </div>
+
+          <FnSummaryLine v-if="summaryLine" :text="summaryLine" />
+          <div
+            v-if="relaxations.data.value?.length"
+            class="flex flex-col gap-1 text-sm text-ink-600"
+          >
+            <p class="font-semibold text-ink-900">{{ t("tracks.relaxTitle") }}</p>
+            <ul class="flex flex-wrap gap-2">
+              <li
+                v-for="row in relaxations.data.value.slice(0, 4)"
+                :key="row.label"
+                class="rounded-full bg-paper-2 px-3 py-1"
+              >
+                {{ row.label }}: +{{ row.gained }}
+              </li>
+            </ul>
+          </div>
+        </FnSectionCard>
+
+        <FnSectionCard :title="t('tracks.matchesOn')" :intro="t('tracks.matchesOnIntro')">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div v-if="shown?.titles?.filter((x) => !x.exclude).length" class="flex flex-col gap-2">
+              <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+                {{ t("tracks.groupRoles") }}
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <FnChip
+                  v-for="title in shown?.titles?.filter((x) => !x.exclude) ?? []"
+                  :key="title.title"
+                  tone="accent"
+                  >{{ title.title }}</FnChip
+                >
+              </div>
+            </div>
+            <div v-if="shown?.skills?.must?.length" class="flex flex-col gap-2">
+              <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+                {{ t("tracks.groupSkills") }}
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <FnChip
+                  v-for="s in shown?.skills?.must ?? []"
+                  :key="`m-${s}`"
+                  tone="neutral"
+                  removable
+                  :remove-label="t('tracks.removeChip')"
+                  @remove="removeMustSkill(s)"
+                  >{{ s }}</FnChip
+                >
+              </div>
+            </div>
+            <div v-if="shown?.skills?.nice?.length" class="flex flex-col gap-2">
+              <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+                {{ t("tracks.groupNice") }}
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                <FnChip
+                  v-for="s in shown?.skills?.nice ?? []"
+                  :key="`n-${s}`"
+                  tone="pencil"
+                  removable
+                  :remove-label="t('tracks.removeChip')"
+                  @remove="removeNiceSkill(s)"
+                  >{{ s }}</FnChip
+                >
+              </div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
+                {{ t("tracks.groupRules") }}
+              </h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  class="inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-xs font-semibold transition-colors"
+                  :class="
+                    shown?.companies?.exclude_agencies
+                      ? 'border-rule bg-paper-2 text-ink-900'
+                      : 'border-dashed border-edge bg-paper-1 text-ink-600 hover:bg-paper-2'
+                  "
+                  :aria-pressed="Boolean(shown?.companies?.exclude_agencies)"
+                  @click="toggleAgencies"
+                >
+                  <span aria-hidden="true">{{
+                    shown?.companies?.exclude_agencies ? "✓" : "+"
+                  }}</span>
+                  {{ t("tracks.noAgencies") }}
+                </button>
+                <FnChip v-for="s in shown?.skills?.exclude ?? []" :key="`x-${s}`" tone="neutral"
+                  >-{{ s }}</FnChip
+                >
+              </div>
+            </div>
+          </div>
+        </FnSectionCard>
+
+        <FnSectionCard
+          :title="t('tracks.filters')"
+          :intro="t('tracks.filtersIntro')"
+          :summary="
+            activeFilterCount
+              ? t('tracks.filtersOn', { n: activeFilterCount }, activeFilterCount)
+              : t('tracks.filtersNone')
+          "
+        >
+          <div class="grid gap-4 sm:grid-cols-2">
+            <fieldset v-if="showField('work_modes')" class="flex flex-col gap-1">
+              <legend class="text-sm font-semibold text-ink-900">
+                {{ t("tracks.workModes") }}
+              </legend>
+              <label
+                v-for="m in modeValues"
+                :key="m"
+                class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+              >
+                <input
+                  type="checkbox"
+                  class="size-5 rounded border-rule accent-brand-600"
+                  :checked="workModes.includes(m)"
+                  @change="toggleMode(m)"
+                />
+                {{ t(`tracks.mode_${m}`) }}
+              </label>
+            </fieldset>
+            <fieldset v-if="showField('employment_types')" class="flex flex-col gap-1">
+              <legend class="text-sm font-semibold text-ink-900">
+                {{ t("tracks.employment") }}
+              </legend>
+              <label
+                v-for="e in employmentValues"
+                :key="e"
+                class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+              >
+                <input
+                  type="checkbox"
+                  class="size-5 rounded border-rule accent-brand-600"
+                  :checked="employmentTypes.includes(e)"
+                  @change="toggleEmployment(e)"
+                />
+                {{ t(`tracks.emp_${e}`) }}
+              </label>
+            </fieldset>
+            <fieldset v-if="showField('shifts')" class="flex flex-col gap-1">
+              <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.shifts") }}</legend>
+              <label
+                v-for="item in shiftValues"
+                :key="item"
+                class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+              >
+                <input
+                  type="checkbox"
+                  class="size-5 rounded border-rule accent-brand-600"
+                  :checked="shifts.includes(item)"
+                  @change="toggleShift(item)"
+                />
+                {{ t(`tracks.shift_${item}`) }}
+              </label>
+            </fieldset>
+            <FnField
+              v-if="showField('posting_max_age_days')"
+              v-slot="{ id }"
+              :label="t('tracks.postedWithin')"
+              :help="t('tracks.postedHelp')"
+            >
+              <FnSelect :id="id" v-model="postingAgeText" :options="postingOptions" />
+            </FnField>
+            <fieldset v-if="showField('locations')" class="flex flex-col gap-3 sm:col-span-2">
+              <legend class="text-sm font-semibold text-ink-900">{{ t("tracks.location") }}</legend>
+              <p class="-mt-1 text-sm text-ink-600">{{ t("tracks.locationHelp") }}</p>
+              <div
+                v-for="(row, index) in places"
+                :key="index"
+                class="flex flex-wrap items-end gap-2"
+              >
+                <FnField v-slot="{ id }" :label="t('tracks.location')" class="min-w-[14rem] flex-1">
+                  <FnInput
+                    :id="id"
+                    v-model="row.place"
+                    :placeholder="t('tracks.locationPlaceholder')"
+                  />
+                </FnField>
+                <FnField v-slot="{ id }" :label="t('tracks.radius')" class="w-32">
+                  <FnInput :id="id" v-model="row.radius" type="number" />
+                </FnField>
+                <FnButton
+                  v-if="places.length > 1"
+                  size="sm"
+                  tone="ghost"
+                  @click="removePlace(index)"
+                >
+                  {{ t("tracks.removeLocation") }}
+                </FnButton>
+              </div>
+              <div>
+                <FnButton size="sm" tone="quiet" @click="addPlace">
+                  {{ t("tracks.addLocation") }}
+                </FnButton>
+              </div>
+            </fieldset>
+            <FnField
+              v-if="showField('remote_eligibility')"
+              v-slot="{ id }"
+              :label="t('tracks.region')"
+            >
+              <FnSelect :id="id" v-model="regionPreset" :options="regionOptions" />
+            </FnField>
+            <label v-if="showField('remote_eligibility')" class="flex flex-col gap-2 text-sm">
+              <span class="font-semibold text-ink-900">{{ t("tracks.tzOverlap") }}</span>
+              <input
+                v-model.number="tzOverlap"
+                type="range"
+                min="0"
+                max="12"
+                class="min-h-11 w-full accent-brand-600"
+              />
+              <span class="text-sm tabular-nums text-ink-600">{{ tzOverlap }}h</span>
+            </label>
+            <label
+              v-if="showField('visa_sponsorship')"
+              class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+            >
+              <input
+                v-model="visa"
+                type="checkbox"
+                class="size-5 rounded border-rule accent-brand-600"
+              />
+              {{ t("tracks.visa") }}
+            </label>
+            <fieldset v-if="showField('salary_includes')" class="flex flex-col gap-1">
+              <legend class="text-sm font-semibold text-ink-900">
+                {{ t("tracks.salaryIncludes") }}
+              </legend>
+              <label
+                v-for="item in includeValues"
+                :key="item"
+                class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+              >
+                <input
+                  type="checkbox"
+                  class="size-5 rounded border-rule accent-brand-600"
+                  :checked="salaryIncludes.includes(item)"
+                  @change="toggleInclude(item)"
+                />
+                {{ t(`tracks.include_${item}`) }}
+              </label>
+            </fieldset>
+            <fieldset
+              v-for="facet in showField('facets') ? facets : []"
+              :key="facet.key"
+              class="flex flex-col gap-1"
+            >
+              <legend class="text-sm font-semibold text-ink-900">
+                {{ exp.facetLabel(facet) }}
+              </legend>
+              <label
+                v-for="option in facet.options"
+                :key="option.key"
+                class="flex min-h-11 items-center gap-3 text-sm text-ink-900"
+              >
+                <input
+                  type="checkbox"
+                  class="size-5 rounded border-rule accent-brand-600"
+                  :checked="(facetValues[facet.key] ?? []).includes(option.key)"
+                  @change="toggleFacet(facet, option.key)"
+                />
+                {{ exp.optionLabel(option) }}
+              </label>
+            </fieldset>
+            <div
+              v-if="showField('salary')"
+              class="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-2"
+            >
+              <FnField :label="t('tracks.salaryMin')" class="flex-1">
+                <template #default="{ id }">
+                  <FnInput :id="id" v-model="salaryText" type="number" inputmode="numeric" />
+                </template>
+              </FnField>
+              <FnField :label="t('tracks.currency')" class="sm:w-24">
+                <template #default="{ id }">
+                  <FnInput :id="id" v-model="salaryCurrency" maxlength="3" />
+                </template>
+              </FnField>
+              <FnField :label="t('tracks.period')" class="sm:w-32">
+                <template #default="{ id }">
+                  <FnSelect :id="id" v-model="salaryPeriod" :options="periodOptions" />
+                </template>
+              </FnField>
+            </div>
+            <FnField
+              v-if="showField('keywords')"
+              :label="t('tracks.keywordsInclude')"
+              :help="t('tracks.keywordsIncludeHelp')"
+            >
               <template #default="{ id }">
-                <FnInput :id="id" v-model="salaryText" type="number" inputmode="numeric" />
+                <FnInput :id="id" v-model="includeExpr" placeholder="support, onboarding" />
               </template>
             </FnField>
-            <FnField :label="t('tracks.currency')" class="sm:w-24">
+            <FnField v-if="showField('keywords')" :label="t('tracks.keywordsExclude')">
               <template #default="{ id }">
-                <FnInput :id="id" v-model="salaryCurrency" maxlength="3" />
+                <FnInput :id="id" v-model="excludeExpr" placeholder="unpaid, commission only" />
               </template>
             </FnField>
-            <FnField :label="t('tracks.period')" class="sm:w-32">
+            <FnField v-if="showField('companies')" :label="t('tracks.companiesInclude')">
               <template #default="{ id }">
-                <FnSelect :id="id" v-model="salaryPeriod" :options="periodOptions" />
+                <FnInput :id="id" v-model="companiesInclude" />
+              </template>
+            </FnField>
+            <FnField v-if="showField('companies')" :label="t('tracks.companiesExclude')">
+              <template #default="{ id }">
+                <FnInput :id="id" v-model="companiesExclude" />
               </template>
             </FnField>
           </div>
-          <FnField
-            v-if="showField('keywords')"
-            :label="t('tracks.keywordsInclude')"
-            :help="t('tracks.keywordsIncludeHelp')"
-          >
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="includeExpr" placeholder="support, onboarding" />
-            </template>
-          </FnField>
-          <FnField v-if="showField('keywords')" :label="t('tracks.keywordsExclude')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="excludeExpr" placeholder="unpaid, commission only" />
-            </template>
-          </FnField>
-          <FnField v-if="showField('companies')" :label="t('tracks.companiesInclude')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="companiesInclude" />
-            </template>
-          </FnField>
-          <FnField v-if="showField('companies')" :label="t('tracks.companiesExclude')">
-            <template #default="{ id }">
-              <FnInput :id="id" v-model="companiesExclude" />
-            </template>
-          </FnField>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <FnButton tone="primary" :disabled="saving" @click="saveMore">
-            {{ saving ? t("common.saving") : t("tracks.saveFilters") }}
-          </FnButton>
-          <FnButton as-child tone="quiet">
-            <NuxtLink :to="`/jobs?track=${trackId}`">{{ t("tracks.viewMatches") }}</NuxtLink>
-          </FnButton>
-          <FnButton tone="ghost" :aria-pressed="showAll" @click="showAll = !showAll">
-            {{ showAll ? t("tracks.hideAllFilters") : t("tracks.showAllFilters") }}
-          </FnButton>
-        </div>
-      </FnSectionCard>
+          <div class="flex flex-wrap gap-2">
+            <FnButton tone="primary" :disabled="saving" @click="saveMore">
+              {{ saving ? t("common.saving") : t("tracks.saveFilters") }}
+            </FnButton>
+            <FnButton as-child tone="quiet">
+              <NuxtLink :to="`/jobs?track=${trackId}`">{{ t("tracks.viewMatches") }}</NuxtLink>
+            </FnButton>
+            <FnButton tone="ghost" :aria-pressed="showAll" @click="showAll = !showAll">
+              {{ showAll ? t("tracks.hideAllFilters") : t("tracks.showAllFilters") }}
+            </FnButton>
+          </div>
+        </FnSectionCard>
+      </template>
     </div>
   </TrackShell>
 </template>

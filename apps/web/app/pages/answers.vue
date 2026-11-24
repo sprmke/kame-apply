@@ -7,7 +7,7 @@ import {
   type AppAnswersSchemasSessionRead,
   type ItemRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -159,7 +159,23 @@ function charCount(item: ItemRead) {
       </div>
     </section>
 
-    <div v-if="busy"><FnSkeleton class="h-40 w-full" /></div>
+    <FnSkeletonGroup v-if="busy" :label="t('common.loading')" class="flex flex-col gap-4">
+      <div v-for="n in 3" :key="n" class="flex flex-col gap-2 border border-rule p-3">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <FnSkeleton class="h-4 w-3/5" />
+          <div class="flex flex-wrap gap-1">
+            <FnSkeleton class="h-6 w-20 rounded-full" />
+            <FnSkeleton class="h-6 w-12 rounded-full" />
+          </div>
+        </div>
+        <FnSkeleton class="h-20 w-full" />
+        <div class="flex flex-wrap gap-1">
+          <FnSkeleton class="h-11 w-16 rounded-md" />
+          <FnSkeleton class="h-11 w-20 rounded-md" />
+          <FnSkeleton class="h-11 w-24 rounded-md" />
+        </div>
+      </div>
+    </FnSkeletonGroup>
 
     <ul v-else-if="items.length" class="flex flex-col gap-4">
       <li

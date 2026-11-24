@@ -7,7 +7,7 @@ import {
   type NeedsYouItem,
   type NotificationRead,
 } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnSkeleton, useToast } from "@kame/ui";
+import { FnButton, FnEmptyState, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -83,7 +83,24 @@ async function markAll() {
       </template>
     </PageHeader>
 
-    <section v-if="needItems.length" class="flex flex-col gap-2">
+    <FnSkeletonGroup
+      v-if="needs.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-2"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <FnSkeleton class="h-4 w-24" />
+        <FnSkeleton class="h-3.5 w-16" />
+      </div>
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 2" :key="n" class="flex min-h-11 flex-col gap-2 py-3">
+          <FnSkeleton class="h-4 w-3/5" />
+          <FnSkeleton class="h-3.5 w-4/5" />
+        </li>
+      </ul>
+    </FnSkeletonGroup>
+
+    <section v-else-if="needItems.length" class="flex flex-col gap-2">
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
           {{ t("shell.needsYou") }}
@@ -109,7 +126,18 @@ async function markAll() {
       <h2 class="text-sm font-semibold tracking-wide text-ink-600 uppercase">
         {{ t("notifications.inbox") }}
       </h2>
-      <div v-if="notes.isPending.value"><FnSkeleton class="h-24 w-full" /></div>
+      <FnSkeletonGroup v-if="notes.isPending.value" :label="t('common.loading')">
+        <ul class="divide-y divide-rule border-y border-rule">
+          <li v-for="n in 5" :key="n" class="flex min-h-11 items-start justify-between gap-3 py-3">
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-3/5" />
+              <FnSkeleton class="h-3.5 w-4/5" />
+              <FnSkeleton class="h-3 w-24" />
+            </div>
+            <FnSkeleton class="h-11 w-24 shrink-0 rounded-md" />
+          </li>
+        </ul>
+      </FnSkeletonGroup>
       <FnEmptyState v-else-if="!rows.length" :title="t('notifications.empty')" />
       <ul v-else class="divide-y divide-rule border-y border-rule">
         <li

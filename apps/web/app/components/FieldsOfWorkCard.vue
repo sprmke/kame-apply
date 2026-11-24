@@ -7,7 +7,7 @@ import {
   type IndustrySummary,
   type WorkspaceIndustryRead,
 } from "@kame/api-client";
-import { FnButton, useToast } from "@kame/ui";
+import { FnButton, FnSkeleton, FnSkeletonGroup, useToast } from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useExperience } from "~/composables/useExperience";
 import { useWorkspaceStore } from "~/stores/workspace";
@@ -30,6 +30,7 @@ const industries = useQuery({
 });
 
 const enabled = computed<WorkspaceIndustryRead[]>(() => exp.enabled.value);
+const loading = computed(() => exp.loading.value || industries.isPending.value);
 const enabledKeys = computed(() => new Set(enabled.value.map((item) => item.key)));
 const available = computed(() =>
   (industries.data.value ?? []).filter(
@@ -145,72 +146,90 @@ async function makePrimary(key: string) {
       <p class="mt-1 text-xs text-ink-600">{{ t("workspace.fieldsOfWorkHint") }}</p>
     </div>
 
-    <ul class="divide-y divide-rule border-y border-rule">
-      <li v-for="item in enabled" :key="item.key" class="flex min-h-14 items-center gap-3 py-2.5">
-        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-paper-2 text-ink-600">
-          <Icon :name="icon(item)" :size="18" aria-hidden="true" />
-        </span>
-        <span class="min-w-0 flex-1">
-          <span class="flex items-center gap-2">
-            <span class="truncate text-sm font-medium text-ink-900">{{ label(item) }}</span>
-            <span
-              v-if="item.is_primary"
-              class="rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-brand-700 uppercase"
-              >{{ t("workspace.primaryField") }}</span
-            >
+    <FnSkeletonGroup v-if="loading" :label="t('common.loading')" class="flex flex-col gap-3">
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="n in 3" :key="n" class="flex min-h-14 items-center gap-3 py-2.5">
+          <FnSkeleton class="size-9 shrink-0 rounded-lg" />
+          <span class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-4 w-2/5" />
+            <FnSkeleton class="h-3 w-1/3" />
           </span>
-          <span v-if="!item.is_primary && item.key !== 'general'" class="text-xs text-ink-600">{{
-            t("workspace.notPrimary")
-          }}</span>
-          <span v-else-if="item.key === 'general'" class="text-xs text-ink-600">{{
-            t("workspace.fallback")
-          }}</span>
-        </span>
-        <div v-if="ws.canManage && item.key !== 'general'" class="flex items-center gap-1">
-          <FnButton
-            v-if="!item.is_primary"
-            size="sm"
-            tone="quiet"
-            :disabled="busy"
-            @click="pendingPrimary = pendingPrimary === item.key ? null : item.key"
-            >{{ t("workspace.makePrimary") }}</FnButton
-          >
-          <FnButton size="sm" tone="ghost" :disabled="busy" @click="remove(item.key)">{{
-            t("common.delete")
+          <FnSkeleton class="h-11 w-16 shrink-0 rounded-md" />
+        </li>
+      </ul>
+      <div class="flex flex-wrap items-center gap-2">
+        <FnSkeleton v-for="n in 3" :key="n" class="h-11 w-32 rounded-md" />
+      </div>
+    </FnSkeletonGroup>
+
+    <template v-else>
+      <ul class="divide-y divide-rule border-y border-rule">
+        <li v-for="item in enabled" :key="item.key" class="flex min-h-14 items-center gap-3 py-2.5">
+          <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-paper-2 text-ink-600">
+            <Icon :name="icon(item)" :size="18" aria-hidden="true" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="flex items-center gap-2">
+              <span class="truncate text-sm font-medium text-ink-900">{{ label(item) }}</span>
+              <span
+                v-if="item.is_primary"
+                class="rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-brand-700 uppercase"
+                >{{ t("workspace.primaryField") }}</span
+              >
+            </span>
+            <span v-if="!item.is_primary && item.key !== 'general'" class="text-xs text-ink-600">{{
+              t("workspace.notPrimary")
+            }}</span>
+            <span v-else-if="item.key === 'general'" class="text-xs text-ink-600">{{
+              t("workspace.fallback")
+            }}</span>
+          </span>
+          <div v-if="ws.canManage && item.key !== 'general'" class="flex items-center gap-1">
+            <FnButton
+              v-if="!item.is_primary"
+              size="sm"
+              tone="quiet"
+              :disabled="busy"
+              @click="pendingPrimary = pendingPrimary === item.key ? null : item.key"
+              >{{ t("workspace.makePrimary") }}</FnButton
+            >
+            <FnButton size="sm" tone="ghost" :disabled="busy" @click="remove(item.key)">{{
+              t("common.delete")
+            }}</FnButton>
+          </div>
+        </li>
+      </ul>
+
+      <div
+        v-if="pendingPrimary"
+        class="flex flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-sm text-ink-900"
+        role="status"
+      >
+        <p>{{ preview(pendingPrimary) }}</p>
+        <div class="flex flex-wrap gap-2">
+          <FnButton size="sm" tone="primary" :loading="busy" @click="makePrimary(pendingPrimary)">{{
+            t("workspace.confirm")
+          }}</FnButton>
+          <FnButton size="sm" tone="quiet" @click="pendingPrimary = null">{{
+            t("common.cancel")
           }}</FnButton>
         </div>
-      </li>
-    </ul>
-
-    <div
-      v-if="pendingPrimary"
-      class="flex flex-col gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-sm text-ink-900"
-      role="status"
-    >
-      <p>{{ preview(pendingPrimary) }}</p>
-      <div class="flex flex-wrap gap-2">
-        <FnButton size="sm" tone="primary" :loading="busy" @click="makePrimary(pendingPrimary)">{{
-          t("workspace.confirm")
-        }}</FnButton>
-        <FnButton size="sm" tone="quiet" @click="pendingPrimary = null">{{
-          t("common.cancel")
-        }}</FnButton>
       </div>
-    </div>
 
-    <div v-if="ws.canManage && available.length" class="flex flex-wrap items-center gap-2">
-      <FnButton
-        v-for="item in available"
-        :key="item.key"
-        size="sm"
-        tone="quiet"
-        :disabled="busy"
-        @click="add(item.key)"
-      >
-        <Icon :name="item.icon" :size="16" aria-hidden="true" />
-        {{ label(item) }}
-      </FnButton>
-    </div>
-    <p v-if="!ws.canManage" class="text-sm text-ink-600">{{ t("workspace.fieldsReadOnly") }}</p>
+      <div v-if="ws.canManage && available.length" class="flex flex-wrap items-center gap-2">
+        <FnButton
+          v-for="item in available"
+          :key="item.key"
+          size="sm"
+          tone="quiet"
+          :disabled="busy"
+          @click="add(item.key)"
+        >
+          <Icon :name="item.icon" :size="16" aria-hidden="true" />
+          {{ label(item) }}
+        </FnButton>
+      </div>
+      <p v-if="!ws.canManage" class="text-sm text-ink-600">{{ t("workspace.fieldsReadOnly") }}</p>
+    </template>
   </section>
 </template>

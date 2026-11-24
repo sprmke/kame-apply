@@ -23,6 +23,8 @@ import {
   FnInput,
   FnSectionCard,
   FnSelect,
+  FnSkeleton,
+  FnSkeletonGroup,
   useToast,
   type SelectOption,
 } from "@kame/ui";
@@ -453,8 +455,23 @@ async function togglePause() {
 <template>
   <TrackShell :track-id="trackId">
     <div v-if="track" class="flex flex-col gap-5">
+      <FnSkeletonGroup
+        v-if="recommended.isPending.value"
+        :label="t('common.loading')"
+        class="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-5"
+      >
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <FnSkeleton class="h-3 w-40" />
+            <FnSkeleton class="h-5 w-3/4 max-w-md" />
+          </div>
+          <FnSkeleton class="h-11 w-32 shrink-0 rounded-md" />
+        </div>
+        <FnSkeleton class="h-3.5 w-4/5" />
+      </FnSkeletonGroup>
+
       <section
-        v-if="recommended.data.value"
+        v-else-if="recommended.data.value"
         class="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-5"
       >
         <div class="flex flex-wrap items-start justify-between gap-2">
@@ -563,7 +580,26 @@ async function togglePause() {
           }}</FnButton>
         </div>
 
-        <p v-if="!scheduleRows.length" class="text-sm text-ink-600">
+        <FnSkeletonGroup v-if="schedules.isPending.value" :label="t('common.loading')">
+          <ul class="divide-y divide-rule border-y border-rule">
+            <li
+              v-for="n in 2"
+              :key="n"
+              class="flex flex-wrap items-center justify-between gap-3 py-3"
+            >
+              <div class="flex min-w-0 flex-1 flex-col gap-2">
+                <FnSkeleton class="h-4 w-2/5" />
+                <FnSkeleton class="h-3 w-1/3" />
+              </div>
+              <div class="flex items-center gap-2">
+                <FnSkeleton class="h-6 w-14 rounded-full" />
+                <FnSkeleton class="h-11 w-20 rounded-md" />
+              </div>
+            </li>
+          </ul>
+        </FnSkeletonGroup>
+
+        <p v-else-if="!scheduleRows.length" class="text-sm text-ink-600">
           {{ t("tracks.noSchedules") }}
         </p>
         <ul v-else class="divide-y divide-rule border-y border-rule">
@@ -637,7 +673,17 @@ async function togglePause() {
             {{ sourcesOpen ? t("common.done") : t("tracks.changeSources") }}
           </button>
         </template>
-        <div v-if="sourcesOpen" class="flex flex-col gap-4 sm:grid sm:grid-cols-2">
+        <FnSkeletonGroup
+          v-if="sourcesOpen && sources.isPending.value"
+          :label="t('common.loading')"
+          class="flex flex-col gap-4 sm:grid sm:grid-cols-2"
+        >
+          <div v-for="n in 2" :key="n" class="flex flex-col gap-2">
+            <FnSkeleton class="h-3 w-24" />
+            <FnSkeleton v-for="row in 4" :key="row" class="h-6 w-3/5" />
+          </div>
+        </FnSkeletonGroup>
+        <div v-else-if="sourcesOpen" class="flex flex-col gap-4 sm:grid sm:grid-cols-2">
           <div v-for="group in sourceGroups" :key="group.key" class="flex flex-col gap-1">
             <h3 class="text-xs font-semibold tracking-wide text-ink-600 uppercase">
               {{ group.label }}

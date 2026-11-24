@@ -24,6 +24,7 @@ import {
   FnPencilText,
   FnSectionCard,
   FnSelect,
+  FnSkeleton,
   FnStepper,
   FnTextarea,
   FnSuggestions,
@@ -65,7 +66,7 @@ const apiError = useApiError();
 const qc = useQueryClient();
 const route = useRoute();
 const { ensureProfile } = useActiveProfile();
-const { data: creds } = useQuery({
+const { data: creds, isPending: credsPending } = useQuery({
   queryKey: ["setup-ai-credentials"],
   queryFn: async () => (await listCredentialsApiV1AiCredentialsGet()).data ?? [],
 });
@@ -751,7 +752,8 @@ onBeforeUnmount(() => {
         <FnInput :id="id" v-model="roleText" :placeholder="t('setup.rolePlaceholder')" />
       </FnField>
 
-      <p class="text-sm text-ink-600">
+      <FnSkeleton v-if="credsPending" class="h-4 w-64 max-w-full" />
+      <p v-else class="text-sm text-ink-600">
         {{ hasAi ? t("setup.aiOn") : t("setup.aiOff") }}
         <NuxtLink to="/settings/ai" class="text-brand-700 underline">{{
           t("setup.aiSettings")

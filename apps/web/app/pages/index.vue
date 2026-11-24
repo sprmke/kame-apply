@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { homeApiV1HomeGet, listJobsApiV1JobsGet, type BoardJobRead } from "@kame/api-client";
-import { FnButton, FnEmptyState, FnFolderTab, FnRiskSeal, FnSkeleton } from "@kame/ui";
+import {
+  FnButton,
+  FnEmptyState,
+  FnFolderTab,
+  FnRiskSeal,
+  FnSkeleton,
+  FnSkeletonGroup,
+} from "@kame/ui";
 import { useQuery } from "@tanstack/vue-query";
 import { useActiveProfile } from "~/composables/useActiveProfile";
 import { useAuthStore } from "~/stores/auth";
@@ -230,16 +237,59 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         {{ greeting }}
       </h1>
       <p class="max-w-2xl text-base leading-7 text-ink-600 sm:text-lg">
-        {{ data?.headline || t("today.lede") }}
+        <template v-if="home.isPending.value">
+          <span class="flex max-w-xl flex-col gap-2">
+            <FnSkeleton class="h-5 w-full" />
+            <FnSkeleton class="h-5 w-3/5" />
+          </span>
+        </template>
+        <template v-else>{{ data?.headline || t("today.lede") }}</template>
       </p>
     </header>
 
     <SetupTodayCard />
 
-    <div v-if="home.isPending.value" class="flex flex-col gap-4">
-      <FnSkeleton class="h-40 w-full" />
-      <FnSkeleton class="h-24 w-full" />
-    </div>
+    <FnSkeletonGroup
+      v-if="home.isPending.value"
+      :label="t('common.loading')"
+      class="flex flex-col gap-6 md:gap-8"
+    >
+      <section class="rounded-2xl border border-brand-100 bg-brand-50 p-5 sm:p-7 md:p-9">
+        <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div class="flex w-full max-w-xl flex-col gap-2">
+            <FnSkeleton class="h-3 w-24" />
+            <FnSkeleton class="mt-1 h-8 w-4/5 sm:h-9 sm:w-3/5" />
+            <FnSkeleton class="h-4 w-full" />
+            <FnSkeleton class="h-4 w-3/4" />
+          </div>
+          <FnSkeleton class="h-12 w-full shrink-0 rounded-md md:w-44" />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <FnSkeleton class="h-4 w-32" />
+          <FnSkeleton class="h-3.5 w-20" />
+        </div>
+        <ul class="grid gap-3 sm:grid-cols-2">
+          <li
+            v-for="n in 2"
+            :key="n"
+            class="flex min-h-28 flex-col gap-3 rounded-xl border border-rule bg-paper-0 p-4"
+          >
+            <FnSkeleton class="h-8 w-40 rounded-full" />
+            <FnSkeleton class="h-4 w-4/5" />
+            <FnSkeleton class="mt-auto h-4 w-24" />
+          </li>
+        </ul>
+      </section>
+
+      <div class="border-t border-rule pt-4">
+        <div class="flex min-h-11 items-center">
+          <FnSkeleton class="h-4 w-24" />
+        </div>
+      </div>
+    </FnSkeletonGroup>
 
     <template v-else-if="data">
       <section
@@ -291,8 +341,28 @@ function trackLine(track: NonNullable<HomeBrief["tracks"]>[number]): string {
         </ul>
       </section>
 
+      <FnSkeletonGroup
+        v-if="firstTrack && topJobs.isPending.value"
+        :label="t('common.loading')"
+        class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <FnSkeleton class="h-4 w-32" />
+          <FnSkeleton class="h-3.5 w-16" />
+        </div>
+        <ul class="divide-y divide-rule border-y border-rule">
+          <li v-for="n in 3" :key="n" class="flex items-start gap-3 py-4">
+            <FnSkeleton class="h-7 w-9 shrink-0 rounded-md" />
+            <span class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-3/5" />
+              <FnSkeleton class="h-3.5 w-2/5" />
+            </span>
+          </li>
+        </ul>
+      </FnSkeletonGroup>
+
       <section
-        v-if="top.length"
+        v-else-if="top.length"
         class="flex flex-col gap-3 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
       >
         <div class="flex items-center justify-between gap-2">

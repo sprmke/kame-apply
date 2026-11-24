@@ -6,7 +6,7 @@ import {
   type CheckThisRead,
   type FlaggedJobRead,
 } from "@kame/api-client";
-import { FnButton, FnRiskSeal, FnSkeleton, FnTextarea, useToast } from "@kame/ui";
+import { FnButton, FnRiskSeal, FnSkeleton, FnSkeletonGroup, FnTextarea, useToast } from "@kame/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -168,10 +168,33 @@ async function decide(jobId: string, decision: "continue" | "skip" | "reported" 
     </header>
 
     <section v-if="tab === 'flagged'">
-      <div v-if="flagged.isPending.value" class="space-y-2">
-        <FnSkeleton class="h-12" />
-        <FnSkeleton class="h-12" />
-      </div>
+      <FnSkeletonGroup
+        v-if="flagged.isPending.value"
+        :label="t('common.loading')"
+        class="overflow-hidden rounded-xl border border-rule bg-paper-1 shadow-[var(--shadow-card)]"
+      >
+        <div
+          v-for="n in 3"
+          :key="n"
+          class="flex flex-col gap-3 border-b border-rule p-5 last:border-b-0 sm:flex-row sm:items-start"
+        >
+          <div class="flex min-w-0 flex-1 flex-col gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <FnSkeleton class="h-7 w-20 rounded-full" />
+              <FnSkeleton class="h-4 w-3/5" />
+            </div>
+            <FnSkeleton class="h-3.5 w-2/5" />
+            <FnSkeleton class="h-3.5 w-4/5" />
+            <FnSkeleton class="h-3.5 w-3/5" />
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <FnSkeleton class="h-11 w-16 rounded-md" />
+            <FnSkeleton class="h-11 w-20 rounded-md" />
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+            <FnSkeleton class="h-11 w-24 rounded-md" />
+          </div>
+        </div>
+      </FnSkeletonGroup>
       <p
         v-else-if="!(flagged.data.value || []).length"
         class="rounded-xl border border-dashed border-rule bg-paper-1 p-6 text-sm text-ink-600"

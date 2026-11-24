@@ -13,6 +13,7 @@ import {
   FnRiskSeal,
   FnRouteLine,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTable,
   useToast,
 } from "../src";
@@ -190,6 +191,26 @@ describe("FnSkeleton", () => {
     expect(w.attributes("aria-hidden")).toBe("true");
     expect(w.element.children).toHaveLength(3);
     expect(w.element.children[0]!.className).toContain("motion-reduce:animate-none");
+  });
+
+  it("sizes one bar from the passed classes instead of nesting it", () => {
+    const w = mount(FnSkeleton, { attrs: { class: "h-40 w-48" } });
+    expect(w.classes()).toContain("h-40");
+    expect(w.classes()).toContain("w-48");
+    expect(w.classes()).not.toContain("h-4");
+    expect(w.element.children).toHaveLength(0);
+  });
+});
+
+describe("FnSkeletonGroup", () => {
+  it("marks the region busy and labels it once", () => {
+    const w = mount(FnSkeletonGroup, {
+      props: { label: "Loading jobs" },
+      slots: { default: "<div class='bar' />" },
+    });
+    expect(w.attributes("role")).toBe("status");
+    expect(w.attributes("aria-busy")).toBe("true");
+    expect(w.find(".sr-only").text()).toBe("Loading jobs");
   });
 });
 

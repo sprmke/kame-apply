@@ -11,6 +11,7 @@ import {
   FnSectionCard,
   FnSelect,
   FnSkeleton,
+  FnSkeletonGroup,
   FnTable,
   useToast,
 } from "@kame/ui";
@@ -240,8 +241,25 @@ watch(connectPath, (value) => startConnect(value));
     <p v-if="!manage" class="text-sm text-ink-600">{{ t("ai.ownersOnly") }}</p>
 
     <template v-else>
+      <SkeletonSectionCard v-if="creds.isPending.value">
+        <div class="flex flex-col gap-2">
+          <div
+            v-for="n in 3"
+            :key="n"
+            class="flex min-h-16 items-start gap-3 rounded-xl border border-rule px-3 py-3"
+          >
+            <FnSkeleton class="mt-0.5 size-5 shrink-0 rounded-full" />
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <FnSkeleton class="h-4 w-2/5" />
+              <FnSkeleton class="h-3.5 w-4/5" />
+            </div>
+          </div>
+          <FnSkeleton class="h-4 w-2/3" />
+        </div>
+      </SkeletonSectionCard>
+
       <FnSectionCard
-        v-if="!(creds.data.value ?? []).length"
+        v-if="creds.data.value && !creds.data.value.length"
         :title="t('ai.chooseTitle')"
         :intro="t('ai.chooseIntro')"
       >
@@ -257,7 +275,9 @@ watch(connectPath, (value) => startConnect(value));
         <template #actions>
           <FnButton size="sm" tone="quiet" @click="openAdd()">{{ t("ai.addKey") }}</FnButton>
         </template>
-        <FnSkeleton v-if="creds.isPending.value" :lines="3" />
+        <FnSkeletonGroup v-if="creds.isPending.value" :label="t('common.loading')">
+          <SkeletonTable stack :columns="4" :rows="3" :framed="false" />
+        </FnSkeletonGroup>
         <FnTable
           v-else
           stack
@@ -314,7 +334,23 @@ watch(connectPath, (value) => startConnect(value));
 
       <FnSectionCard :title="t('ai.budgetTitle')" :intro="t('ai.budgetHint')">
         <div class="flex flex-col gap-4">
-          <FnSkeleton v-if="usage.isPending.value" :lines="3" />
+          <FnSkeletonGroup
+            v-if="usage.isPending.value"
+            :label="t('common.loading')"
+            class="flex flex-col gap-4"
+          >
+            <div class="flex flex-col gap-2">
+              <FnSkeleton class="h-6 w-2/5" />
+              <FnSkeleton class="h-2 w-full rounded-full" />
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between gap-3">
+                <FnSkeleton class="h-4 w-40" />
+                <FnSkeleton class="h-4 w-20" />
+              </div>
+              <FnSkeleton class="h-32 w-full" />
+            </div>
+          </FnSkeletonGroup>
           <template v-else-if="usage.data.value">
             <UsageMeter
               :spent-micros="usage.data.value.spent_micros"

@@ -6,7 +6,7 @@ import {
   startTailorApiV1TrackJobsTrackJobIdTailorPost,
   type TailorRunRead,
 } from "@kame/api-client";
-import { FnButton, FnChip, FnSkeleton, FnStepper, useToast } from "@kame/ui";
+import { FnButton, FnChip, FnSkeleton, FnSkeletonGroup, FnStepper, useToast } from "@kame/ui";
 import { useMutation } from "@tanstack/vue-query";
 import { useWorkspaceStore } from "~/stores/workspace";
 
@@ -223,10 +223,29 @@ const letter = computed(
 
     <WaitingForClaude v-if="inboxWaiting > 0" :waiting="inboxWaiting" />
 
-    <div v-if="startMut.isPending.value" class="space-y-2">
-      <FnSkeleton class="h-10" />
-      <FnSkeleton class="h-40" />
-    </div>
+    <FnSkeletonGroup v-if="startMut.isPending.value" :label="t('common.loading')">
+      <section
+        class="min-w-0 rounded-xl border border-rule bg-paper-1 p-4 shadow-[var(--shadow-card)] sm:p-5"
+      >
+        <div class="mb-3 flex flex-col gap-2">
+          <FnSkeleton class="h-6 w-40" />
+          <FnSkeleton class="h-4 w-3/5" />
+        </div>
+        <ul class="divide-y divide-rule">
+          <li v-for="n in 4" :key="n" class="flex gap-2 px-1 py-3">
+            <FnSkeleton class="mt-0.5 size-4 shrink-0 rounded" />
+            <div class="flex min-w-0 flex-1 flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <FnSkeleton class="h-6 w-16 rounded-full" />
+                <FnSkeleton class="h-4 w-3/5" />
+              </div>
+              <FnSkeleton class="h-3 w-2/5" />
+            </div>
+          </li>
+        </ul>
+        <FnSkeleton class="mt-4 h-11 w-24 rounded-md" />
+      </section>
+    </FnSkeletonGroup>
 
     <template v-else-if="run">
       <section
